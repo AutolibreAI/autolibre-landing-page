@@ -12,7 +12,7 @@ export const landingPageContent: LandingPageContent = {
       headingLineOne: "Tu auto, bajo control.",
       headingLineTwo: "Muy pronto.",
       description:
-        "La primera app argentina de gestion de autos con IA. Diagnostico, VTV, multas, repuestos y pagos en un solo lugar.",
+        "La primera app de la region para tu autos con IA. Diagnostico, VTV, multas, repuestos y pagos en un solo lugar.",
       mainAction: {
         label: "Quiero acceso temprano",
         href: "#form-section",
