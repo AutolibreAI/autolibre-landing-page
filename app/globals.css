@@ -776,6 +776,33 @@ body {
   color: var(--al-text-muted);
 }
 
+.al-faq-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.al-faq-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  border-radius: 2rem;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  background: transparent;
+  color: var(--al-cyan);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.al-faq-more-btn:hover {
+  background: rgba(0, 255, 255, 0.08);
+  border-color: var(--al-cyan);
+}
+
 /* ========================================
    Footer
    ======================================== */
