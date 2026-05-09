@@ -124,14 +124,14 @@ export const landingPageContent: LandingPageContent = {
         {
           id: "feature-03",
           icon: "bell",
-          title: "Alertas proactivas",
-          description: "Tu auto te habla antes de que algo falle. Recibí alertas tempranas antes de que se vuelvan un gasto.",
+          title: "La agenda de tu auto",
+          description: "VTV, seguro, patente y service con recordatorios automáticos. Te avisamos antes de que algo falle.",
         },
         {
           id: "feature-04",
           icon: "clipboard",
-          title: "Gestión de trámites",
-          description: "VTV/RTO, seguro, patente y service. Todo organizado en un solo lugar y con recordatorio automático.",
+          title: "Buscá, compará, decidí",
+          description: "Talleres y repuestos cerca tuyo, comparados por precio y reputación. Vos elegís con toda la info.",
         },
       ],
     },
