@@ -111,7 +111,7 @@ export const landingPageContent: LandingPageContent = {
         {
           id: "feature-01",
           icon: "brain",
-          title: "Diagnostico en lenguaje humano",
+          title: "Diagnostico con IA",
           description: "Entende que le pasa a tu auto sin ser mecanico. La IA traduce codigos tecnicos a explicaciones claras.",
         },
         {
