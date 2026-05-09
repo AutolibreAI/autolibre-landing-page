@@ -34,7 +34,7 @@ export const landingPageContent: LandingPageContent = {
         { id: "benefit-04", text: "Soporte prioritario con el equipo." },
         { id: "benefit-05", text: "Acceso exclusivo a funciones en beta." },
       ],
-      microcopy: "Sin spam. Solo tu auto, cuando este listo.",
+      microcopy: "Nada de ruido. Solo Auto Libre, cuando esté listo.",
       reasonOptions: [
         "Gestion administrativa",
         "Diagnostico con IA",
