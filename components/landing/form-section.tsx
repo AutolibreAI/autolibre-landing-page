@@ -56,7 +56,7 @@ export default function FormSection({ content }: FormSectionProps) {
             </div>
             <div className="al-form-field">
               <label htmlFor="landing-reason">
-                Que te atrajo? <span className="al-required">*</span>
+                ¿Qué te atrajo? <span className="al-required">*</span>
               </label>
               <select
                 id="landing-reason"
