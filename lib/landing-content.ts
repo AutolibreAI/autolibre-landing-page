@@ -8,17 +8,17 @@ export const landingPageContent: LandingPageContent = {
   },
   sections: {
     hero: {
-      eyebrow: "AUTOLIBRE AI",
-      headingLineOne: "Tu auto, bajo control.",
+      eyebrow: "AUTO LIBRE AI",
+      headingLineOne: "Hablá con tu auto.",
       headingLineTwo: "Muy pronto.",
       description:
-        "La primera app de la region para tu autos con IA. Diagnostico, VTV, multas, repuestos y pagos en un solo lugar.",
+        "Información y diagnóstico inteligente en un solo lugar.",
       mainAction: {
         label: "Quiero acceso temprano",
         href: "#form-section",
       },
       secondaryAction: {
-        label: "Conocer mas",
+        label: "Conocer más",
         href: "#problem",
       },
       socialProof: "Mas de 490 conductores ya se sumaron a la lista de espera.",
@@ -31,7 +31,7 @@ export const landingPageContent: LandingPageContent = {
         { id: "benefit-01", text: "Diagnostico inteligente en lenguaje simple." },
         { id: "benefit-02", text: "Alertas proactivas de VTV, seguro y patente." },
         { id: "benefit-03", text: "Comparacion guiada de repuestos y servicios." },
-        { id: "benefit-04", text: "Roadmap con mejoras semanales y feedback real." },
+        { id: "benefit-04", text: "Notificaciones cuando te toca un mantenimiento." },
         { id: "benefit-05", text: "Canal preferencial para usuarios early adopters." },
       ],
       microcopy: "Sin spam. Solo tu auto, cuando este listo.",
