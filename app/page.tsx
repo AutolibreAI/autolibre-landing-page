@@ -37,16 +37,16 @@ export default function Home() {
           <HeroSection content={landingPageContent.sections.hero} />
         </SectionContainer>
 
-        <SectionContainer id="form-section" className="al-section-form">
-          <FormSection content={landingPageContent.sections.form} />
-        </SectionContainer>
-
         <SectionContainer id="problem" className="al-section-problem">
           <ProblemSection content={landingPageContent.sections.problem} />
         </SectionContainer>
 
         <SectionContainer id="features" className="al-section-features">
           <FeaturesSection content={landingPageContent.sections.features} />
+        </SectionContainer>
+
+        <SectionContainer id="form-section" className="al-section-form">
+          <FormSection content={landingPageContent.sections.form} />
         </SectionContainer>
 
         <SectionContainer id="faqs" className="al-section-faqs">
