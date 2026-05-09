@@ -98,7 +98,7 @@ export const landingPageContent: LandingPageContent = {
         },
         {
           id: "problem-03",
-          text: "Pagaste de más porque no sabías. La información tambien es ahorro.",
+          text: "Pagaste de más porque no sabías. La información también es ahorro.",
           icon: "wallet",
         },
       ],
