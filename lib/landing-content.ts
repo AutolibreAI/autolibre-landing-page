@@ -96,6 +96,11 @@ export const landingPageContent: LandingPageContent = {
           text: "Antes esperabas que algo se rompiera. Ahora lo sabes antes.",
           icon: "alert",
         },
+        {
+          id: "problem-03",
+          text: "Pagaste de mas porque no sabias. La informacion tambien es ahorro.",
+          icon: "wallet",
+        },
       ],
     },
     features: {
