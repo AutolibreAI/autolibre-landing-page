@@ -98,14 +98,14 @@ export const landingPageContent: LandingPageContent = {
         },
         {
           id: "problem-03",
-          text: "Pagaste de más porque no sabias. La informacion tambien es ahorro.",
+          text: "Pagaste de más porque no sabías. La información tambien es ahorro.",
           icon: "wallet",
         },
       ],
     },
     features: {
-      tag: "QUE VAS A PODER HACER",
-      heading: "Todo lo que necesitas,",
+      tag: "QUÉ VAS A PODER HACER",
+      heading: "Todo lo que necesitás,",
       headingHighlight: "en un solo lugar.",
       items: [
         {
@@ -130,7 +130,7 @@ export const landingPageContent: LandingPageContent = {
         {
           id: "feature-04",
           icon: "clipboard",
-          title: "Gestión de tramites",
+          title: "Gestión de trámites",
           description: "VTV/RTO, seguro, patente y service. Todo organizado en un solo lugar y con recordatorio automático.",
         },
       ],
