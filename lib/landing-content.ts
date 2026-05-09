@@ -242,8 +242,8 @@ export const landingPageContent: LandingPageContent = {
         { id: "social-tiktok", label: "TikTok", href: "https://www.tiktok.com/@autolibreai" },
         { id: "social-instagram", label: "Instagram", href: "https://www.instagram.com/autolibreai/" },
         { id: "social-x", label: "X", href: "https://x.com/autolibreai" },
-        { id: "social-linkedin", label: "LinkedIn", href: "https://linkedin.com/company/autolibreai" },
-        { id: "social-email", label: "Email", href: "mailto:hola@autolibre.ai" },
+        { id: "social-linkedin", label: "LinkedIn", href: "https://linkedin.com/company/auto-libre-ai" },
+        { id: "social-email", label: "Email", href: "mailto:contact@autolibre.ai" },
       ],
       secondaryCta: {
         label: "Reservar mi lugar",
@@ -254,7 +254,7 @@ export const landingPageContent: LandingPageContent = {
       fabTooltip: "Preguntale a AutoLibre",
       panelTitle: "AutoLibre AI",
       placeholder: "Pregunta sobre tu auto...",
-      welcomeMessage: "Hola! Soy el asistente de AutoLibre. Puedo ayudarte con dudas sobre la app, tu auto, o cualquier consulta que tengas.",
+      welcomeMessage: "Hola! Soy AutoLibreAI. Puedo ayudarte con dudas sobre la app, tu auto, o cualquier consulta que tengas.",
     },
   },
   visualCheckpoints: [
