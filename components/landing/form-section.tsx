@@ -50,11 +50,11 @@ export default function FormSection({ content }: FormSectionProps) {
           {/* Optional fields */}
           <div className="al-form-row">
             <div className="al-form-field">
-              <label htmlFor="landing-whatsapp">WhatsApp (opcional)</label>
+              <label htmlFor="landing-whatsapp">WhatsApp</label>
               <input id="landing-whatsapp" name="whatsapp" type="tel" placeholder="+54 11 1234 5678" />
             </div>
             <div className="al-form-field">
-              <label htmlFor="landing-reason">Que te atrajo? (opcional)</label>
+              <label htmlFor="landing-reason">Que te atrajo?</label>
               <select id="landing-reason" name="reason" defaultValue="">
                 <option value="" disabled>Selecciona una opcion</option>
                 {content.reasonOptions.map((option) => (
@@ -65,7 +65,7 @@ export default function FormSection({ content }: FormSectionProps) {
           </div>
 
           <div className="al-form-field">
-            <label htmlFor="landing-patente">Patente del auto (opcional)</label>
+            <label htmlFor="landing-patente">Patente del auto</label>
             <input 
               id="landing-patente" 
               name="patente" 
