@@ -24,8 +24,8 @@ export default function Home() {
           </div>
           <nav className="al-nav-links" aria-label="Navegacion principal">
             <Link href="#hero">Inicio</Link>
-            <Link href="#form-section">Early Access</Link>
             <Link href="#features">Producto</Link>
+            <Link href="#form-section">Early Access</Link>
             <Link href="#faqs">FAQs</Link>
             <Link href="#footer">Contacto</Link>
           </nav>
