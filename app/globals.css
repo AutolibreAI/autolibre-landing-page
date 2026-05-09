@@ -700,7 +700,6 @@ body {
 .al-form-checkbox {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 0.6rem;
   padding: 0.25rem 0;
 }
