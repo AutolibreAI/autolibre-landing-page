@@ -779,6 +779,7 @@ body {
 .al-faq-more {
   display: flex;
   justify-content: center;
+  width: 100%;
   margin-top: 2rem;
 }
 
