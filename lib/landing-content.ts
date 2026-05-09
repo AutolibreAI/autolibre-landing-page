@@ -130,7 +130,7 @@ export const landingPageContent: LandingPageContent = {
           id: "feature-04",
           icon: "clipboard",
           title: "Gestion de tramites",
-          description: "VTV, seguro, patente y service. Todo en un lugar, todo con recordatorio.",
+          description: "VTV/RTO, seguro, patente y service. Todo en un lugar, todo con recordatorio.",
         },
       ],
     },
