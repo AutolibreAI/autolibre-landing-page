@@ -13,6 +13,7 @@ type FormSectionProps = {
 
 export default function FormSection({ content }: FormSectionProps) {
   const [wantsScanner, setWantsScanner] = useState(false);
+  const [reason, setReason] = useState("");
 
   return (
     <div className="al-form-grid">
@@ -54,8 +55,16 @@ export default function FormSection({ content }: FormSectionProps) {
               <input id="landing-whatsapp" name="whatsapp" type="tel" placeholder="+54 11 1234 5678" />
             </div>
             <div className="al-form-field">
-              <label htmlFor="landing-reason">Que te atrajo?</label>
-              <select id="landing-reason" name="reason" defaultValue="">
+              <label htmlFor="landing-reason">
+                Que te atrajo? <span className="al-required">*</span>
+              </label>
+              <select
+                id="landing-reason"
+                name="reason"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                required
+              >
                 <option value="" disabled>Selecciona una opcion</option>
                 {content.reasonOptions.map((option) => (
                   <option key={option} value={option}>{option}</option>
@@ -64,13 +73,31 @@ export default function FormSection({ content }: FormSectionProps) {
             </div>
           </div>
 
+          {reason === "Otra" && (
+            <div className="al-form-field">
+              <label htmlFor="landing-reason-other">
+                Contanos mas <span className="al-required">*</span>
+              </label>
+              <input
+                id="landing-reason-other"
+                name="reason_other"
+                type="text"
+                placeholder="Cuentanos que te trajo hasta aca"
+                required
+              />
+            </div>
+          )}
+
           <div className="al-form-field">
-            <label htmlFor="landing-patente">Patente del auto</label>
-            <input 
-              id="landing-patente" 
-              name="patente" 
-              type="text" 
-              placeholder="O ingresa el modelo si no la recordas" 
+            <label htmlFor="landing-patente">
+              Patente del auto <span className="al-required">*</span>
+            </label>
+            <input
+              id="landing-patente"
+              name="patente"
+              type="text"
+              placeholder="O ingresa el modelo si no la recordas"
+              required
             />
           </div>
 
@@ -94,7 +121,7 @@ export default function FormSection({ content }: FormSectionProps) {
           <BrandButton type="submit" showArrow={false}>
             Unirme a la lista
           </BrandButton>
-          
+
           <p className="al-form-microcopy">{content.microcopy}</p>
         </form>
       </BrandCard>
