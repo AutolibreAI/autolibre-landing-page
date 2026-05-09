@@ -232,7 +232,7 @@ export const landingPageContent: LandingPageContent = {
       },
     },
     footer: {
-      closingPhrase: "Tu auto es tuyo. La informacion tambien.",
+      closingPhrase: "Tu auto es tuyo. La información también.",
       legalLabel: "AUTO LIBRE",
       legalLinks: [
         { label: "Terminos", href: "#" },
