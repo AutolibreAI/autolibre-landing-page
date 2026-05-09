@@ -111,7 +111,7 @@ export const landingPageContent: LandingPageContent = {
         {
           id: "feature-01",
           icon: "brain",
-          title: "Diagnostico con IA",
+          title: "Diagnóstico con IA",
           description: "Entendé qué le pasa a tu auto sin ser mecánico. La IA traduce códigos técnicos a explicaciones claras.",
         },
         {
@@ -130,7 +130,7 @@ export const landingPageContent: LandingPageContent = {
         {
           id: "feature-04",
           icon: "clipboard",
-          title: "Gestion de tramites",
+          title: "Gestión de tramites",
           description: "VTV/RTO, seguro, patente y service. Todo organizado en un solo lugar y con recordatorio automático.",
         },
       ],
