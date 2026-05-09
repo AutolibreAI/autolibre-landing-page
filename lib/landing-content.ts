@@ -21,7 +21,7 @@ export const landingPageContent: LandingPageContent = {
         label: "Conocer más",
         href: "#problem",
       },
-      socialProof: "Mas de 490 conductores ya se sumaron a la lista de espera.",
+      socialProof: "Más de 490 conductores ya se sumaron a la lista de espera.",
     },
     form: {
       tag: "EARLY ACCESS",
