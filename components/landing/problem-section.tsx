@@ -1,4 +1,4 @@
-import { Plug, AlertTriangle } from "lucide-react";
+import { Plug, AlertTriangle, Banknote } from "lucide-react";
 import type { LandingPageContent } from "@/lib/landing-types";
 import BrandHeading from "@/components/landing/brand-heading";
 
@@ -9,6 +9,7 @@ type ProblemSectionProps = {
 const iconMap: Record<string, React.ReactNode> = {
   plug: <Plug size={24} aria-hidden />,
   alert: <AlertTriangle size={24} aria-hidden />,
+  wallet: <Banknote size={24} aria-hidden />,
 };
 
 export default function ProblemSection({ content }: ProblemSectionProps) {
