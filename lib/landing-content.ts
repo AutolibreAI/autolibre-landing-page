@@ -93,7 +93,7 @@ export const landingPageContent: LandingPageContent = {
         },
         {
           id: "problem-02",
-          text: "Antes esperabas que algo se rompiera. Ahora lo sabes antes.",
+          text: "Antes esperabas que algo se rompiera. Ahora lo sabés antes.",
           icon: "alert",
         },
         {
