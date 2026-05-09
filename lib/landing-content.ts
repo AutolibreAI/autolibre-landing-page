@@ -26,7 +26,7 @@ export const landingPageContent: LandingPageContent = {
     form: {
       tag: "EARLY ACCESS",
       heading: "Accede primero a",
-      headingHighlight: "AutoLibreAI",
+      headingHighlight: "Auto Libre",
       benefits: [
         { id: "benefit-01", text: "Acceso anticipado al lanzamiento." },
         { id: "benefit-02", text: "Precio fundador, bloqueado para siempre." },
