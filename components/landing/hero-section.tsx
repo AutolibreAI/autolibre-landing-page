@@ -1,20 +1,21 @@
 "use client";
+
 import Link from "next/link";
-import Image from "next/image";
-import { useMemo, useState } from "react";
-import { Sparkles, Zap } from "lucide-react";
+import { useMemo } from "react";
 import type { LandingPageContent } from "@/lib/landing-types";
 import BrandButton from "@/components/landing/brand-button";
 import BrandHeading from "@/components/landing/brand-heading";
-import BrandCard from "@/components/landing/brand-card";
+
 type HeroSectionProps = {
   readonly content: LandingPageContent["sections"]["hero"];
 };
+
 export default function HeroSection({ content }: HeroSectionProps) {
-  const [isHeroImageMissing, setIsHeroImageMissing] = useState<boolean>(false);
-  const initials = useMemo((): readonly string[] => ["MR", "CA", "LF", "AG", "+496"], []);
+  const initials = useMemo((): readonly string[] => ["MR", "CA", "LF", "AG", "+96"], []);
+
   return (
-    <div className="al-hero-grid">
+    <div className="al-hero-split">
+      {/* Left column — copy */}
       <div className="al-hero-copy">
         <BrandHeading
           eyebrow={content.eyebrow}
@@ -22,7 +23,8 @@ export default function HeroSection({ content }: HeroSectionProps) {
           highlight={content.headingLineTwo}
           description={content.description}
         />
-        <div className="al-hero-actions">
+
+        <div className="al-hero-actions al-hero-actions--left">
           <BrandButton asChild>
             <Link href={content.mainAction.href}>{content.mainAction.label}</Link>
           </BrandButton>
@@ -30,6 +32,7 @@ export default function HeroSection({ content }: HeroSectionProps) {
             <Link href={content.secondaryAction.href}>{content.secondaryAction.label}</Link>
           </BrandButton>
         </div>
+
         <div className="al-proof">
           <div className="al-proof-stack">
             {initials.map((initial, index) => (
@@ -41,28 +44,21 @@ export default function HeroSection({ content }: HeroSectionProps) {
           <p>{content.socialProof}</p>
         </div>
       </div>
-      <div className="al-hero-preview">
-        <BrandCard>
-          <div className="al-preview-header">
-            <span>Vista previa app</span>
-            <Sparkles size={14} aria-hidden />
-          </div>
-          {!isHeroImageMissing ? (
-            <Image
-              className="al-preview-image"
-              src="/landing/app-preview.svg"
-              alt="Vista previa de AutoLibreAI en smartphone"
-              width={880}
-              height={560}
-              onError={() => setIsHeroImageMissing(true)}
-            />
-          ) : (
-            <div className="al-preview-fallback">
-              <Zap size={20} aria-hidden />
-              <p>Vista previa disponible en la siguiente iteracion de assets.</p>
-            </div>
-          )}
-        </BrandCard>
+
+      {/* Right column — app preview video */}
+      <div className="al-hero-preview" aria-hidden="true">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="al-preview-video"
+          poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+        >
+          <source src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/preview-GTLBdiPC9BkM8zyEbUHg0n9ejTKiUo.mp4" type="video/mp4" />
+          Tu navegador no soporta videos HTML5.
+        </video>
+        <div className="al-preview-glow" />
       </div>
     </div>
   );
