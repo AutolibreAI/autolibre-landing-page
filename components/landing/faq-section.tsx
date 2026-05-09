@@ -77,7 +77,7 @@ export default function FAQSection({ content }: FAQSectionProps) {
               </>
             ) : (
               <>
-                Ver mas
+                Ver más
                 <ChevronDown size={16} aria-hidden />
               </>
             )}
