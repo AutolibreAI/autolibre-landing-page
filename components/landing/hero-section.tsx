@@ -43,7 +43,7 @@ const APP_PREVIEW_ITEMS = [
 ] as const;
 
 export default function HeroSection({ content }: HeroSectionProps) {
-  const initials = useMemo((): readonly string[] => ["MR", "CA", "LF", "AG", "+496"], []);
+  const initials = useMemo((): readonly string[] => ["MR", "CA", "LF", "AG", "+96"], []);
 
   return (
     <div className="al-hero-split">
