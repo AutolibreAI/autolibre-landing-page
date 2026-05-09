@@ -76,13 +76,13 @@ export default function FormSection({ content }: FormSectionProps) {
           {reason === "Otra" && (
             <div className="al-form-field">
               <label htmlFor="landing-reason-other">
-                Contanos mas
+                Contanos más
               </label>
               <input
                 id="landing-reason-other"
                 name="reason_other"
                 type="text"
-                placeholder="Cuentanos que te trajo hasta aca"
+                placeholder="¿Qué te trajo hasta acá?"
               />
             </div>
           )}
