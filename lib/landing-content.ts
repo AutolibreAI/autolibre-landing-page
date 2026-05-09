@@ -28,11 +28,11 @@ export const landingPageContent: LandingPageContent = {
       heading: "Accede primero a",
       headingHighlight: "AutoLibreAI",
       benefits: [
-        { id: "benefit-01", text: "Diagnostico inteligente en lenguaje simple." },
-        { id: "benefit-02", text: "Alertas proactivas de VTV, seguro y patente." },
-        { id: "benefit-03", text: "Comparacion guiada de repuestos y servicios." },
-        { id: "benefit-04", text: "Notificaciones cuando te toca un mantenimiento." },
-        { id: "benefit-05", text: "Canal preferencial para usuarios early adopters." },
+        { id: "benefit-01", text: "Acceso anticipado al lanzamiento." },
+        { id: "benefit-02", text: "Precio fundador, bloqueado para siempre." },
+        { id: "benefit-03", text: "Tus sugerencias entran directo al roadmap." },
+        { id: "benefit-04", text: "Soporte prioritario con el equipo." },
+        { id: "benefit-05", text: "Acceso exclusivo a funciones en beta." },
       ],
       microcopy: "Sin spam. Solo tu auto, cuando este listo.",
       reasonOptions: [
