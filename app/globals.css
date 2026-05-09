@@ -697,58 +697,47 @@ body {
   color: var(--al-cyan);
 }
 
-.al-form-toggle {
-  padding: 0.5rem 0;
-}
-
-.al-toggle-label {
+.al-form-checkbox {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  cursor: pointer;
+  gap: 0.6rem;
+  padding: 0.25rem 0;
 }
 
-.al-toggle-text {
-  font-size: 0.8rem;
-  color: rgba(242, 244, 247, 0.85);
-}
-
-.al-toggle-switch {
-  position: relative;
-  width: 2.75rem;
-  height: 1.5rem;
-  border-radius: 999px;
+.al-checkbox-input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  border-radius: 0.25rem;
   border: 1px solid var(--al-border-soft);
   background: rgba(7, 11, 16, 0.8);
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  position: relative;
 }
 
-.al-toggle-switch.al-toggle-active {
-  background: rgba(0, 255, 255, 0.2);
-  border-color: rgba(0, 255, 255, 0.5);
-}
-
-.al-toggle-thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: calc(1.5rem - 6px);
-  height: calc(1.5rem - 6px);
-  border-radius: 999px;
-  background: var(--al-text-muted);
-  transition: transform 0.2s ease, background 0.2s ease;
-}
-
-.al-toggle-active .al-toggle-thumb {
-  transform: translateX(1.25rem);
+.al-checkbox-input:checked {
   background: var(--al-cyan);
+  border-color: var(--al-cyan);
 }
 
-.al-toggle-value {
+.al-checkbox-input:checked::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 5l3.5 3.5L11 1' stroke='%23070b10' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 70%;
+}
+
+.al-checkbox-label {
   font-size: 0.8rem;
-  color: var(--al-text-muted);
-  min-width: 1.5rem;
+  color: rgba(242, 244, 247, 0.85);
+  cursor: pointer;
+  line-height: 1.4;
 }
 
 .al-form-microcopy {

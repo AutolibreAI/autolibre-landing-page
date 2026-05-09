@@ -100,20 +100,17 @@ export default function FormSection({ content }: FormSectionProps) {
             />
           </div>
 
-          <div className="al-form-toggle">
-            <label htmlFor="landing-scanner" className="al-toggle-label">
-              <span className="al-toggle-text">Te interesa comprar escaner?</span>
-              <button
-                type="button"
-                id="landing-scanner"
-                role="switch"
-                aria-checked={wantsScanner}
-                className={`al-toggle-switch ${wantsScanner ? "al-toggle-active" : ""}`}
-                onClick={() => setWantsScanner(!wantsScanner)}
-              >
-                <span className="al-toggle-thumb" />
-              </button>
-              <span className="al-toggle-value">{wantsScanner ? "Si" : "No"}</span>
+          <div className="al-form-checkbox">
+            <input
+              type="checkbox"
+              id="landing-scanner"
+              name="scanner"
+              checked={wantsScanner}
+              onChange={(e) => setWantsScanner(e.target.checked)}
+              className="al-checkbox-input"
+            />
+            <label htmlFor="landing-scanner" className="al-checkbox-label">
+              ¿Te interesa comprar un escáner?
             </label>
           </div>
 
