@@ -119,7 +119,7 @@ export const landingPageContent: LandingPageContent = {
           icon: "history",
           title: "Historial digital del auto",
           description: "Todos tus servicios, reparaciones y eventos en un solo lugar. Nada se pierde, todo queda registrado.",
-          
+
         },
         {
           id: "feature-03",
