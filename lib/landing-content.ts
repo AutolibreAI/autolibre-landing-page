@@ -124,7 +124,7 @@ export const landingPageContent: LandingPageContent = {
           id: "feature-03",
           icon: "bell",
           title: "Alertas proactivas",
-          description: "Tu auto te habla antes de que algo falle. Recibís alertas tempranas de fallas mecánicas y mantenimiento, antes de que se conviertan en un problema caro.",
+          description: "Tu auto te habla antes de que algo falle. Recibí alertas tempranas, antes de que se conviertan en un problema caro.",
         },
         {
           id: "feature-04",
