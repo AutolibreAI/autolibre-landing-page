@@ -88,7 +88,7 @@ export const landingPageContent: LandingPageContent = {
       items: [
         {
           id: "problem-01",
-          text: "El puerto OBD-II esta en tu auto desde 1996. Nunca fue pensado para que vos lo usaras.",
+          text: "El puerto OBD-II está en tu auto desde 1996. Nunca fue pensado para que vos lo usaras.",
           icon: "plug",
         },
         {
@@ -98,7 +98,7 @@ export const landingPageContent: LandingPageContent = {
         },
         {
           id: "problem-03",
-          text: "Pagaste de mas porque no sabias. La informacion tambien es ahorro.",
+          text: "Pagaste de más porque no sabias. La informacion tambien es ahorro.",
           icon: "wallet",
         },
       ],
