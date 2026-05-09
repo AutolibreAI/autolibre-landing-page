@@ -235,7 +235,7 @@ export const landingPageContent: LandingPageContent = {
       closingPhrase: "Tu auto es tuyo. La información también.",
       legalLabel: "AUTO LIBRE",
       legalLinks: [
-        { label: "Terminos", href: "#" },
+        { label: "TyC", href: "#" },
         { label: "Privacidad", href: "#" },
       ],
       socialLinks: [
