@@ -101,9 +101,6 @@ export default function FormSection({ content }: FormSectionProps) {
           </div>
 
           <div className="al-form-checkbox">
-            <label htmlFor="landing-scanner" className="al-checkbox-label">
-              ¿Te interesa comprar un escáner?
-            </label>
             <input
               type="checkbox"
               id="landing-scanner"
@@ -112,6 +109,9 @@ export default function FormSection({ content }: FormSectionProps) {
               onChange={(e) => setWantsScanner(e.target.checked)}
               className="al-checkbox-input"
             />
+            <label htmlFor="landing-scanner" className="al-checkbox-label">
+              ¿Te interesa comprar un escáner?
+            </label>
           </div>
 
           <BrandButton type="submit" showArrow={false}>
