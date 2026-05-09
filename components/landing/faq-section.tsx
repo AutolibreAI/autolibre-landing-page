@@ -77,7 +77,7 @@ export default function FAQSection({ content }: FAQSectionProps) {
               </>
             ) : (
               <>
-                Ver mas ({content.items.length - INITIAL_VISIBLE} preguntas mas)
+                Ver mas
                 <ChevronDown size={16} aria-hidden />
               </>
             )}
