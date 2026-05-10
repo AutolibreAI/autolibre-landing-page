@@ -11,7 +11,10 @@ type HeroSectionProps = {
 };
 
 export default function HeroSection({ content }: HeroSectionProps) {
-  const initials = useMemo((): readonly string[] => ["MR", "CA", "LF", "AG", "+96"], []);
+  const initials = useMemo(
+    (): readonly string[] => ["MR", "CA", "LF", "AG", "+96"],
+    [],
+  );
 
   return (
     <div className="al-hero-split">
@@ -26,10 +29,14 @@ export default function HeroSection({ content }: HeroSectionProps) {
 
         <div className="al-hero-actions al-hero-actions--left">
           <BrandButton asChild>
-            <Link href={content.mainAction.href}>{content.mainAction.label}</Link>
+            <Link href={content.mainAction.href}>
+              {content.mainAction.label}
+            </Link>
           </BrandButton>
           <BrandButton asChild className="al-button-secondary">
-            <Link href={content.secondaryAction.href}>{content.secondaryAction.label}</Link>
+            <Link href={content.secondaryAction.href}>
+              {content.secondaryAction.label}
+            </Link>
           </BrandButton>
         </div>
 

@@ -121,9 +121,11 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
     @apply font-sans;
   }
@@ -170,12 +172,10 @@ body {
   box-sizing: border-box;
   -webkit-backdrop-filter: blur(12px) saturate(120%);
   backdrop-filter: blur(12px) saturate(120%);
-  background: linear-gradient(
-    180deg,
-    rgba(9, 12, 18, 0.9) 0%,
-    rgba(9, 12, 18, 0.78) 65%,
-    rgba(9, 12, 18, 0) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(9, 12, 18, 0.9) 0%,
+      rgba(9, 12, 18, 0.78) 65%,
+      rgba(9, 12, 18, 0) 100%);
 }
 
 .al-container {
@@ -190,7 +190,8 @@ body {
 .al-section-hero {
   min-height: 100dvh;
   display: flex;
-  align-items: center;
+  align-items: start;
+  justify-items: center;
 }
 
 .al-section-form {
@@ -224,11 +225,9 @@ body {
   border-radius: 0.9rem;
   -webkit-backdrop-filter: blur(14px) saturate(130%);
   backdrop-filter: blur(14px) saturate(130%);
-  background: linear-gradient(
-    180deg,
-    rgba(10, 16, 24, 0.34) 0%,
-    rgba(10, 16, 24, 0.24) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(10, 16, 24, 0.34) 0%,
+      rgba(10, 16, 24, 0.24) 100%);
   box-shadow:
     0 8px 30px rgba(0, 0, 0, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -305,7 +304,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  pt: 2rem;
+  /* pt: 2rem; */
 }
 
 .al-preview-image {
@@ -397,14 +396,14 @@ body {
   align-self: flex-end;
   background: rgba(0, 255, 255, 0.12);
   border: 1px solid rgba(0, 255, 255, 0.2);
-  color: rgba(255,255,255,0.85);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .al-preview-chat-bubble--ai {
   align-self: flex-start;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .al-preview-ai-label {
@@ -568,7 +567,6 @@ body {
   max-height: 24rem;
   object-fit: cover;
   border-radius: 0.8rem;
-  border: 1px solid rgba(0, 255, 255, 0.2);
 }
 
 .al-preview-fallback {
@@ -629,7 +627,7 @@ body {
   color: rgba(242, 244, 247, 0.85);
 }
 
-.al-signup-form input,
+.al-signup-form input:not(.reasonOption),
 .al-signup-form select {
   min-height: 2.8rem;
   border-radius: 0.7rem;
@@ -1262,10 +1260,14 @@ body {
 }
 
 @keyframes al-chat-bounce {
-  0%, 80%, 100% {
+
+  0%,
+  80%,
+  100% {
     transform: scale(0);
     opacity: 0.5;
   }
+
   40% {
     transform: scale(1);
     opacity: 1;

@@ -16,10 +16,13 @@ export default function Home() {
         <header className="al-nav">
           <div className="al-nav-brand">
             <span className="al-nav-icon">
-              <Zap size={12} aria-hidden />
+              {/* <Zap size={12} aria-hidden /> */}
+              <img src="/autolibre-favicon.png" alt="" />
             </span>
             <strong>{landingPageContent.brand.name}</strong>
-            <span className="al-nav-badge">{landingPageContent.brand.badge}</span>
+            <span className="al-nav-badge">
+              {landingPageContent.brand.badge}
+            </span>
           </div>
           <nav className="al-nav-links" aria-label="Navegacion principal">
             <Link href="#hero">Inicio</Link>
@@ -49,8 +52,11 @@ export default function Home() {
         </SectionContainer>
       </main>
 
-      <LandingFooter brand={landingPageContent.brand} content={landingPageContent.sections.footer} />
-      
+      <LandingFooter
+        brand={landingPageContent.brand}
+        content={landingPageContent.sections.footer}
+      />
+
       <AIChatFab config={landingPageContent.sections.chat} />
     </div>
   );
