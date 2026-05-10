@@ -84,7 +84,7 @@ export const landingPageContent: LandingPageContent = {
     problem: {
       tag: "EL PROBLEMA",
       heading: "Tu auto tiene datos.",
-      headingHighlight: "Nunca fueron tuyos.",
+      headingHighlight: "Ahora son accesibles.",
       items: [
         {
           id: "problem-01",
