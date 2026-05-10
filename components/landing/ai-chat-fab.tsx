@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { X, Send, Zap } from "lucide-react";
+import { Brain, X, Send, Zap } from "lucide-react";
 import type { LandingPageContent } from "@/lib/landing-types";
 
 type AIChatFabProps = {
@@ -13,25 +13,6 @@ type Message = {
   role: "user" | "assistant";
   content: string;
 };
-
-const BrainChatIcon = ({ size = 24 }: { size?: number }) => (
-  <svg
-    viewBox="0 0 24 24"
-    width={size}
-    height={size}
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    {/* Chat bubble */}
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    {/* Brain */}
-    <path d="M9 10c0-.5.5-1 1-1m2 0c.5 0 1 .5 1 1m-1 3c-.5 0-1-.5-1-1m2 0c.5 0 1 .5 1 1" />
-    <path d="M10 9c0-.5.5-1 1-1s1 .5 1 1" />
-  </svg>
-);
 
 export default function AIChatFab({ config }: AIChatFabProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -88,7 +69,7 @@ export default function AIChatFab({ config }: AIChatFabProps) {
         aria-label={isOpen ? "Cerrar chat" : config.fabTooltip}
         title={config.fabTooltip}
       >
-        {isOpen ? <X size={24} aria-hidden /> : <BrainChatIcon size={24} />}
+        {isOpen ? <X size={24} aria-hidden /> : <Brain size={24} aria-hidden />}
       </button>
 
       {/* Chat Panel */}
