@@ -698,9 +698,9 @@ body {
 }
 
 .al-reason-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
   margin-top: 0.25rem;
 }
 
@@ -709,10 +709,10 @@ body {
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: rgba(242, 244, 247, 0.85);
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.4rem;
   border: 1px solid var(--al-border-soft);
   background: rgba(7, 11, 16, 0.5);
   transition: border-color 0.15s ease, background 0.15s ease;
