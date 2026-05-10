@@ -204,7 +204,7 @@ export const landingPageContent: LandingPageContent = {
     finalCta: {
       heading: "El futuro de gestionar tu auto",
       headingHighlight: "empieza ahora",
-      description: "Sumate a la lista de acceso temprano y recibi novedades primero.",
+      description: "Sumate a la lista de Early Access y recibi novedades primero.",
       action: {
         label: "Reservar mi lugar",
         href: "#form-section",
