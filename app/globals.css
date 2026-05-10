@@ -715,6 +715,31 @@ body {
   background: rgba(0, 255, 255, 0.06);
 }
 
+.al-form-field-nested {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  margin-top: 0.5rem;
+  margin-left: 0;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.85rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--al-border-soft);
+  background: rgba(7, 11, 16, 0.6);
+  color: var(--al-text-main);
+  transition: border-color 0.15s ease;
+}
+
+.al-form-field-nested:focus {
+  outline: none;
+  border-color: rgba(0, 255, 255, 0.4);
+  background: rgba(7, 11, 16, 0.8);
+}
+
+.al-form-field-nested::placeholder {
+  color: var(--al-text-muted);
+}
+
 .al-form-checkbox {
   display: flex;
   align-items: center;

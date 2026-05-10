@@ -71,12 +71,6 @@ export default function FormSection({ content }: FormSectionProps) {
           </div>
 
           {/* Optional fields */}
-          <div className="al-form-row">
-            <div className="al-form-field">
-              <label htmlFor="landing-whatsapp">WhatsApp</label>
-              <input id="landing-whatsapp" name="whatsapp" type="tel" placeholder="+54 11 1234 5678" />
-            </div>
-          </div>
 
           <div className="al-form-field">
             <label>
@@ -84,29 +78,29 @@ export default function FormSection({ content }: FormSectionProps) {
             </label>
             <div className="al-reason-group">
               {content.reasonOptions.map((option) => (
-                <label key={option} className="al-reason-option">
-                  <input
-                    type="checkbox"
-                    name="reason"
-                    value={option}
-                    checked={reasons.includes(option)}
-                    onChange={() => toggleReason(option)}
-                    className="al-checkbox-input"
-                  />
-                  <span>{option}</span>
-                </label>
+                <div key={option}>
+                  <label className="al-reason-option">
+                    <input
+                      type="checkbox"
+                      name="reason"
+                      value={option}
+                      checked={reasons.includes(option)}
+                      onChange={() => toggleReason(option)}
+                      className="al-checkbox-input"
+                    />
+                    <span>{option}</span>
+                  </label>
+                  {option === "Otra" && reasons.includes("Otra") && (
+                    <input
+                      name="reason_other"
+                      type="text"
+                      placeholder="¿Qué te trajo hasta acá?"
+                      className="al-form-field-nested"
+                    />
+                  )}
+                </div>
               ))}
             </div>
-          </div>
-
-          <div className="al-form-field">
-            <label htmlFor="landing-reason-other">Contanos más</label>
-            <input
-              id="landing-reason-other"
-              name="reason_other"
-              type="text"
-              placeholder="¿Qué te trajo hasta acá?"
-            />
           </div>
 
           <div className="al-form-field">
