@@ -1,10 +1,19 @@
-import { Brain, History, Bell, ClipboardList } from "lucide-react";
-import type { LandingPageContent } from "@/lib/landing-types";
-import BrandHeading from "@/components/landing/brand-heading";
 import BrandCard from "@/components/landing/brand-card";
+import BrandHeading from "@/components/landing/brand-heading";
+import { Bell, Brain, ClipboardList, History } from "lucide-react";
 
 type FeaturesSectionProps = {
-  readonly content: LandingPageContent["sections"]["features"];
+  readonly content: {
+    tag: string;
+    heading: string;
+    headingHighlight: string;
+    items: Array<{
+      id: string;
+      icon: string;
+      title: string;
+      description: string;
+    }>;
+  };
 };
 
 const iconMap: Record<string, React.ReactNode> = {
