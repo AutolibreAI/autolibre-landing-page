@@ -99,17 +99,15 @@ export default function FormSection({ content }: FormSectionProps) {
             </div>
           </div>
 
-          {reasons.includes("Otra") && (
-            <div className="al-form-field">
-              <label htmlFor="landing-reason-other">Contanos más</label>
-              <input
-                id="landing-reason-other"
-                name="reason_other"
-                type="text"
-                placeholder="¿Qué te trajo hasta acá?"
-              />
-            </div>
-          )}
+          <div className="al-form-field">
+            <label htmlFor="landing-reason-other">Contanos más</label>
+            <input
+              id="landing-reason-other"
+              name="reason_other"
+              type="text"
+              placeholder="¿Qué te trajo hasta acá?"
+            />
+          </div>
 
           <div className="al-form-field">
             <label htmlFor="landing-patente">
