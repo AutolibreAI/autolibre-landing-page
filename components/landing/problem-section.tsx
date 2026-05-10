@@ -1,16 +1,17 @@
 import { Brain, History, Bell, ClipboardList } from "lucide-react";
 import type { LandingPageContent } from "@/lib/landing-types";
 import BrandHeading from "@/components/landing/brand-heading";
+import BrandCard from "@/components/landing/brand-card";
 
 type ProblemSectionProps = {
   readonly content: LandingPageContent["sections"]["problem"];
 };
 
 const iconMap: Record<string, React.ReactNode> = {
-  brain: <Brain size={24} aria-hidden />,
-  history: <History size={24} aria-hidden />,
-  bell: <Bell size={24} aria-hidden />,
-  clipboard: <ClipboardList size={24} aria-hidden />,
+  brain: <Brain size={28} aria-hidden />,
+  history: <History size={28} aria-hidden />,
+  bell: <Bell size={28} aria-hidden />,
+  clipboard: <ClipboardList size={28} aria-hidden />,
 };
 
 export default function ProblemSection({ content }: ProblemSectionProps) {
@@ -25,21 +26,19 @@ export default function ProblemSection({ content }: ProblemSectionProps) {
 
       <p className="al-problem-description">{content.description}</p>
 
-      <h3 className="al-problem-subheading">{content.subheading}</h3>
+      <p className="al-problem-subtitle">{content.subheading}</p>
 
-      <ul className="al-problem-list">
+      <div className="al-features-grid">
         {content.items.map((item) => (
-          <li key={item.id} className="al-problem-item">
-            <span className="al-problem-icon">
-              {iconMap[item.icon] || <Brain size={24} aria-hidden />}
+          <BrandCard key={item.id} className="al-feature-card">
+            <span className="al-feature-icon">
+              {iconMap[item.icon] || <Brain size={28} aria-hidden />}
             </span>
-            <div className="al-problem-item-content">
-              <strong>{item.title}</strong>
-              <span> — {item.text}</span>
-            </div>
-          </li>
+            <h3>{item.title}</h3>
+            <p>{item.text}</p>
+          </BrandCard>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

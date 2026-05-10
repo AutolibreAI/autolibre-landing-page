@@ -752,72 +752,28 @@ body {
    ======================================== */
 
 .al-problem-content {
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
   text-align: center;
 }
 
 .al-problem-description {
-  margin: 1.5rem 0 2.5rem;
+  margin: 1.5rem auto 2rem;
+  max-width: 700px;
   font-size: 1.1rem;
   line-height: 1.7;
   color: var(--al-text-muted);
   text-align: center;
 }
 
-.al-problem-subheading {
+.al-problem-subtitle {
   margin: 0 0 1.5rem;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--al-cyan);
-  text-align: center;
-}
-
-.al-problem-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 1rem;
-}
-
-.al-problem-item {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  border-radius: 0.75rem;
-  border: 1px solid rgba(0, 255, 255, 0.15);
-  background: rgba(0, 255, 255, 0.03);
-  text-align: left;
-}
-
-.al-problem-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 0.5rem;
-  background: rgba(0, 255, 255, 0.1);
-  color: var(--al-cyan);
-  flex-shrink: 0;
-}
-
-.al-problem-item-content {
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: var(--al-text-main);
-}
-
-.al-problem-item-content strong {
-  color: var(--al-text-main);
-  font-weight: 600;
-}
-
-.al-problem-item-content span {
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--al-text-muted);
+  text-align: center;
 }
 
 /* ========================================
