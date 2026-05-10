@@ -121,28 +121,28 @@ export const landingPageContent: LandingPageContent = {
       items: [
         {
           id: "faq-01",
+          question: "¿Qué es AutoLibre?",
+          answer: "AutoLibre es el asistente inteligente que entiende lo que le pasa a tu auto. Podés describir cualquier síntoma —un ruido raro, una luz en el tablero, algo que no se siente bien— y la IA te explica qué puede estar pasando y si necesitás ir a un taller. Si además conectás un escáner OBD-II, accede directamente a los datos del vehículo para un diagnóstico aún más preciso. También te ayuda a gestionar todos tus trámites obligatorios —VTV, seguro, patente y servicios— para que nunca más tengas que adivinar cuándo actuar.",
+        },
+        {
+          id: "faq-02",
           question: "¿Cuánto cuesta AutoLibre? ¿Hay versión gratuita?",
           answer: "Auto Libre está en su etapa de lanzamiento y es completamente gratis para los primeros usuarios. Los precios para nuevos usuarios se definirán más adelante.",
         },
         {
-          id: "faq-02",
+          id: "faq-03",
           question: "¿Para qué tipo de usuario está pensado?",
           answer: "Para dos perfiles principales: el dueño de un auto que alguna vez no supo qué le pasaba, cuanto salía o donde llevarlo, y quién gestiona una pequeña flota familiar o empresarial y necesita mantener el control de vencimientos y estado de varios vehículos.",
         },
         {
-          id: "faq-03",
+          id: "faq-04",
           question: "¿Funciona con cualquier auto?",
           answer: "La app funciona con cualquier auto. El diagnóstico por OBD-II requiere un escáner y un auto de 1996 o más nuevo — que es la gran mayoría. ¿Tenés dudas sobre tu modelo? Preguntale al chat.",
         },
         {
-          id: "faq-04",
+          id: "faq-05",
           question: "¿Por qué es diferente a otras apps de diagnóstico?",
           answer: "Las apps tradicionales te muestran el código de error, pero ahí terminan. Auto Libre va varios pasos más: diagnóstico por síntomas (sin necesitar ningún dispositivo), diagnóstico por OBD-II con explicación en lenguaje claro, y gestión de trámites centralizada con recordatorios automáticos.",
-        },
-        {
-          id: "faq-05",
-          question: "¿Qué es AutoLibre?",
-          answer: "AutoLibre es el asistente inteligente que entiende lo que le pasa a tu auto. Podés describir cualquier síntoma —un ruido raro, una luz en el tablero, algo que no se siente bien— y la IA te explica qué puede estar pasando y si necesitás ir a un taller. Si además conectás un escáner OBD-II, accede directamente a los datos del vehículo para un diagnóstico aún más preciso. También te ayuda a gestionar todos tus trámites obligatorios —VTV, seguro, patente y servicios— para que nunca más tengas que adivinar cuándo actuar.",
         },
         {
           id: "faq-06",
