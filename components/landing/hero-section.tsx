@@ -46,13 +46,12 @@ export default function HeroSection({ content }: HeroSectionProps) {
       </div>
 
       {/* Right column — app preview image */}
-      <div className="al-hero-preview" aria-hidden="true">
-        <img
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/app%20sin%20fondo%20HD.png-den0XAYw6LBc5IeDq0PPsTFQaL9FM1.jpeg"
-          alt=""
-          className="al-preview-image"
-        />
-      </div>
+      <img
+        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/app%20sin%20fondo%20HD.png-den0XAYw6LBc5IeDq0PPsTFQaL9FM1.jpeg"
+        alt=""
+        className="al-preview-image"
+        aria-hidden="true"
+      />
     </div>
   );
 }
