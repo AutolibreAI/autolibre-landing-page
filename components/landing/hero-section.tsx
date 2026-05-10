@@ -45,19 +45,13 @@ export default function HeroSection({ content }: HeroSectionProps) {
         </div>
       </div>
 
-      {/* Right column — app preview video */}
+      {/* Right column — app preview image */}
       <div className="al-hero-preview" aria-hidden="true">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="al-preview-video"
-          poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-        >
-          <source src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/preview%20%28online-video-cutter.com%29-0qC5fiF21IywFRdAHDSaX3vxb7tmTF.mp4" type="video/mp4" />
-          Tu navegador no soporta videos HTML5.
-        </video>
+        <img
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Gemini_Generated_Image_q73vixq73vixq73v%20%281%29-xOmQVlY0lpgoPWWiZErfET7sQGL3B1.png"
+          alt=""
+          className="al-preview-image"
+        />
         <div className="al-preview-glow" />
       </div>
     </div>

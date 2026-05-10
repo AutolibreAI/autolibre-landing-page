@@ -328,7 +328,7 @@ body {
   box-shadow: 0 0 40px rgba(0, 255, 255, 0.07), 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
-.al-preview-video {
+.al-preview-image {
   position: relative;
   z-index: 1;
   width: 100%;
@@ -342,7 +342,7 @@ body {
   overflow: hidden;
   box-shadow: 0 0 40px rgba(0, 255, 255, 0.07), 0 20px 60px rgba(0, 0, 0, 0.5);
   display: block;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 
