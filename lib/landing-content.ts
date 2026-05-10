@@ -122,7 +122,7 @@ export const landingPageContent: LandingPageContent = {
         {
           id: "faq-01",
           question: "¿Cuánto cuesta AutoLibre? ¿Hay versión gratuita?",
-          answer: "Auto Libre está en su etapa de lanzamiento y es completamente gratis para los primeros usuarios. Los precios para nuevos usuarios se definirán más adelante, pero quienes ya estén adentro no se verán afectados.",
+          answer: "Auto Libre está en su etapa de lanzamiento y es completamente gratis para los primeros usuarios. Los precios para nuevos usuarios se definirán más adelante.",
         },
         {
           id: "faq-02",
