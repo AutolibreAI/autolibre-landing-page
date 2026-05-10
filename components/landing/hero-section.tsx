@@ -48,7 +48,7 @@ export default function HeroSection({ content }: HeroSectionProps) {
       {/* Right column — app preview image */}
       <div className="al-hero-preview" aria-hidden="true">
         <img
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Gemini_Generated_Image_q73vixq73vixq73v%20%281%29-xOmQVlY0lpgoPWWiZErfET7sQGL3B1.png"
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/app%20sin%20fondo%20HD.png-den0XAYw6LBc5IeDq0PPsTFQaL9FM1.jpeg"
           alt=""
           className="al-preview-image"
         />
