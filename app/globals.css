@@ -332,9 +332,10 @@ body {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 240px;
+  max-width: 300px;
   display: block;
   object-fit: contain;
+  mix-blend-mode: screen;
 }
 
 .al-preview-statusbar {
