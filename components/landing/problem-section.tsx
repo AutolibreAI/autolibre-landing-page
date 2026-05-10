@@ -1,4 +1,4 @@
-import { Plug, AlertTriangle, Banknote } from "lucide-react";
+import { Brain, History, Bell, ClipboardList } from "lucide-react";
 import type { LandingPageContent } from "@/lib/landing-types";
 import BrandHeading from "@/components/landing/brand-heading";
 
@@ -7,9 +7,10 @@ type ProblemSectionProps = {
 };
 
 const iconMap: Record<string, React.ReactNode> = {
-  plug: <Plug size={24} aria-hidden />,
-  alert: <AlertTriangle size={24} aria-hidden />,
-  wallet: <Banknote size={24} aria-hidden />,
+  brain: <Brain size={24} aria-hidden />,
+  history: <History size={24} aria-hidden />,
+  bell: <Bell size={24} aria-hidden />,
+  clipboard: <ClipboardList size={24} aria-hidden />,
 };
 
 export default function ProblemSection({ content }: ProblemSectionProps) {
@@ -22,13 +23,20 @@ export default function ProblemSection({ content }: ProblemSectionProps) {
         centered
       />
 
+      <p className="al-problem-description">{content.description}</p>
+
+      <h3 className="al-problem-subheading">{content.subheading}</h3>
+
       <ul className="al-problem-list">
         {content.items.map((item) => (
           <li key={item.id} className="al-problem-item">
             <span className="al-problem-icon">
-              {iconMap[item.icon] || <Plug size={24} aria-hidden />}
+              {iconMap[item.icon] || <Brain size={24} aria-hidden />}
             </span>
-            <p>{item.text}</p>
+            <div className="al-problem-item-content">
+              <strong>{item.title}</strong>
+              <span> — {item.text}</span>
+            </div>
           </li>
         ))}
       </ul>

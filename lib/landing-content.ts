@@ -82,56 +82,35 @@ export const landingPageContent: LandingPageContent = {
       ],
     },
     problem: {
-      tag: "EL PROBLEMA",
+      tag: "EL PRODUCTO",
       heading: "Tu auto tiene datos.",
       headingHighlight: "Ahora son accesibles.",
-      items: [
-        {
-          id: "problem-01",
-          text: "El puerto OBD-II está en tu auto desde 1996. Nunca fue pensado para que vos lo usaras.",
-          icon: "plug",
-        },
-        {
-          id: "problem-02",
-          text: "Antes esperabas que algo se rompiera. Ahora lo sabés antes.",
-          icon: "alert",
-        },
-        {
-          id: "problem-03",
-          text: "Pagaste de más porque no sabías. La información también es ahorro.",
-          icon: "wallet",
-        },
-      ],
-    },
-    features: {
-      tag: "QUÉ VAS A PODER HACER",
-      heading: "Todo lo que necesitás,",
-      headingHighlight: "en un solo lugar.",
+      description: "Debajo del tablero de tu auto hay un conector que nunca usaste. Se llama OBD-II y está en todos los autos desde 1996. Enchufás un escáner bluetooth, lo conectás con Auto Libre, y en segundos sabés exactamente qué está pasando adentro del motor.",
+      subheading: "¿Qué vas a poder hacer?",
       items: [
         {
           id: "feature-01",
           icon: "brain",
           title: "Diagnóstico con IA",
-          description: "Entendé qué le pasa a tu auto sin ser mecánico. La IA traduce códigos técnicos a explicaciones claras.",
+          text: "entendé qué significa cada código de error, en palabras simples",
         },
         {
           id: "feature-02",
           icon: "history",
-          title: "Historial digital del auto",
-          description: "Todos tus servicios, reparaciones y eventos en un solo lugar. Nada se pierde, todo queda registrado.",
-
+          title: "Historial digital",
+          text: "todos tus servicios y reparaciones en un solo lugar",
         },
         {
           id: "feature-03",
           icon: "bell",
-          title: "La agenda de tu auto",
-          description: "VTV, seguro, patente y service con recordatorios automáticos. Te avisamos antes de que algo falle.",
+          title: "Recordatorios automáticos",
+          text: "VTV, seguro, patente y service a tiempo",
         },
         {
           id: "feature-04",
           icon: "clipboard",
-          title: "Buscá, compará, decidí",
-          description: "Talleres y repuestos cerca tuyo, comparados por precio y reputación. Vos elegís con toda la info.",
+          title: "Talleres y repuestos",
+          text: "comparados por precio y reputación, cerca tuyo",
         },
       ],
     },

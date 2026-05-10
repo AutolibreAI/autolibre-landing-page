@@ -3,7 +3,6 @@ import { Zap } from "lucide-react";
 import HeroSection from "@/components/landing/hero-section";
 import FormSection from "@/components/landing/form-section";
 import ProblemSection from "@/components/landing/problem-section";
-import FeaturesSection from "@/components/landing/features-section";
 import FAQSection from "@/components/landing/faq-section";
 import LandingFooter from "@/components/landing/landing-footer";
 import SectionContainer from "@/components/landing/section-container";
@@ -24,7 +23,7 @@ export default function Home() {
           </div>
           <nav className="al-nav-links" aria-label="Navegacion principal">
             <Link href="#hero">Inicio</Link>
-            <Link href="#features">Producto</Link>
+            <Link href="#problem">Producto</Link>
             <Link href="#form-section">Early Access</Link>
             <Link href="#faqs">FAQs</Link>
             <Link href="#footer">Contacto</Link>
@@ -39,10 +38,6 @@ export default function Home() {
 
         <SectionContainer id="problem" className="al-section-problem">
           <ProblemSection content={landingPageContent.sections.problem} />
-        </SectionContainer>
-
-        <SectionContainer id="features" className="al-section-features">
-          <FeaturesSection content={landingPageContent.sections.features} />
         </SectionContainer>
 
         <SectionContainer id="form-section" className="al-section-form">
