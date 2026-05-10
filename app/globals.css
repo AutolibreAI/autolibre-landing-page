@@ -304,7 +304,8 @@ body {
   position: relative;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  pt: 2rem;
 }
 
 .al-preview-image {
