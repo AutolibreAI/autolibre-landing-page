@@ -14,7 +14,7 @@ export const landingPageContent: LandingPageContent = {
       description:
         "Información y diagnóstico inteligente en un solo lugar. La app que te dice qué le pasa a tu auto, cuándo hacerle el service y dónde repararlo — sin saber de mecánica.",
       mainAction: {
-        label: "Quiero acceso temprano",
+        label: "Quiero Early Access",
         href: "#form-section",
       },
       secondaryAction: {

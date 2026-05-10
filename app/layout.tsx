@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "AutoLibreAI | Coming Soon",
-  description: "Landing page oficial de AutoLibreAI para acceso temprano.",
+  description: "Landing page oficial de AutoLibreAI para Early Access.",
 };
 
 export default function RootLayout({
