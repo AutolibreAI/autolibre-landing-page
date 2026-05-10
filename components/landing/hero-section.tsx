@@ -52,7 +52,6 @@ export default function HeroSection({ content }: HeroSectionProps) {
           alt=""
           className="al-preview-image"
         />
-        <div className="al-preview-glow" />
       </div>
     </div>
   );
