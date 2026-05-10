@@ -697,6 +697,32 @@ body {
   color: var(--al-cyan);
 }
 
+.al-reason-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.al-reason-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: rgba(242, 244, 247, 0.85);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--al-border-soft);
+  background: rgba(7, 11, 16, 0.5);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.al-reason-option:has(.al-checkbox-input:checked) {
+  border-color: rgba(0, 255, 255, 0.4);
+  background: rgba(0, 255, 255, 0.06);
+}
+
 .al-form-checkbox {
   display: flex;
   align-items: center;

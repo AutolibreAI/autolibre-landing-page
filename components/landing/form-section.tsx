@@ -13,8 +13,14 @@ type FormSectionProps = {
 
 export default function FormSection({ content }: FormSectionProps) {
   const [wantsScanner, setWantsScanner] = useState(false);
-  const [reason, setReason] = useState("");
+  const [reasons, setReasons] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
+
+  function toggleReason(option: string) {
+    setReasons((prev) =>
+      prev.includes(option) ? prev.filter((r) => r !== option) : [...prev, option]
+    );
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -70,30 +76,32 @@ export default function FormSection({ content }: FormSectionProps) {
               <label htmlFor="landing-whatsapp">WhatsApp</label>
               <input id="landing-whatsapp" name="whatsapp" type="tel" placeholder="+54 11 1234 5678" />
             </div>
-            <div className="al-form-field">
-              <label htmlFor="landing-reason">
-                ¿Qué te atrajo? <span className="al-required">*</span>
-              </label>
-              <select
-                id="landing-reason"
-                name="reason"
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                required
-              >
-                <option value="" disabled>Selecciona una opcion</option>
-                {content.reasonOptions.map((option) => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
+          </div>
+
+          <div className="al-form-field">
+            <label>
+              ¿Qué te atrajo? <span className="al-required">*</span>
+            </label>
+            <div className="al-reason-group">
+              {content.reasonOptions.map((option) => (
+                <label key={option} className="al-reason-option">
+                  <input
+                    type="checkbox"
+                    name="reason"
+                    value={option}
+                    checked={reasons.includes(option)}
+                    onChange={() => toggleReason(option)}
+                    className="al-checkbox-input"
+                  />
+                  <span>{option}</span>
+                </label>
+              ))}
             </div>
           </div>
 
-          {reason === "Otra" && (
+          {reasons.includes("Otra") && (
             <div className="al-form-field">
-              <label htmlFor="landing-reason-other">
-                Contanos más
-              </label>
+              <label htmlFor="landing-reason-other">Contanos más</label>
               <input
                 id="landing-reason-other"
                 name="reason_other"
