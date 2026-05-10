@@ -768,11 +768,9 @@ body {
 
 .al-problem-subtitle {
   margin: 0 0 1.5rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--al-text-muted);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--al-cyan);
   text-align: center;
 }
 
