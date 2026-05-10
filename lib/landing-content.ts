@@ -36,8 +36,8 @@ export const landingPageContent: LandingPageContent = {
       ],
       microcopy: "Nada de ruido. Solo Auto Libre, cuando esté listo.",
       reasonOptions: [
-        "Gestion administrativa",
-        "Diagnostico con IA",
+        "Gestión administrativa",
+        "Diagnóstico con IA",
         "Marketplace",
         "Otra",
       ],
