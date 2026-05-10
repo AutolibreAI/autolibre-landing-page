@@ -816,9 +816,11 @@ body {
   justify-content: center;
   width: 3.25rem;
   height: 3.25rem;
+  margin: 0 auto;
   border-radius: 0.75rem;
   background: rgba(0, 255, 255, 0.1);
   color: var(--al-cyan);
+  flex-shrink: 0;
 }
 
 .al-feature-card h3 {
