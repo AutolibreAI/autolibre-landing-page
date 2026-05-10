@@ -103,13 +103,13 @@ export const landingPageContent: LandingPageContent = {
         {
           id: "feature-03",
           icon: "bell",
-          title: "Recordatorios automáticos",
+          title: "Recordatorios",
           text: "VTV, seguro, patente y service a tiempo",
         },
         {
           id: "feature-04",
           icon: "clipboard",
-          title: "Talleres y repuestos",
+          title: "Proveedores",
           text: "comparados por precio y reputación, cerca tuyo",
         },
       ],
