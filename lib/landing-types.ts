@@ -71,29 +71,18 @@ type FooterContent = {
 // New types for redesign
 type ProblemItem = {
   readonly id: string;
-  readonly text: string;
   readonly icon: string;
+  readonly title: string;
+  readonly text: string;
 };
 
 type ProblemSectionContent = {
   readonly tag: string;
   readonly heading: string;
   readonly headingHighlight: string;
-  readonly items: readonly ProblemItem[];
-};
-
-type FeatureCard = {
-  readonly id: string;
-  readonly icon: string;
-  readonly title: string;
   readonly description: string;
-};
-
-type FeaturesSectionContent = {
-  readonly tag: string;
-  readonly heading: string;
-  readonly headingHighlight: string;
-  readonly items: readonly FeatureCard[];
+  readonly subheading: string;
+  readonly items: readonly ProblemItem[];
 };
 
 type FAQItem = {
@@ -121,7 +110,6 @@ type LandingSections = {
   readonly form: FormSectionContent;
   readonly verticals: VerticalsSectionContent;
   readonly problem: ProblemSectionContent;
-  readonly features: FeaturesSectionContent;
   readonly faqs: FAQSectionContent;
   readonly finalCta: FinalCtaContent;
   readonly footer: FooterContent;

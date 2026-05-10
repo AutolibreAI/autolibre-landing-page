@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Zap } from "lucide-react";
+import { Brain, X, Send, Zap } from "lucide-react";
 import type { LandingPageContent } from "@/lib/landing-types";
 
 type AIChatFabProps = {
@@ -69,7 +69,7 @@ export default function AIChatFab({ config }: AIChatFabProps) {
         aria-label={isOpen ? "Cerrar chat" : config.fabTooltip}
         title={config.fabTooltip}
       >
-        {isOpen ? <X size={24} aria-hidden /> : <MessageCircle size={24} aria-hidden />}
+        {isOpen ? <X size={24} aria-hidden /> : <Brain size={24} aria-hidden />}
       </button>
 
       {/* Chat Panel */}

@@ -11,7 +11,10 @@ type HeroSectionProps = {
 };
 
 export default function HeroSection({ content }: HeroSectionProps) {
-  const initials = useMemo((): readonly string[] => ["MR", "CA", "LF", "AG", "+96"], []);
+  const initials = useMemo(
+    (): readonly string[] => ["MR", "CA", "LF", "AG", "+96"],
+    [],
+  );
 
   return (
     <div className="al-hero-split">
@@ -26,10 +29,14 @@ export default function HeroSection({ content }: HeroSectionProps) {
 
         <div className="al-hero-actions al-hero-actions--left">
           <BrandButton asChild>
-            <Link href={content.mainAction.href}>{content.mainAction.label}</Link>
+            <Link href={content.mainAction.href}>
+              {content.mainAction.label}
+            </Link>
           </BrandButton>
           <BrandButton asChild className="al-button-secondary">
-            <Link href={content.secondaryAction.href}>{content.secondaryAction.label}</Link>
+            <Link href={content.secondaryAction.href}>
+              {content.secondaryAction.label}
+            </Link>
           </BrandButton>
         </div>
 
@@ -45,20 +52,13 @@ export default function HeroSection({ content }: HeroSectionProps) {
         </div>
       </div>
 
-      {/* Right column — app preview video */}
+      {/* Right column — app preview image */}
       <div className="al-hero-preview" aria-hidden="true">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="al-preview-video"
-          poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-        >
-          <source src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/preview-GTLBdiPC9BkM8zyEbUHg0n9ejTKiUo.mp4" type="video/mp4" />
-          Tu navegador no soporta videos HTML5.
-        </video>
-        <div className="al-preview-glow" />
+        <img
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/app%20sin%20fondo%20HD.png-den0XAYw6LBc5IeDq0PPsTFQaL9FM1.jpeg"
+          alt=""
+          className="al-preview-image"
+        />
       </div>
     </div>
   );

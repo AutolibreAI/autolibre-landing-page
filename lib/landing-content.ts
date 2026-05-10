@@ -12,9 +12,9 @@ export const landingPageContent: LandingPageContent = {
       headingLineOne: "Hablá con tu auto.",
       headingLineTwo: "Muy pronto.",
       description:
-        "Información y diagnóstico inteligente en un solo lugar.",
+        "Información y diagnóstico inteligente en un solo lugar. La app que te dice qué le pasa a tu auto, cuándo hacerle el service y dónde repararlo — sin saber de mecánica.",
       mainAction: {
-        label: "Quiero acceso temprano",
+        label: "Quiero Early Access",
         href: "#form-section",
       },
       secondaryAction: {
@@ -36,8 +36,8 @@ export const landingPageContent: LandingPageContent = {
       ],
       microcopy: "Nada de ruido. Solo Auto Libre, cuando esté listo.",
       reasonOptions: [
-        "Gestion administrativa",
-        "Diagnostico con IA",
+        "Gestión administrativa",
+        "Diagnóstico con IA",
         "Marketplace",
         "Otra",
       ],
@@ -45,7 +45,7 @@ export const landingPageContent: LandingPageContent = {
     verticals: {
       tag: "PRODUCTO",
       heading: "Verticales que construyen",
-      headingHighlight: "la experiencia AutoLibre",
+      headingHighlight: "la experiencia Auto Libre",
       items: [
         {
           id: "vertical-01",
@@ -82,56 +82,35 @@ export const landingPageContent: LandingPageContent = {
       ],
     },
     problem: {
-      tag: "EL PROBLEMA",
+      tag: "EL PRODUCTO",
       heading: "Tu auto tiene datos.",
-      headingHighlight: "Nunca fueron tuyos.",
-      items: [
-        {
-          id: "problem-01",
-          text: "El puerto OBD-II está en tu auto desde 1996. Nunca fue pensado para que vos lo usaras.",
-          icon: "plug",
-        },
-        {
-          id: "problem-02",
-          text: "Antes esperabas que algo se rompiera. Ahora lo sabés antes.",
-          icon: "alert",
-        },
-        {
-          id: "problem-03",
-          text: "Pagaste de más porque no sabías. La información también es ahorro.",
-          icon: "wallet",
-        },
-      ],
-    },
-    features: {
-      tag: "QUÉ VAS A PODER HACER",
-      heading: "Todo lo que necesitás,",
-      headingHighlight: "en un solo lugar.",
+      headingHighlight: "Ahora son accesibles.",
+      description: "Debajo del tablero de tu auto hay un conector que nunca usaste. Se llama OBD-II y está en todos los autos desde 1996. Enchufás un escáner bluetooth, lo conectás con Auto Libre, y en segundos sabés exactamente qué está pasando adentro del motor.",
+      subheading: "¿Qué vas a poder hacer?",
       items: [
         {
           id: "feature-01",
           icon: "brain",
           title: "Diagnóstico con IA",
-          description: "Entendé qué le pasa a tu auto sin ser mecánico. La IA traduce códigos técnicos a explicaciones claras.",
+          text: "Entendé qué significa cada código de error.",
         },
         {
           id: "feature-02",
           icon: "history",
-          title: "Historial digital del auto",
-          description: "Todos tus servicios, reparaciones y eventos en un solo lugar. Nada se pierde, todo queda registrado.",
-
+          title: "Historial digital",
+          text: "Servicios y reparaciones en un solo lugar.",
         },
         {
           id: "feature-03",
           icon: "bell",
-          title: "La agenda de tu auto",
-          description: "VTV, seguro, patente y service con recordatorios automáticos. Te avisamos antes de que algo falle.",
+          title: "Recordatorios",
+          text: "VTV, seguro, patente y service a tiempo.",
         },
         {
           id: "feature-04",
           icon: "clipboard",
-          title: "Buscá, compará, decidí",
-          description: "Talleres y repuestos cerca tuyo, comparados por precio y reputación. Vos elegís con toda la info.",
+          title: "Proveedores",
+          text: "Comparados por precio y reputación, cerca tuyo.",
         },
       ],
     },
@@ -142,28 +121,28 @@ export const landingPageContent: LandingPageContent = {
       items: [
         {
           id: "faq-01",
-          question: "¿Cuánto cuesta AutoLibre? ¿Hay versión gratuita?",
-          answer: "Auto Libre está en su etapa de lanzamiento y es completamente gratis para los primeros usuarios. Los precios para nuevos usuarios se definirán más adelante, pero quienes ya estén adentro no se verán afectados.",
+          question: "¿Qué es Auto Libre?",
+          answer: "Auto Libre es el asistente inteligente que entiende lo que le pasa a tu auto. Podés describir cualquier síntoma —un ruido raro, una luz en el tablero, algo que no se siente bien— y la IA te explica qué puede estar pasando y si necesitás ir a un taller. Si además conectás un escáner OBD-II, accede directamente a los datos del vehículo para un diagnóstico aún más preciso. También te ayuda a gestionar todos tus trámites obligatorios —VTV, seguro, patente y servicios— para que nunca más tengas que adivinar cuándo actuar.",
         },
         {
           id: "faq-02",
+          question: "¿Cuánto cuesta Auto Libre? ¿Hay versión gratuita?",
+          answer: "Auto Libre está en su etapa de lanzamiento y es completamente gratis para los primeros usuarios. Los precios para nuevos usuarios se definirán más adelante.",
+        },
+        {
+          id: "faq-03",
           question: "¿Para qué tipo de usuario está pensado?",
           answer: "Para dos perfiles principales: el dueño de un auto que alguna vez no supo qué le pasaba, cuanto salía o donde llevarlo, y quién gestiona una pequeña flota familiar o empresarial y necesita mantener el control de vencimientos y estado de varios vehículos.",
         },
         {
-          id: "faq-03",
+          id: "faq-04",
           question: "¿Funciona con cualquier auto?",
           answer: "La app funciona con cualquier auto. El diagnóstico por OBD-II requiere un escáner y un auto de 1996 o más nuevo — que es la gran mayoría. ¿Tenés dudas sobre tu modelo? Preguntale al chat.",
         },
         {
-          id: "faq-04",
-          question: "¿Por qué es diferente a otras apps de diagnóstico?",
-          answer: "Las apps tradicionales te muestran el código de error, pero ahí terminan. Auto Libre va varios pasos más: diagnóstico por síntomas (sin necesitar ningún dispositivo), diagnóstico por OBD-II con explicación en lenguaje claro, y gestión de trámites centralizada con recordatorios automáticos.",
-        },
-        {
           id: "faq-05",
-          question: "¿Qué es AutoLibre?",
-          answer: "AutoLibre es el asistente inteligente que entiende lo que le pasa a tu auto. Podés describir cualquier síntoma —un ruido raro, una luz en el tablero, algo que no se siente bien— y la IA te explica qué puede estar pasando y si necesitás ir a un taller. Si además conectás un escáner OBD-II, accede directamente a los datos del vehículo para un diagnóstico aún más preciso. También te ayuda a gestionar todos tus trámites obligatorios —VTV, seguro, patente y servicios— para que nunca más tengas que adivinar cuándo actuar.",
+          question: "¿Por qué es diferente a otras apps de diagnóstico?",
+          answer: "Auto Libre va varios pasos más: diagnóstico por síntomas (sin necesitar ningún dispositivo), diagnóstico por OBD-II con explicación en lenguaje claro, y gestión de trámites centralizada con recordatorios automáticos.",
         },
         {
           id: "faq-06",
@@ -172,7 +151,7 @@ export const landingPageContent: LandingPageContent = {
         },
         {
           id: "faq-07",
-          question: "¿Cómo empiezo a usar AutoLibre?",
+          question: "¿Cómo empiezo a usar Auto Libre?",
           answer: "Sin escáner: descargá la app y gestioná los vencimientos y usá el diagnóstico por IA. Con escáner: conectá un OBD-II y la app accede a los datos del vehículo en tiempo real. En menos de 5 minutos ya lo tenés funcionando.",
         },
         {
@@ -202,7 +181,7 @@ export const landingPageContent: LandingPageContent = {
         },
         {
           id: "faq-13",
-          question: "¿Puedo usar AutoLibre para comprar o vender un auto usado?",
+          question: "¿Puedo usar Auto Libre para comprar o vender un auto usado?",
           answer: "Sí, y es una de las funciones más esperadas —próxima a lanzarse. Si estás comprando, Auto Libre detecta fallas ocultas e identifica si se borraron errores recientemente. Si estás vendiendo, podés generar un certificado de inspección para mostrarle al comprador.",
         },
         {
@@ -232,7 +211,7 @@ export const landingPageContent: LandingPageContent = {
       },
     },
     footer: {
-      closingPhrase: "Tu auto es tuyo. La información también.",
+      closingPhrase: "Tu auto es tuyo. Nosotros nos encargamos de todo lo demás.",
       legalLabel: "AUTO LIBRE",
       legalLinks: [
         { label: "TyC", href: "#" },
@@ -251,10 +230,10 @@ export const landingPageContent: LandingPageContent = {
       },
     },
     chat: {
-      fabTooltip: "Preguntale a AutoLibre",
-      panelTitle: "AutoLibre AI",
+      fabTooltip: "Preguntale a Auto Libre",
+      panelTitle: "Auto Libre AI",
       placeholder: "Pregunta sobre tu auto...",
-      welcomeMessage: "Hola! Soy AutoLibreAI. Puedo ayudarte con dudas sobre la app, tu auto, o cualquier consulta que tengas.",
+      welcomeMessage: "Hola! Soy Auto Libre AI. Puedo ayudarte con dudas sobre la app, tu auto, o cualquier consulta que tengas.",
     },
   },
   visualCheckpoints: [
