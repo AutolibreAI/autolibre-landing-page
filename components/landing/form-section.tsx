@@ -14,6 +14,12 @@ type FormSectionProps = {
 export default function FormSection({ content }: FormSectionProps) {
   const [wantsScanner, setWantsScanner] = useState(false);
   const [reason, setReason] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setSubmitted(true);
+  }
 
   return (
     <div className="al-form-grid">
@@ -29,9 +35,19 @@ export default function FormSection({ content }: FormSectionProps) {
         </ul>
       </div>
       <BrandCard className="al-signup-card">
+        {submitted ? (
+          <div className="al-form-success">
+            <div className="al-form-success-icon">
+              <CheckCircle2 size={40} aria-hidden />
+            </div>
+            <h3>¡Ya estás adentro!</h3>
+            <p>Te avisamos en cuanto abramos la beta. Gracias por sumarte a AutoLibre.</p>
+          </div>
+        ) : (
+        <>
         <h3>Acceso anticipado</h3>
         <p>Dejanos tus datos y te avisamos cuando abramos la beta.</p>
-        <form className="al-signup-form">
+        <form className="al-signup-form" onSubmit={handleSubmit}>
           {/* Required fields */}
           <div className="al-form-row">
             <div className="al-form-field">
@@ -120,6 +136,8 @@ export default function FormSection({ content }: FormSectionProps) {
 
           <p className="al-form-microcopy">{content.microcopy}</p>
         </form>
+        </>
+        )}
       </BrandCard>
     </div>
   );

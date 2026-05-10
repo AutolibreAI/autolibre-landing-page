@@ -747,6 +747,37 @@ body {
   text-align: center;
 }
 
+.al-form-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem 1rem;
+  gap: 1rem;
+  min-height: 260px;
+}
+
+.al-form-success-icon {
+  color: var(--al-cyan);
+  filter: drop-shadow(0 0 12px rgba(0, 255, 255, 0.5));
+}
+
+.al-form-success h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--al-text-main);
+}
+
+.al-form-success p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--al-text-muted);
+  max-width: 320px;
+}
+
 /* ========================================
    Problem Section
    ======================================== */
