@@ -142,7 +142,7 @@ export const landingPageContent: LandingPageContent = {
         {
           id: "faq-05",
           question: "¿Por qué es diferente a otras apps de diagnóstico?",
-          answer: "Auto Libre va varios pasos más: diagnóstico por síntomas (sin necesitar ningún dispositivo), diagnóstico por OBD-II con explicación en lenguaje claro, y gestión de trámites centralizada con recordatorios automáticos.",
+          answer: "A diferencia de las aplicaciones que entregan códigos técnicos complejos, Auto Libre utiliza Inteligencia Artificial para explicarte en lenguaje claro qué le sucede a tu vehículo y la gravedad de la falla. Nuestra plataforma permite diagnosticar problemas simplemente describiendo síntomas, sin necesidad de dispositivos, y centraliza toda tu gestión administrativa —como alertas de VTV, seguros y mantenimientos— en un solo lugar para anticiparse a cualquier inconveniente.",
         },
         {
           id: "faq-06",
