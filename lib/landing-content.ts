@@ -12,7 +12,7 @@ export const landingPageContent: LandingPageContent = {
       headingLineOne: "Hablá con tu auto.",
       headingLineTwo: "Muy pronto.",
       description:
-        "Información y diagnóstico inteligente en un solo lugar. La app que te dice qué le pasa a tu auto, cuándo hacerle el service y dónde repararlo — sin saber de mecánica.",
+        "Información y diagnóstico inteligente en un solo lugar. La app que te dice qué le pasa a tu auto, cuándo hacerle el service y dónde repararlo.",
       mainAction: {
         label: "Quiero Early Access",
         href: "#form-section",
@@ -21,7 +21,7 @@ export const landingPageContent: LandingPageContent = {
         label: "Conocer más",
         href: "#problem",
       },
-      socialProof: "Más de 100 conductores ya se sumaron a la lista de espera.",
+      socialProof: "Más de 100 conductores ya se sumaron.",
     },
     form: {
       tag: "EARLY ACCESS",
@@ -92,13 +92,13 @@ export const landingPageContent: LandingPageContent = {
           id: "feature-01",
           icon: "brain",
           title: "Diagnóstico con IA",
-          text: "Entendé qué significa cada código de error.",
+          text: "Entendé qué significa cada código de error y su urgencia.",
         },
         {
           id: "feature-02",
           icon: "history",
           title: "Historial digital",
-          text: "Servicios y reparaciones en un solo lugar.",
+          text: "Servicios y reparaciones centralizados en tu celular.",
         },
         {
           id: "feature-03",
@@ -137,12 +137,12 @@ export const landingPageContent: LandingPageContent = {
         {
           id: "faq-04",
           question: "¿Funciona con cualquier auto?",
-          answer: "La app funciona con cualquier auto. El diagnóstico por OBD-II requiere un escáner y un auto de 1996 o más nuevo — que es la gran mayoría. ¿Tenés dudas sobre tu modelo? Preguntale al chat.",
+          answer: "La app funciona con cualquier auto. El diagnóstico por OBD-II requiere un escáner y que tu auto tenga el puerto, si es de 1996 para adelante, es lo más probable. ¿Tenés dudas sobre tu modelo? Preguntale al chat.",
         },
         {
           id: "faq-05",
           question: "¿Por qué es diferente a otras apps de diagnóstico?",
-          answer: "Auto Libre va varios pasos más: diagnóstico por síntomas (sin necesitar ningún dispositivo), diagnóstico por OBD-II con explicación en lenguaje claro, y gestión de trámites centralizada con recordatorios automáticos.",
+          answer: "A diferencia de las aplicaciones que entregan códigos técnicos complejos, Auto Libre utiliza Inteligencia Artificial para explicarte en lenguaje claro qué le sucede a tu vehículo y la gravedad de la falla. Nuestra plataforma permite diagnosticar problemas simplemente describiendo síntomas, sin necesidad de dispositivos, y centraliza toda tu gestión administrativa —como alertas de VTV, seguros y mantenimientos— en un solo lugar para anticiparse a cualquier inconveniente.",
         },
         {
           id: "faq-06",
@@ -230,7 +230,7 @@ export const landingPageContent: LandingPageContent = {
       },
     },
     chat: {
-      fabTooltip: "Preguntale a Auto Libre",
+      fabTooltip: "Preguntale a Auto Libre AI",
       panelTitle: "Auto Libre AI",
       placeholder: "Pregunta sobre tu auto...",
       welcomeMessage: "Hola! Soy Auto Libre AI. Puedo ayudarte con dudas sobre la app, tu auto, o cualquier consulta que tengas.",

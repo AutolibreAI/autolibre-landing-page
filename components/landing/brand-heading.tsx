@@ -7,6 +7,7 @@ type BrandHeadingProps = {
   readonly eyebrow?: string;
   readonly icon?: ReactNode;
   readonly centered?: boolean;
+  readonly highlightOnNewLine?: boolean;
 };
 
 export default function BrandHeading({
@@ -16,6 +17,7 @@ export default function BrandHeading({
   eyebrow,
   icon,
   centered,
+  highlightOnNewLine = false,
 }: BrandHeadingProps) {
   return (
     <header
@@ -23,8 +25,13 @@ export default function BrandHeading({
     >
       {/* {eyebrow ? <p className="al-eyebrow">{eyebrow}</p> : null} */}
       <h2 className="al-title">
-        {title}{" "}
-        {highlight ? <span className="al-highlight">{highlight}</span> : null}
+        {title}
+        {highlight ? (
+          <>
+            {highlightOnNewLine ? <br /> : " "}
+            <span className="al-highlight">{highlight}</span>
+          </>
+        ) : null}
       </h2>
       {description ? <p className="al-description">{description}</p> : null}
       {icon ? <div className="al-heading-icon">{icon}</div> : null}

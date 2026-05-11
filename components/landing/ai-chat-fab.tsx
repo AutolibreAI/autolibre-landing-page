@@ -21,7 +21,9 @@ export default function AIChatFab({ config }: AIChatFabProps) {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [fabBottom, setFabBottom] = useState("1.5rem");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fabWrapRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -32,6 +34,32 @@ export default function AIChatFab({ config }: AIChatFabProps) {
       scrollToBottom();
     }
   }, [messages, isOpen]);
+
+  // Detectar posición de la sección de links del footer y ajustar FAB
+  useEffect(() => {
+    const handleScroll = () => {
+      const footerLinks = document.getElementById("footer-socials-legal");
+      if (!footerLinks) return;
+
+      const footerRect = footerLinks.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      // Si la sección de links es visible (su top está por debajo de la mitad del viewport)
+      if (footerRect.top < viewportHeight) {
+        // Calcular espacio disponible: viewport height - footer links top - padding
+        const gap = viewportHeight - footerRect.top - 1.5;
+        // El FAB tiene 3.5rem (~56px), más 1.5rem de padding
+        const newBottom = Math.max(gap, 1.5);
+        setFabBottom(`${newBottom}px`);
+      } else {
+        // Sección de links no es visible, FAB normal
+        setFabBottom("1.5rem");
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,15 +90,21 @@ export default function AIChatFab({ config }: AIChatFabProps) {
   return (
     <>
       {/* FAB Button */}
-      <button
-        type="button"
-        className="al-chat-fab"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label={isOpen ? "Cerrar chat" : config.fabTooltip}
-        title={config.fabTooltip}
-      >
-        {isOpen ? <X size={24} aria-hidden /> : <Brain size={24} aria-hidden />}
-      </button>
+      <div className="al-chat-fab-wrap" ref={fabWrapRef} style={{ bottom: fabBottom }}>
+        {!isOpen && (
+          <span className="al-chat-fab-tooltip" role="tooltip">
+            {config.fabTooltip}
+          </span>
+        )}
+        <button
+          type="button"
+          className="al-chat-fab"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? "Cerrar chat" : config.fabTooltip}
+        >
+          {isOpen ? <X size={24} aria-hidden /> : <Brain size={24} aria-hidden />}
+        </button>
+      </div>
 
       {/* Chat Panel */}
       <div className={`al-chat-panel ${isOpen ? "al-chat-panel-open" : ""}`} role="dialog" aria-label="Chat con AutoLibre">

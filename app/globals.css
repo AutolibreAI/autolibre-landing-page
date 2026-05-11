@@ -202,7 +202,6 @@ body {
 .al-section-problem,
 .al-section-features {
   background: var(--al-surface-dark);
-  border-top: 1px solid rgba(0, 255, 255, 0.1);
   border-bottom: 1px solid rgba(0, 255, 255, 0.1);
 }
 
@@ -424,6 +423,31 @@ body {
 }
 
 /* ========================================
+   Typography Scale
+   ======================================== */
+
+/* Paragraph styles - unified sizes */
+.al-paragraph-lg {
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+.al-paragraph-base {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.al-paragraph-sm {
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.al-paragraph-xs {
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* ========================================
    Headings
    ======================================== */
 
@@ -465,6 +489,7 @@ body {
 .al-description {
   margin: 1rem 0 0;
   max-width: 41ch;
+  font-size: 1rem;
   line-height: 1.7;
   color: var(--al-text-muted);
 }
@@ -515,7 +540,6 @@ body {
 .al-proof p {
   margin: 0;
   color: var(--al-text-muted);
-  font-size: 0.88rem;
 }
 
 .al-proof-stack {
@@ -793,8 +817,6 @@ body {
 
 .al-form-success p {
   margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.6;
   color: var(--al-text-muted);
   max-width: 320px;
 }
@@ -812,8 +834,6 @@ body {
 .al-problem-description {
   margin: 1.5rem auto 2rem;
   max-width: 700px;
-  font-size: 1.1rem;
-  line-height: 1.7;
   color: var(--al-text-muted);
   text-align: center;
 }
@@ -881,8 +901,6 @@ body {
 
 .al-feature-card p {
   margin: 0;
-  font-size: 0.88rem;
-  line-height: 1.55;
   color: var(--al-text-muted);
 }
 
@@ -951,8 +969,6 @@ body {
 
 .al-faq-answer p {
   margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.65;
   color: var(--al-text-muted);
 }
 
@@ -1064,10 +1080,52 @@ body {
    Chat FAB & Panel
    ======================================== */
 
-.al-chat-fab {
+.al-chat-fab-wrap {
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  transition: bottom 0.3s ease;
+}
+
+.al-chat-fab-tooltip {
+  background: rgba(10, 14, 40, 0.92);
+  color: var(--al-text);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  padding: 0.45rem 0.85rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(0, 255, 255, 0.25);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.al-chat-fab-tooltip::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 5px 0 5px 6px;
+  border-style: solid;
+  border-color: transparent transparent transparent rgba(0, 255, 255, 0.25);
+}
+
+.al-chat-fab-wrap:hover .al-chat-fab-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.al-chat-fab {
+  position: relative;
+  flex-shrink: 0;
   z-index: 100;
   display: flex;
   align-items: center;
@@ -1374,10 +1432,17 @@ body {
     align-items: center;
   }
 
-  .al-chat-fab {
+  .al-chat-fab-wrap {
     bottom: 1rem;
     right: 1rem;
+  }
+
+  .al-chat-fab {
     width: 3rem;
     height: 3rem;
+  }
+
+  .al-chat-fab-tooltip {
+    display: none;
   }
 }

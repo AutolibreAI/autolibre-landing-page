@@ -25,6 +25,7 @@ export default function HeroSection({ content }: HeroSectionProps) {
           title={content.headingLineOne}
           highlight={content.headingLineTwo}
           description={content.description}
+          highlightOnNewLine
         />
 
         <div className="al-hero-actions al-hero-actions--left">

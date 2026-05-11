@@ -55,7 +55,7 @@ export default function FAQSection({ content }: FAQSectionProps) {
                 className="al-faq-answer"
                 hidden={!isOpen}
               >
-                <p>{item.answer}</p>
+                <p className="al-paragraph-base">{item.answer}</p>
               </div>
             </div>
           );
