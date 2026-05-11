@@ -49,9 +49,7 @@ export default function HeroSection({ content }: HeroSectionProps) {
               </span>
             ))}
           </div>
-          {content.socialProof.map((line, index) => (
-            <p key={index}>{line}</p>
-          ))}
+          <p>{content.socialProof}</p>
         </div>
       </div>
 

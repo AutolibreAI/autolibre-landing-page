@@ -34,7 +34,7 @@ type HeroContent = {
   readonly description: string;
   readonly mainAction: PrimaryAction;
   readonly secondaryAction: PrimaryAction;
-  readonly socialProof: readonly string[];
+  readonly socialProof: string;
 };
 
 type FormSectionContent = {
