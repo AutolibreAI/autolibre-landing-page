@@ -98,7 +98,7 @@ export const landingPageContent: LandingPageContent = {
           id: "feature-02",
           icon: "history",
           title: "Historial digital",
-          text: "Servicios y reparaciones en un solo lugar.",
+          text: "Chau papeles: servicios y reparaciones centralizados en tu celular.",
         },
         {
           id: "feature-03",
