@@ -1089,6 +1089,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  transition: bottom 0.3s ease;
 }
 
 .al-chat-fab-tooltip {
