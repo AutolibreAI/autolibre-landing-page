@@ -12,7 +12,7 @@ export const landingPageContent: LandingPageContent = {
       headingLineOne: "Hablá con tu auto.",
       headingLineTwo: "Muy pronto.",
       description:
-        "Información y diagnóstico inteligente en un solo lugar. La app que te dice qué le pasa a tu auto, cuándo hacerle el service y dónde repararlo — sin saber de mecánica.",
+        "Información y diagnóstico inteligente en un solo lugar. La app que te dice qué le pasa a tu auto, cuándo hacerle el service y dónde repararlo.",
       mainAction: {
         label: "Quiero Early Access",
         href: "#form-section",
