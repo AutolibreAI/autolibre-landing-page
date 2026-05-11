@@ -1416,8 +1416,7 @@ body {
   max-width: 860px;
   border-radius: 1rem;
   overflow: hidden;
-  border: 1px solid rgba(0, 255, 255, 0.12);
-  background: #f4f6fb;
+  background: #0a0e27;
 }
 
 .al-brand-banner-img {
