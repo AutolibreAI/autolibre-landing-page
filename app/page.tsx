@@ -7,7 +7,6 @@ import FAQSection from "@/components/landing/faq-section";
 import LandingFooter from "@/components/landing/landing-footer";
 import SectionContainer from "@/components/landing/section-container";
 import AIChatFab from "@/components/landing/ai-chat-fab";
-import BrandBannerSection from "@/components/landing/brand-banner-section";
 import { landingPageContent } from "@/lib/landing-content";
 
 export default function Home() {
@@ -36,10 +35,6 @@ export default function Home() {
       </div>
 
       <main>
-        <SectionContainer id="brand-banner" className="al-section-banner">
-          <BrandBannerSection />
-        </SectionContainer>
-
         <SectionContainer id="hero" className="al-section-hero">
           <HeroSection content={landingPageContent.sections.hero} />
         </SectionContainer>
