@@ -202,7 +202,6 @@ body {
 .al-section-problem,
 .al-section-features {
   background: var(--al-surface-dark);
-  border-top: 1px solid rgba(0, 255, 255, 0.1);
   border-bottom: 1px solid rgba(0, 255, 255, 0.1);
 }
 
