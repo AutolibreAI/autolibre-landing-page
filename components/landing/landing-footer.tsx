@@ -12,7 +12,7 @@ export default function LandingFooter({ brand, content }: LandingFooterProps) {
   return (
     <footer id="footer" className="al-footer-section">
       <div className="al-footer-closing">
-        <p className="al-footer-phrase">{content.closingPhrase}</p>
+        <p className="al-footer-phrase al-paragraph-lg">{content.closingPhrase}</p>
         <BrandButton asChild className="al-footer-cta">
           <Link href={content.secondaryCta.href}>{content.secondaryCta.label}</Link>
         </BrandButton>

@@ -424,6 +424,31 @@ body {
 }
 
 /* ========================================
+   Typography Scale
+   ======================================== */
+
+/* Paragraph styles - unified sizes */
+.al-paragraph-lg {
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+.al-paragraph-base {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.al-paragraph-sm {
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.al-paragraph-xs {
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* ========================================
    Headings
    ======================================== */
 
@@ -465,6 +490,7 @@ body {
 .al-description {
   margin: 1rem 0 0;
   max-width: 41ch;
+  font-size: 1rem;
   line-height: 1.7;
   color: var(--al-text-muted);
 }
@@ -515,7 +541,6 @@ body {
 .al-proof p {
   margin: 0;
   color: var(--al-text-muted);
-  font-size: 0.88rem;
 }
 
 .al-proof-stack {
@@ -793,8 +818,6 @@ body {
 
 .al-form-success p {
   margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.6;
   color: var(--al-text-muted);
   max-width: 320px;
 }
@@ -812,8 +835,6 @@ body {
 .al-problem-description {
   margin: 1.5rem auto 2rem;
   max-width: 700px;
-  font-size: 1.1rem;
-  line-height: 1.7;
   color: var(--al-text-muted);
   text-align: center;
 }
@@ -881,8 +902,6 @@ body {
 
 .al-feature-card p {
   margin: 0;
-  font-size: 0.88rem;
-  line-height: 1.55;
   color: var(--al-text-muted);
 }
 
@@ -951,8 +970,6 @@ body {
 
 .al-faq-answer p {
   margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.65;
   color: var(--al-text-muted);
 }
 

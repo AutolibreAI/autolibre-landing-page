@@ -53,7 +53,7 @@ export default function FormSection({ content }: FormSectionProps) {
               <CheckCircle2 size={40} aria-hidden />
             </div>
             <h3>¡Ya estás adentro!</h3>
-            <p>
+            <p className="al-paragraph-base">
               Te avisamos en cuanto abramos la beta. Gracias por sumarte a Auto
               Libre.
             </p>
@@ -61,7 +61,7 @@ export default function FormSection({ content }: FormSectionProps) {
         ) : (
           <>
             <h3>Early Access</h3>
-            <p>Dejanos tus datos y te avisamos cuando abramos la beta.</p>
+            <p className="al-paragraph-base">Dejanos tus datos y te avisamos cuando abramos la beta.</p>
             <form className="al-signup-form" onSubmit={handleSubmit}>
               {/* Required fields */}
               <div className="al-form-row">

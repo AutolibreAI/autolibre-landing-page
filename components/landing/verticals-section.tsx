@@ -20,7 +20,7 @@ export default function VerticalsSection({ content }: VerticalsSectionProps) {
               <span className="al-status-chip">{item.status}</span>
             </div>
             <h3>{item.title}</h3>
-            <p>{item.description}</p>
+            <p className="al-paragraph-sm">{item.description}</p>
           </BrandCard>
         ))}
         {!isCardFallbackVisible ? (

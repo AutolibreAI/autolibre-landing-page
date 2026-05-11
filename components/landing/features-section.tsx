@@ -40,7 +40,7 @@ export default function FeaturesSection({ content }: FeaturesSectionProps) {
               {iconMap[feature.icon] || <Brain size={28} aria-hidden />}
             </span>
             <h3>{feature.title}</h3>
-            <p>{feature.description}</p>
+            <p className="al-paragraph-sm">{feature.description}</p>
           </BrandCard>
         ))}
       </div>

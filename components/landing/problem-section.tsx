@@ -24,7 +24,7 @@ export default function ProblemSection({ content }: ProblemSectionProps) {
         centered
       />
 
-      <p className="al-problem-description">{content.description}</p>
+      <p className="al-problem-description al-paragraph-lg">{content.description}</p>
 
       <p className="al-problem-subtitle">{content.subheading}</p>
 
@@ -35,7 +35,7 @@ export default function ProblemSection({ content }: ProblemSectionProps) {
               {iconMap[item.icon] || <Brain size={28} aria-hidden />}
             </span>
             <h3>{item.title}</h3>
-            <p>{item.text}</p>
+            <p className="al-paragraph-sm">{item.text}</p>
           </BrandCard>
         ))}
       </div>
