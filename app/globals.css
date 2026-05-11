@@ -1081,10 +1081,51 @@ body {
    Chat FAB & Panel
    ======================================== */
 
-.al-chat-fab {
+.al-chat-fab-wrap {
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.al-chat-fab-tooltip {
+  background: rgba(10, 14, 40, 0.92);
+  color: var(--al-text);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  padding: 0.45rem 0.85rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(0, 255, 255, 0.25);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.al-chat-fab-tooltip::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 5px 0 5px 6px;
+  border-style: solid;
+  border-color: transparent transparent transparent rgba(0, 255, 255, 0.25);
+}
+
+.al-chat-fab-wrap:hover .al-chat-fab-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.al-chat-fab {
+  position: relative;
+  flex-shrink: 0;
   z-index: 100;
   display: flex;
   align-items: center;
@@ -1391,10 +1432,17 @@ body {
     align-items: center;
   }
 
-  .al-chat-fab {
+  .al-chat-fab-wrap {
     bottom: 1rem;
     right: 1rem;
+  }
+
+  .al-chat-fab {
     width: 3rem;
     height: 3rem;
+  }
+
+  .al-chat-fab-tooltip {
+    display: none;
   }
 }

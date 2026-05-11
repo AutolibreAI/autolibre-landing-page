@@ -62,15 +62,21 @@ export default function AIChatFab({ config }: AIChatFabProps) {
   return (
     <>
       {/* FAB Button */}
-      <button
-        type="button"
-        className="al-chat-fab"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label={isOpen ? "Cerrar chat" : config.fabTooltip}
-        title={config.fabTooltip}
-      >
-        {isOpen ? <X size={24} aria-hidden /> : <Brain size={24} aria-hidden />}
-      </button>
+      <div className="al-chat-fab-wrap">
+        {!isOpen && (
+          <span className="al-chat-fab-tooltip" role="tooltip">
+            {config.fabTooltip}
+          </span>
+        )}
+        <button
+          type="button"
+          className="al-chat-fab"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? "Cerrar chat" : config.fabTooltip}
+        >
+          {isOpen ? <X size={24} aria-hidden /> : <Brain size={24} aria-hidden />}
+        </button>
+      </div>
 
       {/* Chat Panel */}
       <div className={`al-chat-panel ${isOpen ? "al-chat-panel-open" : ""}`} role="dialog" aria-label="Chat con AutoLibre">
