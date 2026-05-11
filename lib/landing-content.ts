@@ -230,7 +230,7 @@ export const landingPageContent: LandingPageContent = {
       },
     },
     chat: {
-      fabTooltip: "Preguntale a Auto Libre",
+      fabTooltip: "Preguntale a Auto Libre AI",
       panelTitle: "Auto Libre AI",
       placeholder: "Pregunta sobre tu auto...",
       welcomeMessage: "Hola! Soy Auto Libre AI. Puedo ayudarte con dudas sobre la app, tu auto, o cualquier consulta que tengas.",
