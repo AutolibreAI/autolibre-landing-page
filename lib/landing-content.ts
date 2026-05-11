@@ -92,7 +92,7 @@ export const landingPageContent: LandingPageContent = {
           id: "feature-01",
           icon: "brain",
           title: "Diagnóstico con IA",
-          text: "Entendé qué significa cada código de error.",
+          text: "Entendé qué significa cada código de error y su urgencia.",
         },
         {
           id: "feature-02",
