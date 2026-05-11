@@ -95,7 +95,7 @@ export default function FormSection({ content }: FormSectionProps) {
 
               <div className="al-form-field">
                 <label>
-                  ¿Qué te atrajo? <span className="al-required">*</span>
+                  ¿Qué te interesa? <span className="al-required">*</span>
                 </label>
                 <div className="al-reason-group">
                   {content.reasonOptions.map((option) => (
