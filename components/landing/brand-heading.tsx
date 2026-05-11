@@ -23,8 +23,13 @@ export default function BrandHeading({
     >
       {/* {eyebrow ? <p className="al-eyebrow">{eyebrow}</p> : null} */}
       <h2 className="al-title">
-        {title}{" "}
-        {highlight ? <span className="al-highlight">{highlight}</span> : null}
+        {title}
+        {highlight ? (
+          <>
+            <br />
+            <span className="al-highlight">{highlight}</span>
+          </>
+        ) : null}
       </h2>
       {description ? <p className="al-description">{description}</p> : null}
       {icon ? <div className="al-heading-icon">{icon}</div> : null}
