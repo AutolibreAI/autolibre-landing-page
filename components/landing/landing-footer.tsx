@@ -18,7 +18,7 @@ export default function LandingFooter({ brand, content }: LandingFooterProps) {
         </BrandButton>
       </div>
 
-      <div className="al-footer">
+      <div className="al-footer" id="footer-socials-legal">
         <div className="al-footer-brand">
           <span className="al-footer-icon">
             <Zap size={12} aria-hidden />

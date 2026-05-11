@@ -35,24 +35,24 @@ export default function AIChatFab({ config }: AIChatFabProps) {
     }
   }, [messages, isOpen]);
 
-  // Detectar posición del footer y ajustar FAB
+  // Detectar posición de la sección de links del footer y ajustar FAB
   useEffect(() => {
     const handleScroll = () => {
-      const footer = document.getElementById("footer");
-      if (!footer) return;
+      const footerLinks = document.getElementById("footer-socials-legal");
+      if (!footerLinks) return;
 
-      const footerRect = footer.getBoundingClientRect();
+      const footerRect = footerLinks.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
 
-      // Si el footer es visible (su top está por debajo de la mitad del viewport)
+      // Si la sección de links es visible (su top está por debajo de la mitad del viewport)
       if (footerRect.top < viewportHeight) {
-        // Calcular espacio disponible: viewport height - footer top - padding
+        // Calcular espacio disponible: viewport height - footer links top - padding
         const gap = viewportHeight - footerRect.top - 1.5;
         // El FAB tiene 3.5rem (~56px), más 1.5rem de padding
         const newBottom = Math.max(gap, 1.5);
         setFabBottom(`${newBottom}px`);
       } else {
-        // Footer no es visible, FAB normal
+        // Sección de links no es visible, FAB normal
         setFabBottom("1.5rem");
       }
     };
