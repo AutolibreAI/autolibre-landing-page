@@ -137,7 +137,7 @@ export const landingPageContent: LandingPageContent = {
         {
           id: "faq-04",
           question: "¿Funciona con cualquier auto?",
-          answer: "La app funciona con cualquier auto. El diagnóstico por OBD-II requiere un escáner y un auto de 1996 o más nuevo — que es la gran mayoría. ¿Tenés dudas sobre tu modelo? Preguntale al chat.",
+          answer: "La app funciona con cualquier auto. El diagnóstico por OBD-II requiere un escáner y que tu auto tenga el puerto, si es de 1996 para adelante, es lo más probable. ¿Tenés dudas sobre tu modelo? Preguntale al chat.",
         },
         {
           id: "faq-05",
