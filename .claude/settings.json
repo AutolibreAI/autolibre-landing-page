@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_engram_engram__mem_save",
+      "Bash(Copy-Item \"c:\\\\Users\\\\ramir\\\\OneDrive\\\\Escritorio\\\\ram_projects\\\\autolibre-landing-page\\\\public\\\\autolibre-favicon.png\" \"c:\\\\Users\\\\ramir\\\\OneDrive\\\\Escritorio\\\\ram_projects\\\\autolibre-landing-page\\\\app\\\\icon.png\")",
+      "Bash(Remove-Item \"c:\\\\Users\\\\ramir\\\\OneDrive\\\\Escritorio\\\\ram_projects\\\\autolibre-landing-page\\\\app\\\\favicon.ico\")"
+    ]
+  }
+}

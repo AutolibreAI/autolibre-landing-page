@@ -50,6 +50,9 @@ export const metadata: Metadata = {
       "Dejá de adivinar qué le pasa a tu auto. Diagnóstico inteligente y gestión de trámites en un solo lugar.",
     images: ["/autolibre-favicon.png"],
   },
+  icons: {
+    icon: "/autolibre-favicon.png",
+  },
   robots: {
     index: true,
     follow: true,

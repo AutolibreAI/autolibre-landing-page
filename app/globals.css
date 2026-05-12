@@ -184,6 +184,8 @@ body {
   display: flex;
   align-items: start;
   justify-items: center;
+  margin-top: calc(-1 * var(--al-nav-shell-height));
+  padding-top: calc(var(--al-nav-shell-height) + 4.5rem);
   background:
     linear-gradient(to bottom, transparent 60%, var(--al-surface-dark) 100%),
     radial-gradient(
