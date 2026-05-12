@@ -161,18 +161,13 @@ body {
    ======================================== */
 
 .al-nav-shell {
-  position: sticky;
-  top: 0;
   z-index: 50;
   height: var(--al-nav-shell-height);
   padding-top: var(--al-nav-top-offset);
   box-sizing: border-box;
-  -webkit-backdrop-filter: blur(12px) saturate(120%);
-  backdrop-filter: blur(12px) saturate(120%);
-  background: linear-gradient(180deg,
-      rgba(9, 12, 18, 0.35) 0%,
-      rgba(9, 12, 18, 0.15) 65%,
-      rgba(9, 12, 18, 0) 100%);
+  background: linear-gradient(to bottom, #090c12f0 0%, #090c1290 50%, transparent 100%);
+  position: sticky;
+  top: 0;
 }
 
 .al-container {
@@ -191,8 +186,16 @@ body {
   justify-items: center;
   background:
     linear-gradient(to bottom, transparent 60%, var(--al-surface-dark) 100%),
-    radial-gradient(circle at 20% 10%, rgba(0, 255, 255, 0.07), transparent 42%),
-    radial-gradient(circle at 80% 20%, rgba(95, 142, 255, 0.11), transparent 35%),
+    radial-gradient(
+      circle at 20% 10%,
+      rgba(0, 255, 255, 0.07),
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(95, 142, 255, 0.11),
+      transparent 35%
+    ),
     var(--al-surface);
 }
 
@@ -226,9 +229,11 @@ body {
   border-radius: 0.9rem;
   -webkit-backdrop-filter: blur(14px) saturate(130%);
   backdrop-filter: blur(14px) saturate(130%);
-  background: linear-gradient(180deg,
-      rgba(10, 16, 24, 0.34) 0%,
-      rgba(10, 16, 24, 0.24) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(10, 16, 24, 0.34) 0%,
+    rgba(10, 16, 24, 0.24) 100%
+  );
   box-shadow:
     0 8px 30px rgba(0, 0, 0, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -486,9 +491,15 @@ body {
   min-height: 2.9rem;
   border-radius: 999px;
   border: 1px solid rgba(0, 255, 255, 0.3);
-  background: linear-gradient(90deg, rgba(0, 255, 255, 0.16), rgba(126, 184, 255, 0.2));
+  background: linear-gradient(
+    90deg,
+    rgba(0, 255, 255, 0.16),
+    rgba(126, 184, 255, 0.2)
+  );
   color: var(--al-text-main);
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .al-button:hover {
@@ -550,7 +561,11 @@ body {
 .al-card {
   border: 1px solid var(--al-border-soft);
   border-radius: 1rem;
-  background: linear-gradient(160deg, rgba(16, 26, 36, 0.92), rgba(11, 16, 24, 0.94));
+  background: linear-gradient(
+    160deg,
+    rgba(16, 26, 36, 0.92),
+    rgba(11, 16, 24, 0.94)
+  );
   padding: 1rem;
 }
 
@@ -686,7 +701,9 @@ body {
   border-radius: 0.4rem;
   border: 1px solid var(--al-border-soft);
   background: rgba(7, 11, 16, 0.5);
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
 .al-reason-option:has(.al-checkbox-input:checked) {
@@ -736,7 +753,9 @@ body {
   border: 1px solid var(--al-border-soft);
   background: rgba(7, 11, 16, 0.8);
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
   position: relative;
 }
 
@@ -883,8 +902,15 @@ body {
   gap: 0.75rem;
   padding: 1.5rem 1.25rem;
   border: 1px solid rgba(0, 255, 255, 0.12);
-  background: linear-gradient(160deg, rgba(16, 26, 36, 0.85), rgba(11, 16, 24, 0.9));
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  background: linear-gradient(
+    160deg,
+    rgba(16, 26, 36, 0.85),
+    rgba(11, 16, 24, 0.9)
+  );
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .al-feature-card:hover {
@@ -1009,7 +1035,10 @@ body {
   font-weight: 600;
   letter-spacing: 0.03em;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .al-faq-more-btn:hover {
@@ -1109,17 +1138,28 @@ body {
   height: 3.5rem;
   border-radius: 999px;
   border: 1px solid rgba(0, 255, 255, 0.4);
-  background: linear-gradient(135deg, rgba(0, 255, 255, 0.25), rgba(0, 180, 200, 0.3));
+  background: linear-gradient(
+    135deg,
+    rgba(0, 255, 255, 0.25),
+    rgba(0, 180, 200, 0.3)
+  );
   color: var(--al-cyan);
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0, 255, 255, 0.15), 0 4px 12px rgba(0, 0, 0, 0.3);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  box-shadow:
+    0 8px 24px rgba(0, 255, 255, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.3);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .al-chat-fab:hover {
   transform: scale(1.05);
   border-color: var(--al-cyan);
-  box-shadow: 0 12px 32px rgba(0, 255, 255, 0.25), 0 6px 16px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    0 12px 32px rgba(0, 255, 255, 0.25),
+    0 6px 16px rgba(0, 0, 0, 0.35);
 }
 
 .al-chat-panel {
@@ -1127,12 +1167,19 @@ body {
   z-index: 99;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(160deg, rgba(16, 26, 36, 0.98), rgba(11, 16, 24, 0.99));
+  background: linear-gradient(
+    160deg,
+    rgba(16, 26, 36, 0.98),
+    rgba(11, 16, 24, 0.99)
+  );
   border: 1px solid rgba(0, 255, 255, 0.2);
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease;
+  transition:
+    opacity 0.25s ease,
+    visibility 0.25s ease,
+    transform 0.25s ease;
 }
 
 /* Desktop: Sidebar */
@@ -1228,7 +1275,9 @@ body {
   background: transparent;
   color: var(--al-text-muted);
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .al-chat-close:hover {
@@ -1293,7 +1342,6 @@ body {
 }
 
 @keyframes al-chat-bounce {
-
   0%,
   80%,
   100% {
@@ -1344,7 +1392,9 @@ body {
   background: rgba(0, 255, 255, 0.1);
   color: var(--al-cyan);
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .al-chat-send:hover:not(:disabled) {
