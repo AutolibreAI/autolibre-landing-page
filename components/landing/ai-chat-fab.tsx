@@ -47,12 +47,16 @@ export default function AIChatFab({ config }: AIChatFabProps) {
     setInput("");
     setIsLoading(true);
 
-    // Simulate AI response (placeholder for actual AI integration)
+    // Placeholder until real AI integration is wired
     setTimeout(() => {
       const assistantMessage: Message = {
         id: `assistant-${Date.now()}`,
         role: "assistant",
-        content: "Gracias por tu pregunta. Estamos en fase de desarrollo y pronto podras chatear con nuestra IA sobre tu auto. Mientras tanto, sumate a la lista de espera para ser de los primeros en acceder.",
+        content:
+          "No tengo esa respuesta por ahora, pero podés revisar las " +
+          "<a href='#faqs' aria-label='Ver preguntas frecuentes'>preguntas frecuentes</a>" +
+          " o escribirnos a " +
+          "<a href='mailto:contact@autolibre.ai' aria-label='Enviar email a soporte'>contact@autolibre.ai</a>.",
       };
       setMessages((prev) => [...prev, assistantMessage]);
       setIsLoading(false);
@@ -92,14 +96,22 @@ export default function AIChatFab({ config }: AIChatFabProps) {
         </header>
 
         <div className="al-chat-messages">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`al-chat-message ${message.role === "user" ? "al-chat-message-user" : "al-chat-message-assistant"}`}
-            >
-              {message.content}
-            </div>
-          ))}
+          {messages.map((message) =>
+            message.role === "assistant" ? (
+              <div
+                key={message.id}
+                className="al-chat-message al-chat-message-assistant"
+                dangerouslySetInnerHTML={{ __html: message.content }}
+              />
+            ) : (
+              <div
+                key={message.id}
+                className="al-chat-message al-chat-message-user"
+              >
+                {message.content}
+              </div>
+            ),
+          )}
           {isLoading && (
             <div className="al-chat-message al-chat-message-assistant al-chat-loading">
               <span className="al-chat-dot" />

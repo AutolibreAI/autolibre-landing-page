@@ -21,7 +21,7 @@ export default function BrandHeading({
     <header
       className={`al-heading ${centered ? "al-heading-centered" : ""}`.trim()}
     >
-      {/* {eyebrow ? <p className="al-eyebrow">{eyebrow}</p> : null} */}
+      {eyebrow ? <p className="al-eyebrow">{eyebrow}</p> : null}
       <h2 className="al-title">
         {title}{" "}
         {highlight ? <span className="al-highlight">{highlight}</span> : null}

@@ -1,7 +1,5 @@
-"use client";
-
+import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
 import type { LandingPageContent } from "@/lib/landing-types";
 import BrandButton from "@/components/landing/brand-button";
 import BrandHeading from "@/components/landing/brand-heading";
@@ -10,12 +8,9 @@ type HeroSectionProps = {
   readonly content: LandingPageContent["sections"]["hero"];
 };
 
-export default function HeroSection({ content }: HeroSectionProps) {
-  const initials = useMemo(
-    (): readonly string[] => ["MR", "CA", "LF", "AG", "+96"],
-    [],
-  );
+const PROOF_INITIALS = ["MR", "CA", "LF", "AG", "+96"] as const;
 
+export default function HeroSection({ content }: HeroSectionProps) {
   return (
     <div className="al-hero-split">
       {/* Left column — copy */}
@@ -42,8 +37,8 @@ export default function HeroSection({ content }: HeroSectionProps) {
 
         <div className="al-proof">
           <div className="al-proof-stack">
-            {initials.map((initial, index) => (
-              <span key={initial} style={{ zIndex: initials.length - index }}>
+            {PROOF_INITIALS.map((initial, index) => (
+              <span key={initial} style={{ zIndex: PROOF_INITIALS.length - index }}>
                 {initial}
               </span>
             ))}
@@ -54,10 +49,13 @@ export default function HeroSection({ content }: HeroSectionProps) {
 
       {/* Right column — app preview image */}
       <div className="al-hero-preview" aria-hidden="true">
-        <img
+        <Image
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/app%20sin%20fondo%20HD.png-den0XAYw6LBc5IeDq0PPsTFQaL9FM1.jpeg"
           alt=""
+          fill
+          sizes="(max-width: 980px) 100vw, 280px"
           className="al-preview-image"
+          style={{ mixBlendMode: "screen", objectFit: "contain" }}
         />
       </div>
     </div>

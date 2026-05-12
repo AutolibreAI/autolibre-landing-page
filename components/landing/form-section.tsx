@@ -11,10 +11,17 @@ type FormSectionProps = {
   readonly content: LandingPageContent["sections"]["form"];
 };
 
+type SubmitState =
+  | { kind: "idle" }
+  | { kind: "success" }
+  | { kind: "duplicate" }
+  | { kind: "error"; message: string };
+
 export default function FormSection({ content }: FormSectionProps) {
   const [wantsScanner, setWantsScanner] = useState(false);
   const [reasons, setReasons] = useState<string[]>([]);
-  const [submitted, setSubmitted] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
+  const [submitState, setSubmitState] = useState<SubmitState>({ kind: "idle" });
 
   function toggleReason(option: string) {
     setReasons((prev) =>
@@ -24,9 +31,34 @@ export default function FormSection({ content }: FormSectionProps) {
     );
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setSubmitted(true);
+
+    // Silently discard bot submissions (honeypot field filled)
+    if (honeypot) {
+      setSubmitState({ kind: "success" });
+      return;
+    }
+
+    const form = e.currentTarget;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+
+    try {
+      // TODO: replace with real API call
+      // Simulate duplicate check (hardcoded for demo)
+      const REGISTERED_EMAILS = new Set<string>();
+      if (REGISTERED_EMAILS.has(email)) {
+        setSubmitState({ kind: "duplicate" });
+        return;
+      }
+      REGISTERED_EMAILS.add(email);
+      setSubmitState({ kind: "success" });
+    } catch {
+      setSubmitState({
+        kind: "error",
+        message: "Algo salió mal. Por favor intentá de nuevo.",
+      });
+    }
   }
 
   return (
@@ -47,7 +79,7 @@ export default function FormSection({ content }: FormSectionProps) {
         </ul>
       </div>
       <BrandCard className="al-signup-card">
-        {submitted ? (
+        {submitState.kind === "success" ? (
           <div className="al-form-success">
             <div className="al-form-success-icon">
               <CheckCircle2 size={40} aria-hidden />
@@ -58,11 +90,39 @@ export default function FormSection({ content }: FormSectionProps) {
               Libre.
             </p>
           </div>
+        ) : submitState.kind === "duplicate" ? (
+          <div className="al-form-success">
+            <div className="al-form-success-icon">
+              <CheckCircle2 size={40} aria-hidden />
+            </div>
+            <h3>¡Ya estás en la lista!</h3>
+            <p>
+              Tu email ya está registrado. Te avisamos cuando abramos la beta.
+            </p>
+          </div>
         ) : (
           <>
             <h3>Early Access</h3>
             <p>Dejanos tus datos y te avisamos cuando abramos la beta.</p>
             <form className="al-signup-form" onSubmit={handleSubmit}>
+              {/* Honeypot — hidden from real users, traps bots */}
+              <input
+                type="text"
+                name="_hp_email"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  left: "-9999px",
+                  width: "1px",
+                  height: "1px",
+                  opacity: 0,
+                }}
+              />
+
               {/* Required fields */}
               <div className="al-form-row">
                 <div className="al-form-field">
@@ -90,8 +150,6 @@ export default function FormSection({ content }: FormSectionProps) {
                   />
                 </div>
               </div>
-
-              {/* Optional fields */}
 
               <div className="al-form-field">
                 <label>
@@ -150,6 +208,19 @@ export default function FormSection({ content }: FormSectionProps) {
                   className="al-checkbox-input reasonOption"
                 />
               </div>
+
+              {submitState.kind === "error" && (
+                <div role="alert" className="al-form-error">
+                  <p>{submitState.message}</p>
+                  <button
+                    type="button"
+                    className="al-form-retry"
+                    onClick={() => setSubmitState({ kind: "idle" })}
+                  >
+                    Intentar de nuevo
+                  </button>
+                </div>
+              )}
 
               <BrandButton type="submit" showArrow={false}>
                 Unirme a la lista

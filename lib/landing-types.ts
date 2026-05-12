@@ -1,14 +1,14 @@
-type PrimaryAction = {
+export type PrimaryAction = {
   readonly label: string;
   readonly href: string;
 };
 
-type BenefitItem = {
+export type BenefitItem = {
   readonly id: string;
   readonly text: string;
 };
 
-type VerticalItem = {
+export type VerticalItem = {
   readonly id: string;
   readonly emoji: string;
   readonly status: string;
@@ -16,18 +16,18 @@ type VerticalItem = {
   readonly description: string;
 };
 
-type SocialLink = {
+export type SocialLink = {
   readonly id: string;
   readonly label: string;
   readonly href: string;
 };
 
-type VisualCheckpoint = {
+export type VisualCheckpoint = {
   readonly id: string;
   readonly label: string;
 };
 
-type HeroContent = {
+export type HeroContent = {
   readonly eyebrow: string;
   readonly headingLineOne: string;
   readonly headingLineTwo: string;
@@ -37,7 +37,7 @@ type HeroContent = {
   readonly socialProof: string;
 };
 
-type FormSectionContent = {
+export type FormSectionContent = {
   readonly tag: string;
   readonly heading: string;
   readonly headingHighlight: string;
@@ -46,21 +46,21 @@ type FormSectionContent = {
   readonly reasonOptions: readonly string[];
 };
 
-type VerticalsSectionContent = {
+export type VerticalsSectionContent = {
   readonly tag: string;
   readonly heading: string;
   readonly headingHighlight: string;
   readonly items: readonly VerticalItem[];
 };
 
-type FinalCtaContent = {
+export type FinalCtaContent = {
   readonly heading: string;
   readonly headingHighlight: string;
   readonly description: string;
   readonly action: PrimaryAction;
 };
 
-type FooterContent = {
+export type FooterContent = {
   readonly closingPhrase: string;
   readonly legalLabel: string;
   readonly legalLinks: readonly PrimaryAction[];
@@ -68,15 +68,14 @@ type FooterContent = {
   readonly secondaryCta: PrimaryAction;
 };
 
-// New types for redesign
-type ProblemItem = {
+export type ProblemItem = {
   readonly id: string;
   readonly icon: string;
   readonly title: string;
   readonly text: string;
 };
 
-type ProblemSectionContent = {
+export type ProblemSectionContent = {
   readonly tag: string;
   readonly heading: string;
   readonly headingHighlight: string;
@@ -85,27 +84,27 @@ type ProblemSectionContent = {
   readonly items: readonly ProblemItem[];
 };
 
-type FAQItem = {
+export type FAQItem = {
   readonly id: string;
   readonly question: string;
   readonly answer: string;
 };
 
-type FAQSectionContent = {
+export type FAQSectionContent = {
   readonly tag: string;
   readonly heading: string;
   readonly headingHighlight: string;
   readonly items: readonly FAQItem[];
 };
 
-type ChatConfig = {
+export type ChatConfig = {
   readonly fabTooltip: string;
   readonly panelTitle: string;
   readonly placeholder: string;
   readonly welcomeMessage: string;
 };
 
-type LandingSections = {
+export type LandingSections = {
   readonly hero: HeroContent;
   readonly form: FormSectionContent;
   readonly verticals: VerticalsSectionContent;
@@ -116,7 +115,7 @@ type LandingSections = {
   readonly chat: ChatConfig;
 };
 
-type LandingBrand = {
+export type LandingBrand = {
   readonly name: string;
   readonly badge: string;
   readonly year: string;
