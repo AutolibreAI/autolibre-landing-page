@@ -36,9 +36,9 @@ export const landingPageContent: LandingPageContent = {
       ],
       microcopy: "Nada de ruido. Solo Auto Libre, cuando esté listo.",
       reasonOptions: [
-        "Gestión administrativa",
+        "Gestión administrativa (VTV/RTO, service, patentes, multas, etc.)",
         "Diagnóstico con IA",
-        "Marketplace",
+        "Marketplace (presupuestos y nuevos proveedores)",
         "Otra",
       ],
     },
