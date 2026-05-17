@@ -136,19 +136,23 @@
    ======================================== */
 
 :root {
-  --al-cyan: #00ffff;
-  --al-surface: #090c12;
-  --al-surface-soft: #0f1622;
-  --al-surface-dark: #050709;
-  --al-text-main: #f2f4f7;
-  --al-text-muted: #8d97a8;
-  --al-border-soft: rgba(255, 255, 255, 0.1);
+  /* Brand Palette – Light Mode */
+  --al-bg:            #F9FAFB;   /* Soft Gray  – fondo principal */
+  --al-surface:       #FFFFFF;   /* Pure White – tarjetas */
+  --al-surface-soft:  #F9FAFB;   /* mismo que bg para secciones alternas */
+  --al-surface-dark:  #F0F2F5;   /* gris ligeramente más oscuro para contraste */
+  --al-navy:          #001D3D;   /* Deep Navy  – títulos / branding */
+  --al-cyan:          #007AFF;   /* Digital Cyan – CTAs / activos */
+  --al-green:         #16A34A;   /* Pine Green  – OK / positivo */
+  --al-text-main:     #111827;   /* Slate 900   – cuerpo y etiquetas */
+  --al-text-muted:    #6B7280;   /* Slate 500   – placeholders / info sec. */
+  --al-border-soft:   rgba(0, 29, 61, 0.1);  /* Navy transparente */
   --al-nav-top-offset: 1rem;
   --al-nav-shell-height: 5.25rem;
 }
 
 body {
-  background: var(--al-surface);
+  background: var(--al-bg);
   color: var(--al-text-main);
 }
 
@@ -165,7 +169,7 @@ body {
   height: var(--al-nav-shell-height);
   padding-top: var(--al-nav-top-offset);
   box-sizing: border-box;
-  background: linear-gradient(to bottom, #090c12f0 0%, #090c1290 50%, transparent 100%);
+  background: linear-gradient(to bottom, #F9FAFBf0 0%, #F9FAFB90 50%, transparent 100%);
   position: sticky;
   top: 0;
 }
@@ -190,30 +194,30 @@ body {
     linear-gradient(to bottom, transparent 60%, var(--al-surface-dark) 100%),
     radial-gradient(
       circle at 20% 10%,
-      rgba(0, 255, 255, 0.07),
+      rgba(0, 122, 255, 0.06),
       transparent 42%
     ),
     radial-gradient(
       circle at 80% 20%,
-      rgba(95, 142, 255, 0.11),
+      rgba(0, 29, 61, 0.04),
       transparent 35%
     ),
-    var(--al-surface);
+    var(--al-bg);
 }
 
 .al-section-form {
-  background: linear-gradient(180deg, rgb(10, 16, 24), var(--al-surface));
+  background: linear-gradient(180deg, var(--al-surface-dark), var(--al-bg));
 }
 
-/* Dark mode sections */
+/* Light alternate sections */
 .al-section-problem,
 .al-section-features {
   background: var(--al-surface-dark);
-  border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 29, 61, 0.08);
 }
 
 .al-section-faqs {
-  background: linear-gradient(180deg, rgb(10, 16, 24), var(--al-surface));
+  background: linear-gradient(180deg, var(--al-surface-dark), var(--al-bg));
 }
 
 .al-nav {
@@ -227,18 +231,14 @@ body {
   margin: 0 auto;
   padding: 0.8rem 1rem;
   box-sizing: border-box;
-  border: 1px solid rgba(0, 255, 255, 0.16);
+  border: 1px solid rgba(0, 29, 61, 0.12);
   border-radius: 0.9rem;
   -webkit-backdrop-filter: blur(14px) saturate(130%);
   backdrop-filter: blur(14px) saturate(130%);
-  background: linear-gradient(
-    180deg,
-    rgba(10, 16, 24, 0.34) 0%,
-    rgba(10, 16, 24, 0.24) 100%
-  );
+  background: rgba(255, 255, 255, 0.85);
   box-shadow:
-    0 8px 30px rgba(0, 0, 0, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    0 4px 20px rgba(0, 29, 61, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .al-nav-brand {
@@ -255,14 +255,14 @@ body {
   justify-content: center;
   width: 1.35rem;
   height: 1.35rem;
-  border: 1px solid rgba(0, 255, 255, 0.35);
+  border: 1px solid rgba(0, 122, 255, 0.35);
   border-radius: 0.35rem;
   color: var(--al-cyan);
 }
 
 .al-nav-badge {
   padding: 0.2rem 0.45rem;
-  border: 1px solid rgba(0, 255, 255, 0.35);
+  border: 1px solid rgba(0, 122, 255, 0.35);
   border-radius: 999px;
   font-size: 0.66rem;
   color: var(--al-cyan);
@@ -281,7 +281,7 @@ body {
 }
 
 .al-nav-links a:hover {
-  color: var(--al-text-main);
+  color: var(--al-navy);
 }
 
 /* ========================================
@@ -333,16 +333,16 @@ body {
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: rgba(0, 255, 255, 0.6);
-  border-bottom: 1px solid rgba(0, 255, 255, 0.08);
+  color: rgba(0, 122, 255, 0.7);
+  border-bottom: 1px solid rgba(0, 29, 61, 0.08);
 }
 
 .al-preview-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #00ffff;
-  box-shadow: 0 0 6px #00ffff;
+  background: var(--al-green);
+  box-shadow: 0 0 6px rgba(22, 163, 74, 0.5);
 }
 
 .al-preview-grid {
@@ -354,8 +354,8 @@ body {
 
 .al-preview-card {
   border-radius: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(0, 29, 61, 0.08);
+  background: rgba(0, 29, 61, 0.03);
   padding: 0.75rem;
 }
 
@@ -367,7 +367,7 @@ body {
   margin: 0 0 0.15rem;
   font-size: 0.6rem;
   letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--al-text-muted);
   text-transform: uppercase;
 }
 
@@ -381,7 +381,7 @@ body {
 .al-preview-card-sub {
   margin: 0;
   font-size: 0.6rem;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--al-text-muted);
 }
 
 .al-preview-chat {
@@ -389,7 +389,7 @@ body {
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.75rem;
-  border-top: 1px solid rgba(0, 255, 255, 0.08);
+  border-top: 1px solid rgba(0, 29, 61, 0.08);
 }
 
 .al-preview-chat-bubble {
@@ -402,16 +402,16 @@ body {
 
 .al-preview-chat-bubble--user {
   align-self: flex-end;
-  background: rgba(0, 255, 255, 0.12);
-  border: 1px solid rgba(0, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.85);
+  background: rgba(0, 122, 255, 0.1);
+  border: 1px solid rgba(0, 122, 255, 0.2);
+  color: var(--al-navy);
 }
 
 .al-preview-chat-bubble--ai {
   align-self: flex-start;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.75);
+  background: rgba(0, 29, 61, 0.04);
+  border: 1px solid rgba(0, 29, 61, 0.08);
+  color: var(--al-text-main);
 }
 
 .al-preview-ai-label {
@@ -419,7 +419,7 @@ body {
   font-size: 0.58rem;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: #00ffff;
+  color: var(--al-cyan);
   margin-bottom: 0.2rem;
 }
 
@@ -451,7 +451,7 @@ body {
   margin: 0 0 0.8rem;
   font-size: 0.72rem;
   letter-spacing: 0.15em;
-  color: rgba(0, 255, 255, 0.75);
+  color: var(--al-cyan);
 }
 
 .al-title {
@@ -461,13 +461,11 @@ body {
   line-height: 1.06;
   letter-spacing: -0.03em;
   text-wrap: balance;
+  color: var(--al-navy);
 }
 
 .al-highlight {
-  color: transparent;
-  background: linear-gradient(90deg, var(--al-cyan), #7eb8ff);
-  -webkit-background-clip: text;
-  background-clip: text;
+  color: var(--al-cyan);
 }
 
 .al-description {
@@ -492,26 +490,25 @@ body {
 .al-button {
   min-height: 2.9rem;
   border-radius: 999px;
-  border: 1px solid rgba(0, 255, 255, 0.3);
-  background: linear-gradient(
-    90deg,
-    rgba(0, 255, 255, 0.16),
-    rgba(126, 184, 255, 0.2)
-  );
-  color: var(--al-text-main);
+  border: 1px solid var(--al-cyan);
+  background: var(--al-cyan);
+  color: #ffffff;
   transition:
     transform 0.2s ease,
+    background 0.2s ease,
     border-color 0.2s ease;
 }
 
 .al-button:hover {
-  border-color: rgba(0, 255, 255, 0.75);
+  background: #005FCC;
+  border-color: #005FCC;
   transform: translateY(-1px);
 }
 
 .al-button-secondary {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: var(--al-border-soft);
+  background: transparent;
+  border-color: rgba(0, 29, 61, 0.2);
+  color: var(--al-navy);
 }
 
 .al-proof {
@@ -519,7 +516,7 @@ body {
   align-items: center;
   gap: 0.75rem;
   padding-top: 1.1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(0, 29, 61, 0.1);
 }
 
 .al-proof-centered {
@@ -542,8 +539,8 @@ body {
   height: 1.8rem;
   margin-left: -0.45rem;
   border-radius: 999px;
-  border: 1px solid rgba(0, 255, 255, 0.5);
-  background: rgba(0, 255, 255, 0.16);
+  border: 2px solid var(--al-bg);
+  background: rgba(0, 122, 255, 0.12);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -563,11 +560,8 @@ body {
 .al-card {
   border: 1px solid var(--al-border-soft);
   border-radius: 1rem;
-  background: linear-gradient(
-    160deg,
-    rgba(16, 26, 36, 0.92),
-    rgba(11, 16, 24, 0.94)
-  );
+  background: var(--al-surface);
+  box-shadow: 0 2px 12px rgba(0, 29, 61, 0.06);
   padding: 1rem;
 }
 
@@ -590,7 +584,7 @@ body {
 .al-preview-fallback {
   min-height: 18rem;
   border-radius: 0.8rem;
-  border: 1px dashed rgba(0, 255, 255, 0.45);
+  border: 1px dashed rgba(0, 122, 255, 0.3);
   display: grid;
   place-content: center;
   gap: 0.45rem;
@@ -642,15 +636,15 @@ body {
 
 .al-signup-form label {
   font-size: 0.8rem;
-  color: rgba(242, 244, 247, 0.85);
+  color: var(--al-text-main);
 }
 
 .al-signup-form input:not(.reasonOption),
 .al-signup-form select {
   min-height: 2.8rem;
   border-radius: 0.7rem;
-  border: 1px solid var(--al-border-soft);
-  background: rgba(7, 11, 16, 0.8);
+  border: 1px solid rgba(0, 29, 61, 0.15);
+  background: var(--al-surface);
   color: var(--al-text-main);
   padding: 0 0.8rem;
   font-size: 0.9rem;
@@ -698,19 +692,19 @@ body {
   gap: 0.5rem;
   cursor: pointer;
   font-size: 0.8rem;
-  color: rgba(242, 244, 247, 0.85);
+  color: var(--al-text-main);
   padding: 0.35rem 0.6rem;
   border-radius: 0.4rem;
   border: 1px solid var(--al-border-soft);
-  background: rgba(7, 11, 16, 0.5);
+  background: var(--al-surface);
   transition:
     border-color 0.15s ease,
     background 0.15s ease;
 }
 
 .al-reason-option:has(.al-checkbox-input:checked) {
-  border-color: rgba(0, 255, 255, 0.4);
-  background: rgba(0, 255, 255, 0.06);
+  border-color: rgba(0, 122, 255, 0.4);
+  background: rgba(0, 122, 255, 0.06);
 }
 
 .al-form-field-nested {
@@ -723,15 +717,15 @@ body {
   font-size: 0.85rem;
   border-radius: 0.4rem;
   border: 1px solid var(--al-border-soft);
-  background: rgba(7, 11, 16, 0.6);
+  background: var(--al-surface);
   color: var(--al-text-main);
   transition: border-color 0.15s ease;
 }
 
 .al-form-field-nested:focus {
   outline: none;
-  border-color: rgba(0, 255, 255, 0.4);
-  background: rgba(7, 11, 16, 0.8);
+  border-color: rgba(0, 122, 255, 0.4);
+  background: var(--al-surface);
 }
 
 .al-form-field-nested::placeholder {
@@ -752,8 +746,8 @@ body {
   height: 1.1rem;
   flex-shrink: 0;
   border-radius: 0.25rem;
-  border: 1px solid var(--al-border-soft);
-  background: rgba(7, 11, 16, 0.8);
+  border: 1px solid rgba(0, 29, 61, 0.2);
+  background: var(--al-surface);
   cursor: pointer;
   transition:
     background 0.15s ease,
@@ -770,7 +764,7 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 5l3.5 3.5L11 1' stroke='%23070b10' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 5l3.5 3.5L11 1' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: center;
   background-size: 70%;
@@ -778,7 +772,7 @@ body {
 
 .al-checkbox-label {
   font-size: 0.8rem;
-  color: rgba(242, 244, 247, 0.85);
+  color: var(--al-text-main);
   cursor: pointer;
   line-height: 1.4;
 }
@@ -876,7 +870,7 @@ body {
   margin: 0 0 1.5rem;
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--al-cyan);
+  color: var(--al-navy);
   text-align: center;
 }
 
@@ -903,12 +897,9 @@ body {
   text-align: center;
   gap: 0.75rem;
   padding: 1.5rem 1.25rem;
-  border: 1px solid rgba(0, 255, 255, 0.12);
-  background: linear-gradient(
-    160deg,
-    rgba(16, 26, 36, 0.85),
-    rgba(11, 16, 24, 0.9)
-  );
+  border: 1px solid rgba(0, 29, 61, 0.1);
+  background: var(--al-surface);
+  box-shadow: 0 2px 8px rgba(0, 29, 61, 0.05);
   transition:
     transform 0.2s ease,
     border-color 0.2s ease,
@@ -917,8 +908,8 @@ body {
 
 .al-feature-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(0, 255, 255, 0.3);
-  box-shadow: 0 12px 32px rgba(0, 255, 255, 0.08);
+  border-color: rgba(0, 122, 255, 0.3);
+  box-shadow: 0 12px 32px rgba(0, 29, 61, 0.1);
 }
 
 .al-feature-icon {
@@ -929,7 +920,7 @@ body {
   height: 3.25rem;
   margin: 0 auto;
   border-radius: 0.75rem;
-  background: rgba(0, 255, 255, 0.1);
+  background: rgba(0, 122, 255, 0.1);
   color: var(--al-cyan);
   flex-shrink: 0;
 }
@@ -966,13 +957,13 @@ body {
 .al-faq-item {
   border: 1px solid var(--al-border-soft);
   border-radius: 0.75rem;
-  background: rgba(16, 26, 36, 0.5);
+  background: var(--al-surface);
   overflow: hidden;
   transition: border-color 0.2s ease;
 }
 
 .al-faq-item.al-faq-open {
-  border-color: rgba(0, 255, 255, 0.25);
+  border-color: rgba(0, 122, 255, 0.25);
 }
 
 .al-faq-trigger {
@@ -993,7 +984,7 @@ body {
 }
 
 .al-faq-trigger:hover {
-  color: var(--al-cyan);
+  color: var(--al-navy);
 }
 
 .al-faq-chevron {
@@ -1030,7 +1021,7 @@ body {
   gap: 0.5rem;
   padding: 0.75rem 1.75rem;
   border-radius: 2rem;
-  border: 1px solid rgba(0, 255, 255, 0.3);
+  border: 1px solid rgba(0, 122, 255, 0.3);
   background: transparent;
   color: var(--al-cyan);
   font-size: 0.9rem;
@@ -1044,7 +1035,7 @@ body {
 }
 
 .al-faq-more-btn:hover {
-  background: rgba(0, 255, 255, 0.08);
+  background: rgba(0, 122, 255, 0.08);
   border-color: var(--al-cyan);
 }
 
@@ -1055,7 +1046,7 @@ body {
 .al-footer-section {
   padding: 3rem 0 1.5rem;
   background: var(--al-surface-dark);
-  border-top: 1px solid rgba(0, 255, 255, 0.1);
+  border-top: 1px solid rgba(0, 29, 61, 0.1);
 }
 
 .al-footer-closing {
@@ -1079,7 +1070,7 @@ body {
 .al-footer {
   width: min(1100px, 100% - 2.5rem);
   margin: 0 auto;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(0, 29, 61, 0.1);
   padding-top: 1.2rem;
   display: flex;
   flex-wrap: wrap;
@@ -1092,7 +1083,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  color: rgba(0, 255, 255, 0.65);
+  color: var(--al-navy);
   font-size: 0.75rem;
   letter-spacing: 0.08em;
 }
@@ -1100,7 +1091,7 @@ body {
 .al-footer-icon {
   width: 1.2rem;
   height: 1.2rem;
-  border: 1px solid rgba(0, 255, 255, 0.45);
+  border: 1px solid rgba(0, 122, 255, 0.35);
   border-radius: 0.32rem;
   display: inline-flex;
   align-items: center;
@@ -1121,7 +1112,7 @@ body {
 }
 
 .al-footer a:hover {
-  color: var(--al-text-main);
+  color: var(--al-navy);
 }
 
 /* ========================================
@@ -1139,29 +1130,25 @@ body {
   width: 3.5rem;
   height: 3.5rem;
   border-radius: 999px;
-  border: 1px solid rgba(0, 255, 255, 0.4);
-  background: linear-gradient(
-    135deg,
-    rgba(0, 255, 255, 0.25),
-    rgba(0, 180, 200, 0.3)
-  );
-  color: var(--al-cyan);
+  border: 1px solid var(--al-cyan);
+  background: var(--al-cyan);
+  color: #ffffff;
   cursor: pointer;
   box-shadow:
-    0 8px 24px rgba(0, 255, 255, 0.15),
-    0 4px 12px rgba(0, 0, 0, 0.3);
+    0 8px 24px rgba(0, 122, 255, 0.25),
+    0 4px 12px rgba(0, 29, 61, 0.1);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
-    border-color 0.2s ease;
+    background 0.2s ease;
 }
 
 .al-chat-fab:hover {
   transform: scale(1.05);
-  border-color: var(--al-cyan);
+  background: #005FCC;
   box-shadow:
-    0 12px 32px rgba(0, 255, 255, 0.25),
-    0 6px 16px rgba(0, 0, 0, 0.35);
+    0 12px 32px rgba(0, 122, 255, 0.35),
+    0 6px 16px rgba(0, 29, 61, 0.12);
 }
 
 .al-chat-panel {
@@ -1169,13 +1156,9 @@ body {
   z-index: 99;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(
-    160deg,
-    rgba(16, 26, 36, 0.98),
-    rgba(11, 16, 24, 0.99)
-  );
-  border: 1px solid rgba(0, 255, 255, 0.2);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+  background: var(--al-surface);
+  border: 1px solid rgba(0, 29, 61, 0.12);
+  box-shadow: 0 16px 48px rgba(0, 29, 61, 0.12);
   opacity: 0;
   visibility: hidden;
   transition:
@@ -1262,7 +1245,7 @@ body {
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 0.35rem;
-  background: rgba(0, 255, 255, 0.15);
+  background: rgba(0, 122, 255, 0.12);
   color: var(--al-cyan);
 }
 
@@ -1283,8 +1266,8 @@ body {
 }
 
 .al-chat-close:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--al-text-main);
+  background: rgba(0, 29, 61, 0.05);
+  color: var(--al-navy);
 }
 
 .al-chat-messages {
@@ -1306,15 +1289,15 @@ body {
 
 .al-chat-message-user {
   align-self: flex-end;
-  background: rgba(0, 255, 255, 0.15);
-  border: 1px solid rgba(0, 255, 255, 0.2);
-  color: var(--al-text-main);
+  background: var(--al-cyan);
+  border: 1px solid var(--al-cyan);
+  color: #ffffff;
   border-bottom-right-radius: 0.25rem;
 }
 
 .al-chat-message-assistant {
   align-self: flex-start;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 29, 61, 0.04);
   border: 1px solid var(--al-border-soft);
   color: var(--al-text-main);
   border-bottom-left-radius: 0.25rem;
@@ -1369,8 +1352,8 @@ body {
   min-height: 2.5rem;
   padding: 0 0.75rem;
   border-radius: 0.6rem;
-  border: 1px solid var(--al-border-soft);
-  background: rgba(7, 11, 16, 0.8);
+  border: 1px solid rgba(0, 29, 61, 0.15);
+  background: var(--al-bg);
   color: var(--al-text-main);
   font-size: 0.9rem;
 }
@@ -1390,9 +1373,9 @@ body {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.6rem;
-  border: 1px solid rgba(0, 255, 255, 0.3);
-  background: rgba(0, 255, 255, 0.1);
-  color: var(--al-cyan);
+  border: 1px solid var(--al-cyan);
+  background: var(--al-cyan);
+  color: #ffffff;
   cursor: pointer;
   transition:
     background 0.2s ease,
@@ -1400,8 +1383,8 @@ body {
 }
 
 .al-chat-send:hover:not(:disabled) {
-  background: rgba(0, 255, 255, 0.2);
-  border-color: var(--al-cyan);
+  background: #005FCC;
+  border-color: #005FCC;
 }
 
 .al-chat-send:disabled {
