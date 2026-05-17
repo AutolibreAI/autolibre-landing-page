@@ -1196,6 +1196,12 @@ body {
   margin-top: 0.25rem;
 }
 
+.al-reason-group--cols {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.35rem;
+}
+
 .al-reason-option {
   display: flex;
   align-items: center;
@@ -1995,5 +2001,9 @@ body {
   .al-nav-provider-btn {
     font-size: 0.75rem;
     padding: 0 0.6rem;
+  }
+
+  .al-reason-group--cols {
+    grid-template-columns: 1fr;
   }
 }

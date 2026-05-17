@@ -26,6 +26,10 @@ const SERVICES = [
   "Diagnóstico OBD",
   "Neumáticos",
   "Inspecciones pre-compra",
+  "Lavadero",
+  "Detailing",
+  "Baterías",
+  "Tren delantero",
   "Otro",
 ];
 
@@ -36,6 +40,7 @@ const HOW_FOUND = [
   "WhatsApp",
   "Un cliente nos contactó",
   "Redes sociales",
+  "Amigo / conocido",
   "Otro",
 ];
 
@@ -48,6 +53,7 @@ export default function ProviderModal({ open, onClose }: ProviderModalProps) {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [brands, setBrands] = useState<string[]>([]);
   const [services, setServices] = useState<string[]>([]);
+  const [otherService, setOtherService] = useState("");
   const [vehicleTypes, setVehicleTypes] = useState<string[]>([]);
   const panelRef = useRef<HTMLDivElement>(null);
   const firstFocusRef = useRef<HTMLInputElement>(null);
@@ -197,8 +203,10 @@ export default function ProviderModal({ open, onClose }: ProviderModalProps) {
 
               {/* Brands */}
               <div className="al-form-field">
-                <label>Marcas en las que se especializan</label>
-                <div className="al-reason-group">
+                <label>
+                  Marcas en las que se especializan <span className="al-required">*</span>
+                </label>
+                <div className="al-reason-group al-reason-group--cols">
                   {BRANDS.map((b) => (
                     <label key={b} className="al-reason-option">
                       <input
@@ -215,8 +223,10 @@ export default function ProviderModal({ open, onClose }: ProviderModalProps) {
 
               {/* Services */}
               <div className="al-form-field">
-                <label>Servicios que ofrecen</label>
-                <div className="al-reason-group">
+                <label>
+                  Servicios que ofrecen <span className="al-required">*</span>
+                </label>
+                <div className="al-reason-group al-reason-group--cols">
                   {SERVICES.map((s) => (
                     <label key={s} className="al-reason-option">
                       <input
@@ -229,11 +239,23 @@ export default function ProviderModal({ open, onClose }: ProviderModalProps) {
                     </label>
                   ))}
                 </div>
+                {services.includes("Otro") && (
+                  <input
+                    type="text"
+                    className="al-form-field-nested"
+                    placeholder="Describí el servicio..."
+                    value={otherService}
+                    onChange={(e) => setOtherService(e.target.value)}
+                    required
+                  />
+                )}
               </div>
 
               {/* Vehicle types */}
               <div className="al-form-field">
-                <label>Tipos de vehículo que atienden</label>
+                <label>
+                  Tipos de vehículo que atienden <span className="al-required">*</span>
+                </label>
                 <div className="al-reason-group">
                   {VEHICLE_TYPES.map((v) => (
                     <label key={v} className="al-reason-option">
@@ -252,9 +274,9 @@ export default function ProviderModal({ open, onClose }: ProviderModalProps) {
               {/* How found */}
               <div className="al-form-field">
                 <label htmlFor="prov-how">
-                  ¿Cómo se enteraron de Auto Libre?
+                  ¿Cómo se enteraron de Auto Libre? <span className="al-required">*</span>
                 </label>
-                <select id="prov-how" name="how_found" defaultValue="">
+                <select id="prov-how" name="how_found" defaultValue="" required>
                   <option value="" disabled>Seleccioná una opción</option>
                   {HOW_FOUND.map((h) => (
                     <option key={h} value={h}>{h}</option>
