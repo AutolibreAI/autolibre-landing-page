@@ -652,6 +652,189 @@ body {
   mix-blend-mode: screen;
 }
 
+/* ========================================
+   Hero Carousel
+   ======================================== */
+
+.al-carousel-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+/* Phone-frame shell */
+.al-carousel-frame {
+  position: relative;
+  width: min(300px, 100%);
+  aspect-ratio: 9 / 17;
+  border-radius: 2.25rem;
+  border: 1.5px solid var(--al-border-soft);
+  background: var(--al-surface);
+  box-shadow:
+    0 8px 40px rgba(0, 29, 61, 0.10),
+    0 2px 8px rgba(0, 29, 61, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.3s ease;
+}
+
+[data-theme="dark"] .al-carousel-frame {
+  background: var(--al-surface);
+  border-color: rgba(0, 255, 255, 0.14);
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Statusbar inside frame */
+.al-carousel-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 1rem 0.45rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--al-cyan);
+  border-bottom: 1px solid var(--al-border-soft);
+  flex-shrink: 0;
+}
+
+.al-carousel-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--al-green);
+  box-shadow: 0 0 5px rgba(22, 163, 74, 0.55);
+}
+
+[data-theme="dark"] .al-carousel-dot {
+  background: var(--al-cyan);
+  box-shadow: 0 0 6px var(--al-cyan);
+}
+
+/* Slide area — fills remaining height */
+.al-carousel-stage {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Empty placeholder */
+.al-carousel-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  height: 100%;
+  color: var(--al-text-muted);
+  opacity: 0.5;
+  user-select: none;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Real screenshot image */
+.al-carousel-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Label pill at bottom of frame */
+.al-carousel-label-pill {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.22rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--al-border-soft);
+  background: var(--al-bg);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--al-text-muted);
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Controls row: ← dots → */
+.al-carousel-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.al-carousel-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--al-border-soft);
+  background: var(--al-surface);
+  color: var(--al-text-muted);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.al-carousel-arrow:hover {
+  border-color: var(--al-cyan);
+  color: var(--al-cyan);
+  background: rgba(0, 122, 255, 0.05);
+}
+
+[data-theme="dark"] .al-carousel-arrow:hover {
+  background: rgba(0, 255, 255, 0.06);
+}
+
+/* Dot indicators */
+.al-carousel-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.al-carousel-dot-btn {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(0, 29, 61, 0.18);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.al-carousel-dot-btn--active {
+  width: 20px;
+  background: var(--al-cyan);
+}
+
+[data-theme="dark"] .al-carousel-dot-btn {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .al-carousel-dot-btn--active {
+  background: var(--al-cyan);
+}
+
 .al-preview-statusbar {
   display: flex;
   align-items: center;
@@ -1739,6 +1922,10 @@ body {
 
   .al-hero-actions--left {
     justify-content: center;
+  }
+
+  .al-carousel-frame {
+    width: min(240px, 80vw);
   }
 
   .al-hero-grid,

@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { LandingPageContent } from "@/lib/landing-types";
 import BrandButton from "@/components/landing/brand-button";
 import BrandHeading from "@/components/landing/brand-heading";
+import HeroCarousel from "@/components/landing/hero-carousel";
 
 type HeroSectionProps = {
   readonly content: LandingPageContent["sections"]["hero"];
@@ -47,16 +47,9 @@ export default function HeroSection({ content }: HeroSectionProps) {
         </div>
       </div>
 
-      {/* Right column — app preview image */}
-      <div className="al-hero-preview" aria-hidden="true">
-        <Image
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/app%20sin%20fondo%20HD.png-den0XAYw6LBc5IeDq0PPsTFQaL9FM1.jpeg"
-          alt=""
-          fill
-          sizes="(max-width: 980px) 100vw, 280px"
-          className="al-preview-image"
-          style={{ mixBlendMode: "screen", objectFit: "contain" }}
-        />
+      {/* Right column — app preview carousel */}
+      <div className="al-hero-preview">
+        <HeroCarousel />
       </div>
     </div>
   );
