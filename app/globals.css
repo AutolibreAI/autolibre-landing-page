@@ -151,6 +151,20 @@
   --al-nav-shell-height: 5.25rem;
 }
 
+/* Dark mode palette */
+[data-theme="dark"] {
+  --al-bg:            #090c12;   /* Deep Dark  – fondo principal */
+  --al-surface:       #0f1622;   /* Surface Dark – tarjetas */
+  --al-surface-soft:  #0f1622;   /* mismo que surface para secciones alternas */
+  --al-surface-dark:  #050709;   /* aún más oscuro */
+  --al-navy:          #ffffff;   /* White para títulos en dark */
+  --al-cyan:          #00ffff;   /* Neon Cyan – CTAs / activos */
+  --al-green:         #00ffff;   /* Cyan para success en dark */
+  --al-text-main:     #f2f4f7;   /* Light text – cuerpo */
+  --al-text-muted:    #8d97a8;   /* Muted light – info sec. */
+  --al-border-soft:   rgba(0, 255, 255, 0.1);  /* Cyan transparente */
+}
+
 body {
   background: var(--al-bg);
   color: var(--al-text-main);
@@ -172,6 +186,11 @@ body {
   background: linear-gradient(to bottom, #F9FAFBf0 0%, #F9FAFB90 50%, transparent 100%);
   position: sticky;
   top: 0;
+  transition: background 0.3s ease;
+}
+
+[data-theme="dark"] .al-nav-shell {
+  background: linear-gradient(to bottom, #090c12f0 0%, #090c1290 50%, transparent 100%);
 }
 
 .al-container {
@@ -239,6 +258,22 @@ body {
   box-shadow:
     0 4px 20px rgba(0, 29, 61, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition:
+    background 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+[data-theme="dark"] .al-nav {
+  border: 1px solid rgba(0, 255, 255, 0.16);
+  background: linear-gradient(
+    180deg,
+    rgba(10, 16, 24, 0.34) 0%,
+    rgba(10, 16, 24, 0.24) 100%
+  );
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .al-nav-brand {
@@ -282,6 +317,37 @@ body {
 
 .al-nav-links a:hover {
   color: var(--al-navy);
+}
+
+.al-theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(0, 29, 61, 0.15);
+  background: rgba(0, 29, 61, 0.03);
+  color: var(--al-cyan);
+  cursor: pointer;
+  transition:
+    all 0.2s ease;
+}
+
+.al-theme-toggle:hover {
+  border-color: var(--al-cyan);
+  background: rgba(0, 29, 61, 0.08);
+  transform: scale(1.05);
+}
+
+[data-theme="dark"] .al-theme-toggle {
+  border-color: rgba(0, 255, 255, 0.35);
+  background: rgba(0, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .al-theme-toggle:hover {
+  border-color: var(--al-cyan);
+  background: rgba(0, 255, 255, 0.15);
 }
 
 /* ========================================
