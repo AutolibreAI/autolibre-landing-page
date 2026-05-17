@@ -985,6 +985,10 @@ body {
   color: var(--al-text-muted);
 }
 
+.al-description + .al-description {
+  margin-top: 0;
+}
+
 /* ========================================
    Hero Actions & Social Proof
    ======================================== */
