@@ -350,6 +350,267 @@ body {
   background: rgba(0, 255, 255, 0.15);
 }
 
+/* ── Nav actions group ── */
+.al-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+/* ── "Soy proveedor" ghost button ── */
+.al-nav-provider-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 2.2rem;
+  padding: 0 0.85rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(0, 29, 61, 0.2);
+  background: transparent;
+  color: var(--al-navy);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.al-nav-provider-btn:hover {
+  border-color: var(--al-cyan);
+  color: var(--al-cyan);
+  background: rgba(0, 122, 255, 0.05);
+}
+
+[data-theme="dark"] .al-nav-provider-btn {
+  border-color: rgba(0, 255, 255, 0.3);
+  color: var(--al-text-muted);
+}
+
+[data-theme="dark"] .al-nav-provider-btn:hover {
+  border-color: var(--al-cyan);
+  color: var(--al-cyan);
+  background: rgba(0, 255, 255, 0.06);
+}
+
+/* ========================================
+   Provider Modal / Slide-over Panel
+   ======================================== */
+
+.al-provider-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: flex-end;
+  animation: al-fade-in 0.2s ease;
+}
+
+@keyframes al-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.al-provider-panel {
+  position: relative;
+  width: min(540px, 100vw);
+  height: 100dvh;
+  background: var(--al-surface);
+  border-left: 1px solid var(--al-border-soft);
+  box-shadow: -8px 0 40px rgba(0, 29, 61, 0.12);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  animation: al-slide-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes al-slide-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+[data-theme="dark"] .al-provider-panel {
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.4);
+}
+
+.al-provider-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.45rem;
+  border: 1px solid var(--al-border-soft);
+  background: transparent;
+  color: var(--al-text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  z-index: 10;
+}
+
+.al-provider-close:hover {
+  background: rgba(0, 29, 61, 0.06);
+  color: var(--al-navy);
+}
+
+[data-theme="dark"] .al-provider-close:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--al-text-main);
+}
+
+.al-provider-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem 1.75rem 2.5rem;
+}
+
+/* ── Pitch section ── */
+.al-provider-pitch {
+  padding-top: 0.5rem;
+}
+
+.al-provider-heading {
+  margin: 0 0 0.6rem;
+  font-size: clamp(1.3rem, 3vw, 1.6rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--al-navy);
+  line-height: 1.15;
+  text-wrap: balance;
+  padding-right: 2rem;
+}
+
+.al-provider-desc {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--al-text-muted);
+}
+
+.al-provider-benefits {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 1rem;
+}
+
+.al-provider-benefits li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--al-navy);
+}
+
+.al-provider-benefit-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 0.4rem;
+  background: rgba(0, 122, 255, 0.1);
+  color: var(--al-cyan);
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .al-provider-benefit-icon {
+  background: rgba(0, 255, 255, 0.1);
+}
+
+/* ── Provider form ── */
+.al-provider-form {
+  border-top: 1px solid var(--al-border-soft);
+  padding-top: 1.5rem;
+}
+
+.al-provider-form select {
+  width: 100%;
+  min-height: 2.8rem;
+  border-radius: 0.7rem;
+  border: 1px solid rgba(0, 29, 61, 0.15);
+  background: var(--al-surface);
+  color: var(--al-text-main);
+  padding: 0 0.8rem;
+  font-size: 0.9rem;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 10px;
+  cursor: pointer;
+}
+
+.al-provider-form select:focus {
+  outline: none;
+  border-color: rgba(0, 122, 255, 0.4);
+}
+
+[data-theme="dark"] .al-provider-form select {
+  border-color: rgba(0, 255, 255, 0.15);
+  background-color: var(--al-surface);
+}
+
+/* ── Success state ── */
+.al-provider-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.75rem;
+  padding: 4rem 2rem;
+  flex: 1;
+}
+
+.al-provider-success h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--al-navy);
+}
+
+.al-provider-success p {
+  margin: 0;
+  color: var(--al-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  max-width: 28ch;
+}
+
+.al-provider-done-btn {
+  margin-top: 0.5rem;
+  padding: 0.55rem 1.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--al-border-soft);
+  background: transparent;
+  color: var(--al-text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.al-provider-done-btn:hover {
+  border-color: var(--al-cyan);
+  color: var(--al-cyan);
+}
+
+.al-form-error-text {
+  font-size: 0.8rem;
+  color: #D20000;
+  margin: 0;
+}
+
 /* ========================================
    Hero Section (Split)
    ======================================== */
@@ -1513,5 +1774,39 @@ body {
     right: 1rem;
     width: 3rem;
     height: 3rem;
+  }
+
+  /* Provider panel: full-width slide up from bottom on mobile */
+  .al-provider-overlay {
+    align-items: flex-end;
+    justify-content: stretch;
+  }
+
+  .al-provider-panel {
+    width: 100vw;
+    height: 94dvh;
+    border-left: none;
+    border-top: 1px solid var(--al-border-soft);
+    border-radius: 1.25rem 1.25rem 0 0;
+    animation: al-slide-up 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @keyframes al-slide-up {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+
+  .al-provider-inner {
+    padding: 1.5rem 1.25rem 3rem;
+  }
+
+  .al-provider-benefits {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .al-nav-provider-btn {
+    font-size: 0.75rem;
+    padding: 0 0.6rem;
   }
 }

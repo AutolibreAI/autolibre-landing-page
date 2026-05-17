@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "@/lib/theme-context";
+import ProviderModal from "@/components/landing/provider-modal";
 import type { LandingBrand } from "@/lib/landing-types";
 
 type LandingNavProps = {
@@ -11,6 +13,7 @@ type LandingNavProps = {
 
 export default function LandingNav({ brand }: LandingNavProps) {
   const { theme, toggleTheme } = useTheme();
+  const [providerOpen, setProviderOpen] = useState(false);
 
   return (
     <div className="al-nav-shell">
@@ -29,12 +32,19 @@ export default function LandingNav({ brand }: LandingNavProps) {
           <Link href="#faqs">FAQs</Link>
           <Link href="#footer">Contacto</Link>
         </nav>
-        <button
-          onClick={toggleTheme}
-          className="al-theme-toggle"
-          aria-label={`Cambiar a modo ${theme === 'light' ? 'oscuro' : 'claro'}`}
-          title={`Modo ${theme === 'light' ? 'oscuro' : 'claro'}`}
-        >
+        <div className="al-nav-actions">
+          <button
+            onClick={() => setProviderOpen(true)}
+            className="al-nav-provider-btn"
+          >
+            Soy proveedor
+          </button>
+          <button
+            onClick={toggleTheme}
+            className="al-theme-toggle"
+            aria-label={`Cambiar a modo ${theme === 'light' ? 'oscuro' : 'claro'}`}
+            title={`Modo ${theme === 'light' ? 'oscuro' : 'claro'}`}
+          >
           {theme === 'light' ? (
             <svg
               width="20"
@@ -68,8 +78,10 @@ export default function LandingNav({ brand }: LandingNavProps) {
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             </svg>
           )}
-        </button>
+          </button>
+        </div>
       </header>
+      <ProviderModal open={providerOpen} onClose={() => setProviderOpen(false)} />
     </div>
   );
 }
