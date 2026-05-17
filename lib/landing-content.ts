@@ -11,8 +11,10 @@ export const landingPageContent: LandingPageContent = {
       eyebrow: "AUTO LIBRE AI",
       headingLineOne: "Hablá con tu auto.",
       headingLineTwo: "Muy pronto.",
-      description:
-        "La app que resuelve todo lo que necesitas para tu vehiculo en un solo lugar. Qué le pasa a tu auto, cuándo le toca service y la VTV y dónde llevarlo.",
+      description: [
+        "La app que resuelve todo lo que necesitas para tu vehiculo en un solo lugar.",
+        "Qué le pasa a tu auto, cuándo le toca service y la VTV y dónde llevarlo.",
+      ],
       mainAction: {
         label: "Quiero Early Access",
         href: "#form-section",
