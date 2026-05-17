@@ -81,6 +81,8 @@ export default function ProviderModal({ open, onClose }: ProviderModalProps) {
   const [otherService, setOtherService] = useState("");
   const [vehicleTypes, setVehicleTypes] = useState<string[]>([]);
   const [fuelTypes, setFuelTypes] = useState<string[]>([]);
+  const [howFound, setHowFound] = useState("");
+  const [otherHowFound, setOtherHowFound] = useState("");
   const panelRef = useRef<HTMLDivElement>(null);
   const firstFocusRef = useRef<HTMLInputElement>(null);
 
@@ -390,12 +392,33 @@ export default function ProviderModal({ open, onClose }: ProviderModalProps) {
                 <label htmlFor="prov-how">
                   ¿Cómo se enteraron de Auto Libre? <span className="al-required">*</span>
                 </label>
-                <select id="prov-how" name="how_found" defaultValue="" required>
+                <select
+                  id="prov-how"
+                  name="how_found"
+                  value={howFound}
+                  onChange={(e) => {
+                    setHowFound(e.target.value);
+                    if (e.target.value !== "Otro") {
+                      setOtherHowFound("");
+                    }
+                  }}
+                  required
+                >
                   <option value="" disabled>Seleccioná una opción</option>
                   {HOW_FOUND.map((h) => (
                     <option key={h} value={h}>{h}</option>
                   ))}
                 </select>
+                {howFound === "Otro" && (
+                  <input
+                    type="text"
+                    className="al-form-field-nested"
+                    placeholder="Contanos cómo te enteraste..."
+                    value={otherHowFound}
+                    onChange={(e) => setOtherHowFound(e.target.value)}
+                    required
+                  />
+                )}
               </div>
 
               {submitState === "error" && (
