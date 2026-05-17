@@ -59,7 +59,6 @@ export default function ProviderModal({ open, onClose }: ProviderModalProps) {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [brandSpecialized, setBrandSpecialized] = useState<"yes" | "no" | null>(null);
   const [brands, setBrands] = useState<string[]>([]);
-  const [brandPickerValue, setBrandPickerValue] = useState("");
   const [services, setServices] = useState<string[]>([]);
   const [otherService, setOtherService] = useState("");
   const [vehicleTypes, setVehicleTypes] = useState<string[]>([]);
@@ -220,14 +219,13 @@ export default function ProviderModal({ open, onClose }: ProviderModalProps) {
                   <label className={`al-reason-option${brandSpecialized === "no" ? " al-reason-option--active" : ""}`}>
                     <input
                       type="radio"
-                      className="al-checkbox-input"
+                      className="al-radio-input"
                       name="brand_specialized"
                       value="no"
                       checked={brandSpecialized === "no"}
                       onChange={() => {
                         setBrandSpecialized("no");
                         setBrands([]);
-                        setBrandPickerValue("");
                       }}
                     />
                     <span>No, trabajamos todas las marcas</span>
@@ -235,7 +233,7 @@ export default function ProviderModal({ open, onClose }: ProviderModalProps) {
                   <label className={`al-reason-option${brandSpecialized === "yes" ? " al-reason-option--active" : ""}`}>
                     <input
                       type="radio"
-                      className="al-checkbox-input"
+                      className="al-radio-input"
                       name="brand_specialized"
                       value="yes"
                       checked={brandSpecialized === "yes"}
@@ -248,31 +246,21 @@ export default function ProviderModal({ open, onClose }: ProviderModalProps) {
                 {/* Step 2: dropdown picker — only when "yes" */}
                 {brandSpecialized === "yes" && (
                   <div className="al-brand-picker">
-                    <div className="al-brand-picker-row">
-                      <select
-                        className="al-brand-select"
-                        value={brandPickerValue}
-                        onChange={(e) => setBrandPickerValue(e.target.value)}
-                      >
-                        <option value="" disabled>Seleccioná una marca</option>
-                        {BRANDS.filter((b) => !brands.includes(b)).map((b) => (
-                          <option key={b} value={b}>{b}</option>
-                        ))}
-                      </select>
-                      <button
-                        type="button"
-                        className="al-brand-add-btn"
-                        disabled={!brandPickerValue}
-                        onClick={() => {
-                          if (brandPickerValue && !brands.includes(brandPickerValue)) {
-                            setBrands([...brands, brandPickerValue]);
-                          }
-                          setBrandPickerValue("");
-                        }}
-                      >
-                        Agregar
-                      </button>
-                    </div>
+                    <select
+                      className="al-brand-select"
+                      value=""
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val && !brands.includes(val)) {
+                          setBrands([...brands, val]);
+                        }
+                      }}
+                    >
+                      <option value="" disabled>Seleccioná una marca para agregar</option>
+                      {BRANDS.filter((b) => !brands.includes(b)).map((b) => (
+                        <option key={b} value={b}>{b}</option>
+                      ))}
+                    </select>
 
                     {/* Selected brand chips */}
                     {brands.length > 0 && (
