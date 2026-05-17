@@ -35,6 +35,8 @@ const SERVICES = [
 
 const VEHICLE_TYPES = ["Autos", "SUVs", "Pickups", "Motos"];
 
+const FUEL_TYPES = ["Nafta", "Diesel", "Híbridos", "Eléctricos"];
+
 const HOW_FOUND = [
   "Google",
   "WhatsApp",
@@ -55,6 +57,7 @@ export default function ProviderModal({ open, onClose }: ProviderModalProps) {
   const [services, setServices] = useState<string[]>([]);
   const [otherService, setOtherService] = useState("");
   const [vehicleTypes, setVehicleTypes] = useState<string[]>([]);
+  const [fuelTypes, setFuelTypes] = useState<string[]>([]);
   const panelRef = useRef<HTMLDivElement>(null);
   const firstFocusRef = useRef<HTMLInputElement>(null);
 
@@ -266,6 +269,26 @@ export default function ProviderModal({ open, onClose }: ProviderModalProps) {
                         onChange={() => toggle(vehicleTypes, setVehicleTypes, v)}
                       />
                       <span>{v}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Fuel / motorization types */}
+              <div className="al-form-field">
+                <label>
+                  Motorizaciones que atienden <span className="al-required">*</span>
+                </label>
+                <div className="al-reason-group al-reason-group--cols">
+                  {FUEL_TYPES.map((f) => (
+                    <label key={f} className="al-reason-option">
+                      <input
+                        type="checkbox"
+                        className="al-checkbox-input reasonOption"
+                        checked={fuelTypes.includes(f)}
+                        onChange={() => toggle(fuelTypes, setFuelTypes, f)}
+                      />
+                      <span>{f}</span>
                     </label>
                   ))}
                 </div>
