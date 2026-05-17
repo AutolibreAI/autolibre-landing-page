@@ -14,7 +14,11 @@ const BRANDS = [
   "Chevrolet",
   "Renault",
   "Honda",
-  "Todas las marcas",
+  "Fiat",
+  "Citroën",
+  "BMW",
+  "Mercedes-Benz",
+  "Nissan",
 ];
 
 const SERVICES = [
@@ -53,7 +57,9 @@ type ProviderModalProps = {
 
 export default function ProviderModal({ open, onClose }: ProviderModalProps) {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const [brandSpecialized, setBrandSpecialized] = useState<"yes" | "no" | null>(null);
   const [brands, setBrands] = useState<string[]>([]);
+  const [brandPickerValue, setBrandPickerValue] = useState("");
   const [services, setServices] = useState<string[]>([]);
   const [otherService, setOtherService] = useState("");
   const [vehicleTypes, setVehicleTypes] = useState<string[]>([]);
@@ -209,19 +215,98 @@ export default function ProviderModal({ open, onClose }: ProviderModalProps) {
                 <label>
                   Marcas en las que se especializan <span className="al-required">*</span>
                 </label>
-                <div className="al-reason-group al-reason-group--cols">
-                  {BRANDS.map((b) => (
-                    <label key={b} className="al-reason-option">
-                      <input
-                        type="checkbox"
-                        className="al-checkbox-input reasonOption"
-                        checked={brands.includes(b)}
-                        onChange={() => toggle(brands, setBrands, b)}
-                      />
-                      <span>{b}</span>
-                    </label>
-                  ))}
+                {/* Step 1: yes/no radio */}
+                <div className="al-brand-radio-group">
+                  <label className={`al-reason-option${brandSpecialized === "no" ? " al-reason-option--active" : ""}`}>
+                    <input
+                      type="radio"
+                      className="al-checkbox-input"
+                      name="brand_specialized"
+                      value="no"
+                      checked={brandSpecialized === "no"}
+                      onChange={() => {
+                        setBrandSpecialized("no");
+                        setBrands([]);
+                        setBrandPickerValue("");
+                      }}
+                    />
+                    <span>No, trabajamos todas las marcas</span>
+                  </label>
+                  <label className={`al-reason-option${brandSpecialized === "yes" ? " al-reason-option--active" : ""}`}>
+                    <input
+                      type="radio"
+                      className="al-checkbox-input"
+                      name="brand_specialized"
+                      value="yes"
+                      checked={brandSpecialized === "yes"}
+                      onChange={() => setBrandSpecialized("yes")}
+                    />
+                    <span>Sí, me especializo en marcas específicas</span>
+                  </label>
                 </div>
+
+                {/* Step 2: dropdown picker — only when "yes" */}
+                {brandSpecialized === "yes" && (
+                  <div className="al-brand-picker">
+                    <div className="al-brand-picker-row">
+                      <select
+                        className="al-brand-select"
+                        value={brandPickerValue}
+                        onChange={(e) => setBrandPickerValue(e.target.value)}
+                      >
+                        <option value="" disabled>Seleccioná una marca</option>
+                        {BRANDS.filter((b) => !brands.includes(b)).map((b) => (
+                          <option key={b} value={b}>{b}</option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        className="al-brand-add-btn"
+                        disabled={!brandPickerValue}
+                        onClick={() => {
+                          if (brandPickerValue && !brands.includes(brandPickerValue)) {
+                            setBrands([...brands, brandPickerValue]);
+                          }
+                          setBrandPickerValue("");
+                        }}
+                      >
+                        Agregar
+                      </button>
+                    </div>
+
+                    {/* Selected brand chips */}
+                    {brands.length > 0 && (
+                      <div className="al-brand-chips">
+                        {brands.map((b) => (
+                          <span key={b} className="al-brand-chip">
+                            {b}
+                            <button
+                              type="button"
+                              className="al-brand-chip-remove"
+                              aria-label={`Quitar ${b}`}
+                              onClick={() => setBrands(brands.filter((x) => x !== b))}
+                            >
+                              <X size={11} aria-hidden />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {brands.length === 0 && (
+                      <p className="al-brand-picker-hint">
+                        Agregá al menos una marca para continuar.
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Confirmation for "all brands" */}
+                {brandSpecialized === "no" && (
+                  <p className="al-brand-all-msg">
+                    Se registrará que el taller trabaja con todas las marcas.
+                  </p>
+                )}
               </div>
 
               {/* Services */}

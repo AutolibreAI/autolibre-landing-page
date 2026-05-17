@@ -1202,6 +1202,151 @@ body {
   gap: 0.35rem;
 }
 
+/* ── Brand specialization UI ── */
+.al-brand-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+.al-reason-option--active {
+  border-color: rgba(0, 122, 255, 0.4);
+  background: rgba(0, 122, 255, 0.06);
+}
+
+[data-theme="dark"] .al-reason-option--active {
+  border-color: rgba(0, 255, 255, 0.4);
+  background: rgba(0, 255, 255, 0.06);
+}
+
+.al-brand-picker {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.al-brand-picker-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.al-brand-select {
+  flex: 1;
+  min-height: 2.5rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(0, 29, 61, 0.15);
+  background: var(--al-surface);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 10px;
+  color: var(--al-text-main);
+  padding: 0 2rem 0 0.75rem;
+  font-size: 0.85rem;
+  appearance: none;
+  cursor: pointer;
+}
+
+.al-brand-select:focus {
+  outline: none;
+  border-color: rgba(0, 122, 255, 0.4);
+}
+
+[data-theme="dark"] .al-brand-select {
+  border-color: rgba(0, 255, 255, 0.15);
+}
+
+.al-brand-add-btn {
+  flex-shrink: 0;
+  height: 2.5rem;
+  padding: 0 1rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--al-cyan);
+  background: var(--al-cyan);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
+  white-space: nowrap;
+}
+
+.al-brand-add-btn:hover:not(:disabled) {
+  background: #005FCC;
+  border-color: #005FCC;
+}
+
+.al-brand-add-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+[data-theme="dark"] .al-brand-add-btn {
+  color: #000;
+}
+
+/* Brand chips */
+.al-brand-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.al-brand-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.45rem 0.2rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 122, 255, 0.3);
+  background: rgba(0, 122, 255, 0.08);
+  color: var(--al-navy);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+[data-theme="dark"] .al-brand-chip {
+  border-color: rgba(0, 255, 255, 0.3);
+  background: rgba(0, 255, 255, 0.08);
+  color: var(--al-cyan);
+}
+
+.al-brand-chip-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 29, 61, 0.1);
+  color: var(--al-text-muted);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.al-brand-chip-remove:hover {
+  background: rgba(210, 0, 0, 0.12);
+  color: #D20000;
+}
+
+.al-brand-picker-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--al-text-muted);
+  font-style: italic;
+}
+
+.al-brand-all-msg {
+  margin: 0.35rem 0 0;
+  font-size: 0.78rem;
+  color: var(--al-green);
+  font-weight: 600;
+}
+
 .al-reason-option {
   display: flex;
   align-items: center;
