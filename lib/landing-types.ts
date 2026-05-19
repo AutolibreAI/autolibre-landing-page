@@ -31,7 +31,7 @@ export type HeroContent = {
   readonly eyebrow: string;
   readonly headingLineOne: string;
   readonly headingLineTwo: string;
-  readonly description: string;
+  readonly description: string | readonly string[];
   readonly mainAction: PrimaryAction;
   readonly secondaryAction: PrimaryAction;
   readonly socialProof: string;

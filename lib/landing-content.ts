@@ -11,8 +11,10 @@ export const landingPageContent: LandingPageContent = {
       eyebrow: "AUTO LIBRE AI",
       headingLineOne: "Hablá con tu auto.",
       headingLineTwo: "Muy pronto.",
-      description:
-        "Información y diagnóstico inteligente en un solo lugar. La app que te dice qué le pasa a tu auto, cuándo hacerle el service y dónde repararlo — sin saber de mecánica.",
+      description: [
+        "La app que resuelve todo lo que necesitas para tu vehiculo en un solo lugar.",
+        "Qué le pasa a tu auto, cuándo le toca service y la VTV y dónde llevarlo.",
+      ],
       mainAction: {
         label: "Quiero Early Access",
         href: "#form-section",
@@ -36,9 +38,9 @@ export const landingPageContent: LandingPageContent = {
       ],
       microcopy: "Nada de ruido. Solo Auto Libre, cuando esté listo.",
       reasonOptions: [
-        "Gestión administrativa",
+        "Gestión administrativa (VTV/RTO, service, patentes, multas, etc.)",
         "Diagnóstico con IA",
-        "Marketplace",
+        "Marketplace (presupuestos y nuevos proveedores)",
         "Otra",
       ],
     },
