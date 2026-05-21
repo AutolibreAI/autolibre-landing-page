@@ -68,9 +68,15 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${geistSans.className} ${geistSans.variable} ${geistMono.variable} h-full antialiased bg-[#F9FAFB]`}
+      className={`${geistSans.className} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      {/*  */}
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem('al-theme')||'dark';if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
           {children}

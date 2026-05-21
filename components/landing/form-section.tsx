@@ -34,29 +34,37 @@ export default function FormSection({ content }: FormSectionProps) {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    // Silently discard bot submissions (honeypot field filled)
     if (honeypot) {
       setSubmitState({ kind: "success" });
       return;
     }
 
     const form = e.currentTarget;
+    const name = (form.elements.namedItem("name") as HTMLInputElement).value;
     const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const patente = (form.elements.namedItem("patente") as HTMLInputElement).value;
+    const reason_other = (form.elements.namedItem("reason_other") as HTMLInputElement | null)?.value;
 
     try {
-      // TODO: replace with real API call
-      // Simulate duplicate check (hardcoded for demo)
-      const REGISTERED_EMAILS = new Set<string>();
-      if (REGISTERED_EMAILS.has(email)) {
+      const res = await fetch("/api/early-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, reasons, reason_other, patente, wants_scanner: wantsScanner }),
+      });
+
+      if (res.status === 409) {
         setSubmitState({ kind: "duplicate" });
         return;
       }
-      REGISTERED_EMAILS.add(email);
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? "Error desconocido");
+      }
       setSubmitState({ kind: "success" });
-    } catch {
+    } catch (err) {
       setSubmitState({
         kind: "error",
-        message: "Algo salió mal. Por favor intentá de nuevo.",
+        message: err instanceof Error ? err.message : "Algo salió mal. Por favor intentá de nuevo.",
       });
     }
   }

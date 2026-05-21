@@ -109,9 +109,37 @@ export default function ProviderModal({ open, onClose }: ProviderModalProps) {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSubmitState("loading");
-    // Simulate async submit
-    await new Promise((r) => setTimeout(r, 900));
-    setSubmitState("success");
+
+    const form = e.currentTarget;
+    const taller = (form.elements.namedItem("taller") as HTMLInputElement).value;
+    const whatsapp = (form.elements.namedItem("whatsapp") as HTMLInputElement).value;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const direccion = (form.elements.namedItem("direccion") as HTMLInputElement).value;
+
+    try {
+      const res = await fetch("/api/provider", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          taller, whatsapp, email, direccion,
+          brand_specialized: brandSpecialized,
+          brands,
+          services,
+          service_other: otherService || null,
+          vehicle_types: vehicleTypes,
+          fuel_types: fuelTypes,
+          how_found: howFound,
+          how_found_other: otherHowFound || null,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error();
+      }
+      setSubmitState("success");
+    } catch {
+      setSubmitState("error");
+    }
   }
 
   if (!open) return null;
