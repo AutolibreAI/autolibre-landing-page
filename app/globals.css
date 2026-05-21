@@ -359,6 +359,113 @@ body {
   margin-left: auto;
 }
 
+/* ── Hamburger button (mobile only) ── */
+.al-nav-hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(0, 29, 61, 0.15);
+  background: transparent;
+  color: var(--al-navy);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.al-nav-hamburger:hover {
+  border-color: var(--al-cyan);
+  background: rgba(0, 29, 61, 0.05);
+}
+
+[data-theme="dark"] .al-nav-hamburger {
+  border-color: rgba(0, 255, 255, 0.2);
+  color: var(--al-text-main);
+}
+
+[data-theme="dark"] .al-nav-hamburger:hover {
+  border-color: var(--al-cyan);
+  background: rgba(0, 255, 255, 0.06);
+}
+
+/* ── Mobile nav backdrop ── */
+.al-nav-mobile-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 48;
+}
+
+/* ── Mobile nav dropdown ── */
+.al-nav-mobile-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1100px, 100% - 2.5rem);
+  z-index: 49;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(0, 29, 61, 0.12);
+  border-radius: 0.9rem;
+  padding: 0.75rem;
+  box-shadow:
+    0 8px 32px rgba(0, 29, 61, 0.12),
+    0 2px 8px rgba(0, 29, 61, 0.06);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  animation: al-menu-in 0.18s ease;
+}
+
+@keyframes al-menu-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+[data-theme="dark"] .al-nav-mobile-menu {
+  background: rgba(10, 16, 26, 0.97);
+  border-color: rgba(0, 255, 255, 0.12);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.al-nav-mobile-links {
+  display: flex;
+  flex-direction: column;
+}
+
+.al-nav-mobile-links a {
+  display: block;
+  padding: 0.7rem 0.75rem;
+  color: var(--al-text-main);
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 0.55rem;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.al-nav-mobile-links a:hover {
+  background: rgba(0, 29, 61, 0.05);
+  color: var(--al-navy);
+}
+
+[data-theme="dark"] .al-nav-mobile-links a:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--al-cyan);
+}
+
+.al-nav-mobile-bottom {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--al-border-soft);
+}
+
+.al-nav-mobile-full {
+  width: 100%;
+  justify-content: center;
+  height: 2.5rem;
+}
+
 /* ── "Soy proveedor" ghost button ── */
 .al-nav-provider-btn {
   display: inline-flex;
@@ -1455,13 +1562,18 @@ body {
   height: 1.1rem;
   flex-shrink: 0;
   border-radius: 0.25rem;
-  border: 1px solid rgba(0, 29, 61, 0.2);
+  border: 1.5px solid rgba(0, 29, 61, 0.3);
   background: var(--al-surface);
   cursor: pointer;
   transition:
     background 0.15s ease,
     border-color 0.15s ease;
   position: relative;
+}
+
+[data-theme="dark"] .al-checkbox-input {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .al-checkbox-input:checked {
@@ -1479,6 +1591,11 @@ body {
   background-size: 70%;
 }
 
+/* Inside pills the raw checkbox is hidden — the pill border/bg shows the selected state */
+.al-reason-option .al-checkbox-input {
+  display: none;
+}
+
 .al-radio-input {
   appearance: none;
   -webkit-appearance: none;
@@ -1486,13 +1603,18 @@ body {
   height: 1.1rem;
   flex-shrink: 0;
   border-radius: 50%;
-  border: 1.5px solid rgba(0, 29, 61, 0.25);
+  border: 1.5px solid rgba(0, 29, 61, 0.3);
   background: var(--al-surface);
   cursor: pointer;
   position: relative;
   transition:
     background 0.15s ease,
     border-color 0.15s ease;
+}
+
+[data-theme="dark"] .al-radio-input {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .al-radio-input:checked {
@@ -1506,10 +1628,6 @@ body {
   inset: 3px;
   border-radius: 50%;
   background: #ffffff;
-}
-
-[data-theme="dark"] .al-radio-input {
-  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .al-checkbox-label {
@@ -2190,6 +2308,15 @@ body {
     display: none;
   }
 
+  .al-nav-hamburger {
+    display: flex;
+  }
+
+  /* Hide desktop-only provider button; it lives in the mobile menu */
+  .al-nav-actions .al-nav-provider-btn {
+    display: none;
+  }
+
   .al-hero-split {
     grid-template-columns: 1fr;
   }
@@ -2218,6 +2345,14 @@ body {
 
   .al-features-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .al-section {
+    padding: 3rem 0;
+  }
+
+  .al-title {
+    font-size: clamp(1.8rem, 7vw, 2.8rem);
   }
 }
 
@@ -2271,12 +2406,35 @@ body {
     gap: 0.5rem;
   }
 
-  .al-nav-provider-btn {
-    font-size: 0.75rem;
-    padding: 0 0.6rem;
-  }
-
   .al-reason-group--cols {
     grid-template-columns: 1fr;
+  }
+
+  .al-brand-radio-group {
+    gap: 0.5rem;
+  }
+
+  .al-signup-card {
+    padding: 1.25rem;
+  }
+
+  .al-section-hero {
+    padding-top: calc(var(--al-nav-shell-height) + 2.5rem);
+  }
+
+  .al-faq-trigger {
+    font-size: 0.88rem;
+    padding: 0.85rem 1rem;
+  }
+
+  .al-footer {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.75rem;
+  }
+
+  .al-footer-closing {
+    padding: 0 1rem;
   }
 }
