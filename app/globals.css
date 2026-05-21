@@ -1185,6 +1185,11 @@ body {
   font-size: 0.9rem;
 }
 
+[data-theme="dark"] .al-signup-form input:not(.reasonOption),
+[data-theme="dark"] .al-signup-form select {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
 .al-signup-form input::placeholder,
 .al-signup-form select::placeholder {
   color: rgba(141, 151, 168, 0.85);
@@ -2133,6 +2138,10 @@ body {
 
 .al-chat-input:disabled {
   opacity: 0.6;
+}
+
+[data-theme="dark"] .al-chat-input {
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .al-chat-send {
