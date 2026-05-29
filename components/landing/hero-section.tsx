@@ -1,8 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { LandingPageContent } from "@/lib/landing-types";
 import BrandButton from "@/components/landing/brand-button";
 import BrandHeading from "@/components/landing/brand-heading";
-import HeroCarousel from "@/components/landing/hero-carousel";
 
 type HeroSectionProps = {
   readonly content: LandingPageContent["sections"]["hero"];
@@ -47,9 +47,16 @@ export default function HeroSection({ content }: HeroSectionProps) {
         </div>
       </div>
 
-      {/* Right column — app preview carousel */}
+      {/* Right column — app preview */}
       <div className="al-hero-preview">
-        <HeroCarousel />
+        <Image
+          src="/landing/mockup_3_documentos.png"
+          alt="AutoLibre app — vista de garage y detalle de vehículo"
+          width={1270}
+          height={952}
+          priority
+          className="al-hero-mockup"
+        />
       </div>
     </div>
   );
