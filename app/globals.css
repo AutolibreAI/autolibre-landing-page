@@ -138,10 +138,10 @@
 
 :root {
   /* Brand Palette – Light Mode */
-  --al-bg:            #F9FAFB;   /* Soft Gray  – fondo principal */
-  --al-surface:       #FFFFFF;   /* Pure White – tarjetas */
-  --al-surface-soft:  #F9FAFB;   /* mismo que bg para secciones alternas */
-  --al-surface-dark:  #F0F2F5;   /* gris ligeramente más oscuro para contraste */
+  --al-bg:            #EEF1F7;   /* Cool Gray  – fondo principal */
+  --al-surface:       #F5F7FC;   /* Off-white  – tarjetas */
+  --al-surface-soft:  #F5F7FC;   /* mismo que surface para secciones alternas */
+  --al-surface-dark:  #E5E9F2;   /* gris más oscuro para contraste */
   --al-navy:          #001D3D;   /* Deep Navy  – títulos / branding */
   --al-cyan:          #007AFF;   /* Digital Cyan – CTAs / activos */
   --al-green:         #16A34A;   /* Pine Green  – OK / positivo */
@@ -255,10 +255,10 @@ body {
   border-radius: 0.9rem;
   -webkit-backdrop-filter: blur(14px) saturate(130%);
   backdrop-filter: blur(14px) saturate(130%);
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(245, 247, 252, 0.88);
   box-shadow:
     0 4px 20px rgba(0, 29, 61, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    inset 0 1px 0 rgba(245, 247, 252, 0.9);
   transition:
     background 0.3s ease,
     border-color 0.3s ease,
@@ -404,7 +404,7 @@ body {
   transform: translateX(-50%);
   width: min(1100px, 100% - 2.5rem);
   z-index: 49;
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(245, 247, 252, 0.97);
   border: 1px solid rgba(0, 29, 61, 0.12);
   border-radius: 0.9rem;
   padding: 0.75rem;
