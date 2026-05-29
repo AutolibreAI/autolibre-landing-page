@@ -18,18 +18,8 @@ type SubmitState =
   | { kind: "error"; message: string };
 
 export default function FormSection({ content }: FormSectionProps) {
-  const [wantsScanner, setWantsScanner] = useState(false);
-  const [reasons, setReasons] = useState<string[]>([]);
   const [honeypot, setHoneypot] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>({ kind: "idle" });
-
-  function toggleReason(option: string) {
-    setReasons((prev) =>
-      prev.includes(option)
-        ? prev.filter((r) => r !== option)
-        : [...prev, option],
-    );
-  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -42,14 +32,12 @@ export default function FormSection({ content }: FormSectionProps) {
     const form = e.currentTarget;
     const name = (form.elements.namedItem("name") as HTMLInputElement).value;
     const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-    const patente = (form.elements.namedItem("patente") as HTMLInputElement).value;
-    const reason_other = (form.elements.namedItem("reason_other") as HTMLInputElement | null)?.value;
 
     try {
       const res = await fetch("/api/early-access", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, reasons, reason_other, patente, wants_scanner: wantsScanner }),
+        body: JSON.stringify({ name, email }),
       });
 
       if (res.status === 409) {
@@ -131,89 +119,29 @@ export default function FormSection({ content }: FormSectionProps) {
                 }}
               />
 
-              {/* Required fields */}
-              <div className="al-form-row">
-                <div className="al-form-field">
-                  <label htmlFor="landing-name">
-                    Nombre <span className="al-required">*</span>
-                  </label>
-                  <input
-                    id="landing-name"
-                    name="name"
-                    type="text"
-                    placeholder="Tu nombre"
-                    required
-                  />
-                </div>
-                <div className="al-form-field">
-                  <label htmlFor="landing-email">
-                    Email <span className="al-required">*</span>
-                  </label>
-                  <input
-                    id="landing-email"
-                    name="email"
-                    type="email"
-                    placeholder="tu@email.com"
-                    required
-                  />
-                </div>
-              </div>
-
               <div className="al-form-field">
-                <label>
-                  ¿Qué te atrajo? <span className="al-required">*</span>
-                </label>
-                <div className="al-reason-group">
-                  {content.reasonOptions.map((option) => (
-                    <div key={option}>
-                      <label className="al-reason-option">
-                        <input
-                          type="checkbox"
-                          name="reason"
-                          value={option}
-                          checked={reasons.includes(option)}
-                          onChange={() => toggleReason(option)}
-                          className="al-checkbox-input reasonOption"
-                        />
-                        <span>{option}</span>
-                      </label>
-                      {option === "Otra" && reasons.includes("Otra") && (
-                        <input
-                          name="reason_other"
-                          type="text"
-                          placeholder="¿Qué te trajo hasta acá?"
-                          className="al-form-field-nested reasonOption"
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="al-form-field">
-                <label htmlFor="landing-patente">
-                  Patente <span className="al-required">*</span>
+                <label htmlFor="landing-name">
+                  Nombre <span className="al-required">*</span>
                 </label>
                 <input
-                  id="landing-patente"
-                  name="patente"
+                  id="landing-name"
+                  name="name"
                   type="text"
-                  placeholder="O ingresa el modelo si no la recordas"
+                  placeholder="Tu nombre"
                   required
                 />
               </div>
 
-              <div className="al-form-checkbox">
-                <label htmlFor="landing-scanner" className="al-checkbox-label">
-                  ¿Te interesa comprar un escáner?
+              <div className="al-form-field">
+                <label htmlFor="landing-email">
+                  Email <span className="al-required">*</span>
                 </label>
                 <input
-                  type="checkbox"
-                  id="landing-scanner"
-                  name="scanner"
-                  checked={wantsScanner}
-                  onChange={(e) => setWantsScanner(e.target.checked)}
-                  className="al-checkbox-input reasonOption"
+                  id="landing-email"
+                  name="email"
+                  type="email"
+                  placeholder="tu@email.com"
+                  required
                 />
               </div>
 

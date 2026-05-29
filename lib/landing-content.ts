@@ -12,7 +12,7 @@ export const landingPageContent: LandingPageContent = {
       headingLineOne: "Hablá con tu auto.",
       headingLineTwo: "Muy pronto.",
       description: [
-        "La app que resuelve todo lo que necesitas para tu vehiculo en un solo lugar.",
+        "La app que resuelve todo lo que necesitás para tu vehículo en un solo lugar.",
         "Qué le pasa a tu auto, cuándo le toca service y la VTV y dónde llevarlo.",
       ],
       mainAction: {
@@ -20,7 +20,7 @@ export const landingPageContent: LandingPageContent = {
         href: "#form-section",
       },
       secondaryAction: {
-        label: "Conocer más",
+        label: "Cómo funciona",
         href: "#problem",
       },
       socialProof: "Más de 100 conductores ya se sumaron a la lista de espera.",
@@ -216,8 +216,8 @@ export const landingPageContent: LandingPageContent = {
       closingPhrase: "Tu auto es tuyo. Nosotros nos encargamos de todo lo demás.",
       legalLabel: "AUTO LIBRE",
       legalLinks: [
-        { label: "TyC", href: "#" },
-        { label: "Privacidad", href: "#" },
+        { label: "TyC", href: "/terminos" },
+        { label: "Privacidad", href: "/privacidad" },
       ],
       socialLinks: [
         { id: "social-tiktok", label: "TikTok", href: "https://www.tiktok.com/@autolibreai" },

@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { name, email, reasons, reason_other, patente, wants_scanner } = body;
 
-  if (!name || !email || !patente) {
+  if (!name || !email) {
     return NextResponse.json({ error: 'Campos requeridos faltantes.' }, { status: 400 });
   }
 

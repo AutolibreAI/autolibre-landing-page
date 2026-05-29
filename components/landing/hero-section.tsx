@@ -55,6 +55,7 @@ export default function HeroSection({ content }: HeroSectionProps) {
           width={1270}
           height={952}
           priority
+          sizes="(max-width: 980px) min(420px, 90vw), (max-width: 1440px) 560px, (max-width: 1920px) 680px, 820px"
           className="al-hero-mockup"
         />
       </div>

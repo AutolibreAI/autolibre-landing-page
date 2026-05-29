@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AutoLibreAI | Diagnóstico Vehicular con IA y Gestión Automotriz",
+  title: "AutoLibre · Diagnóstico OBD2 con IA para tu auto",
   description:
-    "Traducí fallos OBD2 a lenguaje simple con IA. Gestioná VTV, seguros y mantenimiento preventivo en Argentina. Registrate para el Early Access de AutoLibreAI.",
+    "Traducí fallos OBD2 a lenguaje simple con IA. Gestioná VTV, seguros y mantenimiento preventivo en Argentina. Registrate para el Early Access de AutoLibre.",
   keywords: [
     "diagnóstico vehicular IA",
     "escáner OBD2 Argentina",
@@ -26,19 +26,22 @@ export const metadata: Metadata = {
     "gestión de VTV y multas",
     "telemetría automotriz",
   ],
-  authors: [{ name: "AutoLibreAI Team" }],
+  authors: [{ name: "AutoLibre" }],
+  alternates: {
+    canonical: "https://autolibre.ai",
+  },
   openGraph: {
-    title: "AutoLibreAI - Tu auto siempre supo qué tenía. Ahora vos también.",
+    title: "AutoLibre · Tu auto siempre supo qué tenía. Ahora vos también.",
     description:
-      "La plataforma que elimina el estrés del mantenimiento vehicular mediante inteligencia artificial y diagnóstico remoto.",
-    url: "https://autolibre.ai", // Reemplazar con tu dominio real
-    siteName: "AutoLibreAI",
+      "La app que traduce los datos OBD-II de tu auto a lenguaje simple. Diagnóstico inteligente, gestión de VTV, seguro y mantenimiento en Argentina.",
+    url: "https://autolibre.ai",
+    siteName: "AutoLibre",
     images: [
       {
-        url: "/autolibre-favicon.png", // Asegurate de tener una imagen atractiva aquí
-        width: 1200,
-        height: 630,
-        alt: "Preview de la App AutoLibreAI",
+        url: "/landing/mockup_3_documentos.png",
+        width: 1270,
+        height: 952,
+        alt: "AutoLibre app — diagnóstico OBD2 e historial de vehículo",
       },
     ],
     locale: "es_AR",
@@ -46,10 +49,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "AutoLibreAI | Inteligencia Automotriz en tu bolsillo",
+    title: "AutoLibre · Diagnóstico OBD2 con IA para tu auto",
     description:
       "Dejá de adivinar qué le pasa a tu auto. Diagnóstico inteligente y gestión de trámites en un solo lugar.",
-    images: ["/autolibre-favicon.png"],
+    images: ["/landing/mockup_3_documentos.png"],
   },
   icons: {
     icon: "/autolibre-favicon.png",
