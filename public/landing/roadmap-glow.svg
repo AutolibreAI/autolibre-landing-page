@@ -1,13 +1,13 @@
 <svg width="1080" height="120" viewBox="0 0 1080 120" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <radialGradient id="halo" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(540 60) rotate(90) scale(60 480)">
-      <stop stop-color="#00FFFF" stop-opacity="0.32" />
-      <stop offset="1" stop-color="#00FFFF" stop-opacity="0" />
+      <stop stop-color="#5BBF6A" stop-opacity="0.32" />
+      <stop offset="1" stop-color="#5BBF6A" stop-opacity="0" />
     </radialGradient>
   </defs>
   <rect width="1080" height="120" rx="16" fill="url(#halo)" />
-  <path d="M80 60H1000" stroke="rgba(0,255,255,0.45)" stroke-width="2" stroke-dasharray="10 10" />
-  <circle cx="230" cy="60" r="6" fill="#00FFFF" />
-  <circle cx="540" cy="60" r="6" fill="#7EB8FF" />
-  <circle cx="850" cy="60" r="6" fill="#00FFFF" />
+  <path d="M80 60H1000" stroke="rgba(91,191,106,0.45)" stroke-width="2" stroke-dasharray="10 10" />
+  <circle cx="230" cy="60" r="6" fill="#5BBF6A" />
+  <circle cx="540" cy="60" r="6" fill="#A8DFB0" />
+  <circle cx="850" cy="60" r="6" fill="#5BBF6A" />
 </svg>

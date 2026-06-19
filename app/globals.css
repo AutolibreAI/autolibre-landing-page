@@ -137,33 +137,33 @@
    ======================================== */
 
 :root {
-  /* Brand Palette – Light Mode */
-  --al-bg:            #EEF1F7;   /* Cool Gray  – fondo principal */
-  --al-surface:       #F5F7FC;   /* Off-white  – tarjetas */
-  --al-surface-soft:  #F5F7FC;   /* mismo que surface para secciones alternas */
-  --al-surface-dark:  #E5E9F2;   /* gris más oscuro para contraste */
-  --al-navy:          #001D3D;   /* Deep Navy  – títulos / branding */
-  --al-cyan:          #007AFF;   /* Digital Cyan – CTAs / activos */
-  --al-green:         #16A34A;   /* Pine Green  – OK / positivo */
-  --al-text-main:     #111827;   /* Slate 900   – cuerpo y etiquetas */
-  --al-text-muted:    #6B7280;   /* Slate 500   – placeholders / info sec. */
-  --al-border-soft:   rgba(0, 29, 61, 0.1);  /* Navy transparente */
+  /* Brand Palette – Light Mode (Verde de marca / Google Sheet) */
+  --al-bg:            #F2F5F0;   /* Canvas    – fondo principal */
+  --al-surface:       #FFFFFF;   /* Surface   – tarjetas / modales */
+  --al-surface-soft:  #EDF2EC;   /* Surface 2 – inputs / secciones alternas */
+  --al-surface-dark:  #E4EAE4;   /* Border    – contraste de secciones */
+  --al-navy:          #111827;   /* Gray 900  – títulos / branding */
+  --al-cyan:          #2A8C3A;   /* Brand 500 – CTAs / activos */
+  --al-green:         #2A8C3A;   /* Brand 500 – OK / positivo */
+  --al-text-main:     #111827;   /* Gray 900  – cuerpo y etiquetas */
+  --al-text-muted:    #6B7280;   /* Gray 500  – placeholders / info sec. */
+  --al-border-soft:   rgba(28, 43, 28, 0.1);  /* Dark 900 transparente */
   --al-nav-top-offset: 1rem;
   --al-nav-shell-height: 5.25rem;
 }
 
 /* Dark mode palette */
 [data-theme="dark"] {
-  --al-bg:            #090c12;   /* Deep Dark  – fondo principal */
-  --al-surface:       #0f1622;   /* Surface Dark – tarjetas */
-  --al-surface-soft:  #0f1622;   /* mismo que surface para secciones alternas */
-  --al-surface-dark:  #050709;   /* aún más oscuro */
+  --al-bg:            #16211A;   /* Dark 900+   – fondo principal */
+  --al-surface:       #1F2E1F;   /* Dark surface – tarjetas */
+  --al-surface-soft:  #1F2E1F;   /* mismo que surface para secciones alternas */
+  --al-surface-dark:  #101A12;   /* aún más oscuro para contraste */
   --al-navy:          #ffffff;   /* White para títulos en dark */
-  --al-cyan:          #00ffff;   /* Neon Cyan – CTAs / activos */
-  --al-green:         #00ffff;   /* Cyan para success en dark */
-  --al-text-main:     #f2f4f7;   /* Light text – cuerpo */
-  --al-text-muted:    #8d97a8;   /* Muted light – info sec. */
-  --al-border-soft:   rgba(0, 255, 255, 0.1);  /* Cyan transparente */
+  --al-cyan:          #5BBF6A;   /* Brand 500 aclarado – CTAs / activos */
+  --al-green:         #5BBF6A;   /* Verde para success en dark */
+  --al-text-main:     #EAF0EA;   /* Light text – cuerpo */
+  --al-text-muted:    #9DB09D;   /* Muted light – info sec. */
+  --al-border-soft:   rgba(91, 191, 106, 0.12);  /* Verde transparente */
 }
 
 body {
@@ -184,14 +184,14 @@ body {
   height: var(--al-nav-shell-height);
   padding-top: var(--al-nav-top-offset);
   box-sizing: border-box;
-  background: linear-gradient(to bottom, #F9FAFBf0 0%, #F9FAFB90 50%, transparent 100%);
+  background: linear-gradient(to bottom, #F2F5F0f0 0%, #F2F5F090 50%, transparent 100%);
   position: sticky;
   top: 0;
   transition: background 0.3s ease;
 }
 
 [data-theme="dark"] .al-nav-shell {
-  background: linear-gradient(to bottom, #090c12f0 0%, #090c1290 50%, transparent 100%);
+  background: linear-gradient(to bottom, #16211Af0 0%, #16211A90 50%, transparent 100%);
 }
 
 .al-container {
@@ -214,12 +214,12 @@ body {
     linear-gradient(to bottom, transparent 60%, var(--al-surface-dark) 100%),
     radial-gradient(
       circle at 20% 10%,
-      rgba(0, 122, 255, 0.06),
+      rgba(42, 140, 58, 0.06),
       transparent 42%
     ),
     radial-gradient(
       circle at 80% 20%,
-      rgba(0, 29, 61, 0.04),
+      rgba(28, 43, 28, 0.04),
       transparent 35%
     ),
     var(--al-bg);
@@ -233,7 +233,7 @@ body {
 .al-section-problem,
 .al-section-features {
   background: var(--al-surface-dark);
-  border-bottom: 1px solid rgba(0, 29, 61, 0.08);
+  border-bottom: 1px solid rgba(28, 43, 28, 0.08);
 }
 
 .al-section-faqs {
@@ -251,14 +251,14 @@ body {
   margin: 0 auto;
   padding: 0.8rem 1.5rem;
   box-sizing: border-box;
-  border: 1px solid rgba(0, 29, 61, 0.12);
+  border: 1px solid rgba(28, 43, 28, 0.12);
   border-radius: 0.9rem;
   -webkit-backdrop-filter: blur(14px) saturate(130%);
   backdrop-filter: blur(14px) saturate(130%);
-  background: rgba(245, 247, 252, 0.88);
+  background: rgba(255, 255, 255, 0.88);
   box-shadow:
-    0 4px 20px rgba(0, 29, 61, 0.08),
-    inset 0 1px 0 rgba(245, 247, 252, 0.9);
+    0 4px 20px rgba(28, 43, 28, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   transition:
     background 0.3s ease,
     border-color 0.3s ease,
@@ -266,11 +266,11 @@ body {
 }
 
 [data-theme="dark"] .al-nav {
-  border: 1px solid rgba(0, 255, 255, 0.16);
+  border: 1px solid rgba(91, 191, 106, 0.16);
   background: linear-gradient(
     180deg,
-    rgba(10, 16, 24, 0.34) 0%,
-    rgba(10, 16, 24, 0.24) 100%
+    rgba(22, 33, 26, 0.34) 0%,
+    rgba(22, 33, 26, 0.24) 100%
   );
   box-shadow:
     0 8px 30px rgba(0, 0, 0, 0.22),
@@ -291,14 +291,14 @@ body {
   justify-content: center;
   width: 1.35rem;
   height: 1.35rem;
-  border: 1px solid rgba(0, 122, 255, 0.35);
+  border: 1px solid rgba(42, 140, 58, 0.35);
   border-radius: 0.35rem;
   color: var(--al-cyan);
 }
 
 .al-nav-badge {
   padding: 0.2rem 0.45rem;
-  border: 1px solid rgba(0, 122, 255, 0.35);
+  border: 1px solid rgba(42, 140, 58, 0.35);
   border-radius: 999px;
   font-size: 0.66rem;
   color: var(--al-cyan);
@@ -327,8 +327,8 @@ body {
   width: 2.2rem;
   height: 2.2rem;
   border-radius: 0.5rem;
-  border: 1px solid rgba(0, 29, 61, 0.15);
-  background: rgba(0, 29, 61, 0.03);
+  border: 1px solid rgba(28, 43, 28, 0.15);
+  background: rgba(28, 43, 28, 0.03);
   color: var(--al-cyan);
   cursor: pointer;
   transition:
@@ -337,18 +337,18 @@ body {
 
 .al-theme-toggle:hover {
   border-color: var(--al-cyan);
-  background: rgba(0, 29, 61, 0.08);
+  background: rgba(28, 43, 28, 0.08);
   transform: scale(1.05);
 }
 
 [data-theme="dark"] .al-theme-toggle {
-  border-color: rgba(0, 255, 255, 0.35);
-  background: rgba(0, 255, 255, 0.06);
+  border-color: rgba(91, 191, 106, 0.35);
+  background: rgba(91, 191, 106, 0.06);
 }
 
 [data-theme="dark"] .al-theme-toggle:hover {
   border-color: var(--al-cyan);
-  background: rgba(0, 255, 255, 0.15);
+  background: rgba(91, 191, 106, 0.15);
 }
 
 /* ── Nav actions group ── */
@@ -367,7 +367,7 @@ body {
   width: 2.2rem;
   height: 2.2rem;
   border-radius: 0.5rem;
-  border: 1px solid rgba(0, 29, 61, 0.15);
+  border: 1px solid rgba(28, 43, 28, 0.15);
   background: transparent;
   color: var(--al-navy);
   cursor: pointer;
@@ -376,17 +376,17 @@ body {
 
 .al-nav-hamburger:hover {
   border-color: var(--al-cyan);
-  background: rgba(0, 29, 61, 0.05);
+  background: rgba(28, 43, 28, 0.05);
 }
 
 [data-theme="dark"] .al-nav-hamburger {
-  border-color: rgba(0, 255, 255, 0.2);
+  border-color: rgba(91, 191, 106, 0.2);
   color: var(--al-text-main);
 }
 
 [data-theme="dark"] .al-nav-hamburger:hover {
   border-color: var(--al-cyan);
-  background: rgba(0, 255, 255, 0.06);
+  background: rgba(91, 191, 106, 0.06);
 }
 
 /* ── Mobile nav backdrop ── */
@@ -404,13 +404,13 @@ body {
   transform: translateX(-50%);
   width: min(1100px, 100% - 2.5rem);
   z-index: 49;
-  background: rgba(245, 247, 252, 0.97);
-  border: 1px solid rgba(0, 29, 61, 0.12);
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(28, 43, 28, 0.12);
   border-radius: 0.9rem;
   padding: 0.75rem;
   box-shadow:
-    0 8px 32px rgba(0, 29, 61, 0.12),
-    0 2px 8px rgba(0, 29, 61, 0.06);
+    0 8px 32px rgba(28, 43, 28, 0.12),
+    0 2px 8px rgba(28, 43, 28, 0.06);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
   animation: al-menu-in 0.18s ease;
@@ -422,8 +422,8 @@ body {
 }
 
 [data-theme="dark"] .al-nav-mobile-menu {
-  background: rgba(10, 16, 26, 0.97);
-  border-color: rgba(0, 255, 255, 0.12);
+  background: rgba(22, 33, 26, 0.97);
+  border-color: rgba(91, 191, 106, 0.12);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.4),
     0 2px 8px rgba(0, 0, 0, 0.2);
@@ -445,7 +445,7 @@ body {
 }
 
 .al-nav-mobile-links a:hover {
-  background: rgba(0, 29, 61, 0.05);
+  background: rgba(28, 43, 28, 0.05);
   color: var(--al-navy);
 }
 
@@ -473,7 +473,7 @@ body {
   height: 2.2rem;
   padding: 0 0.85rem;
   border-radius: 0.5rem;
-  border: 1px solid rgba(0, 29, 61, 0.2);
+  border: 1px solid rgba(28, 43, 28, 0.2);
   background: transparent;
   color: var(--al-navy);
   font-size: 0.8rem;
@@ -490,18 +490,18 @@ body {
 .al-nav-provider-btn:hover {
   border-color: var(--al-cyan);
   color: var(--al-cyan);
-  background: rgba(0, 122, 255, 0.05);
+  background: rgba(42, 140, 58, 0.05);
 }
 
 [data-theme="dark"] .al-nav-provider-btn {
-  border-color: rgba(0, 255, 255, 0.3);
+  border-color: rgba(91, 191, 106, 0.3);
   color: var(--al-text-muted);
 }
 
 [data-theme="dark"] .al-nav-provider-btn:hover {
   border-color: var(--al-cyan);
   color: var(--al-cyan);
-  background: rgba(0, 255, 255, 0.06);
+  background: rgba(91, 191, 106, 0.06);
 }
 
 /* ========================================
@@ -529,7 +529,7 @@ body {
   height: 100dvh;
   background: var(--al-surface);
   border-left: 1px solid var(--al-border-soft);
-  box-shadow: -8px 0 40px rgba(0, 29, 61, 0.12);
+  box-shadow: -8px 0 40px rgba(28, 43, 28, 0.12);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -564,7 +564,7 @@ body {
 }
 
 .al-provider-close:hover {
-  background: rgba(0, 29, 61, 0.06);
+  background: rgba(28, 43, 28, 0.06);
   color: var(--al-navy);
 }
 
@@ -627,13 +627,13 @@ body {
   width: 1.6rem;
   height: 1.6rem;
   border-radius: 0.4rem;
-  background: rgba(0, 122, 255, 0.1);
+  background: rgba(42, 140, 58, 0.1);
   color: var(--al-cyan);
   flex-shrink: 0;
 }
 
 [data-theme="dark"] .al-provider-benefit-icon {
-  background: rgba(0, 255, 255, 0.1);
+  background: rgba(91, 191, 106, 0.1);
 }
 
 /* ── Provider form ── */
@@ -646,7 +646,7 @@ body {
   width: 100%;
   min-height: 2.8rem;
   border-radius: 0.7rem;
-  border: 1px solid rgba(0, 29, 61, 0.15);
+  border: 1px solid rgba(28, 43, 28, 0.15);
   background: var(--al-surface);
   color: var(--al-text-main);
   padding: 0 0.8rem;
@@ -661,11 +661,11 @@ body {
 
 .al-provider-form select:focus {
   outline: none;
-  border-color: rgba(0, 122, 255, 0.4);
+  border-color: rgba(42, 140, 58, 0.4);
 }
 
 [data-theme="dark"] .al-provider-form select {
-  border-color: rgba(0, 255, 255, 0.15);
+  border-color: rgba(91, 191, 106, 0.15);
   background-color: var(--al-surface);
 }
 
@@ -789,8 +789,8 @@ body {
   border: 1.5px solid var(--al-border-soft);
   background: var(--al-surface);
   box-shadow:
-    0 8px 40px rgba(0, 29, 61, 0.10),
-    0 2px 8px rgba(0, 29, 61, 0.06),
+    0 8px 40px rgba(28, 43, 28, 0.10),
+    0 2px 8px rgba(28, 43, 28, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
   overflow: hidden;
   display: flex;
@@ -800,7 +800,7 @@ body {
 
 [data-theme="dark"] .al-carousel-frame {
   background: var(--al-surface);
-  border-color: rgba(0, 255, 255, 0.14);
+  border-color: rgba(91, 191, 106, 0.14);
   box-shadow:
     0 8px 40px rgba(0, 0, 0, 0.35),
     0 2px 8px rgba(0, 0, 0, 0.2),
@@ -913,11 +913,11 @@ body {
 .al-carousel-arrow:hover {
   border-color: var(--al-cyan);
   color: var(--al-cyan);
-  background: rgba(0, 122, 255, 0.05);
+  background: rgba(42, 140, 58, 0.05);
 }
 
 [data-theme="dark"] .al-carousel-arrow:hover {
-  background: rgba(0, 255, 255, 0.06);
+  background: rgba(91, 191, 106, 0.06);
 }
 
 /* Dot indicators */
@@ -932,7 +932,7 @@ body {
   height: 7px;
   border-radius: 999px;
   border: none;
-  background: rgba(0, 29, 61, 0.18);
+  background: rgba(28, 43, 28, 0.18);
   cursor: pointer;
   padding: 0;
   transition: all 0.2s ease;
@@ -959,8 +959,8 @@ body {
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: rgba(0, 122, 255, 0.7);
-  border-bottom: 1px solid rgba(0, 29, 61, 0.08);
+  color: rgba(42, 140, 58, 0.7);
+  border-bottom: 1px solid rgba(28, 43, 28, 0.08);
 }
 
 .al-preview-dot {
@@ -980,8 +980,8 @@ body {
 
 .al-preview-card {
   border-radius: 0.75rem;
-  border: 1px solid rgba(0, 29, 61, 0.08);
-  background: rgba(0, 29, 61, 0.03);
+  border: 1px solid rgba(28, 43, 28, 0.08);
+  background: rgba(28, 43, 28, 0.03);
   padding: 0.75rem;
 }
 
@@ -1015,7 +1015,7 @@ body {
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.75rem;
-  border-top: 1px solid rgba(0, 29, 61, 0.08);
+  border-top: 1px solid rgba(28, 43, 28, 0.08);
 }
 
 .al-preview-chat-bubble {
@@ -1028,15 +1028,15 @@ body {
 
 .al-preview-chat-bubble--user {
   align-self: flex-end;
-  background: rgba(0, 122, 255, 0.1);
-  border: 1px solid rgba(0, 122, 255, 0.2);
+  background: rgba(42, 140, 58, 0.1);
+  border: 1px solid rgba(42, 140, 58, 0.2);
   color: var(--al-navy);
 }
 
 .al-preview-chat-bubble--ai {
   align-self: flex-start;
-  background: rgba(0, 29, 61, 0.04);
-  border: 1px solid rgba(0, 29, 61, 0.08);
+  background: rgba(28, 43, 28, 0.04);
+  border: 1px solid rgba(28, 43, 28, 0.08);
   color: var(--al-text-main);
 }
 
@@ -1092,7 +1092,7 @@ body {
 
 .al-highlight {
   color: transparent;
-  background: linear-gradient(90deg, var(--al-cyan), #7eb8ff);
+  background: linear-gradient(90deg, var(--al-cyan), #A8DFB0);
   -webkit-background-clip: text;
   background-clip: text;
 }
@@ -1133,25 +1133,25 @@ body {
 }
 
 .al-button:hover {
-  background: #005FCC;
-  border-color: #005FCC;
+  background: #2D7A3A;
+  border-color: #2D7A3A;
   transform: translateY(-1px);
 }
 
 [data-theme="dark"] .al-button {
-  border: 1px solid rgba(0, 255, 255, 0.3);
-  background: linear-gradient(90deg, rgba(0, 255, 255, 0.16), rgba(126, 184, 255, 0.2));
+  border: 1px solid rgba(91, 191, 106, 0.3);
+  background: linear-gradient(90deg, rgba(91, 191, 106, 0.16), rgba(168, 223, 176, 0.2));
   color: var(--al-text-main);
 }
 
 [data-theme="dark"] .al-button:hover {
-  background: linear-gradient(90deg, rgba(0, 255, 255, 0.26), rgba(126, 184, 255, 0.3));
-  border-color: rgba(0, 255, 255, 0.75);
+  background: linear-gradient(90deg, rgba(91, 191, 106, 0.26), rgba(168, 223, 176, 0.3));
+  border-color: rgba(91, 191, 106, 0.75);
 }
 
 .al-button-secondary {
   background: transparent;
-  border-color: rgba(0, 29, 61, 0.2);
+  border-color: rgba(28, 43, 28, 0.2);
   color: var(--al-navy);
 }
 
@@ -1166,7 +1166,7 @@ body {
   align-items: center;
   gap: 0.75rem;
   padding-top: 1.1rem;
-  border-top: 1px solid rgba(0, 29, 61, 0.1);
+  border-top: 1px solid rgba(28, 43, 28, 0.1);
 }
 
 .al-proof-centered {
@@ -1190,7 +1190,7 @@ body {
   margin-left: -0.45rem;
   border-radius: 999px;
   border: 2px solid var(--al-bg);
-  background: rgba(0, 122, 255, 0.12);
+  background: rgba(42, 140, 58, 0.12);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1211,7 +1211,7 @@ body {
   border: 1px solid var(--al-border-soft);
   border-radius: 1rem;
   background: var(--al-surface);
-  box-shadow: 0 2px 12px rgba(0, 29, 61, 0.06);
+  box-shadow: 0 2px 12px rgba(28, 43, 28, 0.06);
   padding: 1rem;
 }
 
@@ -1234,7 +1234,7 @@ body {
 .al-preview-fallback {
   min-height: 18rem;
   border-radius: 0.8rem;
-  border: 1px dashed rgba(0, 122, 255, 0.3);
+  border: 1px dashed rgba(42, 140, 58, 0.3);
   display: grid;
   place-content: center;
   gap: 0.45rem;
@@ -1293,7 +1293,7 @@ body {
 .al-signup-form select {
   min-height: 2.8rem;
   border-radius: 0.7rem;
-  border: 1px solid rgba(0, 29, 61, 0.15);
+  border: 1px solid rgba(28, 43, 28, 0.15);
   background: var(--al-surface);
   color: var(--al-text-main);
   padding: 0 0.8rem;
@@ -1360,13 +1360,13 @@ body {
 }
 
 .al-reason-option--active {
-  border-color: rgba(0, 122, 255, 0.4);
-  background: rgba(0, 122, 255, 0.06);
+  border-color: rgba(42, 140, 58, 0.4);
+  background: rgba(42, 140, 58, 0.06);
 }
 
 [data-theme="dark"] .al-reason-option--active {
-  border-color: rgba(0, 255, 255, 0.4);
-  background: rgba(0, 255, 255, 0.06);
+  border-color: rgba(91, 191, 106, 0.4);
+  background: rgba(91, 191, 106, 0.06);
 }
 
 .al-brand-picker {
@@ -1385,7 +1385,7 @@ body {
   flex: 1;
   min-height: 2.5rem;
   border-radius: 0.6rem;
-  border: 1px solid rgba(0, 29, 61, 0.15);
+  border: 1px solid rgba(28, 43, 28, 0.15);
   background: var(--al-surface);
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -1400,11 +1400,11 @@ body {
 
 .al-brand-select:focus {
   outline: none;
-  border-color: rgba(0, 122, 255, 0.4);
+  border-color: rgba(42, 140, 58, 0.4);
 }
 
 [data-theme="dark"] .al-brand-select {
-  border-color: rgba(0, 255, 255, 0.15);
+  border-color: rgba(91, 191, 106, 0.15);
 }
 
 .al-brand-add-btn {
@@ -1423,19 +1423,19 @@ body {
 }
 
 .al-brand-add-btn:hover:not(:disabled) {
-  background: #005FCC;
-  border-color: #005FCC;
+  background: #2D7A3A;
+  border-color: #2D7A3A;
 }
 
 [data-theme="dark"] .al-brand-add-btn {
-  border: 1px solid rgba(0, 255, 255, 0.3);
-  background: linear-gradient(90deg, rgba(0, 255, 255, 0.16), rgba(126, 184, 255, 0.2));
+  border: 1px solid rgba(91, 191, 106, 0.3);
+  background: linear-gradient(90deg, rgba(91, 191, 106, 0.16), rgba(168, 223, 176, 0.2));
   color: var(--al-text-main);
 }
 
 [data-theme="dark"] .al-brand-add-btn:hover:not(:disabled) {
-  background: linear-gradient(90deg, rgba(0, 255, 255, 0.26), rgba(126, 184, 255, 0.3));
-  border-color: rgba(0, 255, 255, 0.75);
+  background: linear-gradient(90deg, rgba(91, 191, 106, 0.26), rgba(168, 223, 176, 0.3));
+  border-color: rgba(91, 191, 106, 0.75);
 }
 
 .al-brand-add-btn:disabled {
@@ -1456,16 +1456,16 @@ body {
   gap: 0.3rem;
   padding: 0.2rem 0.45rem 0.2rem 0.65rem;
   border-radius: 999px;
-  border: 1px solid rgba(0, 122, 255, 0.3);
-  background: rgba(0, 122, 255, 0.08);
+  border: 1px solid rgba(42, 140, 58, 0.3);
+  background: rgba(42, 140, 58, 0.08);
   color: var(--al-navy);
   font-size: 0.78rem;
   font-weight: 600;
 }
 
 [data-theme="dark"] .al-brand-chip {
-  border-color: rgba(0, 255, 255, 0.3);
-  background: rgba(0, 255, 255, 0.08);
+  border-color: rgba(91, 191, 106, 0.3);
+  background: rgba(91, 191, 106, 0.08);
   color: var(--al-cyan);
 }
 
@@ -1477,7 +1477,7 @@ body {
   height: 1.1rem;
   border-radius: 50%;
   border: none;
-  background: rgba(0, 29, 61, 0.1);
+  background: rgba(28, 43, 28, 0.1);
   color: var(--al-text-muted);
   cursor: pointer;
   padding: 0;
@@ -1521,14 +1521,14 @@ body {
 
 .al-reason-option:has(.al-checkbox-input:checked),
 .al-reason-option:has(.al-radio-input:checked) {
-  border-color: rgba(0, 122, 255, 0.4);
-  background: rgba(0, 122, 255, 0.06);
+  border-color: rgba(42, 140, 58, 0.4);
+  background: rgba(42, 140, 58, 0.06);
 }
 
 [data-theme="dark"] .al-reason-option:has(.al-checkbox-input:checked),
 [data-theme="dark"] .al-reason-option:has(.al-radio-input:checked) {
-  border-color: rgba(0, 255, 255, 0.4);
-  background: rgba(0, 255, 255, 0.06);
+  border-color: rgba(91, 191, 106, 0.4);
+  background: rgba(91, 191, 106, 0.06);
 }
 
 .al-form-field-nested {
@@ -1548,7 +1548,7 @@ body {
 
 .al-form-field-nested:focus {
   outline: none;
-  border-color: rgba(0, 122, 255, 0.4);
+  border-color: rgba(42, 140, 58, 0.4);
   background: var(--al-surface);
 }
 
@@ -1570,7 +1570,7 @@ body {
   height: 1.1rem;
   flex-shrink: 0;
   border-radius: 0.25rem;
-  border: 1.5px solid rgba(0, 29, 61, 0.3);
+  border: 1.5px solid rgba(28, 43, 28, 0.3);
   background: var(--al-surface);
   cursor: pointer;
   transition:
@@ -1611,7 +1611,7 @@ body {
   height: 1.1rem;
   flex-shrink: 0;
   border-radius: 50%;
-  border: 1.5px solid rgba(0, 29, 61, 0.3);
+  border: 1.5px solid rgba(28, 43, 28, 0.3);
   background: var(--al-surface);
   cursor: pointer;
   position: relative;
@@ -1697,7 +1697,7 @@ body {
 
 .al-form-success-icon {
   color: var(--al-cyan);
-  filter: drop-shadow(0 0 12px rgba(0, 255, 255, 0.5));
+  filter: drop-shadow(0 0 12px rgba(91, 191, 106, 0.5));
 }
 
 .al-form-success h3 {
@@ -1765,9 +1765,9 @@ body {
   text-align: center;
   gap: 0.75rem;
   padding: 1.5rem 1.25rem;
-  border: 1px solid rgba(0, 29, 61, 0.1);
+  border: 1px solid rgba(28, 43, 28, 0.1);
   background: var(--al-surface);
-  box-shadow: 0 2px 8px rgba(0, 29, 61, 0.05);
+  box-shadow: 0 2px 8px rgba(28, 43, 28, 0.05);
   transition:
     transform 0.2s ease,
     border-color 0.2s ease,
@@ -1776,8 +1776,8 @@ body {
 
 .al-feature-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(0, 122, 255, 0.3);
-  box-shadow: 0 12px 32px rgba(0, 29, 61, 0.1);
+  border-color: rgba(42, 140, 58, 0.3);
+  box-shadow: 0 12px 32px rgba(28, 43, 28, 0.1);
 }
 
 .al-feature-icon {
@@ -1788,7 +1788,7 @@ body {
   height: 3.25rem;
   margin: 0 auto;
   border-radius: 0.75rem;
-  background: rgba(0, 122, 255, 0.1);
+  background: rgba(42, 140, 58, 0.1);
   color: var(--al-cyan);
   flex-shrink: 0;
 }
@@ -1831,7 +1831,7 @@ body {
 }
 
 .al-faq-item.al-faq-open {
-  border-color: rgba(0, 122, 255, 0.25);
+  border-color: rgba(42, 140, 58, 0.25);
 }
 
 .al-faq-trigger {
@@ -1889,7 +1889,7 @@ body {
   gap: 0.5rem;
   padding: 0.75rem 1.75rem;
   border-radius: 2rem;
-  border: 1px solid rgba(0, 122, 255, 0.3);
+  border: 1px solid rgba(42, 140, 58, 0.3);
   background: transparent;
   color: var(--al-cyan);
   font-size: 0.9rem;
@@ -1903,17 +1903,17 @@ body {
 }
 
 .al-faq-more-btn:hover {
-  background: rgba(0, 122, 255, 0.08);
+  background: rgba(42, 140, 58, 0.08);
   border-color: var(--al-cyan);
 }
 
 [data-theme="dark"] .al-faq-more-btn {
-  border-color: rgba(0, 255, 255, 0.3);
+  border-color: rgba(91, 191, 106, 0.3);
 }
 
 [data-theme="dark"] .al-faq-more-btn:hover {
-  background: rgba(0, 255, 255, 0.08);
-  border-color: rgba(0, 255, 255, 0.7);
+  background: rgba(91, 191, 106, 0.08);
+  border-color: rgba(91, 191, 106, 0.7);
 }
 
 /* ========================================
@@ -1923,7 +1923,7 @@ body {
 .al-footer-section {
   padding: 3rem 0 1.5rem;
   background: var(--al-surface-dark);
-  border-top: 1px solid rgba(0, 29, 61, 0.1);
+  border-top: 1px solid rgba(28, 43, 28, 0.1);
 }
 
 .al-footer-closing {
@@ -1947,7 +1947,7 @@ body {
 .al-footer {
   width: min(1100px, 100% - 2.5rem);
   margin: 0 auto;
-  border-top: 1px solid rgba(0, 29, 61, 0.1);
+  border-top: 1px solid rgba(28, 43, 28, 0.1);
   padding-top: 1.2rem;
   display: flex;
   flex-wrap: wrap;
@@ -1968,7 +1968,7 @@ body {
 .al-footer-icon {
   width: 1.2rem;
   height: 1.2rem;
-  border: 1px solid rgba(0, 122, 255, 0.35);
+  border: 1px solid rgba(42, 140, 58, 0.35);
   border-radius: 0.32rem;
   display: inline-flex;
   align-items: center;
@@ -2012,8 +2012,8 @@ body {
   color: #ffffff;
   cursor: pointer;
   box-shadow:
-    0 8px 24px rgba(0, 122, 255, 0.25),
-    0 4px 12px rgba(0, 29, 61, 0.1);
+    0 8px 24px rgba(42, 140, 58, 0.25),
+    0 4px 12px rgba(28, 43, 28, 0.1);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
@@ -2022,26 +2022,26 @@ body {
 
 .al-chat-fab:hover {
   transform: scale(1.05);
-  background: #005FCC;
+  background: #2D7A3A;
   box-shadow:
-    0 12px 32px rgba(0, 122, 255, 0.35),
-    0 6px 16px rgba(0, 29, 61, 0.12);
+    0 12px 32px rgba(42, 140, 58, 0.35),
+    0 6px 16px rgba(28, 43, 28, 0.12);
 }
 
 [data-theme="dark"] .al-chat-fab {
-  border: 1px solid rgba(0, 255, 255, 0.4);
-  background: linear-gradient(135deg, rgba(0, 255, 255, 0.25), rgba(0, 180, 200, 0.3));
+  border: 1px solid rgba(91, 191, 106, 0.4);
+  background: linear-gradient(135deg, rgba(91, 191, 106, 0.25), rgba(45, 122, 58, 0.3));
   color: var(--al-cyan);
   box-shadow:
-    0 8px 24px rgba(0, 255, 255, 0.15),
+    0 8px 24px rgba(91, 191, 106, 0.15),
     0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 [data-theme="dark"] .al-chat-fab:hover {
-  background: linear-gradient(135deg, rgba(0, 255, 255, 0.35), rgba(0, 180, 200, 0.4));
+  background: linear-gradient(135deg, rgba(91, 191, 106, 0.35), rgba(45, 122, 58, 0.4));
   border-color: var(--al-cyan);
   box-shadow:
-    0 12px 32px rgba(0, 255, 255, 0.25),
+    0 12px 32px rgba(91, 191, 106, 0.25),
     0 6px 16px rgba(0, 0, 0, 0.35);
 }
 
@@ -2051,8 +2051,8 @@ body {
   display: flex;
   flex-direction: column;
   background: var(--al-surface);
-  border: 1px solid rgba(0, 29, 61, 0.12);
-  box-shadow: 0 16px 48px rgba(0, 29, 61, 0.12);
+  border: 1px solid rgba(28, 43, 28, 0.12);
+  box-shadow: 0 16px 48px rgba(28, 43, 28, 0.12);
   opacity: 0;
   visibility: hidden;
   transition:
@@ -2139,7 +2139,7 @@ body {
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 0.35rem;
-  background: rgba(0, 122, 255, 0.12);
+  background: rgba(42, 140, 58, 0.12);
   color: var(--al-cyan);
 }
 
@@ -2160,7 +2160,7 @@ body {
 }
 
 .al-chat-close:hover {
-  background: rgba(0, 29, 61, 0.05);
+  background: rgba(28, 43, 28, 0.05);
   color: var(--al-navy);
 }
 
@@ -2190,14 +2190,14 @@ body {
 }
 
 [data-theme="dark"] .al-chat-message-user {
-  background: rgba(0, 255, 255, 0.15);
-  border: 1px solid rgba(0, 255, 255, 0.2);
+  background: rgba(91, 191, 106, 0.15);
+  border: 1px solid rgba(91, 191, 106, 0.2);
   color: var(--al-text-main);
 }
 
 .al-chat-message-assistant {
   align-self: flex-start;
-  background: rgba(0, 29, 61, 0.04);
+  background: rgba(28, 43, 28, 0.04);
   border: 1px solid var(--al-border-soft);
   color: var(--al-text-main);
   border-bottom-left-radius: 0.25rem;
@@ -2252,7 +2252,7 @@ body {
   min-height: 2.5rem;
   padding: 0 0.75rem;
   border-radius: 0.6rem;
-  border: 1px solid rgba(0, 29, 61, 0.15);
+  border: 1px solid rgba(28, 43, 28, 0.15);
   background: var(--al-bg);
   color: var(--al-text-main);
   font-size: 0.9rem;
@@ -2287,19 +2287,19 @@ body {
 }
 
 .al-chat-send:hover:not(:disabled) {
-  background: #005FCC;
-  border-color: #005FCC;
+  background: #2D7A3A;
+  border-color: #2D7A3A;
 }
 
 [data-theme="dark"] .al-chat-send {
-  border: 1px solid rgba(0, 255, 255, 0.3);
-  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(91, 191, 106, 0.3);
+  background: rgba(91, 191, 106, 0.1);
   color: var(--al-cyan);
 }
 
 [data-theme="dark"] .al-chat-send:hover:not(:disabled) {
-  background: rgba(0, 255, 255, 0.18);
-  border-color: rgba(0, 255, 255, 0.6);
+  background: rgba(91, 191, 106, 0.18);
+  border-color: rgba(91, 191, 106, 0.6);
 }
 
 .al-chat-send:disabled {
