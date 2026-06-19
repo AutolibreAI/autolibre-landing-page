@@ -38,7 +38,7 @@ export default function LandingNav({ brand }: LandingNavProps) {
       <header className="al-nav">
         <div className="al-nav-brand">
           <span className="al-nav-icon">
-            <Image src="/autolibre-favicon.png" alt="" width={18} height={18} />
+            <Image src="/logo-verde.jpeg" alt="AutoLibre" width={18} height={18} />
           </span>
           <strong>{brand.name}</strong>
           <span className="al-nav-badge">{brand.badge}</span>

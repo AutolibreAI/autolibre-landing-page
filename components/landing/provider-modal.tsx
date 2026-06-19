@@ -166,7 +166,7 @@ export default function ProviderModal({ open, onClose }: ProviderModalProps) {
               <CheckCircle2 size={40} aria-hidden />
             </div>
             <h3>¡Registro recibido!</h3>
-            <p>Te contactaremos pronto para activar el perfil de tu taller en Auto Libre.</p>
+            <p>Te contactaremos pronto para activar el perfil de tu taller en AutoLibre.</p>
             <button className="al-provider-done-btn" onClick={onClose}>
               Cerrar
             </button>
@@ -176,10 +176,10 @@ export default function ProviderModal({ open, onClose }: ProviderModalProps) {
             {/* ── Section 1: Pitch ── */}
             <div className="al-provider-pitch">
               <h2 id="provider-modal-title" className="al-provider-heading">
-                Sumá tu taller a Auto Libre
+                Sumá tu taller a AutoLibre
               </h2>
               <p className="al-provider-desc">
-                Miles de usuarios usan Auto Libre para gestionar sus vehículos y pedir presupuestos.
+                Miles de usuarios usan AutoLibre para gestionar sus vehículos y pedir presupuestos.
                 Registrá tu taller y empezá a recibir solicitudes de clientes cerca tuyo.
               </p>
               <ul className="al-provider-benefits">
@@ -418,7 +418,7 @@ export default function ProviderModal({ open, onClose }: ProviderModalProps) {
               {/* How found */}
               <div className="al-form-field">
                 <label htmlFor="prov-how">
-                  ¿Cómo se enteraron de Auto Libre? <span className="al-required">*</span>
+                  ¿Cómo se enteraron de AutoLibre? <span className="al-required">*</span>
                 </label>
                 <select
                   id="prov-how"

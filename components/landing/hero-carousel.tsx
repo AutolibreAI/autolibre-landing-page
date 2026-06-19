@@ -31,7 +31,7 @@ export default function HeroCarousel() {
       <div className="al-carousel-frame">
         {/* Status bar */}
         <div className="al-carousel-statusbar">
-          <span>AUTO LIBRE</span>
+          <span>AUTOLIBRE</span>
           <span className="al-carousel-dot" />
         </div>
 
