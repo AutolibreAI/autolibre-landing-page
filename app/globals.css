@@ -1289,7 +1289,7 @@ body {
   color: var(--al-text-main);
 }
 
-.al-signup-form input:not(.reasonOption),
+.al-signup-form input:not(.reasonOption):not([type="checkbox"]),
 .al-signup-form select {
   min-height: 2.8rem;
   border-radius: 0.7rem;
@@ -1300,7 +1300,7 @@ body {
   font-size: 0.9rem;
 }
 
-[data-theme="dark"] .al-signup-form input:not(.reasonOption),
+[data-theme="dark"] .al-signup-form input:not(.reasonOption):not([type="checkbox"]),
 [data-theme="dark"] .al-signup-form select {
   border-color: rgba(255, 255, 255, 0.12);
 }

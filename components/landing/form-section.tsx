@@ -17,9 +17,22 @@ type SubmitState =
   | { kind: "duplicate" }
   | { kind: "error"; message: string };
 
+const OTHER_REASON = "Otra";
+
 export default function FormSection({ content }: FormSectionProps) {
   const [honeypot, setHoneypot] = useState("");
+  const [reasons, setReasons] = useState<string[]>([]);
+  const [reasonOther, setReasonOther] = useState("");
+  const [wantsScanner, setWantsScanner] = useState(false);
   const [submitState, setSubmitState] = useState<SubmitState>({ kind: "idle" });
+
+  function toggleReason(reason: string) {
+    setReasons((prev) =>
+      prev.includes(reason)
+        ? prev.filter((r) => r !== reason)
+        : [...prev, reason]
+    );
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -32,12 +45,20 @@ export default function FormSection({ content }: FormSectionProps) {
     const form = e.currentTarget;
     const name = (form.elements.namedItem("name") as HTMLInputElement).value;
     const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const patente = (form.elements.namedItem("patente") as HTMLInputElement).value;
 
     try {
       const res = await fetch("/api/early-access", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({
+          name,
+          email,
+          patente,
+          reasons,
+          reason_other: reasons.includes(OTHER_REASON) ? reasonOther : "",
+          wants_scanner: wantsScanner,
+        }),
       });
 
       if (res.status === 409) {
@@ -144,6 +165,58 @@ export default function FormSection({ content }: FormSectionProps) {
                   required
                 />
               </div>
+
+              <div className="al-form-field">
+                <label htmlFor="landing-patente">
+                  Patente <span className="al-required">*</span>
+                </label>
+                <input
+                  id="landing-patente"
+                  name="patente"
+                  type="text"
+                  placeholder="AB 123 CD"
+                  autoCapitalize="characters"
+                  required
+                />
+              </div>
+
+              <div className="al-form-field">
+                <label>¿Qué te interesa de AutoLibre?</label>
+                <div className="al-reason-group">
+                  {content.reasonOptions.map((reason) => (
+                    <label key={reason} className="al-reason-option">
+                      <input
+                        type="checkbox"
+                        className="al-checkbox-input"
+                        checked={reasons.includes(reason)}
+                        onChange={() => toggleReason(reason)}
+                      />
+                      <span>{reason}</span>
+                    </label>
+                  ))}
+                </div>
+                {reasons.includes(OTHER_REASON) && (
+                  <input
+                    type="text"
+                    className="al-form-field-nested"
+                    placeholder="Contanos qué te interesa"
+                    value={reasonOther}
+                    onChange={(e) => setReasonOther(e.target.value)}
+                  />
+                )}
+              </div>
+
+              <label className="al-form-checkbox">
+                <input
+                  type="checkbox"
+                  className="al-checkbox-input"
+                  checked={wantsScanner}
+                  onChange={(e) => setWantsScanner(e.target.checked)}
+                />
+                <span className="al-checkbox-label">
+                  Me interesa conseguir un escáner OBD-II
+                </span>
+              </label>
 
               {submitState.kind === "error" && (
                 <div role="alert" className="al-form-error">
