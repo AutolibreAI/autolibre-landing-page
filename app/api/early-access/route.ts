@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { name, email, reasons, reason_other, patente, wants_scanner } = body;
+  const { name, email, reasons, reason_other } = body;
 
   if (!name || !email) {
     return NextResponse.json({ error: 'Campos requeridos faltantes.' }, { status: 400 });
@@ -28,8 +28,6 @@ export async function POST(req: NextRequest) {
     email,
     reasons: reasons ?? [],
     reason_other: reason_other || null,
-    patente,
-    wants_scanner: wants_scanner ?? false,
   });
 
   if (error) {
