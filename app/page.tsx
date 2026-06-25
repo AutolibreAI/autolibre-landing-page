@@ -4,7 +4,7 @@ import ProblemSection from "@/components/landing/problem-section";
 import FAQSection from "@/components/landing/faq-section";
 import LandingFooter from "@/components/landing/landing-footer";
 import SectionContainer from "@/components/landing/section-container";
-import DeferredChatFab from "@/components/landing/deferred-chat-fab";
+// import DeferredChatFab from "@/components/landing/deferred-chat-fab";
 import ClientFormSection from "@/components/landing/client-form-section";
 import { landingPageContent } from "@/lib/landing-content";
 
@@ -66,7 +66,8 @@ export default function Home() {
         content={landingPageContent.sections.footer}
       />
 
-      <DeferredChatFab config={landingPageContent.sections.chat} />
+      {/* Chat de IA temporalmente oculto: no está funcionando */}
+      {/* <DeferredChatFab config={landingPageContent.sections.chat} /> */}
 
       <script
         type="application/ld+json"
