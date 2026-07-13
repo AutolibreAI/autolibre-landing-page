@@ -4,7 +4,6 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "@/lib/theme-context";
-import ProviderModal from "@/components/landing/provider-modal";
 import type { LandingBrand } from "@/lib/landing-types";
 
 type LandingNavProps = {
@@ -21,16 +20,10 @@ const NAV_LINKS = [
 
 export default function LandingNav({ brand }: LandingNavProps) {
   const { theme, toggleTheme } = useTheme();
-  const [providerOpen, setProviderOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   function closeMenu() {
     setMenuOpen(false);
-  }
-
-  function openProvider() {
-    setProviderOpen(true);
-    closeMenu();
   }
 
   return (
@@ -51,9 +44,9 @@ export default function LandingNav({ brand }: LandingNavProps) {
         </nav>
 
         <div className="al-nav-actions">
-          <button onClick={openProvider} className="al-nav-provider-btn">
+          <Link href="/proveedores" className="al-nav-provider-btn">
             Soy proveedor
-          </button>
+          </Link>
           <button
             onClick={toggleTheme}
             className="al-theme-toggle"
@@ -112,15 +105,13 @@ export default function LandingNav({ brand }: LandingNavProps) {
               ))}
             </nav>
             <div className="al-nav-mobile-bottom">
-              <button onClick={openProvider} className="al-nav-provider-btn al-nav-mobile-full">
+              <Link href="/proveedores" onClick={closeMenu} className="al-nav-provider-btn al-nav-mobile-full">
                 Soy proveedor
-              </button>
+              </Link>
             </div>
           </div>
         </>
       )}
-
-      <ProviderModal open={providerOpen} onClose={() => setProviderOpen(false)} />
     </div>
   );
 }

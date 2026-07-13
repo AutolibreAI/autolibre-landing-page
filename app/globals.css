@@ -737,6 +737,44 @@ body {
   margin: 0;
 }
 
+/* ── Provider full page (/proveedores — direct load / refresh) ── */
+.al-provider-page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.al-provider-page-back {
+  align-self: flex-start;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--al-cyan);
+}
+
+.al-provider-page-card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--al-surface);
+  border: 1px solid var(--al-border-soft);
+  border-radius: 1rem;
+  box-shadow: 0 8px 40px rgba(28, 43, 28, 0.06);
+  overflow: hidden;
+}
+
+[data-theme="dark"] .al-provider-page-card {
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* On the full page the pitch heading needs no room for a close button */
+.al-provider-page-card .al-provider-heading {
+  padding-right: 0;
+}
+
 /* ========================================
    Hero Section (Split)
    ======================================== */
