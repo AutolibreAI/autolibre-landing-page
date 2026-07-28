@@ -3,7 +3,8 @@
     "allow": [
       "mcp__plugin_engram_engram__mem_save",
       "Bash(Copy-Item \"c:\\\\Users\\\\ramir\\\\OneDrive\\\\Escritorio\\\\ram_projects\\\\autolibre-landing-page\\\\public\\\\autolibre-favicon.png\" \"c:\\\\Users\\\\ramir\\\\OneDrive\\\\Escritorio\\\\ram_projects\\\\autolibre-landing-page\\\\app\\\\icon.png\")",
-      "Bash(Remove-Item \"c:\\\\Users\\\\ramir\\\\OneDrive\\\\Escritorio\\\\ram_projects\\\\autolibre-landing-page\\\\app\\\\favicon.ico\")"
+      "Bash(Remove-Item \"c:\\\\Users\\\\ramir\\\\OneDrive\\\\Escritorio\\\\ram_projects\\\\autolibre-landing-page\\\\app\\\\favicon.ico\")",
+      "Bash(node \"C:/Users/User/AppData/Local/Temp/claude/c--Users-User-Desktop-autolibre-landing-page/f3240473-955e-4ad2-880d-2bebc0fe76c7/scratchpad/inspect-sheet.js\")"
     ]
   }
 }
