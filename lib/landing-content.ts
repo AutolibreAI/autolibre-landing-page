@@ -17,11 +17,11 @@ export const landingPageContent: LandingPageContent = {
       ],
       mainAction: {
         label: "Quiero Early Access",
-        href: "#form-section",
+        href: "/#form-section",
       },
       secondaryAction: {
         label: "Cómo funciona",
-        href: "#problem",
+        href: "/#problem",
       },
       socialProof: "Más de 100 conductores ya se sumaron a la lista de espera.",
     },
@@ -209,7 +209,7 @@ export const landingPageContent: LandingPageContent = {
       description: "Sumate a la lista de acceso temprano y recibi novedades primero.",
       action: {
         label: "Reservar mi lugar",
-        href: "#form-section",
+        href: "/#form-section",
       },
     },
     footer: {
@@ -228,7 +228,7 @@ export const landingPageContent: LandingPageContent = {
       ],
       secondaryCta: {
         label: "Reservar mi lugar",
-        href: "#form-section",
+        href: "/#form-section",
       },
     },
     chat: {

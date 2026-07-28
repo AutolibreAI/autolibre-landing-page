@@ -11,11 +11,11 @@ type LandingNavProps = {
 };
 
 const NAV_LINKS = [
-  { href: "#hero", label: "Inicio" },
-  { href: "#problem", label: "Producto" },
-  { href: "#form-section", label: "Early Access" },
-  { href: "#faqs", label: "FAQs" },
-  { href: "#footer", label: "Contacto" },
+  { href: "/#hero", label: "Inicio" },
+  { href: "/#problem", label: "Producto" },
+  { href: "/#form-section", label: "Early Access" },
+  { href: "/#faqs", label: "FAQs" },
+  { href: "/#footer", label: "Contacto" },
 ] as const;
 
 export default function LandingNav({ brand }: LandingNavProps) {

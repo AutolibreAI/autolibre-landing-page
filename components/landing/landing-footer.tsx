@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Zap } from "lucide-react";
 import type { LandingPageContent } from "@/lib/landing-types";

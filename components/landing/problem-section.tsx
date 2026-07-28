@@ -1,3 +1,5 @@
+"use client";
+
 import { Brain, History, Bell, ClipboardList } from "lucide-react";
 import type { LandingPageContent } from "@/lib/landing-types";
 import BrandHeading from "@/components/landing/brand-heading";

@@ -1,3 +1,5 @@
+"use client";
+
 import { cloneElement, isValidElement, type ComponentProps, type ReactElement, type ReactNode } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";

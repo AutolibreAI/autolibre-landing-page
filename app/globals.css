@@ -1356,13 +1356,26 @@ body {
   font-size: 0.9rem;
 }
 
+.al-signup-form textarea {
+  border-radius: 0.7rem;
+  border: 1px solid rgba(28, 43, 28, 0.15);
+  background: var(--al-surface);
+  color: var(--al-text-main);
+  padding: 0.7rem 0.8rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
 [data-theme="dark"] .al-signup-form input:not(.reasonOption):not([type="checkbox"]),
-[data-theme="dark"] .al-signup-form select {
+[data-theme="dark"] .al-signup-form select,
+[data-theme="dark"] .al-signup-form textarea {
   border-color: rgba(255, 255, 255, 0.12);
 }
 
 .al-signup-form input::placeholder,
-.al-signup-form select::placeholder {
+.al-signup-form select::placeholder,
+.al-signup-form textarea::placeholder {
   color: rgba(141, 151, 168, 0.85);
 }
 

@@ -1,3 +1,5 @@
+"use client";
+
 import BrandCard from "@/components/landing/brand-card";
 import BrandHeading from "@/components/landing/brand-heading";
 import { Bell, Brain, ClipboardList, History } from "lucide-react";
