@@ -218,6 +218,7 @@ export const landingPageContent: LandingPageContent = {
       legalLinks: [
         { label: "TyC", href: "/terminos" },
         { label: "Privacidad", href: "/privacidad" },
+        { label: "Eliminar cuenta", href: "/eliminar-cuenta" },
       ],
       socialLinks: [
         { id: "social-tiktok", label: "TikTok", href: "https://www.tiktok.com/@autolibreai" },

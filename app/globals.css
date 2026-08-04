@@ -173,6 +173,12 @@ body {
 
 .al-page {
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.al-page > main {
+  flex: 1;
 }
 
 /* ========================================
