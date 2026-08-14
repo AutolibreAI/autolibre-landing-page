@@ -38,7 +38,7 @@ export const siteConfig = {
     /** E.164 — es el formato que pide schema.org y el que entiende `tel:`. */
     phoneE164: "+5491172804347",
     /** wa.me sólo acepta dígitos: sin +, sin espacios y sin guiones. */
-    whatsapp: "https://wa.me/5491172804347",
+    whatsapp: "https://wa.me/5491172804347?text=Hola!%20Me%20interesa%20comprar%20un%20escáner!",
   },
   social: [
     "https://www.tiktok.com/@autolibreai",
