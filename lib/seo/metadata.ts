@@ -46,6 +46,13 @@ export function createMetadata({
     },
     twitter: {
       card: "summary_large_image",
+      /**
+       * `site` atribuye la tarjeta a la cuenta dueña del sitio y `creator` a
+       * quien firma el contenido. Hoy son la misma cuenta; el día que haya
+       * posts con autor propio, `creator` es el que cambia.
+       */
+      site: siteConfig.xHandle,
+      creator: siteConfig.xHandle,
       title,
       description,
       images: [image.url],

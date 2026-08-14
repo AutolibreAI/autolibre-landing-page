@@ -46,6 +46,13 @@ export const siteConfig = {
     "https://x.com/autolibreai",
     "https://linkedin.com/company/auto-libre-ai",
   ],
+  /**
+   * Handle de X para `twitter:site` y `twitter:creator`. Sin esto la tarjeta
+   * se publica sin atribuir la cuenta. Va acá y no derivado de `social[2]`
+   * porque parsear el handle desde la URL se rompe el día que cambie el
+   * orden del array.
+   */
+  xHandle: "@autolibreai",
 } as const;
 
 export type SiteConfig = typeof siteConfig;
