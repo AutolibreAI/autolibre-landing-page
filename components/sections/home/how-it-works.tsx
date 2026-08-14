@@ -24,9 +24,12 @@ export function HowItWorksSection() {
         <ol className="mx-auto grid max-w-[1040px] gap-0.5 overflow-hidden rounded-panel bg-ink md:grid-cols-2">
           {steps.map((step) => (
             <li key={step.id} className="bg-surface px-8 py-12 md:px-10">
+              {/* El glifo deja ~10px de aire dentro de su caja de 80px, así
+                  que este margen da un hueco óptico de ~26px. Ojo: no volver
+                  al `-mb-3` del mockup, que superpone el número al título. */}
               <p
                 aria-hidden="true"
-                className="-mb-3 font-display text-[5rem] leading-none font-bold text-surface-muted"
+                className="mb-4 font-display text-[5rem] leading-none font-bold text-surface-muted"
               >
                 {step.number}
               </p>
