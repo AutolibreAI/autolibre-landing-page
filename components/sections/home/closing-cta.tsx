@@ -10,8 +10,11 @@ export function ClosingCtaSection() {
   return (
     <Section id="cierre" tone="brand" aria-labelledby="closing-title">
       <Container size="narrow" className="text-center">
+        {/* Knockout blanco, NO `lockup-dark.png`: ese trae el isotipo en
+            verde #20A020, que sobre el verde de marca queda en un contraste
+            de 1.24 y desaparece. Ver public/brand/README.md */}
         <Image
-          src="/brand/lockup-dark.png"
+          src="/brand/lockup-white.png"
           alt=""
           width={676}
           height={132}
