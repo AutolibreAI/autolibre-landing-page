@@ -106,7 +106,7 @@ export function GarageScreen() {
         <VehicleCard
           highlighted
           image={{
-            src: "/mockup/honda-civic.png",
+            src: "/mockup/honda-civic.webp",
             alt: "",
             width: 650,
             height: 260,
@@ -117,7 +117,7 @@ export function GarageScreen() {
         />
         <VehicleCard
           image={{
-            src: "/mockup/toyota-etios.png",
+            src: "/mockup/toyota-etios.webp",
             alt: "",
             width: 794,
             height: 400,
