@@ -32,6 +32,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+# volcados de Cygwin/Git Bash cuando un comando crashea (ej. du.exe.stackdump)
+*.stackdump
 
 # env files (can opt-in for committing if needed)
 .env*
