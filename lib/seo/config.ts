@@ -33,7 +33,12 @@ export const siteConfig = {
   },
   contact: {
     email: "contact@autolibre.ai",
-    whatsapp: "https://wa.me/5491100000000",
+    /** Formato legible, para mostrar en pantalla. */
+    phone: "+54 9 11 7280-4347",
+    /** E.164 — es el formato que pide schema.org y el que entiende `tel:`. */
+    phoneE164: "+5491172804347",
+    /** wa.me sólo acepta dígitos: sin +, sin espacios y sin guiones. */
+    whatsapp: "https://wa.me/5491172804347",
   },
   social: [
     "https://www.tiktok.com/@autolibreai",

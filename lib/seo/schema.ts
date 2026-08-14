@@ -20,8 +20,17 @@ export function organizationSchema() {
     url: siteConfig.url,
     logo: `${siteConfig.url}/brand/isotype.png`,
     email: siteConfig.contact.email,
+    telephone: siteConfig.contact.phoneE164,
     sameAs: [...siteConfig.social],
     areaServed: { "@type": "Country", name: "Argentina" },
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "customer support",
+      telephone: siteConfig.contact.phoneE164,
+      email: siteConfig.contact.email,
+      availableLanguage: "Spanish",
+      areaServed: "AR",
+    },
   };
 }
 
