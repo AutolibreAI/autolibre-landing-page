@@ -1,24 +1,11 @@
 /**
  * Copy y opciones de los formularios que no son el de proveedores.
  *
- * OJO: `EARLY_ACCESS_REASONS` y `SUPPORT_SUBJECTS` no son sólo texto de UI —
- * viajan como datos a Supabase y al email de soporte respectivamente.
- * Editarlos cambia lo que queda guardado.
+ * OJO: `SUPPORT_SUBJECTS` no es sólo texto de UI — viaja como dato al email
+ * de soporte. Editarlo cambia lo que llega al equipo.
  */
 
-export const EARLY_ACCESS_REASONS = [
-  "Gestión administrativa (VTV/RTO, service, patentes, multas, etc.)",
-  "Diagnóstico con IA",
-  "Marketplace (presupuestos y nuevos proveedores)",
-  "Otra",
-] as const;
-
-/** Opción que despliega el input de texto libre en early access. */
-export const OTHER_REASON = "Otra";
-
 export const earlyAccessCopy = {
-  reasonsLabel: "¿Qué te interesa de AutoLibre?",
-  otherPlaceholder: "Contanos qué te interesa",
   submitLabel: "Quiero acceso",
   submitLoadingLabel: "Enviando...",
   success: {
