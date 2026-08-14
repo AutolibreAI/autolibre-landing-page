@@ -135,11 +135,8 @@ export async function appendProviderToSheet(row: ProviderSubmission): Promise<vo
   const targetRow = await findFirstFreeRow(sheets, spreadsheetId);
 
   // Solo opciones validas del desplegable, sin repetir.
-  const servicios = [
-    ...new Set(
-      row.services.map((s) => SERVICE_TO_SHEET_OPTION[s]).filter((s): s is string => Boolean(s)),
-    ),
-  ].join(', ');
+  const servicios = row.services.join(', ')
+
   // Si trabaja todas las marcas, la columna queda vacia (convencion del sheet).
   const marcas = row.brandSpecialized === 'no' ? '' : row.brands.join(', ');
   const telefono = normalizePhone(row.whatsapp);
@@ -147,7 +144,8 @@ export async function appendProviderToSheet(row: ProviderSubmission): Promise<vo
   const cells: Record<string, string> = {
     B: 'No contactado',
     C: row.taller,
-    D: servicios,
+    D: '',
+    'AG': servicios,
     I: row.direccion,
     J: marcas,
     K: row.fuelTypes.join(', '),

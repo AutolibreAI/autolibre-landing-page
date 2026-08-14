@@ -128,9 +128,9 @@ export function GarageScreen() {
         />
       </div>
 
-      <span className="absolute right-4 bottom-[5.25rem] flex size-[46px] items-center justify-center rounded-full bg-ink text-[22px] text-white shadow-[0_6px_16px_rgba(0,0,0,0.2)]">
+      {/* <span className="absolute right-4 bottom-[5.25rem] flex size-[46px] items-center justify-center rounded-full bg-ink text-[22px] text-white shadow-[0_6px_16px_rgba(0,0,0,0.2)]">
         +
-      </span>
+      </span> */}
 
       <TabBar active="Garage" />
     </div>

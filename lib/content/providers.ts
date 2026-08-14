@@ -79,6 +79,26 @@ export const PROVIDER_BRANDS = [
 ] as const;
 
 export const PROVIDER_SERVICES = [
+  "Taller Mecánico",
+  "Lavadero",
+  "Multas",
+  "Seguros",
+  "Cristales",
+  "Neumáticos",
+  "Repuestos",
+  "Chapa y pintura",
+  "Detailing",
+  "Fabricación a medida / Impresión 3D",
+  "Baterías",
+  "Equipamiento",
+  "Peritaje / inspección pre-compra",
+  "Informes",
+  "Gestoría",
+  "Cerrajería",
+  "Lubricentro",
+];
+
+export const PROVIDER_SERVICES_DEP = [
   "Service y mantenimiento",
   "Frenos",
   "Suspensión",
