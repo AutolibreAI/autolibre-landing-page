@@ -162,7 +162,7 @@ export function ProviderForm() {
             />
           </Field>
 
-          <FieldGroup title="Marcas en las que se especializan">
+          <FieldGroup title="Trabajan con marcas específicas?">
             <div className="flex flex-col gap-2">
               <ChoiceRow
                 type="radio"

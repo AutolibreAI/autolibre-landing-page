@@ -103,11 +103,22 @@ export function EarlyAccessForm({
   }
 
   const inputClass = cn(
-    "min-w-[10rem] flex-1 rounded-field border px-4 py-3.5 text-[0.9375rem] outline-none transition-colors",
+    "rounded-field border px-4 py-3.5 text-[0.9375rem] outline-none transition-colors",
     onBrand
       ? "border-white/25 bg-white/10 text-white placeholder:text-white/70 focus-visible:border-white"
       : "border-line bg-surface-subtle text-ink placeholder:text-ink/40 focus-visible:border-brand",
   );
+
+  /**
+   * El email necesita el doble de ancho que el nombre: un nombre son ~10
+   * caracteres y un email ~30. Con `flex-1` en los dos entraban 23 y se
+   * cortaban casi todos los correos reales.
+   *
+   * El `min-w` del email es alto a propósito: cuando la fila no da, preferimos
+   * que baje el botón (que es el último) antes que achicar el campo.
+   */
+  const nameClass = cn(inputClass, "min-w-[7rem] flex-[1]");
+  const emailClass = cn(inputClass, "min-w-[15rem] flex-[2]");
 
   return (
     <form onSubmit={handleSubmit} className={className} noValidate>
@@ -124,7 +135,7 @@ export function EarlyAccessForm({
           placeholder="Nombre"
           autoComplete="name"
           required
-          className={inputClass}
+          className={nameClass}
         />
 
         <label htmlFor={`${fieldId}-email`} className="sr-only">
@@ -134,10 +145,11 @@ export function EarlyAccessForm({
           id={`${fieldId}-email`}
           name="email"
           type="email"
-          placeholder="Email"
+          placeholder="tu@email.com"
           autoComplete="email"
+          inputMode="email"
           required
-          className={inputClass}
+          className={emailClass}
         />
 
         <Button
