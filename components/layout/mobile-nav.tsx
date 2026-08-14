@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/button";
 import type { NavLink } from "@/lib/content/types";
@@ -50,7 +51,10 @@ export function MobileNav({ links, secondary, cta }: MobileNavProps) {
         aria-expanded={open}
         aria-controls="mobile-nav-panel"
         onClick={() => setOpen((value) => !value)}
-        className="flex size-9 items-center justify-center rounded-field border border-ink/15 text-ink transition-colors hover:border-brand hover:text-brand lg:hidden"
+        /* 44px es el mínimo táctil de WCAG 2.5.5 y de la HIG de Apple. El
+           ícono sigue siendo de 18px: lo que crece es el área de toque, que
+           es lo que el dedo necesita. */
+        className="flex size-11 items-center justify-center rounded-field border border-ink/15 text-ink transition-colors hover:border-brand hover:text-brand lg:hidden"
       >
         <svg
           width="18"
@@ -77,34 +81,63 @@ export function MobileNav({ links, secondary, cta }: MobileNavProps) {
         </svg>
       </button>
 
-      {open ? (
-        <div
-          id="mobile-nav-panel"
-          className="fixed inset-x-0 top-[4.5rem] bottom-0 z-40 flex flex-col gap-2 overflow-y-auto bg-surface px-[6%] pt-8 pb-[calc(2rem+env(safe-area-inset-bottom))] lg:hidden"
-        >
-          <nav aria-label="Menú principal" className="flex flex-col">
-            {allLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setOpen(false)}
-                className="border-b border-line py-4 font-display text-xl font-semibold text-ink"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-          <ButtonLink
-            href={cta.href}
-            size="lg"
-            block
-            onClick={() => setOpen(false)}
-            className="mt-6"
-          >
-            {cta.label}
-          </ButtonLink>
-        </div>
-      ) : null}
+      {/*
+        El panel se monta con portal en `document.body` a propósito, NO por
+        prolijidad: el header tiene `backdrop-blur`, y `backdrop-filter`
+        convierte al elemento en containing block de sus descendientes
+        `fixed`. Renderizado dentro del header, este panel resolvía su
+        `top/bottom` contra los 73px del header en vez de contra el viewport
+        y quedaba de 64px de alto con scroll interno. Mismo efecto tienen
+        `transform`, `filter`, `perspective`, `contain` y `will-change`.
+
+        No hace falta guardar contra SSR: `open` arranca en false y sólo pasa
+        a true por un click, así que `document` siempre existe acá.
+      */}
+      {open
+        ? createPortal(
+            <div
+              id="mobile-nav-panel"
+              className="fixed inset-x-0 top-[4.5rem] bottom-0 z-40 flex flex-col gap-2 overflow-y-auto bg-surface px-[6%] pt-8 pb-[calc(2rem+env(safe-area-inset-bottom))] lg:hidden"
+            >
+              <nav aria-label="Menú principal" className="flex flex-col">
+                {allLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setOpen(false)}
+                    className="border-b border-line py-4 font-display text-xl font-semibold text-ink"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+              {/*
+                `mt-auto` ancla el CTA al fondo del panel. Va en un wrapper y
+                no en el botón para no tocarle el padding propio. Si algún día
+                los links llenan el alto, el auto colapsa a 0 y el `pt-6`
+                garantiza que el botón nunca quede pegado al último link.
+              */}
+              <div className="mt-auto pt-6">
+                {/*
+                  `text-xl` pisa el `text-base` que trae `size="lg"` (lo
+                  resuelve tailwind-merge dentro de `cn`). Va igualado a los
+                  links de navegación a propósito: el CTA es la conversión de
+                  la landing, no puede pesar visualmente menos que "FAQ".
+                */}
+                <ButtonLink
+                  href={cta.href}
+                  size="lg"
+                  block
+                  onClick={() => setOpen(false)}
+                  className="text-xl"
+                >
+                  {cta.label}
+                </ButtonLink>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </>
   );
 }
