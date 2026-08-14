@@ -44,7 +44,9 @@ export function CompatibilitySection() {
               alt={image.alt}
               width={image.width}
               height={image.height}
-              sizes="(max-width: 1024px) 90vw, 400px"
+              /* El contenedor tiene `max-w-[400px]` siempre: declarar 90vw
+                 en tablet hacía pedir una variante mucho más grande. */
+              sizes="(max-width: 460px) 88vw, 400px"
               className="w-full rounded-card"
             />
           </div>

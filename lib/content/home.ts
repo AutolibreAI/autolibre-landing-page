@@ -158,10 +158,11 @@ export const homeContent = {
       "Tenerlo es la primera señal, pero algunos modelos usan un sistema propio y no responden igual. Si nos decís marca, modelo y año, te confirmamos si el tuyo funciona.",
     cta: { label: "Consultanos por WhatsApp", href: "https://wa.me/5491100000000" },
     image: {
-      src: "/mockup/obd2-connector.png",
+      // Se muestra con un tope de 400px de ancho: 1200px cubre DPR 3.
+      src: "/mockup/obd2-connector.webp",
       alt: "Ubicación del conector de diagnóstico OBD2 debajo del volante",
-      width: 3072,
-      height: 2048,
+      width: 1200,
+      height: 800,
     },
   },
 
