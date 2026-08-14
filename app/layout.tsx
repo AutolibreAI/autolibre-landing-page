@@ -1,94 +1,56 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from "@/lib/theme-context";
+import type { Metadata, Viewport } from "next";
+import { DM_Sans, Outfit } from "next/font/google";
+import { siteConfig } from "@/lib/seo/config";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+/**
+ * Fuentes autohospedadas por next/font: cero requests a Google, cero
+ * render-blocking y cero CLS. Ambas son variable fonts, así que un solo
+ * archivo cubre todos los pesos.
+ */
+const outfit = Outfit({
   subsets: ["latin"],
+  variable: "--font-outfit",
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const dmSans = DM_Sans({
   subsets: ["latin"],
+  variable: "--font-dm-sans",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "AutoLibre · Diagnóstico OBD2 con IA para tu auto",
-  description:
-    "Traducí fallos OBD2 a lenguaje simple con IA. Gestioná VTV, seguros y mantenimiento preventivo en Argentina. Registrate para el Early Access de AutoLibre.",
-  keywords: [
-    "diagnóstico vehicular IA",
-    "escáner OBD2 Argentina",
-    "mantenimiento preventivo flotas",
-    "traductor códigos DTC",
-    "inspección pre-compra digital",
-    "gestión de VTV y multas",
-    "telemetría automotriz",
-  ],
-  authors: [{ name: "AutoLibre" }],
-  alternates: {
-    canonical: "https://autolibre.ai",
+  /** Resuelve a absolutas todas las URLs relativas de canonical y OG. */
+  metadataBase: new URL(siteConfig.url),
+  title: {
+    default: siteConfig.title,
+    /** Las páginas internas sólo declaran su nombre; el sufijo lo pone acá. */
+    template: `%s · ${siteConfig.name}`,
   },
-  openGraph: {
-    title: "AutoLibre · Tu auto siempre supo qué tenía. Ahora vos también.",
-    description:
-      "La app que traduce los datos OBD-II de tu auto a lenguaje simple. Diagnóstico inteligente, gestión de VTV, seguro y mantenimiento en Argentina.",
-    url: "https://autolibre.ai",
-    siteName: "AutoLibre",
-    images: [
-      {
-        url: "/landing/mockup_3_documentos.png",
-        width: 1270,
-        height: 952,
-        alt: "AutoLibre app — diagnóstico OBD2 e historial de vehículo",
-      },
-    ],
-    locale: "es_AR",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "AutoLibre · Diagnóstico OBD2 con IA para tu auto",
-    description:
-      "Dejá de adivinar qué le pasa a tu auto. Diagnóstico inteligente y gestión de trámites en un solo lugar.",
-    images: ["/landing/mockup_3_documentos.png"],
-  },
-  icons: {
-    icon: "/autolibre-favicon.png",
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
+  description: siteConfig.description,
+  keywords: [...siteConfig.keywords],
+  authors: [{ name: siteConfig.legalName, url: siteConfig.url }],
+  creator: siteConfig.legalName,
+  publisher: siteConfig.legalName,
+  applicationName: siteConfig.name,
+  category: "automotive",
+  formatDetection: { telephone: false },
+  // El favicon lo aporta `app/icon.png` por convención de archivo: Next lo
+  // hashea y genera el <link> solo. Declararlo acá además lo duplicaría.
+};
+
+export const viewport: Viewport = {
+  themeColor: "#2a8c3a",
+  colorScheme: "light",
 };
 
 export default function RootLayout({
   children,
-  modal,
-}: Readonly<{
-  children: React.ReactNode;
-  modal: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="es"
-      className={`${geistSans.className} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-      suppressHydrationWarning
-    >
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem('al-theme')||'dark';if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}`,
-          }}
-        />
-      </head>
-      <body className="min-h-full flex flex-col">
-        <ThemeProvider>
-          {children}
-          {modal}
-        </ThemeProvider>
-      </body>
+    <html lang="es-AR" className={`${outfit.variable} ${dmSans.variable}`}>
+      <body className="min-h-dvh bg-surface text-ink">{children}</body>
     </html>
   );
 }

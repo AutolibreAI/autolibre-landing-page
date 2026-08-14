@@ -1,24 +1,64 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import ProviderForm from "@/components/landing/provider-form";
+import { PageShell } from "@/components/layout/page-shell";
+import { JsonLd } from "@/components/seo/json-ld";
+import { ProviderForm } from "@/components/forms/provider-form";
+import { ProvidersHeroSection } from "@/components/sections/providers/hero";
+import { ProvidersReasonsSection } from "@/components/sections/providers/reasons";
+import { Container } from "@/components/ui/container";
+import { Section } from "@/components/ui/section";
+import { providersContent } from "@/lib/content/providers";
+import { createMetadata } from "@/lib/seo/metadata";
+import {
+  breadcrumbSchema,
+  graph,
+  organizationSchema,
+  webPageSchema,
+} from "@/lib/seo/schema";
 
-export const metadata: Metadata = {
-  title: "Sumá tu taller · AutoLibre",
-  description:
-    "Registrá tu taller en AutoLibre y empezá a recibir solicitudes de clientes verificados cerca tuyo.",
-  robots: { index: true, follow: true },
-};
+const TITLE = "Sumá tu taller a AutoLibre";
+const DESCRIPTION =
+  "Recibí consultas de dueños de auto con marca, modelo, año y el problema ya delimitado. Registrá tu taller o servicio en AutoLibre y armá tu perfil en la app.";
+const PATH = "/proveedores";
+
+export const metadata: Metadata = createMetadata({
+  title: TITLE,
+  description: DESCRIPTION,
+  path: PATH,
+});
+
+const schema = graph(
+  organizationSchema(),
+  webPageSchema({ name: TITLE, description: DESCRIPTION, path: PATH }),
+  breadcrumbSchema([
+    { name: "Inicio", path: "/" },
+    { name: "Proveedores", path: PATH },
+  ]),
+);
 
 export default function ProveedoresPage() {
   return (
-    <main className="al-provider-page">
-      <Link href="/" className="al-provider-page-back">
-        ← Volver al inicio
-      </Link>
+    <>
+      <PageShell
+        secondary={{ label: "Soy dueño de auto", href: "/" }}
+        cta={{ label: "Sumar mi negocio", href: "#form" }}
+      >
+        <ProvidersHeroSection />
+        <ProvidersReasonsSection />
 
-      <div className="al-provider-page-card">
-        <ProviderForm />
-      </div>
-    </main>
+        <Section id="form" tone="muted" spacing="md">
+          <Container size="narrow">
+            <h2 className="text-center font-display text-2xl font-bold text-ink">
+              {providersContent.form.title}
+            </h2>
+            <p className="mt-3 mb-10 text-center text-[0.9375rem] text-ink/65">
+              {providersContent.form.subtitle}
+            </p>
+            <ProviderForm />
+          </Container>
+        </Section>
+      </PageShell>
+
+      <JsonLd schema={schema} />
+    </>
   );
 }
