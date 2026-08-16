@@ -13,7 +13,7 @@ export const siteConfig = {
   url: "https://autolibre.ai",
   locale: "es_AR",
   lang: "es-AR",
-  title: "AutoLibre · Todo lo de tu auto, en un solo lugar",
+  title: "AutoLibre · Todo tu auto, en un solo lugar",
   description:
     "Documentación, vencimientos, historial, diagnóstico con IA y talleres cerca tuyo. Toda la información de tu auto ordenada en una sola app. Early access en Argentina.",
   keywords: [
@@ -29,7 +29,7 @@ export const siteConfig = {
     url: "/brand/og-image.png",
     width: 1200,
     height: 630,
-    alt: "AutoLibre — todo lo de tu auto, en un solo lugar",
+    alt: "AutoLibre — Todo tu auto, en un solo lugar",
   },
   contact: {
     email: "contact@autolibre.ai",
@@ -38,7 +38,8 @@ export const siteConfig = {
     /** E.164 — es el formato que pide schema.org y el que entiende `tel:`. */
     phoneE164: "+5491172804347",
     /** wa.me sólo acepta dígitos: sin +, sin espacios y sin guiones. */
-    whatsapp: "https://wa.me/5491172804347?text=Hola!%20Me%20interesa%20comprar%20un%20escáner!",
+    whatsapp:
+      "https://wa.me/5491172804347?text=Hola!%20Me%20interesa%20comprar%20un%20escáner!",
   },
   social: [
     "https://www.tiktok.com/@autolibreai",

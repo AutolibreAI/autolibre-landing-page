@@ -4,7 +4,7 @@ import { siteConfig } from "@/lib/seo/config";
 /** Copy de la home. Un objeto por sección, en el mismo orden que la página. */
 export const homeContent = {
   hero: {
-    titleLines: ["Todo lo de tu auto,", "en un solo lugar."],
+    titleLines: ["Todo tu auto,", "en un solo lugar."],
     subtitle:
       "Documentación, vencimientos, historial, diagnóstico con IA, talleres y servicios cerca tuyo.",
     formNote: "Estamos abriendo el acceso de a poco.",
@@ -157,7 +157,10 @@ export const homeContent = {
       "La mayoría de los autos tiene un conector de diagnóstico. Fijate si el tuyo lo tiene.",
     detail:
       "Tenerlo es la primera señal, pero algunos modelos usan un sistema propio y no responden igual. Si nos decís marca, modelo y año, te confirmamos si el tuyo funciona.",
-    cta: { label: "Consultanos por WhatsApp", href: siteConfig.contact.whatsapp },
+    cta: {
+      label: "Consultanos por WhatsApp",
+      href: siteConfig.contact.whatsapp,
+    },
     image: {
       // Se muestra con un tope de 400px de ancho: 1200px cubre DPR 3.
       src: "/mockup/obd2-connector.webp",
