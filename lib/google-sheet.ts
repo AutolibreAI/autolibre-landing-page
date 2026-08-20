@@ -1,3 +1,5 @@
+import { createPrivateKey } from 'node:crypto';
+
 import { google } from 'googleapis';
 
 /** Pestaña de destino en el Google Sheet de proveedores. */
@@ -7,18 +9,73 @@ const FIRST_DATA_ROW = 3;
 /** Mensaje precargado del link de redireccion a WhatsApp. */
 const WHATSAPP_MESSAGE = 'Hola! Vengo de AutoLibre y necesito ayuda';
 
+const PEM_HEADER = '-----BEGIN PRIVATE KEY-----';
+const PEM_FOOTER = '-----END PRIVATE KEY-----';
+
+/**
+ * Los paneles de hosting maltratan el PEM al pegarlo: colapsan los saltos de
+ * linea, dejan comillas colgadas (simples o dobles), meten CRLF o indentan
+ * cada linea. OpenSSL 3 no perdona nada de eso y responde con el criptico
+ * "DECODER routines::unsupported", asi que normalizamos antes de usarla.
+ */
+function normalizePrivateKey(raw: string): string {
+  let key = raw.trim();
+
+  // Comillas colgadas del .env o del panel del hosting.
+  if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
+    key = key.slice(1, -1).trim();
+  }
+
+  // Algunos entornos guardan la key en base64 para no pelear con los newlines.
+  if (!key.includes(PEM_HEADER)) {
+    const decoded = Buffer.from(key, 'base64').toString('utf8');
+    if (decoded.includes(PEM_HEADER)) key = decoded.trim();
+  }
+
+  // \n escapados -> reales, y fuera los \r (el CR sobrante ensucia el base64).
+  key = key.replace(/\\r/g, '').replace(/\\n/g, '\n').replace(/\r/g, '');
+
+  if (!key.includes(PEM_HEADER) || !key.includes(PEM_FOOTER)) {
+    throw new Error(
+      'GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY no es un PEM valido: falta la linea BEGIN/END PRIVATE KEY.',
+    );
+  }
+
+  // El panel colapso los saltos: reconstruimos el PEM partiendo el cuerpo en
+  // lineas de 64 caracteres, que es lo que espera el decoder.
+  const body = key
+    .slice(key.indexOf(PEM_HEADER) + PEM_HEADER.length, key.indexOf(PEM_FOOTER))
+    .replace(/\s+/g, '');
+
+  if (!body) {
+    throw new Error('GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY esta vacia entre BEGIN y END.');
+  }
+
+  const lines = body.match(/.{1,64}/g) ?? [];
+  return `${PEM_HEADER}\n${lines.join('\n')}\n${PEM_FOOTER}\n`;
+}
+
 /** Auth con service account (misma cuenta que usa el backend, con scope de escritura). */
 function buildAuth() {
-  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL?.trim().replace(/^["']|["']$/g, '');
   const rawKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
   if (!email || !rawKey) {
     throw new Error('Faltan GOOGLE_SERVICE_ACCOUNT_EMAIL / GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY.');
   }
-  // Tolera comillas colgadas y \n escapados o reales (como quede pegada en el .env).
-  let key = rawKey.trim();
-  if (key.startsWith('"')) key = key.slice(1);
-  if (key.endsWith('"')) key = key.slice(0, -1);
-  key = key.replace(/\\n/g, '\n').trim();
+
+  const key = normalizePrivateKey(rawKey);
+
+  // Fallamos aca con un mensaje util en vez de dejar que googleapis escupa el
+  // "DECODER routines::unsupported" de OpenSSL, que no dice nada.
+  try {
+    createPrivateKey(key);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY no se pudo parsear (${detail}). ` +
+        'Revisa que en el hosting este pegada completa, con los saltos de linea intactos.',
+    );
+  }
 
   return new google.auth.JWT({
     email,
