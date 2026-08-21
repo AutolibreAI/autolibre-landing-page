@@ -17,8 +17,25 @@ export function organizationSchema() {
     "@type": "Organization",
     "@id": ORGANIZATION_ID,
     name: siteConfig.legalName,
+    alternateName: siteConfig.name,
     url: siteConfig.url,
-    logo: `${siteConfig.url}/brand/isotype.png`,
+    description: siteConfig.description,
+    /**
+     * Google pide el logo como `ImageObject` con dimensiones declaradas: sin
+     * width/height tiene que descargar la imagen para saber si cumple el
+     * mínimo de 112x112, y mientras tanto no lo muestra. Apunta al asset
+     * cuadrado — el isotipo original es 450x407 y el recorte lo deformaba.
+     */
+    logo: {
+      "@type": "ImageObject",
+      "@id": `${siteConfig.url}/#logo`,
+      url: `${siteConfig.url}${siteConfig.logo.url}`,
+      contentUrl: `${siteConfig.url}${siteConfig.logo.url}`,
+      width: siteConfig.logo.width,
+      height: siteConfig.logo.height,
+      caption: siteConfig.legalName,
+    },
+    image: { "@id": `${siteConfig.url}/#logo` },
     email: siteConfig.contact.email,
     telephone: siteConfig.contact.phoneE164,
     sameAs: [...siteConfig.social],
@@ -39,7 +56,14 @@ export function websiteSchema() {
     "@type": "WebSite",
     "@id": WEBSITE_ID,
     url: siteConfig.url,
+    /**
+     * De acá sale el "site name" que Google muestra arriba del resultado, en
+     * lugar del dominio pelado. Va el nombre corto: `legalName` queda como
+     * `alternateName` para que el algoritmo tenga las dos variantes.
+     */
     name: siteConfig.name,
+    alternateName: siteConfig.legalName,
+    description: siteConfig.description,
     inLanguage: siteConfig.lang,
     publisher: { "@id": ORGANIZATION_ID },
   };

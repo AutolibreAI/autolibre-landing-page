@@ -55,7 +55,8 @@ export function createMetadata({
       creator: siteConfig.xHandle,
       title,
       description,
-      images: [image.url],
+      /** Objeto y no string: así la tarjeta también lleva el texto alternativo. */
+      images: [{ url: image.url, alt: image.alt }],
     },
   };
 }

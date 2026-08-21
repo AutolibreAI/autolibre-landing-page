@@ -31,6 +31,16 @@ export const siteConfig = {
     height: 630,
     alt: "AutoLibre — Todo tu auto, en un solo lugar",
   },
+  /**
+   * Logo para el `Organization` de schema.org — el que Google usa en el
+   * knowledge panel. Tiene que ser cuadrado y de 112x112 como mínimo, así que
+   * es el isotipo recentrado, no el lockup (que es apaisado y se recortaría).
+   */
+  logo: {
+    url: "/brand/logo-square.png",
+    width: 512,
+    height: 512,
+  },
   contact: {
     email: "contact@autolibre.ai",
     /** Formato legible, para mostrar en pantalla. */

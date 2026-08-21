@@ -36,8 +36,19 @@ export const metadata: Metadata = {
   applicationName: siteConfig.name,
   category: "automotive",
   formatDetection: { telephone: false },
-  // El favicon lo aporta `app/icon.png` por convención de archivo: Next lo
-  // hashea y genera el <link> solo. Declararlo acá además lo duplicaría.
+  // Los íconos los aportan `app/favicon.ico`, `app/icon.png` y
+  // `app/apple-icon.png` por convención de archivo: Next los hashea y genera
+  // los <link> solo. Declararlos acá además los duplicaría.
+  manifest: "/manifest.webmanifest",
+  /**
+   * Token de Google Search Console. Sin la propiedad verificada no hay forma
+   * de pedir reindexado ni de ver por qué Google no muestra el favicon, así
+   * que el meta va en el layout — tiene que estar en el home, que es la URL
+   * que se verifica. Sale de env para no versionar el token.
+   */
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+    : undefined,
 };
 
 export const viewport: Viewport = {
