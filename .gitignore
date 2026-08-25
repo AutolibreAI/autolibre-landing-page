@@ -37,6 +37,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...salvo el ejemplo: es el unico lugar donde se documenta que variables hacen
+# falta, y no lleva ningun secreto adentro.
+!.env.example
 
 # vercel
 .vercel

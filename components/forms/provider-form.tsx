@@ -29,13 +29,30 @@ const GENERIC_ERROR = "Algo salió mal. Por favor intentá de nuevo.";
 /**
  * Alta de proveedores.
  *
- * Contrato con la API (no cambiar sin migrar `/api/provider` y la Google
- * Sheet): POST { taller, whatsapp, email, direccion, brand_specialized,
- * brands[], services[], service_other, vehicle_types[], fuel_types[],
- * how_found, how_found_other }.
+ * Contrato con la API (no cambiar sin migrar `/api/provider`): POST { taller,
+ * whatsapp, email, direccion, brand_specialized, brands[], services[],
+ * service_other, vehicle_types[], fuel_types[], how_found, how_found_other }.
+ *
+ * El destino de esos datos ya NO es la Google Sheet: `/api/provider` los manda
+ * al backend, que los guarda en `partner_applications`. El contrato de este
+ * formulario no cambio — la traduccion vive del lado del servidor.
+ *
+ * Lo que SI cambio es que ahora hay errores que la persona puede corregir, y
+ * por eso el cartel dejo de ser uno solo y generico: el backend valida el
+ * WhatsApp de verdad (un numero con el 15 adelante se rechaza en vez de
+ * guardarse roto) y avisa cuando ese email ya tiene una solicitud abierta.
  */
 export function ProviderForm() {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const [errorMessage, setErrorMessage] = useState(GENERIC_ERROR);
+  /**
+   * "Ya te teniamos anotado" es un exito, no un error: la solicitud existe y
+   * alguien la va a mirar. Mostrarlo en rojo haria que la persona reintente o
+   * piense que el sitio no anda.
+   */
+  const [alreadyRegistered, setAlreadyRegistered] = useState<string | null>(
+    null,
+  );
   const [brandSpecialized, setBrandSpecialized] = useState<"yes" | "no" | null>(
     null,
   );
@@ -62,9 +79,12 @@ export function ProviderForm() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitState("loading");
+    setErrorMessage(GENERIC_ERROR);
+    setAlreadyRegistered(null);
 
     const form = event.currentTarget;
-    const taller = (form.elements.namedItem("taller") as HTMLInputElement).value;
+    const taller = (form.elements.namedItem("taller") as HTMLInputElement)
+      .value;
     const whatsapp = (form.elements.namedItem("whatsapp") as HTMLInputElement)
       .value;
     const email = (form.elements.namedItem("email") as HTMLInputElement).value;
@@ -91,9 +111,26 @@ export function ProviderForm() {
         }),
       });
 
-      if (!response.ok) throw new Error();
+      const payload = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        message?: string;
+        alreadyRegistered?: boolean;
+      };
+
+      if (!response.ok) {
+        // El mensaje lo arma la ruta, que es la que conoce los codigos del
+        // backend. Acá solo se muestra — si algun dia falta, queda el generico.
+        setErrorMessage(payload.error ?? GENERIC_ERROR);
+        setSubmitState("error");
+        return;
+      }
+
+      if (payload.alreadyRegistered && payload.message) {
+        setAlreadyRegistered(payload.message);
+      }
       setSubmitState("success");
     } catch {
+      setErrorMessage(GENERIC_ERROR);
       setSubmitState("error");
     }
   }
@@ -102,8 +139,13 @@ export function ProviderForm() {
     return (
       <Card variant="solid" className="p-8">
         <FormSuccess
-          title="¡Registro recibido!"
-          description="Te contactaremos pronto para activar el perfil de tu taller en AutoLibre."
+          title={
+            alreadyRegistered ? "Ya te teniamos anotado" : "¡Registro recibido!"
+          }
+          description={
+            alreadyRegistered ??
+            "Te contactaremos pronto para activar el perfil de tu taller en AutoLibre."
+          }
         >
           <ButtonLink href="/" variant="outline" size="sm" className="mt-2">
             Volver al inicio
@@ -360,7 +402,9 @@ export function ProviderForm() {
             ) : null}
           </div>
 
-          {submitState === "error" ? <FormError message={GENERIC_ERROR} /> : null}
+          {submitState === "error" ? (
+            <FormError message={errorMessage} />
+          ) : null}
         </div>
       </Card>
 
