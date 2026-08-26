@@ -151,7 +151,46 @@ export type SubmitPartnerApplicationResult =
    * cara al usuario: acoplarse a el haria que cambiar una excepcion del backend
    * rompa un cartel de la landing.
    */
-  | { readonly ok: false; readonly kind: "invalid" | "duplicate" | "unknown" };
+  | {
+      readonly ok: false;
+      readonly kind: "invalid" | "invalid-services" | "duplicate" | "unknown";
+    };
+
+/**
+ * Traduce un 400 a un motivo que la landing pueda explicar.
+ *
+ * Hasta acá todos los 400 eran el mismo `kind`, y la ruta les mostraba a todos
+ * el mensaje del WhatsApp. O sea que alguien que mandaba un servicio que ya no
+ * existe leia "revisá el teléfono" y no tenia forma de acertar: el campo que
+ * el cartel le señalaba estaba bien.
+ *
+ * Los dos casos se distinguen por la FORMA de la respuesta, no por el texto:
+ * el ValidationPipe de Nest devuelve `message` como array y sin `code`; una
+ * excepcion de dominio devuelve `message` string con `code`. Dentro de las de
+ * dominio, la del catalogo si hay que reconocerla por el texto — es el punto
+ * fragil de esto, y por eso vive acá adentro y en un solo lugar.
+ *
+ * Se busca la palabra "slug" y no la frase entera a proposito. El mensaje ya
+ * cambio una vez ("Unknown service slugs" paso a "Unknown service category
+ * slugs" cuando el backend paso de rubros a familias) y una condicion pegada a
+ * la redaccion se habria roto ahi sin que nadie se enterara. "Slug" en cambio
+ * es vocabulario del catalogo: un error de formato de telefono o de email no
+ * la va a mencionar nunca.
+ *
+ * Y si aun asi deja de matchear, falla para el lado seguro: cae en "invalid",
+ * que es exactamente lo que hacia antes de este cambio. Nunca queda peor.
+ */
+async function classifyBadRequest(
+  response: Response,
+): Promise<"invalid" | "invalid-services"> {
+  const body = (await response.json().catch(() => null)) as {
+    readonly message?: unknown;
+  } | null;
+
+  return typeof body?.message === "string" && /\bslugs?\b/i.test(body.message)
+    ? "invalid-services"
+    : "invalid";
+}
 
 /**
  * Registra la solicitud de un taller que quiere ser partner.
@@ -178,7 +217,9 @@ export async function submitPartnerApplication(
   }
 
   if (response.status === 409) return { ok: false, kind: "duplicate" };
-  if (response.status === 400) return { ok: false, kind: "invalid" };
+  if (response.status === 400) {
+    return { ok: false, kind: await classifyBadRequest(response) };
+  }
 
   return { ok: false, kind: "unknown" };
 }

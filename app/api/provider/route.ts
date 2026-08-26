@@ -32,10 +32,25 @@ import { submitPartnerApplication } from "@/lib/autolibre-api";
  */
 const MESSAGES = {
   missing: "Faltan datos obligatorios.",
+  /**
+   * Ojo con el tono: esto se muestra cuando el backend rechazo el FORMATO de
+   * algun campo, y no sabemos de cual. Por eso sugiere en vez de afirmar — la
+   * version anterior daba por hecho que el problema era el telefono, y cuando
+   * no lo era mandaba a la persona a corregir un campo que estaba bien.
+   */
   invalid:
-    "Revisá los datos. El WhatsApp tiene que ser un celular argentino con " +
-    "código de área (por ejemplo 11 2512-0472); si lo escribís con el 15, " +
-    "sacáselo.",
+    "Revisá los datos: hay un campo con un formato que no podemos aceptar. " +
+    "Si escribiste el WhatsApp con el 15 adelante, probá sin él (por ejemplo " +
+    "11 2512-0472).",
+  /**
+   * El catalogo se cachea hasta cinco minutos, asi que alguien puede estar
+   * completando el formulario con una lista que dejo de estar vigente. No es
+   * culpa suya y no se arregla revisando ningun campo: se arregla recargando,
+   * y hay que decirselo.
+   */
+  "invalid-services":
+    "El listado de servicios se actualizó mientras completabas el " +
+    "formulario. Recargá la página y volvé a marcar los tuyos.",
   duplicate:
     "Ya tenemos tu solicitud con ese email y la estamos revisando. Te vamos a " +
     "escribir por WhatsApp.",
@@ -104,10 +119,11 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // 502 y no 500 para `unknown`: el que fallo es el backend, no esta ruta.
-  // La distincion importa cuando alguien mire los logs del hosting.
+  // 502 solo para `unknown`: ahi el que fallo es el backend, no esta ruta ni
+  // quien completo el formulario. Los dos sabores de "invalid" son 400 porque
+  // hay algo que la persona puede corregir.
   return NextResponse.json(
     { error: MESSAGES[result.kind] },
-    { status: result.kind === "invalid" ? 400 : 502 },
+    { status: result.kind === "unknown" ? 502 : 400 },
   );
 }
