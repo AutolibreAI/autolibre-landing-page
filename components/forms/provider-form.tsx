@@ -49,6 +49,20 @@ const GENERIC_ERROR = "Algo salió mal. Por favor intentá de nuevo.";
  * nada mas. El unico texto libre que queda es `service_other`, que es
  * justamente lo que el catalogo todavia no cubre.
  *
+ * ── Se marcan FAMILIAS, no rubros ───────────────────────────────────────────
+ *
+ * El endpoint devuelve las 16 familias con sus 79 rubros adentro, y este
+ * formulario usa solo el nivel de arriba: `category.slug` y `category.name`.
+ * El array `category.services` se ignora.
+ *
+ * No es que los rubros no sirvan — es que este formulario no es el lugar para
+ * cargarlos. Su trabajo es CAPTAR talleres, y 79 casillas son fricción que se
+ * paga en abandonos: nadie completa un alta que parece un censo. Con 16
+ * pildoras que entran de un vistazo, marcar tres cuesta dos segundos. La
+ * precision fina se carga en la aprobacion, cuando el equipo ya hablo con el
+ * taller por WhatsApp y puede preguntar; ahi el dato sale mejor que de alguien
+ * apurado tildando casillas en el telefono.
+ *
  * Lo que tambien cambio en su momento: ahora hay errores que la persona puede
  * corregir, y por eso el cartel dejo de ser uno solo y generico — el backend
  * valida el WhatsApp de verdad (un numero con el 15 adelante se rechaza en vez
@@ -73,7 +87,10 @@ export function ProviderForm({
     null,
   );
   const [brands, setBrands] = useState<string[]>([]);
-  /** Slugs del catalogo. Nunca labels, nunca el "Otro" — ese va aparte. */
+  /**
+   * Slugs de FAMILIA del catalogo (`motor`, `tramites-y-documentacion`).
+   * Nunca labels, nunca rubros, nunca el "Otro" — ese ultimo va aparte.
+   */
   const [services, setServices] = useState<string[]>([]);
   /**
    * "Otro" salio del array de servicios a proposito. Cuando estaba adentro, el
@@ -329,42 +346,33 @@ export function ProviderForm({
             {serviceCategories.length > 0 ? (
               <>
                 <p className="mb-3 text-xs text-ink/55">
-                  Marcá todos los rubros que trabajás. Están agrupados por
-                  familia — tocá una para abrirla.
+                  Marcá los rubros en los que trabajás. Con la familia alcanza —
+                  el detalle fino lo afinamos con vos al activarte el perfil.
                 </p>
 
-                <div className="overflow-hidden rounded-field border border-line">
-                  {serviceCategories.map((category, index) => (
-                    <ServiceCategoryAccordion
+                <div className="flex flex-wrap gap-2">
+                  {serviceCategories.map((category) => (
+                    <ChoicePill
                       key={category.slug}
-                      category={category}
-                      selected={services}
-                      // La primera abierta: si estuvieran todas cerradas, el
-                      // bloque se ve como una lista de titulos y no queda claro
-                      // que adentro hay algo para marcar.
-                      defaultOpen={index === 0}
-                      onToggleService={(slug) =>
-                        toggle(services, setServices, slug)
+                      type="checkbox"
+                      // Se muestra el nombre de la familia y se manda su slug.
+                      // Los rubros que cada familia trae adentro (`category
+                      // .services`) se ignoran a proposito — ver el comentario
+                      // de la cabecera.
+                      label={category.name}
+                      checked={services.includes(category.slug)}
+                      onChange={() =>
+                        toggle(services, setServices, category.slug)
                       }
                     />
                   ))}
                 </div>
 
-                <p
-                  className="mt-2 text-xs text-ink/55"
-                  aria-live="polite"
-                  role="status"
-                >
-                  {services.length === 0
-                    ? "Todavía no marcaste ningún rubro."
-                    : `${services.length} ${
-                        services.length === 1
-                          ? "rubro seleccionado"
-                          : "rubros seleccionados"
-                      }.`}
-                </p>
-
-                <div className="mt-3">
+                {/* "Otro" va en su propio renglon y no mezclado entre las
+                    familias: puesto al lado se lee como una familia mas, y no
+                    lo es — es el unico valor de esta seccion que no sale del
+                    catalogo. */}
+                <div className="mt-2.5">
                   <ChoicePill
                     type="checkbox"
                     label={`${OTHER_OPTION}: hacemos algo que no está en la lista`}
@@ -519,78 +527,5 @@ export function ProviderForm({
         {providersContent.form.note}
       </p>
     </form>
-  );
-}
-
-/**
- * Una familia del catalogo, plegable.
- *
- * Son 79 rubros: puestos como una lista plana de pildoras, la seccion de
- * servicios sola mide mas que el resto del formulario junto y nadie la lee
- * entera. Agrupados por familia (ninguna pasa de 10) el bloque cerrado ocupa
- * 16 renglones y quien busca "Frenos" sabe donde mirar.
- *
- * Va con `<details>` nativo y no con estado propio: el plegado es del navegador
- * —incluido el teclado, el foco y el Ctrl+F que expande la seccion al buscar
- * dentro— y este componente no tiene que mantener nada de eso a mano.
- */
-function ServiceCategoryAccordion({
-  category,
-  selected,
-  defaultOpen,
-  onToggleService,
-}: {
-  readonly category: ServiceCatalogCategory;
-  readonly selected: readonly string[];
-  readonly defaultOpen: boolean;
-  readonly onToggleService: (slug: string) => void;
-}) {
-  const selectedCount = category.services.filter((service) =>
-    selected.includes(service.slug),
-  ).length;
-
-  return (
-    <details className="group border-b border-line last:border-b-0" open={defaultOpen}>
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 bg-surface-subtle px-3.5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-brand/5 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand [&::-webkit-details-marker]:hidden">
-        <span>{category.name}</span>
-        <span className="flex shrink-0 items-center gap-2">
-          {/* El contador es lo que hace que el plegado no esconda informacion:
-              sin el, una familia cerrada con tres rubros marcados se ve igual
-              que una vacia. */}
-          {selectedCount > 0 ? (
-            <span className="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-bold text-brand">
-              {selectedCount}
-            </span>
-          ) : null}
-          <svg
-            width="10"
-            height="6"
-            viewBox="0 0 10 6"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-            className="text-ink/40 transition-transform group-open:rotate-180"
-          >
-            <path d="M1 1l4 4 4-4" />
-          </svg>
-        </span>
-      </summary>
-
-      <div className="flex flex-wrap gap-2 border-t border-line px-3.5 py-3">
-        {category.services.map((service) => (
-          <ChoicePill
-            key={service.slug}
-            type="checkbox"
-            // Se muestra el nombre, se manda el slug.
-            label={service.name}
-            checked={selected.includes(service.slug)}
-            onChange={() => onToggleService(service.slug)}
-          />
-        ))}
-      </div>
-    </details>
   );
 }
