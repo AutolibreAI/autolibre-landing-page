@@ -2,8 +2,11 @@
  * Copy y opciones de la página de proveedores.
  *
  * IMPORTANTE: las listas de abajo son los valores exactos que se envían a
- * `/api/provider` y terminan en la Google Sheet. Cambiar un string acá
- * cambia el dato que queda guardado — no tocar sin revisar la planilla.
+ * `/api/provider` y quedan guardados en `partner_applications`. Cambiar un
+ * string acá cambia el dato persistido — no tocar sin mirar qué hay cargado.
+ *
+ * Los servicios son la excepción y ya no viven acá: los define el catálogo del
+ * backend. Ver el comentario más abajo, donde estaban.
  */
 export const providersContent = {
   hero: {
@@ -78,41 +81,19 @@ export const PROVIDER_BRANDS = [
   "Volt Motors",
 ] as const;
 
-export const PROVIDER_SERVICES = [
-  "Taller Mecánico",
-  "Lavadero",
-  "Multas",
-  "Seguros",
-  "Cristales",
-  "Neumáticos",
-  "Repuestos",
-  "Chapa y pintura",
-  "Detailing",
-  "Fabricación a medida / Impresión 3D",
-  "Baterías",
-  "Equipamiento",
-  "Peritaje / inspección pre-compra",
-  "Informes",
-  "Gestoría",
-  "Cerrajería",
-  "Lubricentro",
-];
-
-export const PROVIDER_SERVICES_DEP = [
-  "Service y mantenimiento",
-  "Frenos",
-  "Suspensión",
-  "Electricidad",
-  "Chapa y pintura",
-  "Diagnóstico OBD",
-  "Neumáticos",
-  "Inspecciones pre-compra",
-  "Lavadero",
-  "Detailing",
-  "Baterías",
-  "Tren delantero",
-  "Otro",
-] as const;
+/**
+ * Los servicios NO se listan acá.
+ *
+ * Vivian en dos constantes hardcodeadas (`PROVIDER_SERVICES` y la anterior
+ * `PROVIDER_SERVICES_DEP`) que no coincidian ni entre si ni con el catalogo del
+ * backend: tres vocabularios distintos para la misma cosa. Hoy las opciones
+ * salen de `GET /api/v1/service-catalog` (ver `fetchServiceCatalog` en
+ * `lib/autolibre-api.ts`), que es la fuente de verdad, y lo que se envia es el
+ * slug de cada rubro.
+ *
+ * Si aparece la tentacion de volver a poner una lista de servicios acá: el
+ * rubro se da de alta en el catalogo del backend, no en este archivo.
+ */
 
 export const PROVIDER_VEHICLE_TYPES = [
   "Autos",
