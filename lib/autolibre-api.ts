@@ -9,6 +9,12 @@
  * del servidor, `/api/provider` sigue siendo la unica superficie que ve el
  * navegador y el dia que haga falta sumar rate limiting o un captcha, hay
  * donde ponerlo.
+ *
+ * La lectura del catalogo de servicios se queda de este lado por un motivo
+ * distinto y mas simple: se resuelve al renderizar la pagina, asi que el
+ * formulario llega al browser con las opciones ya adentro del HTML. Sin
+ * spinner, sin salto de layout y sin un fetch que el usuario tenga que esperar
+ * para poder marcar un rubro.
  */
 
 /**
@@ -27,11 +33,107 @@ function apiBaseUrl(): string {
   return url;
 }
 
+export interface ServiceCatalogService {
+  readonly slug: string;
+  readonly name: string;
+}
+
+export interface ServiceCatalogCategory {
+  readonly slug: string;
+  readonly name: string;
+  readonly services: readonly ServiceCatalogService[];
+}
+
+/**
+ * Cada cuanto se revalida el catalogo de servicios.
+ *
+ * Cinco minutos es un numero elegido por lo que cuesta EQUIVOCARSE, no por lo
+ * que cuesta acertar: el catalogo cambia una vez cada varios meses, asi que
+ * cualquier ventana lo sirve igual de fresco. Lo que la ventana acota de verdad
+ * es cuanto tiempo queda pegado un render que salio mal — si el backend estaba
+ * caido justo cuando Next armo la pagina, el formulario degradado vive cinco
+ * minutos y no una hora. Refetchear cada cinco minutos una lista de 79 filas no
+ * le cuesta nada a nadie; servir el formulario roto media tarde, si.
+ */
+const SERVICE_CATALOG_REVALIDATE_SECONDS = 300;
+
+/**
+ * Catalogo de servicios (familias y rubros) que el backend expone publico.
+ *
+ * Devuelve `null` —nunca tira— cuando el backend no contesta: quien renderiza
+ * decide que hacer con eso. El formulario de partners lo traduce en un aviso
+ * visible mas un campo de texto libre, porque perder un taller que se estaba
+ * anotando es peor que recibirlo con los rubros sin normalizar.
+ *
+ * El orden en que viene es el `position` que definio el equipo. NO se reordena
+ * acá ni en la UI: alfabetizarlo pondria "Aire acondicionado" antes que "Motor"
+ * y el primer rubro que ve alguien dejaria de ser el que mas talleres marcan.
+ */
+export async function fetchServiceCatalog(): Promise<
+  ServiceCatalogCategory[] | null
+> {
+  try {
+    const response = await fetch(`${apiBaseUrl()}/api/v1/service-catalog`, {
+      next: { revalidate: SERVICE_CATALOG_REVALIDATE_SECONDS },
+    });
+
+    if (!response.ok) {
+      console.error(
+        `[service-catalog] el backend respondio ${response.status}; la landing sirve el formulario degradado.`,
+      );
+      return null;
+    }
+
+    const payload = (await response.json()) as { categories?: unknown };
+    return parseCategories(payload.categories);
+  } catch (error) {
+    // Incluye el caso de `AUTOLIBRE_API_URL` sin setear: que falte una variable
+    // de entorno no puede tirar abajo el build de una pagina de marketing, pero
+    // tampoco puede pasar inadvertido — de ahi el log.
+    console.error("[service-catalog] no se pudo leer el catalogo:", error);
+    return null;
+  }
+}
+
+/**
+ * Parseo defensivo. El endpoint es nuestro, pero un rubro sin `name` renderiza
+ * una pildora vacia que nadie va a poder marcar: mejor descartarlo que
+ * mostrarlo. Una familia sin rubros tampoco entra — seria un acordeon vacio.
+ */
+function parseCategories(value: unknown): ServiceCatalogCategory[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((category): ServiceCatalogCategory | null => {
+      if (typeof category !== "object" || category === null) return null;
+
+      const { slug, name, services } = category as Record<string, unknown>;
+      if (typeof slug !== "string" || typeof name !== "string") return null;
+
+      const parsedServices = (Array.isArray(services) ? services : [])
+        .map((service): ServiceCatalogService | null => {
+          if (typeof service !== "object" || service === null) return null;
+
+          const entry = service as Record<string, unknown>;
+          return typeof entry.slug === "string" && typeof entry.name === "string"
+            ? { slug: entry.slug, name: entry.name }
+            : null;
+        })
+        .filter((service): service is ServiceCatalogService => service !== null);
+
+      return parsedServices.length > 0
+        ? { slug, name, services: parsedServices }
+        : null;
+    })
+    .filter((category): category is ServiceCatalogCategory => category !== null);
+}
+
 export interface PartnerApplicationSubmission {
   readonly businessName: string;
   readonly whatsapp: string;
   readonly email: string;
   readonly address: string;
+  /** Slugs del catalogo de servicios, no labels. Ver `fetchServiceCatalog`. */
   readonly declaredServices: string[];
   readonly declaredBrands: string[];
   readonly declaredFuelTypes: string[];
