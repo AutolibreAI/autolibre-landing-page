@@ -6,6 +6,7 @@ import { ProvidersHeroSection } from "@/components/sections/providers/hero";
 import { ProvidersReasonsSection } from "@/components/sections/providers/reasons";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
+import { fetchServiceCatalog } from "@/lib/autolibre-api";
 import { providersContent } from "@/lib/content/providers";
 import { createMetadata } from "@/lib/seo/metadata";
 import {
@@ -35,7 +36,17 @@ const schema = graph(
   ]),
 );
 
-export default function ProveedoresPage() {
+/**
+ * El catalogo se lee acá, en el servidor, y no dentro del formulario: la URL
+ * del backend es server-side (sin `NEXT_PUBLIC_`), asi que un fetch desde el
+ * cliente obligaria a abrir una ruta proxy nueva solo para leer una lista
+ * publica. Resolviendolo en el render la pagina sigue siendo estatica, el
+ * formulario nace con sus opciones puestas y no hay un estado de carga que
+ * mantener.
+ */
+export default async function ProveedoresPage() {
+  const serviceCategories = await fetchServiceCatalog();
+
   return (
     <>
       <PageShell
@@ -53,7 +64,7 @@ export default function ProveedoresPage() {
             <p className="mt-3 mb-10 text-center text-[0.9375rem] text-ink/65">
               {providersContent.form.subtitle}
             </p>
-            <ProviderForm />
+            <ProviderForm serviceCategories={serviceCategories ?? []} />
           </Container>
         </Section>
       </PageShell>

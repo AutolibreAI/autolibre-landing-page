@@ -12,12 +12,12 @@ import {
 } from "@/components/ui/form-controls";
 import { FormError, FormSuccess } from "@/components/ui/form-feedback";
 import { ButtonLink } from "@/components/ui/button";
+import type { ServiceCatalogCategory } from "@/lib/autolibre-api";
 import {
   OTHER_OPTION,
   PROVIDER_BRANDS,
   PROVIDER_FUEL_TYPES,
   PROVIDER_HOW_FOUND,
-  PROVIDER_SERVICES,
   PROVIDER_VEHICLE_TYPES,
   providersContent,
 } from "@/lib/content/providers";
@@ -34,15 +34,31 @@ const GENERIC_ERROR = "Algo salió mal. Por favor intentá de nuevo.";
  * service_other, vehicle_types[], fuel_types[], how_found, how_found_other }.
  *
  * El destino de esos datos ya NO es la Google Sheet: `/api/provider` los manda
- * al backend, que los guarda en `partner_applications`. El contrato de este
- * formulario no cambio — la traduccion vive del lado del servidor.
+ * al backend, que los guarda en `partner_applications`.
  *
- * Lo que SI cambio es que ahora hay errores que la persona puede corregir, y
- * por eso el cartel dejo de ser uno solo y generico: el backend valida el
- * WhatsApp de verdad (un numero con el 15 adelante se rechaza en vez de
- * guardarse roto) y avisa cuando ese email ya tiene una solicitud abierta.
+ * ── `services[]` ahora son slugs del catalogo, no labels ────────────────────
+ *
+ * Antes este formulario tenia sus propios 17 nombres de servicio hardcodeados,
+ * que no coincidian con las 16 familias y 79 rubros del catalogo del backend.
+ * O sea: un tercer vocabulario, que obligaba a traducir a mano en SQL cada vez
+ * que se aprobaba un taller — y cuando la traduccion no se hacia, el taller
+ * quedaba aprobado pero sin categorias, invisible en la app.
+ *
+ * Las opciones ahora vienen del backend (`serviceCategories`, resueltas en el
+ * servidor por la pagina) y lo que viaja es el `slug`. El `name` se muestra y
+ * nada mas. El unico texto libre que queda es `service_other`, que es
+ * justamente lo que el catalogo todavia no cubre.
+ *
+ * Lo que tambien cambio en su momento: ahora hay errores que la persona puede
+ * corregir, y por eso el cartel dejo de ser uno solo y generico — el backend
+ * valida el WhatsApp de verdad (un numero con el 15 adelante se rechaza en vez
+ * de guardarse roto) y avisa cuando ese email ya tiene una solicitud abierta.
  */
-export function ProviderForm() {
+export function ProviderForm({
+  serviceCategories,
+}: {
+  readonly serviceCategories: readonly ServiceCatalogCategory[];
+}) {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMessage, setErrorMessage] = useState(GENERIC_ERROR);
   /**
@@ -57,7 +73,16 @@ export function ProviderForm() {
     null,
   );
   const [brands, setBrands] = useState<string[]>([]);
+  /** Slugs del catalogo. Nunca labels, nunca el "Otro" — ese va aparte. */
   const [services, setServices] = useState<string[]>([]);
+  /**
+   * "Otro" salio del array de servicios a proposito. Cuando estaba adentro, el
+   * literal "Otro" viajaba mezclado con los servicios reales y no habia forma
+   * de distinguir un rubro de un placeholder sin comparar strings del otro
+   * lado. Ahora `services` solo tiene slugs validos y el texto libre viaja en
+   * su propio campo (`service_other`).
+   */
+  const [wantsOtherService, setWantsOtherService] = useState(false);
   const [otherService, setOtherService] = useState("");
   const [vehicleTypes, setVehicleTypes] = useState<string[]>([]);
   const [fuelTypes, setFuelTypes] = useState<string[]>([]);
@@ -301,18 +326,88 @@ export function ProviderForm() {
           </FieldGroup>
 
           <FieldGroup title="Servicios que ofrecen">
-            <div className="flex flex-wrap gap-2">
-              {PROVIDER_SERVICES.map((service) => (
-                <ChoicePill
-                  key={service}
-                  type="checkbox"
-                  label={service}
-                  checked={services.includes(service)}
-                  onChange={() => toggle(services, setServices, service)}
-                />
-              ))}
-            </div>
-            {services.includes(OTHER_OPTION) ? (
+            {serviceCategories.length > 0 ? (
+              <>
+                <p className="mb-3 text-xs text-ink/55">
+                  Marcá todos los rubros que trabajás. Están agrupados por
+                  familia — tocá una para abrirla.
+                </p>
+
+                <div className="overflow-hidden rounded-field border border-line">
+                  {serviceCategories.map((category, index) => (
+                    <ServiceCategoryAccordion
+                      key={category.slug}
+                      category={category}
+                      selected={services}
+                      // La primera abierta: si estuvieran todas cerradas, el
+                      // bloque se ve como una lista de titulos y no queda claro
+                      // que adentro hay algo para marcar.
+                      defaultOpen={index === 0}
+                      onToggleService={(slug) =>
+                        toggle(services, setServices, slug)
+                      }
+                    />
+                  ))}
+                </div>
+
+                <p
+                  className="mt-2 text-xs text-ink/55"
+                  aria-live="polite"
+                  role="status"
+                >
+                  {services.length === 0
+                    ? "Todavía no marcaste ningún rubro."
+                    : `${services.length} ${
+                        services.length === 1
+                          ? "rubro seleccionado"
+                          : "rubros seleccionados"
+                      }.`}
+                </p>
+
+                <div className="mt-3">
+                  <ChoicePill
+                    type="checkbox"
+                    label={`${OTHER_OPTION}: hacemos algo que no está en la lista`}
+                    checked={wantsOtherService}
+                    onChange={() => {
+                      const next = !wantsOtherService;
+                      setWantsOtherService(next);
+                      if (!next) setOtherService("");
+                    }}
+                  />
+                </div>
+              </>
+            ) : (
+              /**
+               * El catalogo no cargo. No se puede inventar una lista de rubros
+               * —los slugs los define el backend y mandar labels sueltos es
+               * exactamente el problema que este cambio vino a matar—, asi que
+               * el formulario avisa y abre el texto libre.
+               *
+               * Por que degradar y no bloquear el envio: del otro lado hay un
+               * taller que se estaba anotando. Perderlo porque un endpoint
+               * secundario no contesto es peor que recibirlo con los rubros sin
+               * normalizar, que es un trabajo de un minuto en la aprobacion.
+               * Lo que no se hace es callarse: sin este cartel, la persona ve
+               * un formulario al que le falta una seccion entera y no tiene
+               * forma de saber que eso no es lo normal.
+               */
+              <div
+                role="alert"
+                className="rounded-field border border-line bg-surface-subtle p-3.5"
+              >
+                <p className="text-sm font-semibold text-ink">
+                  No pudimos cargar el listado de servicios.
+                </p>
+                <p className="mt-1 text-[0.8125rem] text-ink/65">
+                  Es un problema nuestro, no tuyo, y no te frena: escribinos acá
+                  abajo qué servicios ofrecés y los cargamos nosotros al
+                  activarte el perfil.
+                </p>
+              </div>
+            )}
+
+            {wantsOtherService || serviceCategories.length === 0 ? (
               <>
                 <label htmlFor="prov-service-other" className="sr-only">
                   Contanos qué otro servicio ofrecés
@@ -424,5 +519,78 @@ export function ProviderForm() {
         {providersContent.form.note}
       </p>
     </form>
+  );
+}
+
+/**
+ * Una familia del catalogo, plegable.
+ *
+ * Son 79 rubros: puestos como una lista plana de pildoras, la seccion de
+ * servicios sola mide mas que el resto del formulario junto y nadie la lee
+ * entera. Agrupados por familia (ninguna pasa de 10) el bloque cerrado ocupa
+ * 16 renglones y quien busca "Frenos" sabe donde mirar.
+ *
+ * Va con `<details>` nativo y no con estado propio: el plegado es del navegador
+ * —incluido el teclado, el foco y el Ctrl+F que expande la seccion al buscar
+ * dentro— y este componente no tiene que mantener nada de eso a mano.
+ */
+function ServiceCategoryAccordion({
+  category,
+  selected,
+  defaultOpen,
+  onToggleService,
+}: {
+  readonly category: ServiceCatalogCategory;
+  readonly selected: readonly string[];
+  readonly defaultOpen: boolean;
+  readonly onToggleService: (slug: string) => void;
+}) {
+  const selectedCount = category.services.filter((service) =>
+    selected.includes(service.slug),
+  ).length;
+
+  return (
+    <details className="group border-b border-line last:border-b-0" open={defaultOpen}>
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 bg-surface-subtle px-3.5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-brand/5 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand [&::-webkit-details-marker]:hidden">
+        <span>{category.name}</span>
+        <span className="flex shrink-0 items-center gap-2">
+          {/* El contador es lo que hace que el plegado no esconda informacion:
+              sin el, una familia cerrada con tres rubros marcados se ve igual
+              que una vacia. */}
+          {selectedCount > 0 ? (
+            <span className="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-bold text-brand">
+              {selectedCount}
+            </span>
+          ) : null}
+          <svg
+            width="10"
+            height="6"
+            viewBox="0 0 10 6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className="text-ink/40 transition-transform group-open:rotate-180"
+          >
+            <path d="M1 1l4 4 4-4" />
+          </svg>
+        </span>
+      </summary>
+
+      <div className="flex flex-wrap gap-2 border-t border-line px-3.5 py-3">
+        {category.services.map((service) => (
+          <ChoicePill
+            key={service.slug}
+            type="checkbox"
+            // Se muestra el nombre, se manda el slug.
+            label={service.name}
+            checked={selected.includes(service.slug)}
+            onChange={() => onToggleService(service.slug)}
+          />
+        ))}
+      </div>
+    </details>
   );
 }
