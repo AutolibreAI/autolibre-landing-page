@@ -45,10 +45,10 @@ const schema = graph(
  * mantener.
  */
 export default async function ProveedoresPage() {
-  const catalog = await fetchServiceCatalog();
-  // Solo el nivel de familia cruza al cliente: ver `ServiceFamilyOption`.
-  const serviceFamilies =
-    catalog?.map(({ slug, name }) => ({ slug, name })) ?? [];
+  // El catalogo cruza ENTERO al cliente, familias y rubros: el formulario
+  // agrupa por familia pero lo que se marca (y lo que se manda) son rubros.
+  // Ver `ServiceFamilyOption`.
+  const serviceFamilies = (await fetchServiceCatalog()) ?? [];
 
   return (
     <>

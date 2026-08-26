@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ServiceFamilyPicker } from "@/components/forms/service-family-picker";
 import { ChoicePill, ChoiceRow } from "@/components/ui/choice";
 import {
   Field,
@@ -49,19 +50,28 @@ const GENERIC_ERROR = "Algo salió mal. Por favor intentá de nuevo.";
  * nada mas. El unico texto libre que queda es `service_other`, que es
  * justamente lo que el catalogo todavia no cubre.
  *
- * ── Se marcan FAMILIAS, no rubros ───────────────────────────────────────────
+ * ── Se marcan RUBROS, agrupados por familia ─────────────────────────────────
  *
  * El endpoint devuelve las 16 familias con sus 79 rubros adentro, y este
- * formulario usa solo el nivel de arriba: `category.slug` y `category.name`.
- * El array `category.services` se ignora.
+ * formulario usa los DOS niveles: la familia agrupa en pantalla, el rubro es
+ * lo que se marca y lo que viaja en `services[]`.
  *
- * No es que los rubros no sirvan — es que este formulario no es el lugar para
- * cargarlos. Su trabajo es CAPTAR talleres, y 79 casillas son fricción que se
- * paga en abandonos: nadie completa un alta que parece un censo. Con 16
- * pildoras que entran de un vistazo, marcar tres cuesta dos segundos. La
- * precision fina se carga en la aprobacion, cuando el equipo ya hablo con el
- * taller por WhatsApp y puede preguntar; ahi el dato sale mejor que de alguien
- * apurado tildando casillas en el telefono.
+ * Durante un tiempo se mandaron familias, con el argumento de que 79 casillas
+ * son fricción que se paga en abandonos. El diagnostico era correcto; la
+ * conclusion no. Lo que asusta no son los 79 rubros, es tenerlos los 79
+ * DESPLEGADOS — y eso lo arregla la pantalla, no el recorte del dato. Con el
+ * acordeon (`ServiceFamilyPicker`) el taller sigue viendo 16 filas, igual que
+ * antes, y abre las dos o tres que le tocan.
+ *
+ * Ademas la taxonomia del equipo siempre dijo esto: en la planilla del
+ * catalogo, la leyenda del rubro es literalmente "Formulario de pagina web".
+ * Mandar familias era la excepcion, no la regla.
+ *
+ * Lo que se gana es que el taller queda clasificado FINO desde el alta, sin
+ * depender de que alguien traduzca a mano al aprobar — que es exactamente el
+ * paso que en el legacy nunca se ejecutaba y dejaba talleres aprobados pero
+ * invisibles en la app. Y `partner_services` ya apuntaba a rubros, asi que el
+ * dato declarado ahora habla el mismo idioma que el dato publicado.
  *
  * Lo que tambien cambio en su momento: ahora hay errores que la persona puede
  * corregir, y por eso el cartel dejo de ser uno solo y generico — el backend
@@ -88,8 +98,11 @@ export function ProviderForm({
   );
   const [brands, setBrands] = useState<string[]>([]);
   /**
-   * Slugs de FAMILIA del catalogo (`motor`, `tramites-y-documentacion`).
-   * Nunca labels, nunca rubros, nunca el "Otro" — ese ultimo va aparte.
+   * Slugs de RUBRO del catalogo (`frenos`, `gomeria`, `patentamiento`).
+   * Nunca labels, nunca familias, nunca el "Otro" — ese ultimo va aparte.
+   *
+   * La familia no se guarda: se deriva de los rubros marcados. Ver
+   * `ServiceFamilyPicker`.
    */
   const [services, setServices] = useState<string[]>([]);
   /**
@@ -395,32 +408,21 @@ export function ProviderForm({
             {serviceFamilies.length > 0 ? (
               <>
                 <p className="mb-3 text-xs text-ink/55">
-                  Marcá los rubros en los que trabajás. Con la familia alcanza —
-                  el detalle fino lo afinamos con vos al activarte el perfil.
+                  Abrí las categorías que te tocan y marcá los rubros que
+                  hacés. Si hacés todo lo de una, tildá la categoría entera.
                 </p>
 
-                <div className="flex flex-wrap gap-2">
-                  {serviceFamilies.map((category) => (
-                    <ChoicePill
-                      key={category.slug}
-                      type="checkbox"
-                      // Se muestra el nombre de la familia y se manda su slug.
-                      // Los rubros que cada familia trae adentro (`category
-                      // .services`) se ignoran a proposito — ver el comentario
-                      // de la cabecera.
-                      label={category.name}
-                      checked={services.includes(category.slug)}
-                      onChange={() =>
-                        toggle(services, setServices, category.slug)
-                      }
-                    />
-                  ))}
-                </div>
+                <ServiceFamilyPicker
+                  families={serviceFamilies}
+                  selected={services}
+                  onChange={setServices}
+                />
 
-                {/* "Otro" va en su propio renglon y no mezclado entre las
-                    familias: puesto al lado se lee como una familia mas, y no
-                    lo es — es el unico valor de esta seccion que no sale del
-                    catalogo. */}
+                {/* "Otro" va DEBAJO del acordeon y suelto, no como una fila
+                    mas de la lista: puesto adentro se lee como una categoria
+                    del catalogo, y es justamente lo contrario — es el unico
+                    valor de esta seccion que no sale del catalogo, y el unico
+                    que viaja como texto libre (`service_other`). */}
                 <div className="mt-2.5">
                   <ChoicePill
                     type="checkbox"
@@ -471,7 +473,7 @@ export function ProviderForm({
                 className="mt-2.5 text-sm font-medium text-danger"
               >
                 {serviceFamilies.length > 0
-                  ? 'Marcá al menos un rubro, o tildá "Otro" y contanos qué hacés.'
+                  ? 'Abrí una categoría y marcá al menos un rubro, o tildá "Otro" y contanos qué hacés.'
                   : "Contanos qué servicios ofrecés para que podamos activarte el perfil."}
               </p>
             ) : null}

@@ -45,14 +45,25 @@ export interface ServiceCatalogCategory {
 }
 
 /**
- * Lo unico que el formulario necesita de una familia.
+ * Lo que el formulario necesita de una familia: su nombre, y sus rubros.
  *
- * Existe para que los 79 rubros no viajen al browser: la pagina le pasa esto a
- * un componente cliente, asi que todo lo que tenga adentro se serializa en el
- * payload RSC aunque no se renderice. Ademas deja el "acá solo se marcan
- * familias" escrito en el tipo y no en un comentario que se puede ignorar.
+ * Antes esto era un `Pick<..., "slug" | "name">` para que los 79 rubros NO
+ * viajaran al browser, porque el formulario solo dejaba marcar familias. Hoy
+ * deja marcar rubros, asi que el catalogo entero cruza al cliente a proposito.
+ *
+ * Lo que eso cuesta esta medido y es poco: 16 familias con ~79 rubros de
+ * `{slug, name}` son unos pocos KB en el payload RSC, y viajan una sola vez
+ * dentro del HTML de una pagina estatica. Lo que compra es que el taller quede
+ * clasificado fino desde el alta, sin que nadie tenga que traducir a mano al
+ * aprobar — que es el paso que en el legacy nunca se ejecutaba y dejaba
+ * talleres aprobados pero invisibles en la app.
+ *
+ * El alias se queda (en vez de usar `ServiceCatalogCategory` pelado) porque
+ * nombra el ROL: esto es "una familia como la ve el formulario". Si algun dia
+ * la pantalla necesita menos de lo que trae el catalogo, se recorta acá y no
+ * en cada componente.
  */
-export type ServiceFamilyOption = Pick<ServiceCatalogCategory, "slug" | "name">;
+export type ServiceFamilyOption = ServiceCatalogCategory;
 
 /**
  * Cada cuanto se revalida el catalogo de servicios.
@@ -143,7 +154,14 @@ export interface PartnerApplicationSubmission {
   readonly whatsapp: string;
   readonly email: string;
   readonly address: string;
-  /** Slugs del catalogo de servicios, no labels. Ver `fetchServiceCatalog`. */
+  /**
+   * Slugs de RUBRO del catalogo, no labels y no familias.
+   *
+   * La familia no viaja: es derivable —la jerarquia es estricta, cada rubro
+   * cae en exactamente una— y mandarla ademas permitiria un payload que se
+   * contradice a si mismo. El backend rechaza con 400 un slug de familia
+   * aunque exista y este activo. Ver `fetchServiceCatalog`.
+   */
   readonly declaredServices: string[];
   readonly declaredBrands: string[];
   readonly declaredFuelTypes: string[];
@@ -180,12 +198,13 @@ export type SubmitPartnerApplicationResult =
  * dominio, la del catalogo si hay que reconocerla por el texto — es el punto
  * fragil de esto, y por eso vive acá adentro y en un solo lugar.
  *
- * Se busca la palabra "slug" y no la frase entera a proposito. El mensaje ya
- * cambio una vez ("Unknown service slugs" paso a "Unknown service category
- * slugs" cuando el backend paso de rubros a familias) y una condicion pegada a
- * la redaccion se habria roto ahi sin que nadie se enterara. "Slug" en cambio
- * es vocabulario del catalogo: un error de formato de telefono o de email no
- * la va a mencionar nunca.
+ * Se busca la palabra "slug" y no la frase entera a proposito, y a esta altura
+ * ya se gano el sueldo: el mensaje cambio DOS veces ("Unknown service slugs"
+ * paso a "Unknown service category slugs" cuando el backend paso de rubros a
+ * familias, y volvio a rubros cuando el formulario paso a dejar elegirlos).
+ * Una condicion pegada a la redaccion se habria roto las dos veces sin que
+ * nadie se enterara. "Slug" en cambio es vocabulario del catalogo: un error de
+ * formato de telefono o de email no lo va a mencionar nunca.
  *
  * Y si aun asi deja de matchear, falla para el lado seguro: cae en "invalid",
  * que es exactamente lo que hacia antes de este cambio. Nunca queda peor.
