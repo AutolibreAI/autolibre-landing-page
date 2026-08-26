@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ChoicePill, ChoiceRow } from "@/components/ui/choice";
@@ -101,10 +101,52 @@ export function ProviderForm({
    */
   const [wantsOtherService, setWantsOtherService] = useState(false);
   const [otherService, setOtherService] = useState("");
+  /**
+   * Se prende en el primer intento de envio. Antes de eso el formulario no
+   * reta a nadie: marcar en rojo un campo que la persona todavia no llego a
+   * completar es hostil y no informa nada.
+   */
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const [vehicleTypes, setVehicleTypes] = useState<string[]>([]);
   const [fuelTypes, setFuelTypes] = useState<string[]>([]);
   const [howFound, setHowFound] = useState("");
   const [otherHowFound, setOtherHowFound] = useState("");
+
+  const servicesErrorRef = useRef<HTMLParagraphElement>(null);
+
+  /**
+   * Un taller sin nada declarado no se puede publicar ni recomendar: no entra
+   * en ninguna busqueda y no le sirve a nadie, ni a el. El backend igual lo
+   * acepta —y hace bien, porque el equipo puede completarlo despues por
+   * WhatsApp—, asi que la exigencia vive acá, que es donde sale barata:
+   * preguntarlo ahora, con la persona mirando el formulario, cuesta un tilde;
+   * perseguirlo despues cuesta una conversacion.
+   *
+   * "Otro" con texto cuenta como declarar: si el taller hace algo que el
+   * catalogo no cubre, la respuesta correcta es dejarlo pasar, no trabarlo.
+   */
+  const hasDeclaredServices =
+    services.length > 0 || otherService.trim() !== "";
+  /**
+   * Derivado, no un `useState` que haya que limpiar a mano en cada uno de los
+   * tres lugares donde se puede declarar un servicio. Apenas la persona marca
+   * algo, el error desaparece solo.
+   */
+  const missingServices = submitAttempted && !hasDeclaredServices;
+
+  /**
+   * El bloque de servicios queda arriba del boton, asi que sin esto el submit
+   * no hace nada visible: la persona aprieta, no pasa nada y concluye que el
+   * formulario esta roto.
+   */
+  useEffect(() => {
+    if (missingServices) {
+      servicesErrorRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [missingServices]);
 
   function toggle(
     list: string[],
@@ -120,6 +162,13 @@ export function ProviderForm({
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setSubmitAttempted(true);
+
+    // Ojo: el <form> va con `noValidate`, asi que los `required` de los inputs
+    // son semantica para lectores de pantalla y no cortan nada. Lo unico que
+    // frena el envio es este return.
+    if (!hasDeclaredServices) return;
+
     setSubmitState("loading");
     setErrorMessage(GENERIC_ERROR);
     setAlreadyRegistered(null);
@@ -414,6 +463,18 @@ export function ProviderForm({
                 </p>
               </div>
             )}
+
+            {missingServices ? (
+              <p
+                ref={servicesErrorRef}
+                role="alert"
+                className="mt-2.5 text-sm font-medium text-danger"
+              >
+                {serviceCategories.length > 0
+                  ? 'Marcá al menos un rubro, o tildá "Otro" y contanos qué hacés.'
+                  : "Contanos qué servicios ofrecés para que podamos activarte el perfil."}
+              </p>
+            ) : null}
 
             {wantsOtherService || serviceCategories.length === 0 ? (
               <>
