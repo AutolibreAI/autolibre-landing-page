@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/form-controls";
 import { FormError, FormSuccess } from "@/components/ui/form-feedback";
 import { ButtonLink } from "@/components/ui/button";
-import type { ServiceCatalogCategory } from "@/lib/autolibre-api";
+import type { ServiceFamilyOption } from "@/lib/autolibre-api";
 import {
   OTHER_OPTION,
   PROVIDER_BRANDS,
@@ -44,7 +44,7 @@ const GENERIC_ERROR = "Algo salió mal. Por favor intentá de nuevo.";
  * que se aprobaba un taller — y cuando la traduccion no se hacia, el taller
  * quedaba aprobado pero sin categorias, invisible en la app.
  *
- * Las opciones ahora vienen del backend (`serviceCategories`, resueltas en el
+ * Las opciones ahora vienen del backend (`serviceFamilies`, resueltas en el
  * servidor por la pagina) y lo que viaja es el `slug`. El `name` se muestra y
  * nada mas. El unico texto libre que queda es `service_other`, que es
  * justamente lo que el catalogo todavia no cubre.
@@ -69,9 +69,9 @@ const GENERIC_ERROR = "Algo salió mal. Por favor intentá de nuevo.";
  * de guardarse roto) y avisa cuando ese email ya tiene una solicitud abierta.
  */
 export function ProviderForm({
-  serviceCategories,
+  serviceFamilies,
 }: {
-  readonly serviceCategories: readonly ServiceCatalogCategory[];
+  readonly serviceFamilies: readonly ServiceFamilyOption[];
 }) {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMessage, setErrorMessage] = useState(GENERIC_ERROR);
@@ -392,7 +392,7 @@ export function ProviderForm({
           </FieldGroup>
 
           <FieldGroup title="Servicios que ofrecen">
-            {serviceCategories.length > 0 ? (
+            {serviceFamilies.length > 0 ? (
               <>
                 <p className="mb-3 text-xs text-ink/55">
                   Marcá los rubros en los que trabajás. Con la familia alcanza —
@@ -400,7 +400,7 @@ export function ProviderForm({
                 </p>
 
                 <div className="flex flex-wrap gap-2">
-                  {serviceCategories.map((category) => (
+                  {serviceFamilies.map((category) => (
                     <ChoicePill
                       key={category.slug}
                       type="checkbox"
@@ -470,13 +470,13 @@ export function ProviderForm({
                 role="alert"
                 className="mt-2.5 text-sm font-medium text-danger"
               >
-                {serviceCategories.length > 0
+                {serviceFamilies.length > 0
                   ? 'Marcá al menos un rubro, o tildá "Otro" y contanos qué hacés.'
                   : "Contanos qué servicios ofrecés para que podamos activarte el perfil."}
               </p>
             ) : null}
 
-            {wantsOtherService || serviceCategories.length === 0 ? (
+            {wantsOtherService || serviceFamilies.length === 0 ? (
               <>
                 <label htmlFor="prov-service-other" className="sr-only">
                   Contanos qué otro servicio ofrecés

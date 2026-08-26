@@ -45,6 +45,16 @@ export interface ServiceCatalogCategory {
 }
 
 /**
+ * Lo unico que el formulario necesita de una familia.
+ *
+ * Existe para que los 79 rubros no viajen al browser: la pagina le pasa esto a
+ * un componente cliente, asi que todo lo que tenga adentro se serializa en el
+ * payload RSC aunque no se renderice. Ademas deja el "acá solo se marcan
+ * familias" escrito en el tipo y no en un comentario que se puede ignorar.
+ */
+export type ServiceFamilyOption = Pick<ServiceCatalogCategory, "slug" | "name">;
+
+/**
  * Cada cuanto se revalida el catalogo de servicios.
  *
  * Cinco minutos es un numero elegido por lo que cuesta EQUIVOCARSE, no por lo

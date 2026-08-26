@@ -45,7 +45,10 @@ const schema = graph(
  * mantener.
  */
 export default async function ProveedoresPage() {
-  const serviceCategories = await fetchServiceCatalog();
+  const catalog = await fetchServiceCatalog();
+  // Solo el nivel de familia cruza al cliente: ver `ServiceFamilyOption`.
+  const serviceFamilies =
+    catalog?.map(({ slug, name }) => ({ slug, name })) ?? [];
 
   return (
     <>
@@ -64,7 +67,7 @@ export default async function ProveedoresPage() {
             <p className="mt-3 mb-10 text-center text-[0.9375rem] text-ink/65">
               {providersContent.form.subtitle}
             </p>
-            <ProviderForm serviceCategories={serviceCategories ?? []} />
+            <ProviderForm serviceFamilies={serviceFamilies} />
           </Container>
         </Section>
       </PageShell>
