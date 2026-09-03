@@ -79,11 +79,19 @@ export function softwareApplicationSchema() {
     url: siteConfig.url,
     inLanguage: siteConfig.lang,
     publisher: { "@id": ORGANIZATION_ID },
+    /**
+     * Las fichas de tienda van como `downloadUrl` y también en `sameAs`: lo
+     * primero le dice a Google dónde se instala, lo segundo le confirma que
+     * esas dos fichas y este sitio son la misma entidad.
+     */
+    downloadUrl: [siteConfig.stores.appStore, siteConfig.stores.playStore],
+    installUrl: [siteConfig.stores.appStore, siteConfig.stores.playStore],
+    sameAs: [siteConfig.stores.appStore, siteConfig.stores.playStore],
     offers: {
       "@type": "Offer",
       price: "0",
       priceCurrency: "ARS",
-      availability: "https://schema.org/PreOrder",
+      availability: "https://schema.org/InStock",
     },
   };
 }

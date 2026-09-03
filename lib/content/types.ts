@@ -34,6 +34,18 @@ export type IconName =
   | "arrow-right"
   | "check";
 
+/** Tiendas donde está publicada la app. */
+export type StoreId = "appStore" | "playStore";
+
+export type StoreLink = {
+  readonly id: StoreId;
+  /** Bajada chica del botón: "Descargala en". */
+  readonly label: string;
+  /** Nombre de la tienda, la línea grande del botón. */
+  readonly name: string;
+  readonly href: string;
+};
+
 export type TimelineEntry = {
   readonly id: string;
   readonly date: string;

@@ -1,10 +1,10 @@
-import { EarlyAccessForm } from "@/components/forms/early-access-form";
+import { StoreLinks } from "@/components/ui/store-links";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { homeContent } from "@/lib/content/home";
 
 export function ClosingCtaSection() {
-  const { title, formNote } = homeContent.closing;
+  const { title, downloadNote } = homeContent.closing;
 
   return (
     <Section id="cierre" tone="brand" aria-labelledby="closing-title">
@@ -28,8 +28,8 @@ export function ClosingCtaSection() {
           {title}
         </h2>
 
-        <div className="mx-auto mt-10 max-w-160 text-left">
-          <EarlyAccessForm tone="brand" note={formNote} />
+        <div className="mt-10 flex flex-col items-center">
+          <StoreLinks tone="brand" note={downloadNote} className="text-center" />
         </div>
       </Container>
     </Section>

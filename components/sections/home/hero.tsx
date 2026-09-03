@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { EarlyAccessForm } from "@/components/forms/early-access-form";
+import { StoreLinks } from "@/components/ui/store-links";
 import { Container } from "@/components/ui/container";
 import { homeContent } from "@/lib/content/home";
 
@@ -9,7 +9,7 @@ import { homeContent } from "@/lib/content/home";
 // import { GarageScreen } from "@/components/sections/home/app-screens";
 
 export function HeroSection() {
-  const { titleLines, subtitle, formNote } = homeContent.hero;
+  const { titleLines, subtitle, downloadNote } = homeContent.hero;
 
   return (
     <section id="producto" className="bg-surface py-16 md:py-20">
@@ -27,8 +27,10 @@ export function HeroSection() {
               {subtitle}
             </p>
 
-            <div id="early-access" className="mt-10 scroll-mt-28">
-              <EarlyAccessForm note={formNote} />
+            {/* El id es el destino del CTA del header y de cualquier
+                campaña que apunte a /#descargar. */}
+            <div id="descargar" className="mt-10 scroll-mt-28">
+              <StoreLinks note={downloadNote} />
             </div>
           </div>
 

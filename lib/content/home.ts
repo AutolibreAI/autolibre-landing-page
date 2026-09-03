@@ -7,7 +7,7 @@ export const homeContent = {
     titleLines: ["Todo tu auto,", "en un solo lugar."],
     subtitle:
       "Documentación, vencimientos, historial, diagnóstico con IA, talleres y servicios cerca tuyo.",
-    formNote: "Estamos abriendo el acceso de a poco.",
+    downloadNote: "Gratis, para iPhone y Android.",
   },
 
   problem: {
@@ -183,6 +183,6 @@ export const homeContent = {
 
   closing: {
     title: "Tu auto siempre supo qué tenía. Ahora vos también.",
-    formNote: "Estamos abriendo el acceso de a poco.",
+    downloadNote: "Gratis, para iPhone y Android.",
   },
 } as const;

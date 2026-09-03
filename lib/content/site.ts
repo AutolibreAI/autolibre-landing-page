@@ -1,5 +1,5 @@
 import { siteConfig } from "@/lib/seo/config";
-import type { NavLink } from "@/lib/content/types";
+import type { NavLink, StoreLink } from "@/lib/content/types";
 
 /** Contenido del header y del footer, compartido por todas las páginas. */
 export const siteContent = {
@@ -11,10 +11,37 @@ export const siteContent = {
       { label: "FAQ", href: "/#faq" },
     ] satisfies readonly NavLink[],
     providerLink: { label: "Soy proveedor", href: "/proveedores" },
-    cta: { label: "Quiero acceso", href: "/#early-access" },
+    cta: { label: "Descargar la app", href: "/#descargar" },
   },
+
+  /**
+   * Los dos botones de descarga, en el orden en que se muestran. iOS primero
+   * porque es de donde viene la mayor parte del tráfico mobile en AMBA.
+   */
+  stores: [
+    {
+      id: "appStore",
+      label: "Descargala en el",
+      name: "App Store",
+      href: siteConfig.stores.appStore,
+    },
+    {
+      id: "playStore",
+      label: "Disponible en",
+      name: "Google Play",
+      href: siteConfig.stores.playStore,
+    },
+  ] satisfies readonly StoreLink[],
   footer: {
     groups: [
+      {
+        id: "descargar",
+        title: "Descargar",
+        links: [
+          { label: "App Store", href: siteConfig.stores.appStore },
+          { label: "Google Play", href: siteConfig.stores.playStore },
+        ],
+      },
       {
         id: "legal",
         title: "Legal",

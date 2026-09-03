@@ -25,13 +25,13 @@ export const faqCategories: readonly FaqCategory[] = [
         id: "faq-como-empiezo",
         question: "¿Cómo empiezo?",
         answer:
-          "Dejanos tu nombre y tu mail y te avisamos cuando te toque. Al entrar, ponés la patente y tu auto queda cargado con todos sus datos.",
+          "Descargá la app desde la App Store o Google Play y creá tu cuenta. Al entrar, ponés la patente y tu auto queda cargado con todos sus datos.",
       },
       {
         id: "faq-cuando-usar",
-        question: "¿Cuándo puedo empezar a usarla?",
+        question: "¿Dónde descargo la app?",
         answer:
-          "Estamos abriendo el acceso de a poco. Dejanos tu mail y te escribimos cuando sea tu turno. Funciona en iPhone y en Android.",
+          "Ya está disponible y es gratis. La bajás desde la App Store si tenés iPhone, o desde Google Play si tenés Android.",
       },
       {
         id: "faq-costo",

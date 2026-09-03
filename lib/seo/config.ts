@@ -15,7 +15,7 @@ export const siteConfig = {
   lang: "es-AR",
   title: "AutoLibre · Todo tu auto, en un solo lugar",
   description:
-    "Documentación, vencimientos, historial, diagnóstico con IA y talleres cerca tuyo. Toda la información de tu auto ordenada en una sola app. Early access en Argentina.",
+    "Documentación, vencimientos, historial, diagnóstico con IA y talleres cerca tuyo. Toda la información de tu auto ordenada en una sola app. Descargala gratis para iPhone y Android.",
   keywords: [
     "app para autos",
     "historial de vehículo",
@@ -40,6 +40,18 @@ export const siteConfig = {
     url: "/brand/logo-square.png",
     width: 512,
     height: 512,
+  },
+  /**
+   * Fichas de la app en las tiendas. Son la conversión de la landing desde
+   * el lanzamiento: cualquier CTA de descarga sale de acá, no hardcodeado.
+   */
+  stores: {
+    appStore: "https://apps.apple.com/ar/app/autolibreai/id6777068403",
+    playStore:
+      "https://play.google.com/store/apps/details?id=com.autolibreai",
+    /** Bundle/package id — lo pide el schema y los deep links. */
+    appStoreId: "6777068403",
+    androidPackage: "com.autolibreai",
   },
   contact: {
     email: "contact@autolibre.ai",
