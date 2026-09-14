@@ -224,3 +224,50 @@ export async function appendProviderToSheet(row: ProviderSubmission): Promise<vo
     requestBody: { valueInputOption: 'RAW', data },
   });
 }
+
+/** Pestaña de auditoría de consentimiento del modal de presupuesto. */
+const CONSENT_TAB = 'Consentimientos';
+
+export interface ConsentLogEntry {
+  readonly plate: string;
+  readonly contactPhone: string;
+  readonly contactEmail: string;
+  readonly quoteRequestId: string;
+  readonly consentVersion: string;
+}
+
+/**
+ * Registro minimo de que el usuario tildo el consentimiento explicito antes
+ * de enviar un pedido de presupuesto. `quote_requests` (en el backend) no
+ * modela consentimiento en absoluto, asi que este es el unico rastro que
+ * queda de esa aceptacion.
+ *
+ * Requiere que exista una pestana "Consentimientos" en el mismo spreadsheet
+ * que "Proveedores", con encabezados en la fila 1:
+ * Fecha | Patente | WhatsApp | Email | ID pedido | Version consentimiento.
+ * Si la pestana no existe todavia, esta llamada tira y el caller la trata
+ * como no fatal (el pedido ya quedo registrado en el backend igual).
+ */
+export async function appendConsentToSheet(entry: ConsentLogEntry): Promise<void> {
+  const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
+  if (!spreadsheetId) throw new Error('Falta GOOGLE_SHEETS_SPREADSHEET_ID.');
+
+  const sheets = google.sheets({ version: 'v4', auth: buildAuth() });
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: `'${CONSENT_TAB}'!A:F`,
+    valueInputOption: 'RAW',
+    insertDataOption: 'INSERT_ROWS',
+    requestBody: {
+      values: [[
+        new Date().toISOString(),
+        entry.plate,
+        normalizePhone(entry.contactPhone),
+        entry.contactEmail,
+        entry.quoteRequestId,
+        entry.consentVersion,
+      ]],
+    },
+  });
+}
