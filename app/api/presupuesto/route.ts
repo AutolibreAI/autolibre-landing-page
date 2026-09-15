@@ -13,6 +13,19 @@ function canonicalPlate(raw: unknown): string | null {
   return PLATE_PATTERNS.some((pattern) => pattern.test(stripped)) ? stripped : null;
 }
 
+/**
+ * `AUTOLIBRE_API_URL` tiene que ser la base sin `/api/v1` (misma convención
+ * que `lib/autolibre-api.ts`), pero si alguien la carga con el sufijo puesto
+ * (típico al copiar la URL de Swagger) el fetch de abajo terminaba pidiendo
+ * `/api/v1/api/v1/quote-requests` y el backend respondía 404. Se normaliza
+ * acá para no depender de que la variable esté cargada exactamente bien.
+ */
+function normalizeApiBaseUrl(raw: string | undefined): string | null {
+  if (!raw) return null;
+  const trimmed = raw.trim().replace(/\/+$/, "");
+  return trimmed.replace(/\/api\/v1$/i, "") || null;
+}
+
 function finiteCoordinate(raw: unknown): number | null {
   return typeof raw === "number" && Number.isFinite(raw) ? raw : null;
 }
@@ -101,7 +114,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const apiUrl = process.env.AUTOLIBRE_API_URL;
+  const apiUrl = normalizeApiBaseUrl(process.env.AUTOLIBRE_API_URL);
   if (!apiUrl) {
     return NextResponse.json(
       { error: "El servicio no está disponible en este momento." },

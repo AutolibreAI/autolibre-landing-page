@@ -22,15 +22,18 @@
  * tiene por que viajar al bundle del cliente.
  */
 function apiBaseUrl(): string {
-  const url = process.env.AUTOLIBRE_API_URL?.trim().replace(/\/+$/, "");
+  const trimmed = process.env.AUTOLIBRE_API_URL?.trim().replace(/\/+$/, "");
 
-  if (!url) {
+  if (!trimmed) {
     throw new Error(
       "Falta AUTOLIBRE_API_URL: la landing no sabe a que backend mandar las solicitudes de partner.",
     );
   }
 
-  return url;
+  // Si alguien carga la variable con el sufijo puesto (typico al copiar la
+  // URL de Swagger), los fetch de abajo terminarian pidiendo
+  // `/api/v1/api/v1/...` y el backend responderia 404.
+  return trimmed.replace(/\/api\/v1$/i, "");
 }
 
 export interface ServiceCatalogService {
