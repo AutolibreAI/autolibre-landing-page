@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 // import { GarageScreen } from "@/components/sections/home/app-screens";
 
 const SLIDE_COUNT = 2;
-const AUTOPLAY_MS = 7000;
+const AUTOPLAY_MS = 5000;
 
 export function HeroSection() {
   const [active, setActive] = useState(0);

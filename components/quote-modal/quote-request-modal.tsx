@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import Script from "next/script";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/form-controls";
 import { FormError } from "@/components/ui/form-feedback";
@@ -10,6 +11,79 @@ import { presupuestoContent } from "@/lib/content/presupuesto";
 import { EMAIL_REGEX } from "@/lib/validation";
 import { siteConfig } from "@/lib/seo/config";
 import type { VariantProps } from "class-variance-authority";
+
+type GoogleAddressComponent = {
+  long_name: string;
+  short_name: string;
+  types: string[];
+};
+
+type GooglePlaceResult = {
+  formatted_address?: string;
+  name?: string;
+  geometry?: {
+    location?: {
+      lat: () => number;
+      lng: () => number;
+    };
+  };
+  address_components?: GoogleAddressComponent[];
+};
+
+declare global {
+  interface Window {
+    google?: {
+      maps?: {
+        places?: {
+          Autocomplete: new (
+            input: HTMLInputElement,
+            options?: Record<string, unknown>,
+          ) => {
+            addListener: (
+              eventName: string,
+              callback: () => void,
+            ) => { remove: () => void };
+            getPlace: () => GooglePlaceResult;
+          };
+        };
+      };
+    };
+  }
+}
+
+/**
+ * Sin key no hay Autocomplete: el campo de direccion sigue funcionando como
+ * texto libre (ver `mapsReady`), solo que sin el picker de Google Places.
+ */
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+/**
+ * Lo que sale de elegir una sugerencia del Autocomplete: un geocode real, con
+ * la misma confiabilidad que el GPS del telefono. Si el usuario escribe a
+ * mano sin elegir ninguna, esto queda vacio y el pedido viaja como `typed`
+ * (ver `handleSubmit`) — nunca se manda una coordenada que no vino de Google.
+ */
+type PlaceGeo = {
+  latitude: number | null;
+  longitude: number | null;
+  locality: string | null;
+  province: string | null;
+};
+
+const EMPTY_GEO: PlaceGeo = {
+  latitude: null,
+  longitude: null,
+  locality: null,
+  province: null,
+};
+
+/** `long_name` del primer address_component cuyo `types` incluya `type`. */
+function findAddressComponent(
+  components: GoogleAddressComponent[] | undefined,
+  type: string,
+): string | null {
+  return components?.find((component) => component.types.includes(type))?.long_name ?? null;
+}
 
 const PLATE_PATTERNS: readonly RegExp[] = [
   /^[A-Z]{3}\d{3}$/, // auto legacy   - ABC123
@@ -62,11 +136,16 @@ export function QuoteRequestModal({
   const [plate, setPlate] = useState("");
   const [lookup, setLookup] = useState<LookupState>({ kind: "idle" });
   const [whatsapp, setWhatsapp] = useState("");
+  const [address, setAddress] = useState("");
+  const [addressTouched, setAddressTouched] = useState(false);
+  const [geo, setGeo] = useState<PlaceGeo>(EMPTY_GEO);
   const [email, setEmail] = useState("");
   const [description, setDescription] = useState("");
   const [consent, setConsent] = useState(false);
   const [submitState, setSubmitState] = useState<SubmitState>({ kind: "idle" });
+  const [mapsReady, setMapsReady] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const addressInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -91,11 +170,53 @@ export function QuoteRequestModal({
     if (open) dialogRef.current?.focus();
   }, [open, step]);
 
+  // El input de direccion se monta y desmonta con el step (cada paso es su
+  // propio <form>), asi que el Autocomplete se reengancha cada vez que se
+  // vuelve al paso 2. `.pac-container` es el listbox que Google cuelga de
+  // <body> (no del input) y no lo limpia solo al sacar el input del DOM.
+  useEffect(() => {
+    if (!mapsReady || step !== 2) return;
+    const input = addressInputRef.current;
+    if (!input || !window.google?.maps?.places) return;
+
+    const autocomplete = new window.google.maps.places.Autocomplete(input, {
+      componentRestrictions: { country: "ar" },
+      fields: ["formatted_address", "name", "geometry", "address_components"],
+    });
+
+    const listener = autocomplete.addListener("place_changed", () => {
+      const place = autocomplete.getPlace();
+      const value = place.formatted_address ?? place.name;
+      if (!value) return;
+
+      setAddress(value);
+      setGeo({
+        latitude: place.geometry?.location?.lat() ?? null,
+        longitude: place.geometry?.location?.lng() ?? null,
+        locality:
+          findAddressComponent(place.address_components, "locality") ??
+          findAddressComponent(place.address_components, "sublocality"),
+        province: findAddressComponent(
+          place.address_components,
+          "administrative_area_level_1",
+        ),
+      });
+    });
+
+    return () => {
+      listener.remove();
+      document.querySelectorAll(".pac-container").forEach((el) => el.remove());
+    };
+  }, [mapsReady, step]);
+
   function reset() {
     setStep(1);
     setPlate("");
     setLookup({ kind: "idle" });
     setWhatsapp("");
+    setAddress("");
+    setAddressTouched(false);
+    setGeo(EMPTY_GEO);
     setEmail("");
     setDescription("");
     setConsent(false);
@@ -139,6 +260,15 @@ export function QuoteRequestModal({
           plate,
           description,
           contactPhone: whatsapp,
+          address,
+          // Solo van si vinieron de una sugerencia elegida en el
+          // Autocomplete: `geo` se resetea apenas la persona edita el texto
+          // a mano (ver el onChange del input), asi que nunca se manda una
+          // coordenada que no matchea la direccion final.
+          latitude: geo.latitude,
+          longitude: geo.longitude,
+          locality: geo.locality,
+          province: geo.province,
           contactEmail: email || undefined,
           consent,
         }),
@@ -156,14 +286,26 @@ export function QuoteRequestModal({
 
   const canSearchPlate = isValidPlate(plate);
   const emailValid = email === "" || EMAIL_REGEX.test(email);
-  const canContinueFromContact = whatsappDigitCount(whatsapp) >= 8 && emailValid;
+  const addressValid = address.trim().length > 0;
+  const canContinueFromContact =
+    whatsappDigitCount(whatsapp) >= 8 && emailValid && addressValid;
   const canContinueFromNeed = description.trim().length > 0;
+
 
   return (
     <>
       <Button type="button" variant={variant} size={size} className={className} onClick={() => setOpen(true)}>
         {children}
       </Button>
+
+      {open && GOOGLE_MAPS_API_KEY ? (
+        <Script
+          id="google-maps-places"
+          src={`https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}&libraries=places&language=es&region=AR`}
+          strategy="afterInteractive"
+          onReady={() => setMapsReady(true)}
+        />
+      ) : null}
 
       {open
         ? createPortal(
@@ -379,6 +521,33 @@ export function QuoteRequestModal({
                             placeholder={copy.steps.contact.whatsappPlaceholder}
                             autoComplete="tel"
                             autoFocus
+                          />
+                        </Field>
+                        <Field
+                          label={copy.steps.contact.addressLabel}
+                          htmlFor="quote-address"
+                          required
+                          hint={
+                            addressTouched && !addressValid
+                              ? copy.steps.contact.addressInvalid
+                              : copy.steps.contact.addressHint
+                          }
+                        >
+                          <Input
+                            id="quote-address"
+                            ref={addressInputRef}
+                            value={address}
+                            onChange={(event) => {
+                              setAddress(event.target.value);
+                              // Editar a mano invalida el geocode anterior:
+                              // sin esto, tocar la direccion elegida (agregar
+                              // un depto, por ej.) mandaria coordenadas que ya
+                              // no corresponden a lo que se ve en el input.
+                              setGeo(EMPTY_GEO);
+                            }}
+                            onBlur={() => setAddressTouched(true)}
+                            placeholder={copy.steps.contact.addressPlaceholder}
+                            autoComplete="off"
                           />
                         </Field>
                         <Field

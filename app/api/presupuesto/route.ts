@@ -14,6 +14,48 @@ function canonicalPlate(raw: unknown): string | null {
   return PLATE_PATTERNS.some((pattern) => pattern.test(stripped)) ? stripped : null;
 }
 
+function finiteCoordinate(raw: unknown): number | null {
+  return typeof raw === "number" && Number.isFinite(raw) ? raw : null;
+}
+
+function trimmedOrNull(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  return trimmed === "" ? null : trimmed;
+}
+
+/**
+ * `device` y no `typed` cuando hay coordenadas: la landing no tiene GPS, pero
+ * una sugerencia elegida en el Autocomplete de Google Places trae un geocode
+ * tan confiable como el del teléfono — el modal solo manda lat/lng cuando
+ * vienen de ahí (se limpian si la persona edita el texto a mano). Sin
+ * coordenadas, es `typed`: la persona escribió la dirección sin elegir
+ * ninguna sugerencia.
+ */
+function buildLocation(
+  address: string,
+  rawLatitude: unknown,
+  rawLongitude: unknown,
+  rawLocality: unknown,
+  rawProvince: unknown,
+) {
+  const latitude = finiteCoordinate(rawLatitude);
+  const longitude = finiteCoordinate(rawLongitude);
+
+  if (latitude === null || longitude === null) {
+    return { source: "typed" as const, address };
+  }
+
+  return {
+    source: "device" as const,
+    latitude,
+    longitude,
+    address,
+    locality: trimmedOrNull(rawLocality) ?? undefined,
+    province: trimmedOrNull(rawProvince) ?? undefined,
+  };
+}
+
 /** Versión del texto de consentimiento mostrado en el modal — se guarda para auditoría. */
 const CONSENT_TEXT_VERSION = "2026-09";
 
@@ -26,17 +68,32 @@ const CONSENT_TEXT_VERSION = "2026-09";
  */
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { plate: rawPlate, description, contactPhone, contactEmail, consent } = body;
+  const {
+    plate: rawPlate,
+    description,
+    contactPhone,
+    address,
+    latitude,
+    longitude,
+    locality,
+    province,
+    contactEmail,
+    consent,
+  } = body;
 
   const plate = canonicalPlate(rawPlate);
   const phoneDigits = typeof contactPhone === "string" ? contactPhone.replace(/\D/g, "") : "";
   const trimmedDescription = typeof description === "string" ? description.trim() : "";
+  const trimmedAddress = typeof address === "string" ? address.trim() : "";
 
   if (!plate) {
     return NextResponse.json({ error: "Ingresá una patente válida." }, { status: 400 });
   }
   if (phoneDigits.length < 8) {
     return NextResponse.json({ error: "Ingresá un WhatsApp válido." }, { status: 400 });
+  }
+  if (!trimmedAddress) {
+    return NextResponse.json({ error: "Ingresá una dirección válida." }, { status: 400 });
   }
   if (!trimmedDescription) {
     return NextResponse.json({ error: "Contanos qué necesita tu auto." }, { status: 400 });
@@ -67,6 +124,7 @@ export async function POST(req: NextRequest) {
         plate,
         description: trimmedDescription,
         contactPhone: String(contactPhone).trim(),
+        location: buildLocation(trimmedAddress, latitude, longitude, locality, province),
         ...(trimmedEmail ? { contactEmail: trimmedEmail } : {}),
       }),
     });
