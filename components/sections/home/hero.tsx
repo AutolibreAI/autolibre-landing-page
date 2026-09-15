@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { EarlyAccessForm } from "@/components/forms/early-access-form";
 import { QuoteRequestModal } from "@/components/quote-modal/quote-request-modal";
+import { StoreLinks } from "@/components/ui/store-links";
 import { Container } from "@/components/ui/container";
 import { homeContent } from "@/lib/content/home";
 import { presupuestoContent } from "@/lib/content/presupuesto";
@@ -110,7 +110,7 @@ function PresupuestoSlide() {
 }
 
 function ClassicSlide() {
-  const { titleLines, subtitle, formNote } = homeContent.hero;
+  const { titleLines, subtitle, downloadNote } = homeContent.hero;
 
   return (
     <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-10">
@@ -125,8 +125,10 @@ function ClassicSlide() {
           {subtitle}
         </p>
 
-        <div id="early-access" className="mt-10 scroll-mt-28">
-          <EarlyAccessForm note={formNote} />
+        {/* El id es el destino del CTA del header y de cualquier
+            campaña que apunte a /#descargar. */}
+        <div id="descargar" className="mt-10 scroll-mt-28">
+          <StoreLinks note={downloadNote} />
         </div>
       </div>
 
