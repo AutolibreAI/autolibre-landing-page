@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 // import { GarageScreen } from "@/components/sections/home/app-screens";
 
 const SLIDE_COUNT = 2;
-const AUTOPLAY_MS = 5000;
+const AUTOPLAY_MS = 7000;
 
 export function HeroSection() {
   const [active, setActive] = useState(0);
@@ -41,11 +41,29 @@ export function HeroSection() {
       onBlur={() => setPaused(false)}
     >
       <Container size="wide">
-        <div className={cn(active === 0 ? "block" : "hidden")}>
-          <PresupuestoSlide />
-        </div>
-        <div className={cn(active === 1 ? "block" : "hidden")}>
-          <ClassicSlide />
+        {/* Los dos slides ocupan la misma celda de grid (mismo col/row-start),
+            así el alto del contenedor lo fija el más alto de los dos y no
+            salta al cambiar de slide. El cross-fade es opacity, no
+            block/hidden: los dos quedan montados y se funden entre sí. */}
+        <div className="grid">
+          <div
+            className={cn(
+              "col-start-1 row-start-1 transition-opacity duration-1000 ease-in-out",
+              active === 0 ? "opacity-100" : "opacity-0",
+            )}
+            inert={active !== 0}
+          >
+            <PresupuestoSlide />
+          </div>
+          <div
+            className={cn(
+              "col-start-1 row-start-1 transition-opacity duration-1000 ease-in-out",
+              active === 1 ? "opacity-100" : "opacity-0",
+            )}
+            inert={active !== 1}
+          >
+            <ClassicSlide />
+          </div>
         </div>
 
         <div className="mt-10 flex items-center justify-center gap-2">
