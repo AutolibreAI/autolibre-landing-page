@@ -161,12 +161,44 @@ export function QuoteRequestModal({
   const addressInputRef = useRef<HTMLInputElement>(null);
   const pollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // `overflow: hidden` solo frena el scroll con scrollbar: en iOS Safari el
+  // arrastre tactil sigue moviendo (y "rebotando") el body por debajo, en
+  // vertical Y horizontal, aunque el modal este encima. Fijar el body con
+  // `position: fixed` le saca al dedo algo para arrastrar. `top` negativo
+  // compensa el scroll ya hecho para que no salte al abrir, y se restaura al
+  // cerrar.
   useEffect(() => {
     if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const { body } = document;
+    const scrollY = window.scrollY;
+    const previous = {
+      position: body.style.position,
+      top: body.style.top,
+      left: body.style.left,
+      right: body.style.right,
+      width: body.style.width,
+      overflow: body.style.overflow,
+    };
+
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = "100%";
+    body.style.overflow = "hidden";
+
     return () => {
-      document.body.style.overflow = previous;
+      body.style.position = previous.position;
+      body.style.top = previous.top;
+      body.style.left = previous.left;
+      body.style.right = previous.right;
+      body.style.width = previous.width;
+      body.style.overflow = previous.overflow;
+      // rAF y no sincronico: el body recien salio de `position: fixed` (que
+      // lo achicaba al alto del viewport) y el navegador todavia no
+      // recalculo cuanto mide el documento. Un `scrollTo` inmediato corre
+      // contra ese layout viejo y el salto de vuelta queda clampeado a 0.
+      requestAnimationFrame(() => window.scrollTo(0, scrollY));
     };
   }, [open]);
 

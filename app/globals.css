@@ -39,6 +39,9 @@
     scroll-behavior: smooth;
     /* El header sticky no debe tapar la sección al saltar por anchor */
     scroll-padding-top: 5rem;
+    /* Red de seguridad: ningún elemento que se pase de 100% de ancho puede
+       crear una zona horizontal arrastrable en mobile. */
+    overflow-x: hidden;
   }
 
   body {
@@ -46,6 +49,7 @@
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
 
   h1,
