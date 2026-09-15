@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { appendConsentToSheet } from "@/lib/google-sheet";
 
 const PLATE_PATTERNS: readonly RegExp[] = [
   /^[A-Z]{3}\d{3}$/,
@@ -55,9 +54,6 @@ function buildLocation(
     province: trimmedOrNull(rawProvince) ?? undefined,
   };
 }
-
-/** Versión del texto de consentimiento mostrado en el modal — se guarda para auditoría. */
-const CONSENT_TEXT_VERSION = "2026-09";
 
 /**
  * Registra el pedido en `autolibre-backend-hex` vía su endpoint público
@@ -140,22 +136,6 @@ export async function POST(req: NextRequest) {
     }
 
     const id = data?.id as string | undefined;
-
-    if (id) {
-      try {
-        await appendConsentToSheet({
-          plate,
-          contactPhone: String(contactPhone).trim(),
-          contactEmail: trimmedEmail,
-          quoteRequestId: id,
-          consentVersion: CONSENT_TEXT_VERSION,
-        });
-      } catch (error) {
-        // El pedido ya quedó registrado en el backend (fuente de verdad):
-        // que falle el log de auditoría no puede tumbar la respuesta.
-        console.error("[presupuesto] no se pudo registrar el consentimiento en la sheet", error);
-      }
-    }
 
     return NextResponse.json({ success: true, id });
   } catch (error) {
