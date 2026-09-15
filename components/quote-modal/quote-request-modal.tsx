@@ -110,9 +110,22 @@ const copy = presupuestoContent.modal;
 type LookupState =
   | { kind: "idle" }
   | { kind: "loading" }
+  | { kind: "searching" }
   | { kind: "found"; brand: string; model: string; year: number | null }
   | { kind: "not_found" }
   | { kind: "unavailable" };
+
+/**
+ * clasific.ar no tiene un endpoint de "consultar estado" para la búsqueda
+ * básica (a diferencia de Modules/Reports, que sí lo tienen): cuando la
+ * patente no está en su base histórica, `onMiss=search` la encola y hay que
+ * volver a pedir el MISMO endpoint más tarde para ver si ya apareció. 4
+ * intentos cada 4s (16s totales) porque cada reintento manda `onMiss=search`
+ * de nuevo y consume cuota `miss` — una ventana más larga agotaría esa cuota
+ * compartida por poco beneficio.
+ */
+const SEARCH_POLL_INTERVAL_MS = 4000;
+const SEARCH_POLL_MAX_ATTEMPTS = 4;
 
 type SubmitState =
   | { kind: "idle" }
@@ -146,6 +159,7 @@ export function QuoteRequestModal({
   const [mapsReady, setMapsReady] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const addressInputRef = useRef<HTMLInputElement>(null);
+  const pollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -209,7 +223,19 @@ export function QuoteRequestModal({
     };
   }, [mapsReady, step]);
 
+  function clearLookupPoll() {
+    if (pollTimeoutRef.current) {
+      clearTimeout(pollTimeoutRef.current);
+      pollTimeoutRef.current = null;
+    }
+  }
+
+  // Ningun timeout de polling puede seguir vivo despues de que el modal se
+  // desmonta (o se cierra sin pasar por `close()`, ej. navegacion).
+  useEffect(() => clearLookupPoll, []);
+
   function reset() {
+    clearLookupPoll();
     setStep(1);
     setPlate("");
     setLookup({ kind: "idle" });
@@ -228,13 +254,23 @@ export function QuoteRequestModal({
     reset();
   }
 
-  async function runLookup() {
-    setLookup({ kind: "loading" });
+  /**
+   * `attempt` 0 es el click de "Buscar mi auto"; los siguientes son los
+   * reintentos automaticos mientras clasific.ar todavia esta buscando la
+   * patente (ver SEARCH_POLL_MAX_ATTEMPTS). `plateToQuery` va fijo por
+   * clausura y no se relee de `plate`: si la persona edita la patente a mitad
+   * de un poll, ese poll tiene que seguir preguntando por la de antes o el
+   * resultado le llegaria pegado al campo equivocado.
+   */
+  async function runLookup(plateToQuery: string = plate, attempt = 0) {
+    clearLookupPoll();
+    setLookup({ kind: attempt === 0 ? "loading" : "searching" });
     try {
       const response = await fetch(
-        `/api/vehicle-lookup?plate=${encodeURIComponent(plate)}`,
+        `/api/vehicle-lookup?plate=${encodeURIComponent(plateToQuery)}`,
       );
       const data = await response.json();
+
       if (data.found) {
         setLookup({
           kind: "found",
@@ -242,9 +278,18 @@ export function QuoteRequestModal({
           model: data.model,
           year: data.year ?? null,
         });
-      } else {
-        setLookup({ kind: data.error ? "unavailable" : "not_found" });
+        return;
       }
+
+      if (data.searching && attempt < SEARCH_POLL_MAX_ATTEMPTS) {
+        setLookup({ kind: "searching" });
+        pollTimeoutRef.current = setTimeout(() => {
+          runLookup(plateToQuery, attempt + 1);
+        }, SEARCH_POLL_INTERVAL_MS);
+        return;
+      }
+
+      setLookup({ kind: data.error ? "unavailable" : "not_found" });
     } catch {
       setLookup({ kind: "unavailable" });
     }
@@ -411,7 +456,13 @@ export function QuoteRequestModal({
                     <form
                       onSubmit={(event) => {
                         event.preventDefault();
-                        if (canSearchPlate && lookup.kind !== "loading") runLookup();
+                        if (
+                          canSearchPlate &&
+                          lookup.kind !== "loading" &&
+                          lookup.kind !== "searching"
+                        ) {
+                          runLookup();
+                        }
                       }}
                     >
                       <p className="mb-4 font-display text-base font-semibold text-ink">
@@ -431,6 +482,7 @@ export function QuoteRequestModal({
                           id="quote-plate"
                           value={plate}
                           onChange={(event) => {
+                            clearLookupPoll();
                             setPlate(normalizePlateInput(event.target.value));
                             setLookup({ kind: "idle" });
                           }}
@@ -441,17 +493,30 @@ export function QuoteRequestModal({
                         />
                       </Field>
 
-                      {lookup.kind === "idle" || lookup.kind === "loading" ? (
-                        <Button
-                          type="submit"
-                          block
-                          className="mt-4"
-                          disabled={!canSearchPlate || lookup.kind === "loading"}
-                        >
-                          {lookup.kind === "loading"
-                            ? copy.steps.plate.searchingLabel
-                            : copy.steps.plate.searchLabel}
-                        </Button>
+                      {lookup.kind === "idle" ||
+                      lookup.kind === "loading" ||
+                      lookup.kind === "searching" ? (
+                        <>
+                          <Button
+                            type="submit"
+                            block
+                            className="mt-4"
+                            disabled={
+                              !canSearchPlate ||
+                              lookup.kind === "loading" ||
+                              lookup.kind === "searching"
+                            }
+                          >
+                            {lookup.kind === "idle"
+                              ? copy.steps.plate.searchLabel
+                              : copy.steps.plate.searchingLabel}
+                          </Button>
+                          {lookup.kind === "searching" ? (
+                            <p className="mt-3 text-xs text-ink/55">
+                              {copy.steps.plate.stillSearchingHint}
+                            </p>
+                          ) : null}
+                        </>
                       ) : null}
 
                       {lookup.kind === "found" ? (

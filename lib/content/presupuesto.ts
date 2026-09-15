@@ -31,6 +31,7 @@ export const presupuestoContent = {
         invalidHint: "Ingresá una patente válida.",
         searchLabel: "Buscar mi auto",
         searchingLabel: "Buscando...",
+        stillSearchingHint: "Puede tardar unos segundos más, estamos confirmando tu auto en el registro.",
         foundLabel: "Encontramos",
         foundConfirm: "Sí, es mi auto",
         foundReject: "No es mi auto, corregir",
