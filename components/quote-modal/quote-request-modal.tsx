@@ -104,6 +104,16 @@ function whatsappDigitCount(raw: string): number {
   return raw.replace(/\D/g, "").length;
 }
 
+/**
+ * `siteConfig.contact.whatsapp` es el link genérico del sitio (footer, FAQ) y
+ * su texto precargado es de otro contexto ("Me interesa comprar un
+ * escáner!") — no sirve para el fallback del modal de presupuesto. Se arma
+ * un link propio con el mismo número pero un mensaje que tiene sentido acá.
+ * wa.me solo acepta dígitos: sin `+`, sin espacios y sin guiones.
+ */
+const PRESUPUESTO_WHATSAPP_TEXT = "¡Hola! Hice un pedido de presupuesto en la web de AutoLibre.";
+const PRESUPUESTO_WHATSAPP_URL = `https://wa.me/${siteConfig.contact.phoneE164.replace(/\D/g, "")}?text=${encodeURIComponent(PRESUPUESTO_WHATSAPP_TEXT)}`;
+
 const TOTAL_STEPS = 4;
 const copy = presupuestoContent.modal;
 
@@ -470,7 +480,7 @@ export function QuoteRequestModal({
                       <div className="mt-3 w-full border-t border-line pt-4">
                         <p className="text-xs text-ink/55">{copy.success.whatsappFallback}</p>
                         <a
-                          href={siteConfig.contact.whatsapp}
+                          href={PRESUPUESTO_WHATSAPP_URL}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="mt-2 inline-block text-sm font-semibold text-brand hover:text-brand-hover"
