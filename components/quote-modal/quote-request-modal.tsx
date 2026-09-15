@@ -237,6 +237,10 @@ export function QuoteRequestModal({
 
     const autocomplete = new window.google.maps.places.Autocomplete(input, {
       componentRestrictions: { country: "ar" },
+      // Pedimos zona/localidad, no la calle y altura: "(regions)" agrupa
+      // barrio, localidad, partido y provincia, y saca las sugerencias de
+      // direcciones puntuales que el widget mostraría por default.
+      types: ["(regions)"],
       fields: ["formatted_address", "name", "geometry", "address_components"],
     });
 
