@@ -27,7 +27,7 @@ export function LegalPage({ title, updatedAt, children }: LegalPageProps) {
         <h1 className="mt-8 font-display text-[2rem] font-bold text-ink md:text-[2.375rem]">
           {title}
         </h1>
-        <p className="mt-2 text-sm text-ink/55">
+        <p className="mt-2 text-sm text-ink/65">
           Última actualización: {updatedAt}
         </p>
 

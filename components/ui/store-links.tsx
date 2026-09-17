@@ -86,7 +86,7 @@ export function StoreLinks({
         <p
           className={cn(
             "mt-3 text-[0.8125rem]",
-            onBrand ? "text-white/70" : "text-ink/55",
+            onBrand ? "text-white/70" : "text-ink/65",
           )}
         >
           {note}

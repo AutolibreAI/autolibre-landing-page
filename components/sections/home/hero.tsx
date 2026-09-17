@@ -108,7 +108,7 @@ function PresupuestoSlide() {
 
         <div className="mt-10">
           <QuoteRequestModal size="lg">{ctaLabel}</QuoteRequestModal>
-          <p className="mt-3 text-[0.8125rem] text-ink/55">{note}</p>
+          <p className="mt-3 text-[0.8125rem] text-ink/65">{note}</p>
         </div>
       </div>
 

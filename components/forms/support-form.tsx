@@ -128,7 +128,7 @@ export function SupportForm() {
               />
             </Field>
           </div>
-          <p className="-mt-2 text-xs text-ink/55">{supportCopy.contactHint}</p>
+          <p className="-mt-2 text-xs text-ink/65">{supportCopy.contactHint}</p>
 
           <Field label="Motivo" htmlFor="support-subject" required>
             <Select id="support-subject" name="subject" defaultValue="" required>

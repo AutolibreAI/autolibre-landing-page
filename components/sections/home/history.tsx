@@ -68,7 +68,7 @@ export function HistorySection() {
                         <p className="mb-1 font-display text-[15px] font-semibold text-ink">
                           {entry.title}
                         </p>
-                        <p className="text-[13px] text-ink/60">
+                        <p className="text-[13px] text-ink/65">
                           {entry.detail}
                         </p>
                       </div>

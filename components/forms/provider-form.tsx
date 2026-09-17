@@ -390,7 +390,7 @@ export function ProviderForm({
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-xs text-ink/55 italic">
+                  <p className="text-xs text-ink/65 italic">
                     Agregá al menos una marca para continuar.
                   </p>
                 )}
@@ -407,7 +407,7 @@ export function ProviderForm({
           <FieldGroup title="Servicios que ofrecen">
             {serviceFamilies.length > 0 ? (
               <>
-                <p className="mb-3 text-xs text-ink/55">
+                <p className="mb-3 text-xs text-ink/65">
                   Abrí las categorías que te tocan y marcá los rubros que
                   hacés. Si hacés todo lo de una, tildá la categoría entera.
                 </p>
@@ -586,7 +586,7 @@ export function ProviderForm({
           : providersContent.form.submitLabel}
       </Button>
 
-      <p className="mt-3.5 text-center text-[0.8125rem] text-ink/55">
+      <p className="mt-3.5 text-center text-[0.8125rem] text-ink/65">
         {providersContent.form.note}
       </p>
     </form>
