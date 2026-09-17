@@ -5,7 +5,7 @@ import { siteConfig } from "@/lib/seo/config";
  * Rutas públicas del sitio. Al sumar una página nueva, agregarla acá.
  *
  * `lastModified` es una fecha fija por ruta y no `new Date()`: con la fecha
- * del build, cada deploy le avisa a Google que las seis páginas cambiaron
+ * del build, cada deploy le avisa a Google que todas las páginas cambiaron
  * aunque no se haya tocado ninguna, y el crawler termina ignorando el campo.
  * Al editar el contenido de una página, actualizar su fecha acá.
  */
@@ -15,6 +15,12 @@ const routes = [
     lastModified: "2026-08-21",
     changeFrequency: "weekly",
     priority: 1,
+  },
+  {
+    path: "/pedido",
+    lastModified: "2026-09-17",
+    changeFrequency: "monthly",
+    priority: 0.9,
   },
   {
     path: "/proveedores",
