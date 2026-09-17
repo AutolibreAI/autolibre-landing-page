@@ -1,0 +1,455 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-17T00:00:00.000Z",
+  "title": "Design System: AutoLibre",
+  "extensions": {
+    "colorMeta": {
+      "brand": {
+        "role": "primary",
+        "displayName": "Workshop Green",
+        "canonical": "#2a8c3a",
+        "tonalRamp": [
+          "#0d2c12",
+          "#185424",
+          "#1f6b2d",
+          "#2a8c3a",
+          "#4fa85e",
+          "#84c78e",
+          "#bde3c3",
+          "#e6f5e9"
+        ]
+      },
+      "brand-hover": {
+        "role": "primary",
+        "displayName": "Workshop Green Pressed",
+        "canonical": "#23752f",
+        "tonalRamp": [
+          "#0b2410",
+          "#14461d",
+          "#1b5c26",
+          "#23752f",
+          "#3f9148",
+          "#74b87e",
+          "#b2dcb9",
+          "#e2f2e5"
+        ]
+      },
+      "brand-soft": {
+        "role": "secondary",
+        "displayName": "Meadow Green",
+        "canonical": "#5fa86b",
+        "tonalRamp": [
+          "#132917",
+          "#204e27",
+          "#2c6836",
+          "#3d8749",
+          "#5fa86b",
+          "#8ec396",
+          "#c0dfc5",
+          "#e8f4ea"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Green-Black Ink",
+        "canonical": "#1c2b1c",
+        "tonalRamp": [
+          "#0a110a",
+          "#1c2b1c",
+          "#2b402b",
+          "#3f5a3f",
+          "#5d7a5d",
+          "#8aa18a",
+          "#bfcdbf",
+          "#e8eee8"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#1c2b1c",
+          "#6d886d",
+          "#9db69d",
+          "#c6d6c6",
+          "#eaf3ec",
+          "#f7faf8",
+          "#fdfefd",
+          "#ffffff"
+        ]
+      },
+      "surface-muted": {
+        "role": "neutral",
+        "displayName": "Pale Wash",
+        "canonical": "#eaf3ec",
+        "tonalRamp": [
+          "#16231a",
+          "#2f4a32",
+          "#456448",
+          "#6a8a6d",
+          "#9bb79f",
+          "#c6dccb",
+          "#eaf3ec",
+          "#f6fbf7"
+        ]
+      },
+      "surface-subtle": {
+        "role": "neutral",
+        "displayName": "Whisper",
+        "canonical": "#f7faf8",
+        "tonalRamp": [
+          "#18231a",
+          "#354a37",
+          "#4d6850",
+          "#748e77",
+          "#a4bda8",
+          "#cfe0d3",
+          "#eaf3ec",
+          "#f7faf8"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#eaf3ec",
+        "tonalRamp": [
+          "#16231a",
+          "#2f4a32",
+          "#456448",
+          "#6a8a6d",
+          "#9bb79f",
+          "#c6dccb",
+          "#eaf3ec",
+          "#f6fbf7"
+        ]
+      },
+      "alert-bg": {
+        "role": "tertiary",
+        "displayName": "Alert Wash",
+        "canonical": "#fbe2e2",
+        "tonalRamp": [
+          "#3a1414",
+          "#6e2626",
+          "#8f3434",
+          "#b04b4b",
+          "#c97070",
+          "#e0a0a0",
+          "#fbe2e2",
+          "#fdf2f2"
+        ]
+      },
+      "alert-fg": {
+        "role": "tertiary",
+        "displayName": "Alert Ink",
+        "canonical": "#c24949",
+        "tonalRamp": [
+          "#2e1010",
+          "#5c1f1f",
+          "#7c2b2b",
+          "#9e3737",
+          "#c24949",
+          "#d67c7c",
+          "#e9b4b4",
+          "#f8e0e0"
+        ]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Danger Red",
+        "canonical": "#d20000",
+        "tonalRamp": [
+          "#2e0000",
+          "#5f0000",
+          "#7e0000",
+          "#a30000",
+          "#d20000",
+          "#ee4a3a",
+          "#f79086",
+          "#fdd5d0"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Reserved for a page that is its own headline. Currently only the two stacked lines on /descarga."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Largest section heading (SectionHeading size=\"lg\"): hero and closing band."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Ordinary section headings (size sm / md) and mobile nav rows."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Section subtitles and paragraphs, held to ~35rem or a 720px narrow container."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Field labels, hints, legal links, store-badge notes. Smallest step is 0.6875rem, only inside the store badge."
+      }
+    },
+    "shadows": [
+      {
+        "name": "lifted-surface",
+        "value": "0 20px 50px rgba(28,43,28,0.10)",
+        "purpose": "The elevated card variant on a light ground."
+      },
+      {
+        "name": "overlay",
+        "value": "0 20px 50px rgba(28,43,28,0.25)",
+        "purpose": "The quote modal above its scrim."
+      },
+      {
+        "name": "object",
+        "value": "0 30px 70px rgba(28,43,28,0.25)",
+        "purpose": "The phone frame — the only piece meant to read as a physical thing."
+      },
+      {
+        "name": "chip-brand",
+        "value": "0 6px 18px rgba(42,140,58,0.28)",
+        "purpose": "The selected marketplace chip."
+      },
+      {
+        "name": "chip-neutral",
+        "value": "0 4px 14px rgba(28,43,28,0.08)",
+        "purpose": "The unselected marketplace chip."
+      }
+    ],
+    "motion": [
+      {
+        "name": "colors-only",
+        "value": "transition: color .15s, background-color .15s, border-color .15s",
+        "purpose": "The system's only transition grammar. Buttons, links, inputs and chips transition color properties; nothing transforms, translates or animates on its own."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important } }",
+        "purpose": "Global kill switch in the base layer; smooth scroll also reverts to auto."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "input-zoom-guard",
+        "value": "900px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The main CTA on light grounds.",
+      "html": "<button class=\"ds-btn-primary\">Descargar la app</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; background: var(--color-brand, #2a8c3a); color: #fff; font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif; font-size: .9375rem; font-weight: 600; white-space: nowrap; border: none; border-radius: .625rem; padding: .625rem 1.25rem; cursor: pointer; transition: background-color .15s, color .15s, border-color .15s; } .ds-btn-primary:hover { background: var(--color-brand-hover, #23752f); } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-brand, #2a8c3a); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: .5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action on light grounds.",
+      "html": "<button class=\"ds-btn-outline\">Ver más</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; background: transparent; color: var(--color-ink, #1c2b1c); font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif; font-size: .9375rem; font-weight: 600; border: 1px solid rgba(28,43,28,.3); border-radius: .625rem; padding: .625rem 1.25rem; cursor: pointer; transition: color .15s, border-color .15s; } .ds-btn-outline:hover { border-color: var(--color-brand, #2a8c3a); color: var(--color-brand, #2a8c3a); } .ds-btn-outline:focus-visible { outline: 2px solid var(--color-brand, #2a8c3a); outline-offset: 2px; }"
+    },
+    {
+      "name": "Inverse Button",
+      "kind": "button",
+      "refersTo": "button-inverse",
+      "description": "CTA on the brand-green closing band.",
+      "html": "<div class=\"ds-btn-inverse-bed\"><button class=\"ds-btn-inverse\">Descargar la app</button></div>",
+      "css": ".ds-btn-inverse-bed { background: var(--color-brand, #2a8c3a); padding: 1.5rem; border-radius: 1rem; } .ds-btn-inverse { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; background: #fff; color: var(--color-ink, #1c2b1c); font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif; font-size: .9375rem; font-weight: 600; border: none; border-radius: .625rem; padding: .625rem 1.25rem; cursor: pointer; transition: background-color .15s; } .ds-btn-inverse:hover { background: rgba(255,255,255,.9); } .ds-btn-inverse:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }"
+    },
+    {
+      "name": "Store Badge",
+      "kind": "custom",
+      "refersTo": "store-badge",
+      "description": "The download CTA: inline store glyph plus a stacked caption and store name. iOS is always first; URLs come from siteConfig.stores.",
+      "html": "<a class=\"ds-store-badge\" href=\"#\"><svg width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701\"/></svg><span class=\"ds-store-badge__text\"><span class=\"ds-store-badge__caption\">Descargala en</span><span class=\"ds-store-badge__name\">App Store</span></span></a>",
+      "css": ".ds-store-badge { display: inline-flex; align-items: center; gap: .75rem; background: var(--color-ink, #1c2b1c); color: #fff; text-decoration: none; border-radius: .625rem; padding: .75rem 1.25rem; transition: background-color .15s; } .ds-store-badge:hover { background: rgba(28,43,28,.85); } .ds-store-badge:focus-visible { outline: 2px solid var(--color-brand, #2a8c3a); outline-offset: 2px; } .ds-store-badge svg { flex-shrink: 0; } .ds-store-badge__text { display: flex; flex-direction: column; line-height: 1; font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif; } .ds-store-badge__caption { font-size: .6875rem; opacity: .8; } .ds-store-badge__name { margin-top: .25rem; font-family: Outfit, ui-sans-serif, system-ui, sans-serif; font-size: 1.0625rem; font-weight: 600; }"
+    },
+    {
+      "name": "Outline Card",
+      "kind": "card",
+      "refersTo": "card-outline",
+      "description": "The default surface: a hairline border on white, flat at rest.",
+      "html": "<div class=\"ds-card-outline\"><p class=\"ds-card-outline__title\">Vencimientos</p><p class=\"ds-card-outline__body\">VTV, seguro, patente y service, avisados a tiempo.</p></div>",
+      "css": ".ds-card-outline { border: 1px solid var(--color-line, #eaf3ec); background: #fff; border-radius: 1rem; padding: 1.5rem; max-width: 20rem; } .ds-card-outline__title { margin: 0; font-family: Outfit, ui-sans-serif, system-ui, sans-serif; font-size: 1.125rem; font-weight: 700; letter-spacing: -.01em; color: var(--color-ink, #1c2b1c); } .ds-card-outline__body { margin: .5rem 0 0; font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif; font-size: 1.0625rem; line-height: 1.625; color: rgba(28,43,28,.7); }"
+    },
+    {
+      "name": "Elevated Card",
+      "kind": "card",
+      "refersTo": "card-elevated",
+      "description": "The one lifted card variant: a whisper ground with an ink-tinted shadow.",
+      "html": "<div class=\"ds-card-elevated\"><p class=\"ds-card-elevated__title\">Diagnóstico</p><p class=\"ds-card-elevated__body\">Qué le pasa al auto, explicado.</p></div>",
+      "css": ".ds-card-elevated { background: var(--color-surface-subtle, #f7faf8); border-radius: 1rem; box-shadow: 0 20px 50px rgba(28,43,28,.10); padding: 1.5rem; max-width: 20rem; } .ds-card-elevated__title { margin: 0; font-family: Outfit, ui-sans-serif, system-ui, sans-serif; font-size: 1.125rem; font-weight: 700; letter-spacing: -.01em; color: var(--color-ink, #1c2b1c); } .ds-card-elevated__body { margin: .5rem 0 0; font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif; font-size: 1.0625rem; line-height: 1.625; color: rgba(28,43,28,.7); }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Label, control and optional hint. Border shifts to brand on focus; the global green ring carries visibility.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field__label\" for=\"ds-field-input\">Patente<span class=\"ds-field__req\" aria-hidden=\"true\"> *</span></label><input class=\"ds-field__input\" id=\"ds-field-input\" placeholder=\"AB123CD\"><p class=\"ds-field__hint\">Como figura en la cédula.</p></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: .375rem; max-width: 20rem; font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif; } .ds-field__label { font-size: .8125rem; font-weight: 600; color: rgba(28,43,28,.7); } .ds-field__req { color: var(--color-brand, #2a8c3a); } .ds-field__input { width: 100%; border: 1px solid var(--color-line, #eaf3ec); background: var(--color-surface-subtle, #f7faf8); border-radius: .625rem; padding: .75rem .875rem; font-size: .9375rem; color: var(--color-ink, #1c2b1c); outline: none; transition: border-color .15s; } .ds-field__input::placeholder { color: rgba(28,43,28,.4); } .ds-field__input:focus-visible { border-color: var(--color-brand, #2a8c3a); outline: 2px solid var(--color-brand, #2a8c3a); outline-offset: 2px; } .ds-field__input:disabled { opacity: .6; } .ds-field__hint { margin: 0; font-size: .75rem; color: rgba(28,43,28,.65); }"
+    },
+    {
+      "name": "Choice Pill",
+      "kind": "chip",
+      "refersTo": "chip-pill",
+      "description": "Selectable pill keeping the native control visible at 16px with accent-color brand; focus is driven from the label.",
+      "html": "<label class=\"ds-chip-pill\"><input type=\"checkbox\" checked><span>Mecánica general</span></label> <label class=\"ds-chip-pill ds-chip-pill--off\"><input type=\"checkbox\"><span>Chapa y pintura</span></label>",
+      "css": ".ds-chip-pill { display: inline-flex; align-items: center; gap: .5rem; border: 1px solid var(--color-brand, #2a8c3a); background: rgba(42,140,58,.08); color: var(--color-ink, #1c2b1c); border-radius: 9999px; padding: .5rem .875rem; font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif; font-size: .875rem; cursor: pointer; transition: border-color .15s, background-color .15s; } .ds-chip-pill--off { border-color: var(--color-line, #eaf3ec); background: var(--color-surface-subtle, #f7faf8); } .ds-chip-pill--off:hover { border-color: rgba(42,140,58,.4); } .ds-chip-pill input { width: 1rem; height: 1rem; flex-shrink: 0; accent-color: var(--color-brand, #2a8c3a); cursor: pointer; } .ds-chip-pill:has(:focus-visible) { outline: 2px solid var(--color-brand, #2a8c3a); outline-offset: 2px; }"
+    },
+    {
+      "name": "Site Header",
+      "kind": "nav",
+      "refersTo": "nav-header",
+      "description": "Sticky 4.5rem bar, translucent white with backdrop blur and a hairline bottom border.",
+      "html": "<header class=\"ds-nav\"><span class=\"ds-nav__mark\">AutoLibre</span><nav class=\"ds-nav__links\"><a href=\"#\">Cómo funciona</a><a href=\"#\">Talleres</a><a href=\"#\">Preguntas</a></nav><button class=\"ds-nav__cta\">Descargar la app</button></header>",
+      "css": ".ds-nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 4.5rem; padding: 0 6%; background: rgba(255,255,255,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--color-line, #eaf3ec); font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif; } .ds-nav__mark { font-family: Outfit, ui-sans-serif, system-ui, sans-serif; font-weight: 700; letter-spacing: -.01em; color: var(--color-ink, #1c2b1c); } .ds-nav__links { display: flex; align-items: center; gap: 1.75rem; } .ds-nav__links a { font-size: .9375rem; font-weight: 500; color: var(--color-ink, #1c2b1c); text-decoration: none; transition: color .15s; } .ds-nav__links a:hover { color: var(--color-brand, #2a8c3a); } .ds-nav__links a:focus-visible { outline: 2px solid var(--color-brand, #2a8c3a); outline-offset: 2px; } .ds-nav__cta { background: var(--color-brand, #2a8c3a); color: #fff; border: none; border-radius: .625rem; padding: .625rem 1.25rem; font-size: .9375rem; font-weight: 600; cursor: pointer; transition: background-color .15s; } .ds-nav__cta:hover { background: var(--color-brand-hover, #23752f); }"
+    },
+    {
+      "name": "QR Plate",
+      "kind": "custom",
+      "refersTo": "qr-plate",
+      "description": "Desktop bridge on the dark download route: inline-SVG QR in currentColor on a white 16px plate, 144px so each module clears ~3.9px. Appears only from lg, behind its own hairline rule.",
+      "html": "<div class=\"ds-qr\"><div class=\"ds-qr__plate\"><svg viewBox=\"0 0 37 37\" role=\"img\" aria-label=\"QR a autolibre.ai/descarga\" shape-rendering=\"crispEdges\" class=\"ds-qr__svg\"><rect x=\"4\" y=\"4\" width=\"7\" height=\"7\" fill=\"none\" stroke=\"currentColor\"/><rect x=\"6\" y=\"6\" width=\"3\" height=\"3\" fill=\"currentColor\"/><rect x=\"26\" y=\"4\" width=\"7\" height=\"7\" fill=\"none\" stroke=\"currentColor\"/><rect x=\"28\" y=\"6\" width=\"3\" height=\"3\" fill=\"currentColor\"/><rect x=\"4\" y=\"26\" width=\"7\" height=\"7\" fill=\"none\" stroke=\"currentColor\"/><rect x=\"6\" y=\"28\" width=\"3\" height=\"3\" fill=\"currentColor\"/></svg></div><div class=\"ds-qr__text\"><p class=\"ds-qr__title\">Escaneá con el teléfono</p><p class=\"ds-qr__body\">Se abre esta misma página en tu celular, que es donde se instala.</p></div></div>",
+      "css": ".ds-qr { display: flex; align-items: center; justify-content: center; gap: 1.25rem; background: var(--color-ink, #1c2b1c); padding: 3rem 2rem; border-top: 1px solid rgba(255,255,255,.12); } .ds-qr__plate { background: #fff; border-radius: 1rem; padding: .75rem; } .ds-qr__svg { width: 9rem; height: 9rem; color: var(--color-ink, #1c2b1c); display: block; } .ds-qr__text { max-width: 15rem; text-align: left; } .ds-qr__title { margin: 0; font-family: Outfit, ui-sans-serif, system-ui, sans-serif; font-size: 1rem; font-weight: 600; color: #fff; } .ds-qr__body { margin: .375rem 0 0; font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif; font-size: .875rem; line-height: 1.625; color: rgba(255,255,255,.72); }"
+    },
+    {
+      "name": "Dark Route Surface",
+      "kind": "custom",
+      "refersTo": "surface-ink-route",
+      "description": "Reference implementation for a full-page ink surface: white text, white/72 secondary, white/60 tertiary, white store badges as the brightest thing on screen, brand-soft focus ring (5.01:1 on ink), brand text selection. No shadows, no gradients, no glass.",
+      "html": "<div class=\"ds-ink-route\"><h1 class=\"ds-ink-route__title\">Todo tu auto,<br>en un solo lugar</h1><p class=\"ds-ink-route__sub\">Documentos, vencimientos e historial. Gratis, en iOS y Android.</p><a class=\"ds-ink-route__badge\" href=\"#\">App Store</a><p class=\"ds-ink-route__legal\"><a href=\"#\">Términos</a> <a href=\"#\">Privacidad</a> <a href=\"#\">Soporte</a></p></div>",
+      "css": ".ds-ink-route { background: var(--color-ink, #1c2b1c); color: #fff; text-align: center; padding: 3.5rem 6% calc(2rem + env(safe-area-inset-bottom)); } .ds-ink-route ::selection { background: var(--color-brand, #2a8c3a); color: #fff; } .ds-ink-route__title { margin: 0; font-family: Outfit, ui-sans-serif, system-ui, sans-serif; font-size: 2.75rem; font-weight: 700; line-height: 1.05; letter-spacing: -.01em; color: #fff; } .ds-ink-route__sub { margin: 1.75rem auto 0; max-width: 35rem; font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif; font-size: 1.0625rem; line-height: 1.625; color: rgba(255,255,255,.72); } .ds-ink-route__badge { display: inline-flex; align-items: center; justify-content: center; margin-top: 2.75rem; background: #fff; color: var(--color-ink, #1c2b1c); text-decoration: none; border-radius: .625rem; padding: .75rem 1.25rem; font-family: Outfit, ui-sans-serif, system-ui, sans-serif; font-size: 1.0625rem; font-weight: 600; transition: background-color .15s; } .ds-ink-route__badge:hover { background: rgba(255,255,255,.9); } .ds-ink-route__legal { margin: 3rem 0 0; display: flex; justify-content: center; gap: .75rem; } .ds-ink-route__legal a { display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 .75rem; border-radius: .625rem; font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif; font-size: .8125rem; color: rgba(255,255,255,.6); text-decoration: none; transition: color .15s; } .ds-ink-route__legal a:hover { color: #fff; } .ds-ink-route a:focus-visible { outline: 2px solid var(--color-brand-soft, #5fa86b); outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "El taller ordenado",
+    "overview": "AutoLibre is the digital version of a workshop that keeps good records: white light, clean surfaces, one green tool hanging where you can reach it. The site is bright by default (#ffffff ground, colorScheme: \"light\" fixed at the root), flat by default, and it earns attention through contrast of tone rather than through effects. Nothing glows, nothing floats without a reason, nothing is decorative.\n\nDensity is generous but not airy for its own sake: a 6% viewport gutter, a three-step vertical rhythm on sections, and headings set in Outfit at 700 with a slight negative tracking so a two-line title reads as one confident block. Body copy runs in DM Sans at 17–19px with leading-relaxed — comfortable at arm's length on a phone, which is where most of this traffic lives.\n\nThe green does the pointing. It is the only saturated hue in the system and it appears on CTAs, on the focus ring, on the alternating section grounds and on the isotype — and nowhere else. Depth is carried by tone (white → #f7faf8 → #eaf3ec → #1c2b1c), not by stacking shadows. Where a shadow does appear it is ink-tinted, large-blurred and vertically offset only: a soft lift, never a hard edge.",
+    "keyCharacteristics": [
+      "One saturated hue; everything else is a green-tinted neutral.",
+      "Flat by default — borders and tonal steps carry separation, not shadows.",
+      "Two typefaces, strict roles: Outfit for headings, DM Sans for everything else.",
+      "Three radii (10 / 16 / 20px) plus the pill; nothing else.",
+      "Every interactive target reaches 44px, and bottom-anchored rows respect env(safe-area-inset-bottom).",
+      "All color comes from the @theme block in app/globals.css. There is no second source of truth."
+    ],
+    "rules": [
+      {
+        "name": "The Token-Only Rule",
+        "body": "Every color in a component comes from the @theme block in app/globals.css. No hex literal, no rgb(), no opacity-tinted one-off hue appears in a component file. Adding a color means adding a token, and adding a token means it is reused.",
+        "section": "colors"
+      },
+      {
+        "name": "The White-Ground Green Rule",
+        "body": "Workshop Green is a mark, not a reading surface. White on #2a8c3a measures 4.28:1, which clears the 3:1 floor for large text but not the 4.5:1 floor for body copy. A brand-green band may carry a display heading and white store badges; it may not carry small body copy. When a whole screen has to go dark, it goes to Green-Black Ink (white on ink measures ~14.9:1), not to green.",
+        "section": "colors"
+      },
+      {
+        "name": "The Knockout Lockup Rule",
+        "body": "On any brand-green ground the lockup is the monochrome knockout (lockup-white.png). The standard lockups carry a #20A020 isotype that measures 1.24:1 on brand green and disappears, splitting the mark in half. On ink, use lockup-dark.png; on white, lockup-light.png.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two-Role Rule",
+        "body": "Outfit appears on h1–h4 and on short emphatic labels (field-group titles, mobile nav rows, the store name inside a badge). Everything that is read as a sentence is DM Sans. There is no third face, and no system font stack is ever the visible face — both families are self-hosted variable fonts, and the stack after them is a fallback, not a design.",
+        "section": "typography"
+      },
+      {
+        "name": "The Balanced Heading Rule",
+        "body": "Headings carry text-wrap: balance and letter-spacing: -0.01em from the base layer; long subtitles carry text-balance at the call site. A heading is never manually line-broken except where the break is the composition itself.",
+        "section": "typography"
+      },
+      {
+        "name": "The 16px Input Rule",
+        "body": "Below 900px, input, select and textarea are forced to 16px. Anything smaller makes iOS zoom the viewport on focus. This is non-negotiable and lives in the base layer, not in components.",
+        "section": "typography"
+      },
+      {
+        "name": "The Six-Percent Gutter Rule",
+        "body": "Horizontal breathing room is always 6% of the viewport, never a fixed px value. It scales from a 390px phone to a 1440px desktop without a breakpoint.",
+        "section": "layout"
+      },
+      {
+        "name": "The 44px Touch Rule",
+        "body": "Every link, button and control reaches at least 44px of touch height, even when its text is 13px — achieved with min-h-11 plus padding and absorbed back visually with a negative margin, so the fix costs no layout. Any row anchored to the bottom of the viewport adds pb-[calc(2rem+env(safe-area-inset-bottom))]; without it, half of a 44px target falls under the iPhone home indicator and the target fix cancels itself.",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "A new surface starts with a hairline border on white. It earns a shadow only by being lifted above the page — an overlay, a floating object, or a physical mockup. Decorative elevation is not part of this system.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Ink-Tinted Shadow Rule",
+        "body": "Shadows are rgba(28,43,28,…) (or the brand equivalent for a green chip), with 0 horizontal offset and a blur at least twice the vertical offset. Pure black, hard offsets and multi-layer stacks are outside the vocabulary.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Three Radii Rule",
+        "body": "10 / 16 / 20px plus the pill. A new arbitrary radius is a bug unless it is a physical object — the only exception in the build is the phone frame's 3rem bezel, which is describing a real device.",
+        "section": "shapes"
+      },
+      {
+        "name": "The Inline-SVG Rule",
+        "body": "Icons, store logos and the QR are drawn as inline SVG paths inheriting currentColor. No icon font, no glyph character standing in for an icon, no icon package, no <img> for a mark that has to change color with its surface.",
+        "section": "shapes"
+      },
+      {
+        "name": "The Adapt-From-Outside Rule",
+        "body": "A shared primitive used by more than one surface is adapted by its consumer, never modified. StoreLinks is reshaped on the download route with arbitrary variants on the wrapper ([&>div]:justify-center, [&>div>a]:w-full, sm:[&>div>a]:w-auto) precisely because the home hero and closing band share it. Adapting from the outside keeps one implementation and zero regressions.",
+        "section": "components"
+      },
+      {
+        "name": "The Scoped Override Rule",
+        "body": "When one route needs a different value than the global token gives it, the override is scoped to that route — a wrapper variant, a route-level viewport export — and globals.css stays untouched. The global token is right for the ninety percent of the site that is white; the exception pays for itself locally.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do take every color from the @theme block in app/globals.css. A new color means a new token, and a new token means it is reused.",
+      "Do keep Workshop Green rare: CTAs, focus, the closing band, the isotype. Its scarcity is what makes it mean \"act here\".",
+      "Do send a full dark screen to Green-Black Ink (#1c2b1c, ~14.9:1 with white), not to brand green.",
+      "Do put Outfit on headings and DM Sans on anything read as a sentence.",
+      "Do use the three radii — 10 / 16 / 20px — plus the pill, and nothing else.",
+      "Do start a surface flat: a hairline line border on white.",
+      "Do ink-tint shadows (rgba(28,43,28,…)) with zero horizontal offset and a large blur, and only on things genuinely lifted off the page.",
+      "Do give every interactive target 44px of height and add pb-[calc(2rem+env(safe-area-inset-bottom))] to anything anchored to the bottom of the viewport.",
+      "Do draw icons, store glyphs and the QR as inline SVG paths inheriting currentColor.",
+      "Do adapt a shared primitive from the outside with wrapper variants rather than editing it for one caller.",
+      "Do scope a route-level exception to that route and leave globals.css alone.",
+      "Do pick the lockup by its ground: lockup-light.png on white, lockup-dark.png on ink, lockup-white.png on brand green."
+    ],
+    "donts": [
+      "Don't set body-sized copy on brand green #2a8c3a. White on it measures 4.28:1, under the 4.5:1 floor. Large display text and white badges are fine; paragraphs are not.",
+      "Don't put a standard lockup on a brand-green ground — its #20A020 isotype measures 1.24:1 there and the mark visibly splits.",
+      "Don't remove the global focus ring. If it contrasts poorly on a new ground, scope a different token for that ground (Meadow Green on ink), never outline: none.",
+      "Don't introduce a third typeface, and don't let a system font stack become the visible face — both families are self-hosted variable fonts.",
+      "Don't use a glyph character or an icon package where an inline SVG path belongs.",
+      "Don't use hard-offset or pure-black shadows, or stack multiple shadows on one element.",
+      "Don't invent a radius. If a value isn't 10, 16 or 20px or the pill, it needs a reason as strong as \"this is drawing a physical device\".",
+      "Don't edit a shared primitive to satisfy one page.",
+      "Don't change globals.css to fix a single route.",
+      "Don't set an input below 16px under 900px — iOS will zoom the viewport on focus.",
+      "Don't rely on position: sticky inside page content; overflow-x: hidden on html/body disables it.",
+      "Don't hardcode a store URL; it comes from siteConfig.stores."
+    ]
+  }
+}

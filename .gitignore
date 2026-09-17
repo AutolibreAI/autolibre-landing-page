@@ -54,3 +54,10 @@ next-env.d.ts
 
 # claude
 .mcp.json
+
+# impeccable — artefactos de sesion, no de proyecto.
+# Si van al repo: .impeccable/design.json y .impeccable/surfaces/
+.impeccable/config.local.json
+.impeccable/hook.cache.json
+.impeccable/questions/
+.impeccable/review/
