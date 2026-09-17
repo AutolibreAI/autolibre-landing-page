@@ -68,6 +68,29 @@
     outline-offset: 2px;
   }
 
+  /* NO BORRAR. Tailwind v4 sacó `cursor: pointer` de los botones en su
+     preflight: ahora respeta el default nativo del browser, que es
+     `cursor: default`. Sin esta regla TODO botón de la landing —el elemento
+     interactivo más usado del sitio— muestra la flechita en vez de la manito.
+     Va acá, en la base, y no como `cursor-pointer` suelto en cada componente:
+     una sola fuente de verdad en vez de parches.
+     Los `<a>` quedan AFUERA a propósito: el browser ya les da la manito cuando
+     tienen `href`, y meterlos acá se la daría también a los que no lo tienen.
+     OJO: los dos selectores `label:has(…)` de abajo no son confiables —el
+     compilador los saca de esta lista y los emite aparte, y en los browsers sin
+     soporte de `:has()` no aplican—, así que los labels grandes (choice.tsx,
+     service-family-picker, quote-flow) conservan su utility `cursor-pointer`
+     explícita a propósito: no la borres por "redundante". */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary,
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled),
+  label:has(> input[type="checkbox"]:not(:disabled)),
+  label:has(> input[type="radio"]:not(:disabled)) {
+    cursor: pointer;
+  }
+
   /* iOS hace zoom al enfocar un input de menos de 16px */
   @media (max-width: 900px) {
     input,

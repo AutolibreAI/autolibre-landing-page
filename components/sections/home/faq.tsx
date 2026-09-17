@@ -48,7 +48,7 @@ export function FaqSection() {
                 aria-controls={`faq-panel-${category.id}`}
                 onClick={() => setActiveId(category.id)}
                 className={cn(
-                  "cursor-pointer rounded-full px-5 py-2.5 text-sm font-semibold transition-colors",
+                  "rounded-full px-5 py-2.5 text-sm font-semibold transition-colors",
                   isActive
                     ? "bg-brand text-white"
                     : "bg-surface-muted text-ink hover:bg-surface-muted/70",
@@ -77,7 +77,7 @@ export function FaqSection() {
                 name={`faq-${category.id}`}
                 className="group overflow-hidden rounded-[0.875rem] border border-line"
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5 font-display text-base font-semibold text-ink">
+                <summary className="flex list-none items-center justify-between gap-4 px-6 py-5 font-display text-base font-semibold text-ink">
                   <span>{item.question}</span>
                   <span
                     aria-hidden="true"
