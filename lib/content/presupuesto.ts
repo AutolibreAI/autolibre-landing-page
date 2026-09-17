@@ -1,4 +1,17 @@
-/** Copy del hero de presupuesto y del modal de pedido. */
+import type { IconName } from "@/lib/content/types";
+
+/**
+ * Fila con ícono: la usan el rail de `/pedido` y la línea de tiempo del
+ * éxito. El `satisfies` es lo que hace fallar en compilación un ícono que
+ * no exista en `components/ui/icon.tsx`.
+ */
+type IconRow = {
+  readonly icon: IconName;
+  readonly title: string;
+  readonly body: string;
+};
+
+/** Copy del hero de presupuesto, del modal de pedido y de la página /pedido. */
 export const presupuestoContent = {
   hero: {
     eyebrow: "Gratis y sin compromiso",
@@ -78,6 +91,79 @@ export const presupuestoContent = {
       closeLabel: "Cerrar",
       whatsappFallback: "¿Preferís avisarnos por WhatsApp directamente?",
       whatsappLinkLabel: "Escribinos por WhatsApp",
+    },
+  },
+
+  /** Copy del progreso del flujo, compartido entre el modal y la página. */
+  flow: {
+    stepNames: ["Tu auto", "Tus datos", "Qué necesitás", "Confirmar"],
+    stepLabel: "Paso {step} de {total}",
+    nextLabel: "Después: {next}",
+  },
+
+  /** Landing dedicada `/pedido`: la que se comparte por WhatsApp. */
+  page: {
+    meta: {
+      title: "Pedí presupuesto para tu auto",
+      description:
+        "Contanos qué necesita tu auto y te responden talleres cerca tuyo. Gratis, sin compromiso, en un minuto.",
+    },
+    title: "Pedí presupuesto para tu auto.",
+    subtitle:
+      "Contanos qué necesita y te responden talleres cerca tuyo. Un minuto, sin vueltas.",
+    proof: [
+      {
+        icon: "car",
+        title: "Empezá con la patente",
+        body: "Con la patente ya sabemos marca, modelo y año. No tenés que buscar nada.",
+      },
+      {
+        icon: "pin",
+        title: "Talleres de tu zona",
+        body: "Le pasamos tu pedido solo a los talleres que trabajan cerca tuyo.",
+      },
+      {
+        icon: "bell",
+        title: "Respuesta en el día",
+        body: "Te escribimos por WhatsApp con las primeras respuestas.",
+      },
+    ] as const satisfies readonly IconRow[],
+    reassurance:
+      "Gratis y sin compromiso. Usamos tus datos solo para pasarle el pedido a los talleres.",
+    privacyLink: "Cómo cuidamos tus datos",
+    backHome: "Volver al inicio",
+  },
+
+  /** Éxito en `/pedido`: acá no hay modal que cerrar, hay página que seguir. */
+  successPage: {
+    title: "¡Listo! Tu pedido ya está en camino.",
+    description:
+      "Te escribimos por WhatsApp en el día con las primeras respuestas.",
+    timelineTitle: "Qué pasa ahora",
+    timeline: [
+      {
+        icon: "check",
+        title: "Recibido",
+        body: "Tu pedido ya quedó registrado.",
+      },
+      {
+        icon: "document",
+        title: "Lo vemos nosotros",
+        body: "Se lo pasamos a los talleres que trabajan en tu zona.",
+      },
+      {
+        icon: "bell",
+        title: "Te contactamos",
+        body: "Te escribimos por WhatsApp en el día.",
+      },
+    ] as const satisfies readonly IconRow[],
+    app: {
+      title: "Seguí tu pedido desde la app",
+      items: [
+        "Mirá las respuestas de los talleres en un solo lugar",
+        "Guardá documentación y vencimientos de tu auto",
+        "Diagnóstico con IA cuando algo suena raro",
+      ],
     },
   },
 } as const;
