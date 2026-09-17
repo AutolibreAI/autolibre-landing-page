@@ -17,6 +17,12 @@ const routes = [
     priority: 1,
   },
   {
+    path: "/descarga",
+    lastModified: "2026-09-17",
+    changeFrequency: "monthly",
+    priority: 0.9,
+  },
+  {
     path: "/pedido",
     lastModified: "2026-09-17",
     changeFrequency: "monthly",
