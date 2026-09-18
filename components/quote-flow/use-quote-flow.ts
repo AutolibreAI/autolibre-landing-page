@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { presupuestoContent } from "@/lib/content/presupuesto";
 import { EMAIL_REGEX } from "@/lib/validation";
 import { siteConfig } from "@/lib/seo/config";
+import type { VehicleLookupSnapshot } from "@/lib/vehicle-lookup";
 
 type GoogleAddressComponent = {
   long_name: string;
@@ -75,7 +76,10 @@ export function findAddressComponent(
   components: GoogleAddressComponent[] | undefined,
   type: string,
 ): string | null {
-  return components?.find((component) => component.types.includes(type))?.long_name ?? null;
+  return (
+    components?.find((component) => component.types.includes(type))
+      ?.long_name ?? null
+  );
 }
 
 export const PLATE_PATTERNS: readonly RegExp[] = [
@@ -90,7 +94,10 @@ export function isValidPlate(value: string): boolean {
 }
 
 export function normalizePlateInput(raw: string): string {
-  return raw.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 7);
+  return raw
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 7);
 }
 
 export function whatsappDigitCount(raw: string): number {
@@ -104,7 +111,8 @@ export function whatsappDigitCount(raw: string): number {
  * un link propio con el mismo número pero un mensaje que tiene sentido acá.
  * wa.me solo acepta dígitos: sin `+`, sin espacios y sin guiones.
  */
-const PRESUPUESTO_WHATSAPP_TEXT = "¡Hola! Hice un pedido de presupuesto en la web de AutoLibre.";
+const PRESUPUESTO_WHATSAPP_TEXT =
+  "¡Hola! Hice un pedido de presupuesto en la web de AutoLibre.";
 export const PRESUPUESTO_WHATSAPP_URL = `https://wa.me/${siteConfig.contact.phoneE164.replace(/\D/g, "")}?text=${encodeURIComponent(PRESUPUESTO_WHATSAPP_TEXT)}`;
 
 export const TOTAL_STEPS = 4;
@@ -114,7 +122,14 @@ export type LookupState =
   | { kind: "idle" }
   | { kind: "loading" }
   | { kind: "searching" }
-  | { kind: "found"; brand: string; model: string; year: number | null }
+  | {
+      kind: "found";
+      brand: string;
+      model: string;
+      year: number | null;
+      /** Viaja con el pedido; null si la route no lo mandó. */
+      snapshot: VehicleLookupSnapshot | null;
+    }
   | { kind: "not_found" }
   | { kind: "unavailable" };
 
@@ -210,7 +225,9 @@ export function useQuoteFlow(options?: {
 
   // En un ref y no en estado: la atribución no pinta nada, no tiene que
   // provocar un render, y tiene que sobrevivir a un `reset()`.
-  const attributionRef = useRef<QuoteFlowAttribution>(options?.attribution ?? {});
+  const attributionRef = useRef<QuoteFlowAttribution>(
+    options?.attribution ?? {},
+  );
   const attribution = options?.attribution;
   useEffect(() => {
     if (attribution) attributionRef.current = attribution;
@@ -308,6 +325,7 @@ export function useQuoteFlow(options?: {
           brand: data.brand,
           model: data.model,
           year: data.year ?? null,
+          snapshot: data.snapshot ?? null,
         });
         return;
       }
@@ -347,6 +365,13 @@ export function useQuoteFlow(options?: {
           province: geo.province,
           contactEmail: email || undefined,
           consent,
+          // Solo con el auto confirmado: `rejectVehicle` y editar la patente
+          // devuelven el lookup a `idle`, y con not_found / unavailable /
+          // searching el pedido entra igual, sin este campo.
+          vehicleLookup:
+            lookup.kind === "found"
+              ? (lookup.snapshot ?? undefined)
+              : undefined,
           // TODO(attribution): los UTMs viajan en `attributionRef.current` y están listos para
           // mandarse acá. Bloqueado: el DTO del backend usa forbidNonWhitelisted, así que un campo
           // desconocido devuelve 400. Requiere agregar el campo en
@@ -360,7 +385,10 @@ export function useQuoteFlow(options?: {
     } catch (error) {
       setSubmitState({
         kind: "error",
-        message: error instanceof Error && error.message ? error.message : copy.genericError,
+        message:
+          error instanceof Error && error.message
+            ? error.message
+            : copy.genericError,
       });
     }
   }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { VEHICLE_LOOKUP_LIMITS, type VehicleLookupSnapshot } from "@/lib/vehicle-lookup";
 
 const PLATE_PATTERNS: readonly RegExp[] = [
   /^[A-Z]{3}\d{3}$/,
@@ -68,12 +69,69 @@ function buildLocation(
   };
 }
 
+function boundedOrNull(raw: unknown, max: number): string | null {
+  const value = trimmedOrNull(raw);
+  return value !== null && value.length <= max ? value : null;
+}
+
+/**
+ * Rearma el snapshot de clasific.ar campo por campo. Llega del browser, así
+ * que es dato del cliente: se reconstruye con solo los campos que el DTO del
+ * backend declara (un campo de más daría 400 por `forbidNonWhitelisted`) y con
+ * sus mismos límites.
+ *
+ * Ante cualquier cosa rara devuelve `undefined` y el pedido viaja sin el
+ * campo: es opcional, y un lookup malformado nunca puede hacer fallar un alta
+ * que sin él entraba. Lo mismo si la patente consultada no es la del pedido.
+ */
+function buildVehicleLookup(raw: unknown, plate: string): VehicleLookupSnapshot | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const snapshot = raw as Record<string, unknown>;
+
+  if (canonicalPlate(snapshot.queriedPlate) !== plate) return undefined;
+
+  const make = boundedOrNull(snapshot.make, VEHICLE_LOOKUP_LIMITS.make);
+  const model = boundedOrNull(snapshot.model, VEHICLE_LOOKUP_LIMITS.model);
+  if (!make || !model) return undefined;
+
+  const fetchedAtMs =
+    typeof snapshot.fetchedAt === "string" ? Date.parse(snapshot.fetchedAt) : Number.NaN;
+  if (Number.isNaN(fetchedAtMs)) return undefined;
+
+  const year =
+    Number.isInteger(snapshot.year) &&
+    (snapshot.year as number) >= VEHICLE_LOOKUP_LIMITS.minYear &&
+    (snapshot.year as number) <= VEHICLE_LOOKUP_LIMITS.maxYear
+      ? (snapshot.year as number)
+      : null;
+
+  let currentLocation: VehicleLookupSnapshot["currentLocation"] = null;
+  if (snapshot.currentLocation && typeof snapshot.currentLocation === "object") {
+    const { city, province } = snapshot.currentLocation as Record<string, unknown>;
+    const location = {
+      city: boundedOrNull(city, VEHICLE_LOOKUP_LIMITS.locationArea),
+      province: boundedOrNull(province, VEHICLE_LOOKUP_LIMITS.locationArea),
+    };
+    currentLocation = location.city || location.province ? location : null;
+  }
+
+  return {
+    queriedPlate: plate,
+    fetchedAt: new Date(fetchedAtMs).toISOString(),
+    make,
+    model,
+    year,
+    currentLocation,
+  };
+}
+
 /**
  * Registra el pedido en `autolibre-backend-hex` vía su endpoint público
  * `POST /api/v1/quote-requests` (canal "web", sin auth — pensado para esto,
  * ver autolibre-ddl-ddd.md). No mandamos `vehicleId`: ese campo espera un
  * `vehicles.id` de una cuenta logueada, no el resultado anónimo del lookup
- * de /api/vehicle-lookup.
+ * de /api/vehicle-lookup. Ese resultado viaja aparte, como `vehicleLookup`
+ * (ver `buildVehicleLookup`), y el backend lo deja en `raw_submission`.
  */
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -88,6 +146,7 @@ export async function POST(req: NextRequest) {
     province,
     contactEmail,
     consent,
+    vehicleLookup: rawVehicleLookup,
   } = body;
 
   const plate = canonicalPlate(rawPlate);
@@ -123,6 +182,7 @@ export async function POST(req: NextRequest) {
   }
 
   const trimmedEmail = typeof contactEmail === "string" ? contactEmail.trim() : "";
+  const vehicleLookup = buildVehicleLookup(rawVehicleLookup, plate);
 
   try {
     const response = await fetch(`${apiUrl}/api/v1/quote-requests`, {
@@ -135,6 +195,7 @@ export async function POST(req: NextRequest) {
         contactPhone: String(contactPhone).trim(),
         location: buildLocation(trimmedAddress, latitude, longitude, locality, province),
         ...(trimmedEmail ? { contactEmail: trimmedEmail } : {}),
+        ...(vehicleLookup ? { vehicleLookup } : {}),
       }),
     });
 

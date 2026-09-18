@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { VehicleLookupSnapshot } from "@/lib/vehicle-lookup";
 
 /**
  * Mismos 4 patrones que `Plate` en autolibre-backend-hex
@@ -27,8 +28,28 @@ function identifiesVehicle(make: unknown, model: unknown): boolean {
   return !PLACEHOLDER_VALUES.has(make.toUpperCase()) && !PLACEHOLDER_VALUES.has(model.toUpperCase());
 }
 
+function trimmedOrNull(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  return trimmed === "" ? null : trimmed;
+}
+
+function locationOf(raw: unknown): VehicleLookupSnapshot["currentLocation"] {
+  if (!raw || typeof raw !== "object") return null;
+  const { city, province } = raw as Record<string, unknown>;
+  const location = { city: trimmedOrNull(city), province: trimmedOrNull(province) };
+  return location.city || location.province ? location : null;
+}
+
 type LookupResponse =
-  | { found: true; brand: string; model: string; year: number | null }
+  | {
+      found: true;
+      brand: string;
+      model: string;
+      year: number | null;
+      /** Lo que el pedido guarda del lookup (ver lib/vehicle-lookup.ts). */
+      snapshot: VehicleLookupSnapshot;
+    }
   | { found: false; searching?: true }
   | { found: false; error: "unavailable" };
 
@@ -90,11 +111,22 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(body);
     }
 
+    const year = typeof data.year === "number" ? data.year : null;
     const body: LookupResponse = {
       found: true,
       brand: data.make,
       model: data.model,
-      year: typeof data.year === "number" ? data.year : null,
+      year,
+      // `fetchedAt` se fija acá y viaja dentro de la cache: un hit de hasta
+      // 5 min después devuelve la hora real de la consulta, no la del hit.
+      snapshot: {
+        queriedPlate: plate,
+        fetchedAt: new Date().toISOString(),
+        make: data.make,
+        model: data.model,
+        year,
+        currentLocation: locationOf(data.currentLocation),
+      },
     };
     cache.set(plate, { expiresAt: Date.now() + CACHE_TTL_MS, body });
     return NextResponse.json(body);
