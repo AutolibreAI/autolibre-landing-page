@@ -17,6 +17,9 @@ import {
   whatsappDigitCount,
   type QuoteFlowAttribution,
 } from "./use-quote-flow";
+// Estilos del dropdown de Google Places. Es CSS global y no un Module
+// porque Google cuelga el listbox de <body>, fuera del arbol de React.
+import "./places-autocomplete.css";
 
 const copy = presupuestoContent.modal;
 

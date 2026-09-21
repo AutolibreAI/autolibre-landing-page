@@ -1,0 +1,117 @@
+/* ============================================================
+   Autocomplete de Google Places — el dropdown de sugerencias
+
+   Por que este CSS es global y no un CSS Module: Google cuelga el
+   listbox de <body>, no del input (ver el cleanup de `.pac-container`
+   en use-quote-flow.ts). No esta en el arbol de React, asi que no hay
+   donde poner una clase hasheada ni una utility de Tailwind.
+
+   Por que vive aca y no en globals.css: es el estilo de un componente
+   y globals.css dice explicitamente que ahi no van. Global en alcance,
+   local en ubicacion — lo importa quote-flow.tsx.
+
+   Las clases (`.pac-*`) las define Google y son lo unico estilable:
+   el markup y su estructura no se tocan.
+
+   OJO: la atribucion "Powered by Google" (`.pac-logo::after`) NO se
+   oculta. Es requisito de la politica de Places, no un detalle
+   estetico: si se esconde hay que mostrarla en otro lado.
+   ============================================================ */
+
+.pac-container {
+  /* Google ya usa 1000 por default; se fija explicito porque el modal
+     del flujo es un portal con z-50 y el dropdown TIENE que quedar
+     arriba. Si el modal sube de z-index, esto tiene que subir tambien. */
+  z-index: 1000;
+
+  margin-top: 0.25rem;
+  padding: 0.25rem 0;
+  border: 1px solid var(--color-line);
+  /* Mismo radio que los inputs: el dropdown cuelga pegado al campo y
+     con otro radio se leen como dos piezas distintas. */
+  border-radius: var(--radius-field);
+  background-color: var(--color-surface);
+  box-shadow:
+    0 4px 6px -2px rgb(28 43 28 / 0.05),
+    0 12px 24px -6px rgb(28 43 28 / 0.12);
+  font-family: var(--font-sans);
+}
+
+/* Google dibuja un separador arriba de todo que, con borde propio,
+   queda como una linea suelta bajo el borde del contenedor. */
+.pac-container::before {
+  display: none;
+}
+
+.pac-item {
+  padding: 0.5rem 0.875rem;
+  border-top: none;
+  color: color-mix(in srgb, var(--color-ink) 65%, transparent);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  /* El preflight de Tailwind v4 deja los elementos sin cursor y Google
+     pone `default`: sin esto, una opcion clickeable no se ve clickeable. */
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+/* `:hover` para el mouse y `.pac-item-selected` para las flechas del
+   teclado: las dos formas de recorrer la lista se ven igual. */
+.pac-item:hover,
+.pac-item-selected,
+.pac-item-selected:hover {
+  background-color: var(--color-surface-muted);
+}
+
+/* El texto principal de la sugerencia ("Tigre"). El resto de la linea
+   es el contexto ("Provincia de Buenos Aires") y hereda el color
+   atenuado de `.pac-item`. */
+.pac-item-query {
+  color: var(--color-ink);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+/* Lo que matchea con lo tipeado. En verde de marca se ve al toque que
+   la lista responde a lo que la persona esta escribiendo. */
+.pac-matched {
+  color: var(--color-brand);
+  font-weight: 700;
+}
+
+/* El pin de la izquierda. Google lo pinta con un sprite suyo, que no
+   acepta color. Se reemplaza por una mascara: asi la forma es nuestra
+   y el COLOR sigue saliendo del token, que es la regla de globals.css
+   (un data-URI con el color adentro se desincroniza en silencio el dia
+   que cambie la marca). */
+.pac-icon,
+.hdpi .pac-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0;
+  margin-right: 0.5rem;
+  vertical-align: -0.2em;
+  background-image: none;
+  background-color: var(--color-brand-soft);
+  -webkit-mask-image: var(--pac-pin-mask);
+  mask-image: var(--pac-pin-mask);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.pac-container {
+  --pac-pin-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22%23000%22%20fill-rule%3D%22evenodd%22%20clip-rule%3D%22evenodd%22%20d%3D%22M12%202a7%207%200%200%200-7%207c0%205.25%207%2012%207%2012s7-6.75%207-12a7%207%200%200%200-7-7Zm0%209.5a2.5%202.5%200%201%201%200-5%202.5%202.5%200%200%201%200%205Z%22%2F%3E%3C%2Fsvg%3E");
+}
+
+/* La atribucion de Google: se separa del ultimo item con una linea
+   propia para que no quede pegada, pero se muestra siempre. */
+.pac-logo::after {
+  margin-top: 0.25rem;
+  padding: 0.5rem 0.875rem;
+  border-top: 1px solid var(--color-line);
+  background-position: right 0.875rem center;
+}
