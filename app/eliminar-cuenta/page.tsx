@@ -40,7 +40,7 @@ export default function EliminarCuentaPage() {
       <PageShell>
         <Section tone="muted" spacing="md">
           <Container>
-            <div className="mx-auto grid max-w-[1000px] items-start gap-12 lg:grid-cols-2">
+            <div className="mx-auto grid max-w-250 items-start gap-12 lg:grid-cols-2">
               <div>
                 <h1 className="font-display text-[2rem] font-bold text-ink md:text-[2.375rem]">
                   {accountDeletionCopy.title}
