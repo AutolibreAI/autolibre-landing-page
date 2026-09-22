@@ -12,6 +12,21 @@ export const siteContent = {
     ] satisfies readonly NavLink[],
     providerLink: { label: "Soy proveedor", href: "/proveedores" },
     cta: { label: "Descargar la app", href: "/#descargar" },
+    /**
+     * Destino del CTA de descarga según la plataforma (ver `DownloadCta`).
+     * El texto visible es el mismo `cta.label`; el `ariaLabel` lo arranca
+     * igual (WCAG 2.5.3) y suma la tienda, porque el link sale del sitio.
+     */
+    downloadTargets: {
+      ios: {
+        href: siteConfig.stores.appStore,
+        ariaLabel: "Descargar la app en el App Store",
+      },
+      android: {
+        href: siteConfig.stores.playStore,
+        ariaLabel: "Descargar la app en Google Play",
+      },
+    },
   },
 
   /**

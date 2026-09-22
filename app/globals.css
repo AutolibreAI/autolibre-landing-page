@@ -115,6 +115,16 @@
   --radius-panel: 1.25rem; /* 20px — paneles grandes */
 }
 
+/* ── Plataforma del visitante ──
+   El script inline del `<head>` (app/layout.tsx) marca `<html>` con
+   `data-platform="ios" | "android" | "web"` antes del primer paint. Estas
+   variantes dejan que el CSS elija qué CTA de descarga mostrar sin hidratar
+   nada: el HTML es el mismo para todos. Sin atributo (sin JS) o con "web" no
+   matchea ninguna y queda el estado por defecto. `:where` no suma
+   especificidad, así que pisan igual que cualquier variante. */
+@custom-variant platform-ios (&:where([data-platform="ios"] *));
+@custom-variant platform-android (&:where([data-platform="android"] *));
+
 /* ── Entrada al scrollear ──
    La animación la dispara `revealScript` (app/layout.tsx): un
    IntersectionObserver que, cuando un elemento entra en pantalla, reproduce

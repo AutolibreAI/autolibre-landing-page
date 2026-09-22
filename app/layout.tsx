@@ -57,6 +57,18 @@ export const viewport: Viewport = {
 };
 
 /**
+ * Marca `<html>` con `data-platform` para que el CSS elija el destino del
+ * CTA de descarga (ver `DownloadCta` y las `@custom-variant platform-*` de
+ * `globals.css`). iPadOS se reporta como "Macintosh": lo delata el touch.
+ *
+ * Va como `<script>` plano en el `<head>` y NO con `next/script`
+ * `beforeInteractive`: en el App Router ese inline se encola en
+ * `self.__next_s` y lo corre el loader de Next, o sea después del primer
+ * paint, y el CTA parpadearía. Éste bloquea el parseo, pero son unos bytes.
+ */
+const platformScript = `try{var u=navigator.userAgent,p=/iPhone|iPad|iPod/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1)?"ios":/Android/.test(u)?"android":"web";document.documentElement.dataset.platform=p}catch(e){}`;
+
+/**
  * Entrada al scrollear (`reveal`, `reveal-group` en `globals.css`). Cuando un
  * elemento entra en pantalla, sube 1.5rem y aparece en 0,7s, escalonado por
  * `--reveal-step` (90ms por paso). Se dispara UNA vez, scrollees rápido o
@@ -96,7 +108,12 @@ export default function RootLayout({
        * atributo, cada cambio de página haría un scroll animado hasta arriba.
        */
       data-scroll-behavior="smooth"
+      /* El script de plataforma escribe `data-platform` antes de hidratar. */
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: platformScript }} />
+      </head>
       <body className="min-h-dvh bg-surface text-ink">
         {children}
         <script dangerouslySetInnerHTML={{ __html: revealScript }} />

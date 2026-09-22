@@ -4,19 +4,27 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/button";
+import { DownloadCta } from "@/components/ui/download-cta";
 import type { NavLink } from "@/lib/content/types";
 
 type MobileNavProps = {
   readonly links: readonly NavLink[];
   readonly secondary: NavLink;
   readonly cta: NavLink;
+  /** Si es el CTA de descarga, apunta a la tienda según la plataforma. */
+  readonly isDownloadCta?: boolean;
 };
 
 /**
  * Menú desplegable para pantallas chicas. Única parte del header que se
  * hidrata: todo lo demás es HTML estático.
  */
-export function MobileNav({ links, secondary, cta }: MobileNavProps) {
+export function MobileNav({
+  links,
+  secondary,
+  cta,
+  isDownloadCta = false,
+}: MobileNavProps) {
   // El cierre al navegar lo maneja el `onClick` de cada enlace, no un
   // efecto sobre `pathname`: así no hay render en cascada al cambiar de ruta.
   const [open, setOpen] = useState(false);
@@ -124,15 +132,24 @@ export function MobileNav({ links, secondary, cta }: MobileNavProps) {
                   links de navegación a propósito: el CTA es la conversión de
                   la landing, no puede pesar visualmente menos que "FAQ".
                 */}
-                <ButtonLink
-                  href={cta.href}
-                  size="lg"
-                  block
-                  onClick={() => setOpen(false)}
-                  className="text-xl"
-                >
-                  {cta.label}
-                </ButtonLink>
+                {isDownloadCta ? (
+                  <DownloadCta
+                    size="lg"
+                    block
+                    onClick={() => setOpen(false)}
+                    linkClassName="text-xl"
+                  />
+                ) : (
+                  <ButtonLink
+                    href={cta.href}
+                    size="lg"
+                    block
+                    onClick={() => setOpen(false)}
+                    className="text-xl"
+                  >
+                    {cta.label}
+                  </ButtonLink>
+                )}
               </div>
             </div>,
             document.body,

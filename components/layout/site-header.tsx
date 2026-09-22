@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/button";
+import { DownloadCta } from "@/components/ui/download-cta";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { siteContent } from "@/lib/content/site";
 import type { NavLink } from "@/lib/content/types";
@@ -26,6 +27,12 @@ export function SiteHeader({
   cta = siteContent.nav.cta,
 }: SiteHeaderProps) {
   const links = showSectionLinks ? siteContent.nav.links : [];
+  /**
+   * Sólo el CTA de descarga cambia de destino según la plataforma. Las
+   * páginas que pisan `cta` con otra acción (p. ej. /proveedores) quedan
+   * con su link tal cual.
+   */
+  const isDownloadCta = cta.href === siteContent.nav.cta.href;
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-surface/92 backdrop-blur-md">
@@ -69,10 +76,19 @@ export function SiteHeader({
           >
             {secondary.label}
           </Link>
-          <ButtonLink href={cta.href} className="hidden sm:inline-flex">
-            {cta.label}
-          </ButtonLink>
-          <MobileNav links={links} secondary={secondary} cta={cta} />
+          {isDownloadCta ? (
+            <DownloadCta className="hidden sm:contents" />
+          ) : (
+            <ButtonLink href={cta.href} className="hidden sm:inline-flex">
+              {cta.label}
+            </ButtonLink>
+          )}
+          <MobileNav
+            links={links}
+            secondary={secondary}
+            cta={cta}
+            isDownloadCta={isDownloadCta}
+          />
           </div>
         </div>
       </div>
