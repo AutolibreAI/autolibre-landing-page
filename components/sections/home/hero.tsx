@@ -27,6 +27,8 @@ function stepDelay(index: number, total: number, cycle: number) {
  *   del server (indexables); los lectores de pantalla leen `wordsSrText`.
  * - Un solo fondo `surface-muted` para todo el hero. El teléfono cicla sus
  *   pantallas por su cuenta, sin relación con las palabras.
+ * - Único adorno: una ruta punteada que termina en un pin junto al
+ *   teléfono (desde `xl`, estática).
  * - `prefers-reduced-motion`: nada se mueve; quedan la primera palabra y la
  *   primera pantalla fijas.
  * - Sin control de pausa por decisión de producto (2026-09-22). Ojo: WCAG
@@ -52,7 +54,37 @@ export function HeroSection() {
       aria-labelledby="hero-title"
       className="bg-surface-muted"
     >
-      <Container size="wide">
+      <Container size="wide" className="relative isolate">
+        {/* Ruta con pin (desde `xl`: entre 1024 y 1279px el 60% cae detrás
+            del teléfono y el pin quedaba tapado). Una línea punteada que pasa POR
+            DEBAJO del bloque de texto — nunca cruza lo que hay que leer —,
+            sube por el espacio entre columnas y termina en un pin junto al
+            teléfono. El SVG se estira con el layout (`preserveAspectRatio
+            none`) y `non-scaling-stroke` mantiene los puntos del mismo
+            tamaño en cualquier ancho. El pin es HTML, ubicado en el mismo
+            punto donde termina la ruta (60%, 80%): así no se deforma. */}
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          className="absolute inset-0 -z-10 hidden size-full overflow-visible xl:block"
+        >
+          <path
+            d="M-6 96C18 99 38 100 48 92C53 88 56 82 60 80"
+            fill="none"
+            vectorEffect="non-scaling-stroke"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeDasharray="0.5 9"
+            className="stroke-brand/60"
+          />
+        </svg>
+        <span
+          aria-hidden="true"
+          className="absolute top-4/5 left-3/5 -z-10 hidden size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand ring-6 ring-brand/15 xl:block"
+        />
+
         <div className="grid items-center gap-12 py-16 md:py-20 lg:grid-cols-2 lg:gap-16 lg:py-24">
           <div>
             <SectionHeading
@@ -74,7 +106,7 @@ export function HeroSection() {
                 celda y suben con un rebote; `overflow-hidden` es la máscara
                 que las hace aparecer desde "adentro" del renglón. El `pb-2`
                 deja lugar a los descendentes (la g de "Seguros"). */}
-            <p className="font-display text-display-xs font-bold text-brand xs:text-display-sm sm:text-display-md lg:text-display-lg">
+            <p className="font-display text-display-xs font-bold text-brand xs:text-display-sm sm:text-display-md xl:text-display-lg">
               <span className="sr-only">{wordsSrText}</span>
               <span aria-hidden="true" className="grid overflow-hidden pb-2">
                 {words.map((word, index) => (

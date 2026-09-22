@@ -9,7 +9,7 @@ export function MarketplaceSection() {
 
   return (
     <Section id="marketplace" tone="muted" aria-labelledby="marketplace-title">
-      <Container>
+      <Container className="reveal-group">
         <div className="mx-auto mb-16 max-w-[780px] text-center">
           <h2
             id="marketplace-title"

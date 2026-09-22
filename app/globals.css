@@ -115,6 +115,43 @@
   --radius-panel: 1.25rem; /* 20px — paneles grandes */
 }
 
+/* ── Entrada al scrollear ──
+   La animación la dispara `revealScript` (app/layout.tsx): un
+   IntersectionObserver que, cuando un elemento entra en pantalla, reproduce
+   una Web Animation (sube 1.5rem y aparece). Acá solo viven los MARCADORES:
+   - `reveal`: clase marcador, sin CSS propio. El script la busca.
+   - `reveal-group`: en el contenedor de una sección; cada hijo DIRECTO entra.
+   - `reveal-stagger`: numera a los hijos (`--reveal-step`) para escalonar.
+   Sin JS, sin IntersectionObserver o con `prefers-reduced-motion` no pasa
+   nada y todo se ve normal: el CSS nunca oculta contenido.
+   NO usar en el hero: es el LCP. No anidar `reveal-group` con un `reveal`
+   en un hijo directo: se animaría dos veces. */
+
+/* `reveal-stagger` en el padre: numera a los hijos para que sus `reveal`
+   (propios o de un descendiente: la variable se hereda) entren escalonados.
+   El script convierte cada paso en 90ms de delay. */
+@utility reveal-stagger {
+  & > :nth-child(2) {
+    --reveal-step: 1;
+  }
+  & > :nth-child(3) {
+    --reveal-step: 2;
+  }
+  & > :nth-child(4) {
+    --reveal-step: 3;
+  }
+  & > :nth-child(5) {
+    --reveal-step: 4;
+  }
+  & > :nth-child(n + 6) {
+    --reveal-step: 5;
+  }
+}
+
+@utility reveal-group {
+  @apply reveal-stagger;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -130,7 +167,14 @@
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
+    /* `clip` y NO `hidden`: `hidden` convierte al body en contenedor de
+       scroll (aunque nunca scrollee: scrollea el viewport), y eso rompe todo
+       lo que se ata al scroll del documento — `animation-timeline: view()`
+       y `position: sticky`.
+       `clip` recorta igual sin crear contenedor. El arrastre horizontal en
+       mobile lo sigue frenando el `overflow-x: hidden` de `html`, que al ser
+       el elemento raíz se aplica al viewport. */
+    overflow-x: clip;
   }
 
   h1,

@@ -21,8 +21,10 @@ const sizes = {
   sm: "text-[1.75rem] leading-[1.15] md:text-[2.125rem]",
   md: "text-[2rem] leading-[1.15] md:text-[2.375rem]",
   lg: "text-[2.25rem] leading-[1.15] md:text-[2.875rem]",
+  // `display-lg` recién desde `xl`: entre 1024 y 1279px la columna del hero
+  // mide ~418px y "en un solo lugar." a 64px (456px) se partía en 3 líneas.
   display:
-    "text-display-xs xs:text-display-sm sm:text-display-md lg:text-display-lg",
+    "text-display-xs xs:text-display-sm sm:text-display-md xl:text-display-lg",
 } as const;
 
 /**

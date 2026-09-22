@@ -266,9 +266,14 @@ set their own paddings by hand.
 hairline bottom border. `html` carries `scroll-padding-top: 5rem` so an anchor
 jump never lands under it.
 
-**Overflow.** `html` and `body` both carry `overflow-x: hidden` as a safety net
-against horizontal drag on mobile. Consequence worth knowing: `position: sticky`
-does not work inside the app because of it.
+**Overflow.** `html` carries `overflow-x: hidden` (as the root, it applies to
+the viewport) as the safety net against horizontal drag on mobile; `body`
+carries `overflow-x: clip` (2026-09-22), which clips without becoming a scroll
+container. With `hidden` on `body`, the body turned into a never-scrolling
+scrollport and broke everything tied to document scroll: `position: sticky` and
+`animation-timeline: view()`. Same rule inside components: to round-clip a
+container that holds a `reveal` or a sticky child, use `overflow-clip`, never
+`overflow-hidden`.
 
 ### Named Rules
 
@@ -321,11 +326,26 @@ expressive moment of the page, and it stays geometric: one continuous
 size, in brand green — a word (VTV, Multas, Seguros…) that rises from below
 with a small bounce and exits upward, masked by its own line. Next to it, real
 app screens cross-fade inside a CSS `PhoneFrame` on their own cycle, not synced
-to the words. No blobs, waves, halos or gradients — organic shapes read
+to the words. Its only static ornament (from `xl`) is a thin dotted route in
+`brand/60` that runs under the text block and ends in a location pin beside
+the phone — "we take you to what you need, near you". No blobs, waves, halos
+or gradients — organic shapes read
 playful, and this brand sells trust. Motion is CSS only (`transform` and
 `opacity`, compositor-friendly) and honors `prefers-reduced-motion`; there is
 no pause control by product decision (note: WCAG 2.2.2 asks for one on
 autoplay over 5s). No other section adds autoplay motion or decorative shapes.
+The only other motion (2026-09-22, product decision): every home section below
+the hero reveals as you scroll — each element rises 1.5rem and fades in over
+0.7s, once, staggered 90ms by sibling. It is triggered by `revealScript` in
+`app/layout.tsx` (an inline IntersectionObserver + Web Animations API, no
+React, no hydration) on elements marked with `reveal` or as direct children of
+`reveal-group`; `reveal-stagger` numbers siblings (`--reveal-step`). The CSS
+never hides anything: without JS, without IntersectionObserver or with
+`prefers-reduced-motion`, everything simply shows. Never on the hero, never on
+what is on screen at load, never on unrendered (`display: none`) content.
+Don't nest `reveal-group` with a `reveal` child: it would animate twice.
+(A first, CSS-only version tied to `animation-timeline: view()` was dropped:
+scrubbing with the scroll read as "nothing happens" and Firefox lacks it.)
 
 **The Ink-Tinted Shadow Rule.** Shadows are `rgba(28,43,28,…)` (or the brand
 equivalent for a green chip), with `0` horizontal offset and a blur at least
@@ -529,6 +549,6 @@ pays for itself locally.
 - **Don't** change `globals.css` to fix a single route.
 - **Don't** set an input below 16px under 900px — iOS will zoom the viewport on
   focus.
-- **Don't** rely on `position: sticky` inside page content; `overflow-x: hidden`
-  on `html`/`body` disables it.
+- **Don't** put `overflow-hidden` on an ancestor of a sticky element or a
+  `reveal`; use `overflow-clip` (it clips without creating a scroll container).
 - **Don't** hardcode a store URL; it comes from `siteConfig.stores`.

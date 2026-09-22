@@ -56,6 +56,33 @@ export const viewport: Viewport = {
   colorScheme: "light",
 };
 
+/**
+ * Entrada al scrollear (`reveal`, `reveal-group` en `globals.css`). Cuando un
+ * elemento entra en pantalla, sube 1.5rem y aparece en 0,7s, escalonado por
+ * `--reveal-step` (90ms por paso). Se dispara UNA vez, scrollees rápido o
+ * lento.
+ *
+ * - Web Animations API y NO clases/atributos: no toca el DOM que renderizó
+ *   React, así que no hay mismatch de hidratación. La animación arranca
+ *   pausada en su primer frame (oculto) y se reproduce al entrar; al terminar
+ *   se cancela para devolverle el control al CSS (hovers, transforms).
+ * - Nunca oculta lo que ya está en pantalla al correr: sin parpadeo, sin
+ *   costo de LCP. Tampoco lo que no se renderiza (`display: none`, p. ej.
+ *   las pestañas inactivas del FAQ): nunca "entraría" en pantalla y al
+ *   mostrarse quedaría invisible.
+ * - Sin JS, sin IntersectionObserver o con `prefers-reduced-motion`: no hace
+ *   nada y todo se ve normal. El HTML (y el SEO) es el mismo.
+ * - `MutationObserver`: toma también lo que React monta al navegar.
+ * - `rootMargin` con 100000px ARRIBA: todo lo que ya quedó por encima de la
+ *   pantalla cuenta como "entrado". Sin eso, un scroll rápido (o un salto a
+ *   `#faq`) pasa de largo sobre elementos que nunca intersectan y quedarían
+ *   ocultos al volver a subir.
+ *
+ * Va como `<script>` inline al final del `<body>` y NO con `next/script`:
+ * corre apenas se parsea el contenido, antes de hidratar.
+ */
+const revealScript = `(function(){try{if(!("IntersectionObserver"in window)||!Element.prototype.animate||matchMedia("(prefers-reduced-motion: reduce)").matches)return;var seen=new WeakSet(),anims=new WeakMap(),frames=[{opacity:0,transform:"translateY(1.5rem)"},{opacity:1,transform:"none"}];var io=new IntersectionObserver(function(es){es.forEach(function(e){if(!e.isIntersecting)return;io.unobserve(e.target);var a=anims.get(e.target);if(a)a.play()})},{rootMargin:"100000px 0px -10% 0px"});function scan(){document.querySelectorAll(".reveal,.reveal-group>*").forEach(function(el){if(seen.has(el))return;seen.add(el);if(!el.getClientRects().length)return;var r=el.getBoundingClientRect();if(r.top<innerHeight&&r.bottom>0)return;var step=parseFloat(getComputedStyle(el).getPropertyValue("--reveal-step"))||0;var a=el.animate(frames,{duration:700,delay:step*90,easing:"cubic-bezier(0.22,1,0.36,1)",fill:"both"});a.pause();a.onfinish=function(){a.cancel()};anims.set(el,a);io.observe(el)})}scan();var t;new MutationObserver(function(){cancelAnimationFrame(t);t=requestAnimationFrame(scan)}).observe(document.body,{childList:true,subtree:true})}catch(e){}})()`;
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -70,7 +97,10 @@ export default function RootLayout({
        */
       data-scroll-behavior="smooth"
     >
-      <body className="min-h-dvh bg-surface text-ink">{children}</body>
+      <body className="min-h-dvh bg-surface text-ink">
+        {children}
+        <script dangerouslySetInnerHTML={{ __html: revealScript }} />
+      </body>
     </html>
   );
 }

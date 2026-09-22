@@ -32,6 +32,8 @@ const { page } = presupuestoContent;
  * scrollport propio de altura automática que nunca scrollea, dejando inerte a
  * cualquier sticky adentro. Debajo de `lg` no se toca nada: scrollea la
  * página, que es de lo que depende la banda fija del CTA en mobile.
+ * (2026-09-22: `body` pasó a `overflow-x: clip`, así que `sticky` ya
+ * funciona. Este layout sigue siendo válido; no hace falta migrarlo.)
  */
 export function PedidoClient() {
   return (

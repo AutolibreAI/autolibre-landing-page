@@ -7,7 +7,7 @@ export function ProblemSection() {
 
   return (
     <Section id="problema" tone="muted">
-      <Container size="narrow" className="text-center">
+      <Container size="narrow" className="reveal-group text-center">
         <h2 className="font-display text-[2rem] font-bold text-ink md:text-[2.375rem]">
           {title}
         </h2>

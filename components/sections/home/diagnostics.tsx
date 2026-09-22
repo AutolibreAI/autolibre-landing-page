@@ -14,7 +14,7 @@ export function DiagnosticsSection() {
   return (
     <Section tone="ink" aria-labelledby="diagnostics-title">
       <Container>
-        <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
+        <div className="reveal-group flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
           <div className="max-w-135 flex-1">
             <h2
               id="diagnostics-title"

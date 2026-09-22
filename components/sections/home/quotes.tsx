@@ -28,7 +28,7 @@ export function QuotesSection() {
       className="selection:bg-brand selection:text-white"
     >
       <Container size="wide">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-16">
+        <div className="reveal-group flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-16">
           <SectionHeading
             as="h2"
             size="md"

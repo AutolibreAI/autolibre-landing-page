@@ -14,7 +14,7 @@ export function CompatibilitySection() {
       aria-labelledby="compat-title"
     >
       <Container>
-        <div className="mx-auto flex max-w-[1100px] flex-col items-center gap-10 lg:flex-row lg:gap-14">
+        <div className="reveal-group mx-auto flex max-w-[1100px] flex-col items-center gap-10 lg:flex-row lg:gap-14">
           <div className="max-w-[480px] flex-1">
             <h2
               id="compat-title"

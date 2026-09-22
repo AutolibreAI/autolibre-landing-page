@@ -12,14 +12,16 @@ export function FeaturesSection() {
       <Container>
         <h2
           id="features-title"
-          className="max-w-[640px] font-display text-[2rem] font-bold text-ink md:text-[2.375rem]"
+          className="reveal max-w-[640px] font-display text-[2rem] font-bold text-ink md:text-[2.375rem]"
         >
           {title}
         </h2>
 
-        <ul className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
+        {/* Entrada escalonada por scroll, CSS puro (ver `reveal` en
+            globals.css). */}
+        <ul className="reveal-stagger mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
           {items.map((item) => (
-            <Card key={item.id} as="li" className="px-5 py-7">
+            <Card key={item.id} as="li" className="reveal px-5 py-7">
               <Icon name={item.icon} className="mb-4.5 text-brand" />
               <h3 className="mb-2 font-display text-base font-semibold text-ink">
                 {item.title}
@@ -31,7 +33,7 @@ export function FeaturesSection() {
           ))}
         </ul>
 
-        <p className="mt-14 rounded-card bg-surface-muted p-8 text-center font-display text-xl font-semibold text-ink">
+        <p className="reveal mt-14 rounded-card bg-surface-muted p-8 text-center font-display text-xl font-semibold text-ink">
           {highlight}
         </p>
       </Container>

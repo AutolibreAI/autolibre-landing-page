@@ -9,7 +9,7 @@ export function HistorySection() {
   return (
     <Section tone="surface" aria-labelledby="history-title">
       <Container>
-        <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
+        <div className="reveal-group flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
           <div className="max-w-[520px] flex-1">
             <h2
               id="history-title"

@@ -23,7 +23,7 @@ export function FaqSection() {
 
   return (
     <Section id="faq" tone="surface" aria-labelledby="faq-title">
-      <Container size="prose">
+      <Container size="prose" className="reveal-group">
         <h2
           id="faq-title"
           className="mb-12 text-center font-display text-[2rem] font-bold text-ink md:text-[2.25rem]"
