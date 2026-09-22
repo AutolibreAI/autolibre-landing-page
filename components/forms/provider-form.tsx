@@ -148,9 +148,30 @@ export function ProviderForm({
   const [geo, setGeo] = useState<PlaceGeo>(EMPTY_GEO);
   const [mapsReady, setMapsReady] = useState(false);
   const [modality, setModality] = useState<PartnerModality | "">("");
+  /**
+   * Solo se llena al enviar y se borra apenas la persona vuelve a escribir: no
+   * se reta mientras tipea, se reta cuando intenta mandar.
+   */
+  const [addressError, setAddressError] = useState<string | null>(null);
 
   const servicesErrorRef = useRef<HTMLParagraphElement>(null);
   const addressInputRef = useRef<HTMLInputElement>(null);
+  /**
+   * Refs y no state porque solo se leen en el submit y en el listener de
+   * Google — no cambian nada de lo que se pinta.
+   *
+   * `autocompleteRef` distingue "Places anda" de "no hay key o el script no
+   * cargó": solo en el primer caso se puede exigir que la dirección salga de
+   * la lista. `pickedImpreciseRef` separa "no eligió nada" de "eligió algo que
+   * no alcanza", que piden mensajes distintos.
+   */
+  const autocompleteRef = useRef<unknown>(null);
+  const pickedImpreciseRef = useRef(false);
+  /**
+   * Si el submit ya mandó el foco a la dirección, el scroll al error de
+   * servicios (más abajo) no tiene que llevarse la pantalla a otro lado.
+   */
+  const addressFocusedOnSubmitRef = useRef(false);
 
   // El Autocomplete pide direcciones puntuales ("address"), no zonas: acá
   // importa la puerta del local, porque de eso depende que el orden por
@@ -166,6 +187,7 @@ export function ProviderForm({
       types: ["address"],
       fields: ["formatted_address", "name", "geometry", "address_components"],
     });
+    autocompleteRef.current = autocomplete;
 
     const listener = autocomplete.addListener("place_changed", () => {
       const place = autocomplete.getPlace();
@@ -183,12 +205,27 @@ export function ProviderForm({
       // sueltas (ver specs/004-partner-approval-data/contracts).
       if (latitude === null || longitude === null || !locality || !province) {
         setGeo(EMPTY_GEO);
+        // Sin `geometry` no hubo sugerencia: Google también dispara este
+        // evento cuando se aprieta Enter sobre texto libre. Eso es "no eligió
+        // nada", no "eligió algo impreciso".
+        pickedImpreciseRef.current = place.geometry !== undefined;
+        // Si ya había un error a la vista, que diga el motivo correcto.
+        if (pickedImpreciseRef.current) {
+          setAddressError((current) =>
+            current === null
+              ? null
+              : providersContent.form.addressImpreciseError,
+          );
+        }
         return;
       }
+      pickedImpreciseRef.current = false;
       setGeo({ latitude, longitude, locality, province });
+      setAddressError(null);
     });
 
     return () => {
+      autocompleteRef.current = null;
       listener.remove();
       document.querySelectorAll(".pac-container").forEach((el) => el.remove());
     };
@@ -220,7 +257,7 @@ export function ProviderForm({
    * formulario esta roto.
    */
   useEffect(() => {
-    if (missingServices) {
+    if (missingServices && !addressFocusedOnSubmitRef.current) {
       servicesErrorRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "center",
@@ -244,10 +281,30 @@ export function ProviderForm({
     event.preventDefault();
     setSubmitAttempted(true);
 
+    // Los cuatro campos de geocode viajan juntos o ninguno — `geo` ya
+    // garantiza eso (ver el efecto de arriba), así que alcanza con chequear
+    // uno para decidir si se manda el bloque completo.
+    const hasGeo = geo.latitude !== null && geo.longitude !== null;
+
+    // Con Places andando, la dirección tiene que salir de la lista: de ese
+    // geocode depende el orden por cercanía (AUT-81). Sin key o si el script
+    // no cargó no hay lista de donde elegir, y trabar el alta por eso seria
+    // perder al taller por un problema nuestro — ahí sigue el texto libre.
+    const addressInvalid = autocompleteRef.current !== null && !hasGeo;
+    addressFocusedOnSubmitRef.current = addressInvalid;
+    if (addressInvalid) {
+      setAddressError(
+        pickedImpreciseRef.current
+          ? providersContent.form.addressImpreciseError
+          : providersContent.form.addressNotPickedError,
+      );
+      addressInputRef.current?.focus();
+    }
+
     // Ojo: el <form> va con `noValidate`, asi que los `required` de los inputs
     // son semantica para lectores de pantalla y no cortan nada. Lo unico que
     // frena el envio es este return.
-    if (!hasDeclaredServices) return;
+    if (addressInvalid || !hasDeclaredServices) return;
 
     setSubmitState("loading");
     setErrorMessage(GENERIC_ERROR);
@@ -264,11 +321,6 @@ export function ProviderForm({
     const hours = (
       form.elements.namedItem("hours") as HTMLInputElement
     ).value.trim();
-
-    // Los cuatro campos de geocode viajan juntos o ninguno — `geo` ya
-    // garantiza eso (ver el efecto de arriba), así que alcanza con chequear
-    // uno para decidir si se manda el bloque completo.
-    const hasGeo = geo.latitude !== null && geo.longitude !== null;
 
     try {
       const response = await fetch("/api/provider", {
@@ -405,9 +457,26 @@ export function ProviderForm({
               placeholder="Calle y número"
               autoComplete="street-address"
               ref={addressInputRef}
-              onChange={() => setGeo(EMPTY_GEO)}
+              onChange={() => {
+                setGeo(EMPTY_GEO);
+                pickedImpreciseRef.current = false;
+                setAddressError(null);
+              }}
+              aria-invalid={addressError !== null}
+              aria-describedby={
+                addressError !== null ? "prov-address-error" : undefined
+              }
               required
             />
+            {addressError !== null ? (
+              <p
+                id="prov-address-error"
+                role="alert"
+                className="text-sm font-medium text-danger"
+              >
+                {addressError}
+              </p>
+            ) : null}
           </Field>
 
           <Field label={providersContent.form.hoursLabel} htmlFor="prov-hours">
