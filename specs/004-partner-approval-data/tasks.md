@@ -31,7 +31,7 @@ Los campos de horarios y modalidad (FR-008/FR-010) no tienen una historia numera
 
 - [X] T002 Crear `lib/google-places.ts` moviendo desde `components/quote-flow/use-quote-flow.ts`: la declaración global `Window.google`, los tipos `GoogleAddressComponent`/`GooglePlaceResult`, `PlaceGeo`, `EMPTY_GEO`, `findAddressComponent` y `GOOGLE_MAPS_API_KEY` — sin cambiar su comportamiento
 - [X] T003 Actualizar `components/quote-flow/use-quote-flow.ts` para importar `PlaceGeo`, `EMPTY_GEO`, `GOOGLE_MAPS_API_KEY` y `findAddressComponent` desde `@/lib/google-places` en vez de declararlos localmente, re-exportando los mismos nombres para que `components/quote-flow/index.ts` no necesite cambios (depende de T002)
-- [ ] T004 Probar a mano el modal de pedido de presupuesto (seleccionar sugerencia, editar la dirección, enviar) para confirmar que no hay regresión después del refactor (depende de T003) — **parcial**: verificado que `/pedido` sigue respondiendo 200 sin errores de runtime tras el refactor (curl + logs del dev server), pero falta el click-through real de elegir una sugerencia de Places en el browser (sin tool de browser disponible en esta sesión)
+- [X] T004 Probar a mano el modal de pedido de presupuesto (seleccionar sugerencia, editar la dirección, enviar) para confirmar que no hay regresión después del refactor (depende de T003) — verificado por el usuario con backend local corriendo: `POST /api/v1/quote-requests` respondió `201`, submit exitoso, sin regresión del refactor de `use-quote-flow.ts`
 
 **Checkpoint**: módulo compartido listo, flujo de presupuesto sin regresiones.
 
@@ -76,7 +76,7 @@ Los campos de horarios y modalidad (FR-008/FR-010) no tienen una historia numera
 ## Phase 6: Polish & Cross-Cutting
 
 - [X] T015 [P] Correr `npm run build` y confirmar cero errores de TypeScript y de ESLint (gate de la constitución)
-- [ ] T016 Recorrer a mano los pasos 1-6 de `quickstart.md` sobre `/proveedores` — **parcial**: verificado por HTTP/SSR que la página responde 200 y los campos nuevos (`prov-hours`, copy de modalidad) están en el HTML; falta el click-through real de Places en el browser (mismo motivo que T004 — sin tool de browser en esta sesión)
+- [X] T016 Recorrer a mano los pasos 1-6 de `quickstart.md` sobre `/proveedores` — verificado por el usuario con backend local corriendo: seleccionó una sugerencia real de Places, el geocode (`latitude`/`longitude`/`locality`/`province`) llegó correcto al backend y pasó su validación sin error. `hours`/`modality` rechazados por el backend (esperado, ver contracts/ — falta el lado de `autolibre-backend-hex`)
 
 ---
 

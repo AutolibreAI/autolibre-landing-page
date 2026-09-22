@@ -47,6 +47,10 @@ Este documento existe porque el trabajo de AUT-81 queda dividido en dos repos: e
 - Los códigos de respuesta y su semántica (`200`/`201` éxito, `400` inválido, `409` duplicado) no cambian — este repo sigue interpretándolos igual (`lib/autolibre-api.ts`, `classifyBadRequest`).
 - Ningún campo existente cambia de nombre, tipo o de obligatoriedad.
 
+## Verificado contra el backend local (2026-09-22)
+
+Prueba manual end-to-end con el backend de `autolibre-backend-hex` corriendo local: `latitude`, `longitude`, `locality` y `province` pasan la validación del `ValidationPipe` de Nest sin error — el DTO ya los acepta. `hours` y `modality` fallan con `"property hours should not exist"` / `"property modality should not exist"` (whitelist estricta): todavía no están declarados en el DTO del lado del backend. Falta agregar esos dos ahí antes de que el submit de `/proveedores` funcione de punta a punta.
+
 ## Abierto para el equipo de backend
 
 - **El ticket original solo menciona modalidad binaria** (a domicilio / en local, usada como peso de scoring). Este repo agrega una tercera opción, `"ambas"`, porque un taller real puede combinar las dos y no tiene sentido forzarlo a elegir — pero si el scoring del lado del backend espera estrictamente un flag binario, `"ambas"` no tiene una traducción obvia ahí. Confirmar si el backend puede aceptar un tercer valor (y cómo lo pesa) o si conviene que este repo lo recorte a las dos opciones originales antes de mandarlo.
