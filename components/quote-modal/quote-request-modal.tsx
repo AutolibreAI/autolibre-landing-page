@@ -1,13 +1,36 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { QuoteFlow } from "@/components/quote-flow";
 import { presupuestoContent } from "@/lib/content/presupuesto";
 import type { VariantProps } from "class-variance-authority";
 
 const copy = presupuestoContent.modal;
+
+/**
+ * El flujo de pedido (formulario, Google Places, polling) es el JS más pesado
+ * de la home y solo hace falta si alguien abre el modal. Va en un chunk
+ * aparte que se pide recién al abrirlo — o antes, al apuntar o enfocar el
+ * botón (`preloadQuoteFlow`), así casi nunca se llega a ver el fallback.
+ *
+ * Verificado en el navegador: al cargar la home solo viaja el "async loader"
+ * de Turbopack (~1KB, sabe dónde está el chunk); el código del flujo y el
+ * script de Google Maps se descargan recién al abrir el modal.
+ *
+ * Se importa `quote-flow.tsx` directo y no el barrel `@/components/quote-flow`:
+ * el barrel re-exporta más módulos y los metería en el mismo chunk.
+ */
+const loadQuoteFlow = () => import("@/components/quote-flow/quote-flow");
+
+const QuoteFlow = lazy(() =>
+  loadQuoteFlow().then((mod) => ({ default: mod.QuoteFlow })),
+);
+
+/** `import()` queda cacheado: llamarlo varias veces no repite la descarga. */
+function preloadQuoteFlow() {
+  void loadQuoteFlow();
+}
 
 type QuoteRequestModalProps = VariantProps<typeof buttonVariants> & {
   readonly children: React.ReactNode;
@@ -90,7 +113,15 @@ export function QuoteRequestModal({
 
   return (
     <>
-      <Button type="button" variant={variant} size={size} className={className} onClick={() => setOpen(true)}>
+      <Button
+        type="button"
+        variant={variant}
+        size={size}
+        className={className}
+        onPointerEnter={preloadQuoteFlow}
+        onFocus={preloadQuoteFlow}
+        onClick={() => setOpen(true)}
+      >
         {children}
       </Button>
 
@@ -138,7 +169,18 @@ export function QuoteRequestModal({
                 </div>
 
                 <div className="overflow-y-auto px-6 py-6">
-                  <QuoteFlow layout="modal" onClose={close} />
+                  <Suspense
+                    fallback={
+                      <p
+                        role="status"
+                        className="py-10 text-center text-label text-ink/65"
+                      >
+                        {copy.loading}
+                      </p>
+                    }
+                  >
+                    <QuoteFlow layout="modal" onClose={close} />
+                  </Suspense>
                 </div>
               </div>
             </div>,

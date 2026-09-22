@@ -1,0 +1,37 @@
+# AutoLibre
+
+> AutoLibre es una app gratuita para iPhone y Android que junta en un solo lugar toda la información de un auto: documentación, vencimientos, historial de mantenimiento, diagnóstico asistido por IA y talleres cerca del usuario. La desarrolla AutoLibre.AI, de Argentina, y hoy opera la red de talleres en AMBA.
+
+Datos clave:
+
+- Nombre del producto: AutoLibre. Razón social: AutoLibre.AI. Sitio: https://autolibre.ai
+- Idioma: español de Argentina (es-AR).
+- Precio: usar la app es gratis. El adaptador OBD2 para diagnóstico es opcional y se compra aparte.
+- Plataformas: iOS (App Store) y Android (Google Play).
+- Documentación: guarda cédula, título, póliza de seguro, licencia de conducir y comprobantes de service o reparación.
+- Vencimientos: recordatorios de VTV/RTO, seguro, patente y service.
+- Historial: registro de todo lo que se le hizo al auto, incluidos services previos cargados a mano.
+- Diagnóstico: la IA orienta sobre qué le puede pasar al auto a partir de los síntomas que cuenta el usuario; con un escáner OBD-II por Bluetooth suma la lectura de códigos de falla (DTC) del motor. El diagnóstico final siempre lo confirma un mecánico.
+- Compatibilidad OBD-II: autos fabricados desde 1996 con conector de diagnóstico. Escáneres recomendados: Vgate iCar Pro; también compatibles Konnwei KW906 y ELM327 v1.5 (en iPhone, solo versiones BLE / Bluetooth 4.0).
+- Talleres y servicios: el usuario hace un pedido de servicio, recibe respuestas de talleres cercanos con los datos del auto ya cargados y elige con cuál trabajar.
+- Una sola cuenta admite varios autos.
+- Contacto: contact@autolibre.ai · WhatsApp +54 9 11 7280-4347
+
+## Páginas principales
+
+- [Inicio](https://autolibre.ai/): qué es AutoLibre, funciones, cómo funciona, compatibilidad OBD2 y preguntas frecuentes.
+- [Descargar la app](https://autolibre.ai/descarga): enlaces a App Store y Google Play, y código QR para instalarla desde la compu.
+- [Pedir presupuesto](https://autolibre.ai/pedido): formulario para pedir presupuesto a talleres cercanos. Gratis y sin compromiso.
+- [Proveedores](https://autolibre.ai/proveedores): registro para talleres y servicios que quieren recibir consultas de dueños de auto con marca, modelo, año y el problema ya delimitado.
+- [Soporte](https://autolibre.ai/support): formulario de contacto para usuarios con problemas en la app.
+
+## Descargas
+
+- [AutoLibre en App Store](https://apps.apple.com/ar/app/autolibreai/id6777068403): ficha oficial para iPhone.
+- [AutoLibre en Google Play](https://play.google.com/store/apps/details?id=com.autolibreai): ficha oficial para Android.
+
+## Optional
+
+- [Eliminar cuenta](https://autolibre.ai/eliminar-cuenta): pedido de eliminación definitiva de la cuenta y de todos sus datos.
+- [Política de Privacidad](https://autolibre.ai/privacidad): tratamiento de datos personales conforme a la Ley 25.326 de Argentina.
+- [Términos y Condiciones](https://autolibre.ai/terminos): condiciones de uso del servicio.

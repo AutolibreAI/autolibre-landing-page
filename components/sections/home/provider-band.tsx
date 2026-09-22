@@ -15,7 +15,7 @@ export function ProviderBandSection() {
             </h2>
             <p className="mt-1.5 text-sm text-white/65">{subtitle}</p>
           </div>
-          <ButtonLink href={cta.href} variant="soft" size="lg">
+          <ButtonLink href={cta.href} size="lg">
             {cta.label}
           </ButtonLink>
         </div>

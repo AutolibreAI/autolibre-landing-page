@@ -10,8 +10,8 @@
 
 @theme {
   /* ── Marca ── */
-  --color-brand: #2a8c3a; /* verde principal — CTAs, acentos */
-  --color-brand-hover: #23752f; /* hover de CTAs */
+  --color-brand: #2a8c3a; /* verde principal — hover de CTAs, acentos, texto grande */
+  --color-brand-hover: #23752f; /* verde oscuro — reposo de CTAs y texto verde chico (AA) */
   --color-brand-soft: #5fa86b; /* verde claro — banda proveedores, flechas */
   --color-ink: #1c2b1c; /* verde-negro — texto y secciones oscuras */
   --color-surface: #ffffff; /* fondo base */
@@ -27,6 +27,87 @@
   /* ── Tipografía ── */
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+
+  /* Display: titulares de página que SON su headline (h1 del hero).
+     xs (celulares angostos) → sm → md → lg. Cada paso trae su line-height, así no hace falta
+     un `leading-*` aparte. */
+  --text-display-xs: 2.5rem; /* 40px — celulares < 384px */
+  --text-display-xs--line-height: 1.05;
+  --text-display-sm: 2.75rem; /* 44px */
+  --text-display-sm--line-height: 1.05;
+  --text-display-md: 3.5rem; /* 56px */
+  --text-display-md--line-height: 1.05;
+  --text-display-lg: 4rem; /* 64px */
+  --text-display-lg--line-height: 1.05;
+
+  /* Texto corrido y etiquetas (DESIGN.md: Body y Label). Sin line-height
+     propio: el `leading-*` lo decide cada call site.
+     OJO: todo `--text-*` nuevo se registra también en `lib/utils.ts`, o
+     `cn()` lo confunde con un color y lo borra. */
+  --text-lead: 1.0625rem; /* 17px — bajadas en mobile */
+  --text-lead-lg: 1.1875rem; /* 19px — bajadas desde md */
+  --text-label: 0.8125rem; /* 13px — notas, hints, labels */
+
+  /* ── Animación del hero ──
+     Dos ciclos INDEPENDIENTES (palabras 20s, pantallas 24s: distintos a
+     propósito para que no cambien juntas). Los % de cada keyframe asumen una cantidad fija de
+     pasos: si cambia el largo de `homeContent.hero.words` o `.screens`,
+     cambian estos %. Cada elemento arranca con un `animation-delay`
+     negativo (paso × duración − ciclo): la animación ya corre al cargar,
+     sin estado inicial vacío. */
+
+  /* Palabras: 8 pasos de 2,5s → cada una ocupa el 12,5% del ciclo.
+     Solo `transform` y `opacity`: corren en el compositor, sin repintar. */
+  --animate-hero-word: hero-word 20s infinite;
+  /* Pantallas: 8 pasos de 3s → cada una es visible el 12,5% del ciclo. */
+  --animate-hero-screen: hero-screen 24s linear infinite;
+
+  /* Entra desde abajo pasándose un poco (0–2,4%), rebota a su lugar
+     (2,4–3,4%), queda (hasta 10,5%) y sale hacia arriba (10,5–12,5%)
+     mientras la siguiente ya viene subiendo. */
+  @keyframes hero-word {
+    0% {
+      opacity: 0;
+      transform: translateY(100%);
+      animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    2.4% {
+      opacity: 1;
+      transform: translateY(-12%);
+      animation-timing-function: ease-in-out;
+    }
+    3.4%,
+    10.5% {
+      opacity: 1;
+      transform: translateY(0);
+      animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+    }
+    12.5%,
+    100% {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+  }
+
+  /* Fundido cruzado de 0,4s entre pantallas (1,7% de 24s). */
+  @keyframes hero-screen {
+    0%,
+    10.8% {
+      opacity: 1;
+    }
+    12.5%,
+    98.3% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+
+  /* Celulares angostos (< 384px, p. ej. 360px): el titular del hero baja a
+     `display-xs` para que "Mantenimientos" no se coma el margen lateral. */
+  --breakpoint-xs: 24rem;
 
   /* ── Radios ── */
   --radius-field: 0.625rem; /* 10px — inputs y botones */

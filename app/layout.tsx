@@ -60,7 +60,16 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es-AR" className={`${outfit.variable} ${dmSans.variable}`}>
+    <html
+      lang="es-AR"
+      className={`${outfit.variable} ${dmSans.variable}`}
+      /**
+       * `globals.css` declara `scroll-behavior: smooth` en `html`. Desde Next 16
+       * el router ya no lo desactiva solo al navegar entre rutas: sin este
+       * atributo, cada cambio de página haría un scroll animado hasta arriba.
+       */
+      data-scroll-behavior="smooth"
+    >
       <body className="min-h-dvh bg-surface text-ink">{children}</body>
     </html>
   );

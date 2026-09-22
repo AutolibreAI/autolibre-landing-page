@@ -1,4 +1,5 @@
 import type { IconName } from "@/lib/content/types";
+import { siteConfig } from "@/lib/seo/config";
 
 /**
  * Fila con ícono: la usan el rail de `/pedido` y la línea de tiempo del
@@ -11,25 +12,29 @@ type IconRow = {
   readonly body: string;
 };
 
-/** Copy del hero de presupuesto, del modal de pedido y de la página /pedido. */
+/** Copy de la sección de presupuesto de la home (`QuotesSection`), del modal de pedido y de la página /pedido. */
 export const presupuestoContent = {
-  hero: {
-    eyebrow: "Gratis y sin compromiso",
+  section: {
     titleLines: ["Pedí presupuesto", "para tu auto."],
     subtitle:
       "Contanos qué necesita y te responden talleres cerca tuyo. Un minuto, sin vueltas.",
     ctaLabel: "Pedí tu presupuesto",
-    note: "Respondemos por WhatsApp en el día.",
-    image: {
-      src: "/mockup/mockup-chatai.webp",
-      alt: "Chat de AutoLibre confirmando los datos de un auto a partir de la patente.",
-      width: 786,
-      height: 1682,
+    /**
+     * Salida secundaria por WhatsApp. Link propio y no
+     * `siteConfig.contact.whatsapp`: el genérico trae precargado "Me interesa
+     * comprar un escáner!", que acá no tiene sentido. wa.me solo acepta
+     * dígitos: sin `+`, sin espacios y sin guiones.
+     */
+    whatsapp: {
+      label: "Consultanos por WhatsApp",
+      href: `https://wa.me/${siteConfig.contact.phoneE164.replace(/\D/g, "")}?text=${encodeURIComponent("¡Hola! Quiero pedir un presupuesto para mi auto.")}`,
     },
   },
 
   modal: {
     title: "Pedí tu presupuesto",
+    /** Mientras llega el chunk del formulario (se carga al abrir el modal). */
+    loading: "Cargando el formulario…",
     back: "Atrás",
     continue: "Continuar",
     submitLabel: "Enviar pedido",

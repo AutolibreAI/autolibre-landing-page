@@ -21,9 +21,15 @@ const storeLogos: Record<StoreId, React.ReactNode> = {
 };
 
 type StoreLinksProps = {
-  /** `brand` = sobre la sección verde de cierre. `light` = sobre blanco. */
-  readonly tone?: "light" | "brand";
+  /**
+   * `light` = sobre blanco. `brand` = sobre la sección verde de cierre.
+   * `ink` = sobre la banda verde-negra de descarga. Los dos oscuros usan el
+   * mismo botón blanco.
+   */
+  readonly tone?: "light" | "brand" | "ink";
   readonly note?: string;
+  /** Ancla de navegación (p. ej. `descargar` en el hero de la home). */
+  readonly id?: string;
   readonly className?: string;
 };
 
@@ -39,12 +45,13 @@ type StoreLinksProps = {
 export function StoreLinks({
   tone = "light",
   note,
+  id,
   className,
 }: StoreLinksProps) {
-  const onBrand = tone === "brand";
+  const onDark = tone !== "light";
 
   return (
-    <div className={className}>
+    <div id={id} className={className}>
       <div className="flex flex-wrap gap-3">
         {siteContent.stores.map((store) => (
           <a
@@ -55,7 +62,7 @@ export function StoreLinks({
             aria-label={`${store.label} — ${store.name}`}
             className={cn(
               "inline-flex items-center gap-3 rounded-field px-5 py-3 transition-colors",
-              onBrand
+              onDark
                 ? "bg-white text-ink hover:bg-white/90"
                 : "bg-ink text-white hover:bg-ink/85",
             )}
@@ -86,7 +93,7 @@ export function StoreLinks({
         <p
           className={cn(
             "mt-3 text-[0.8125rem]",
-            onBrand ? "text-white/70" : "text-ink/65",
+            onDark ? "text-white/70" : "text-ink/65",
           )}
         >
           {note}
