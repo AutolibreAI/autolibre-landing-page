@@ -172,6 +172,19 @@ export interface PartnerApplicationSubmission {
   readonly serviceOther?: string;
   readonly howFound?: string;
   readonly howFoundOther?: string;
+
+  /**
+   * Geocode de `address`, capturado al elegir una sugerencia de Google
+   * Places. Los cuatro campos viajan juntos o ninguno — nunca coordenadas
+   * sin `locality`/`province`, ni viceversa (ver
+   * specs/004-partner-approval-data/contracts/partner-application-submission.md).
+   */
+  readonly latitude?: number;
+  readonly longitude?: number;
+  readonly locality?: string;
+  readonly province?: string;
+  readonly hours?: string;
+  readonly modality?: "en_local" | "a_domicilio" | "ambas";
 }
 
 export type SubmitPartnerApplicationResult =

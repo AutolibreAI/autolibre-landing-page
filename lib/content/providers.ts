@@ -45,6 +45,11 @@ export const providersContent = {
     submitLabel: "Quiero registrar mi taller",
     submitLoadingLabel: "Enviando...",
     note: "Te contactamos para activar tu perfil.",
+    addressHelper:
+      "Empezá a escribir y elegí tu dirección de la lista para que te ubiquemos bien en el mapa.",
+    hoursLabel: "Horarios de atención",
+    hoursPlaceholder: "Ej: Lun a Vie 9 a 18hs, Sáb 9 a 13hs",
+    modalityTitle: "¿Cómo atendés?",
   },
 } as const;
 
@@ -120,3 +125,15 @@ export const PROVIDER_HOW_FOUND = [
 
 /** Opción que dispara el campo de texto libre en servicios y en "cómo nos conociste". */
 export const OTHER_OPTION = "Otro";
+
+/**
+ * Modalidad de atención. `value` es lo que viaja a `/api/provider` (y de ahí
+ * al backend); `label` es lo que se muestra. `"ambas"` no estaba en el
+ * ticket original (que hablaba de una modalidad binaria) — se agregó porque
+ * un taller real puede combinar las dos, ver `specs/004-partner-approval-data`.
+ */
+export const PROVIDER_MODALITY_OPTIONS = [
+  { value: "en_local", label: "Solo en el local" },
+  { value: "a_domicilio", label: "Solo a domicilio" },
+  { value: "ambas", label: "En el local y a domicilio" },
+] as const;

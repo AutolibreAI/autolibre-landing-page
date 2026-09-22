@@ -5,82 +5,19 @@ import { presupuestoContent } from "@/lib/content/presupuesto";
 import { EMAIL_REGEX } from "@/lib/validation";
 import { siteConfig } from "@/lib/seo/config";
 import type { VehicleLookupSnapshot } from "@/lib/vehicle-lookup";
+import {
+  EMPTY_GEO,
+  findAddressComponent,
+  GOOGLE_MAPS_API_KEY,
+  type PlaceGeo,
+} from "@/lib/google-places";
 
-type GoogleAddressComponent = {
-  long_name: string;
-  short_name: string;
-  types: string[];
-};
-
-type GooglePlaceResult = {
-  formatted_address?: string;
-  name?: string;
-  geometry?: {
-    location?: {
-      lat: () => number;
-      lng: () => number;
-    };
-  };
-  address_components?: GoogleAddressComponent[];
-};
-
-declare global {
-  interface Window {
-    google?: {
-      maps?: {
-        places?: {
-          Autocomplete: new (
-            input: HTMLInputElement,
-            options?: Record<string, unknown>,
-          ) => {
-            addListener: (
-              eventName: string,
-              callback: () => void,
-            ) => { remove: () => void };
-            getPlace: () => GooglePlaceResult;
-          };
-        };
-      };
-    };
-  }
-}
-
-/**
- * Sin key no hay Autocomplete: el campo de direccion sigue funcionando como
- * texto libre (ver `mapsReady`), solo que sin el picker de Google Places.
- */
-export const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-/**
- * Lo que sale de elegir una sugerencia del Autocomplete: un geocode real, con
- * la misma confiabilidad que el GPS del telefono. Si el usuario escribe a
- * mano sin elegir ninguna, esto queda vacio y el pedido viaja como `typed`
- * (ver `handleSubmit`) — nunca se manda una coordenada que no vino de Google.
- */
-export type PlaceGeo = {
-  latitude: number | null;
-  longitude: number | null;
-  locality: string | null;
-  province: string | null;
-};
-
-export const EMPTY_GEO: PlaceGeo = {
-  latitude: null,
-  longitude: null,
-  locality: null,
-  province: null,
-};
-
-/** `long_name` del primer address_component cuyo `types` incluya `type`. */
-export function findAddressComponent(
-  components: GoogleAddressComponent[] | undefined,
-  type: string,
-): string | null {
-  return (
-    components?.find((component) => component.types.includes(type))
-      ?.long_name ?? null
-  );
-}
+// Re-exportados para no romper a quien ya importa estos nombres desde acá
+// (ver components/quote-flow/index.ts). La fuente de verdad de estos tipos y
+// helpers de Google Places es `lib/google-places.ts`, compartida con
+// `provider-form.tsx`.
+export { EMPTY_GEO, GOOGLE_MAPS_API_KEY };
+export type { PlaceGeo };
 
 export const PLATE_PATTERNS: readonly RegExp[] = [
   /^[A-Z]{3}\d{3}$/, // auto legacy   - ABC123

@@ -21,7 +21,7 @@ Los campos de horarios y modalidad (FR-008/FR-010) no tienen una historia numera
 
 ## Phase 1: Setup
 
-- [ ] T001 Revisar `node_modules/next/dist/docs/01-app/` (Route Handlers, Client Components) por cambios que afecten a `app/api/provider/route.ts` o `components/forms/provider-form.tsx`, por el aviso de `AGENTS.md` de que esta versión de Next.js rompe con lo esperado — hacerlo antes de tocar código
+- [X] T001 Revisar `node_modules/next/dist/docs/01-app/` (Route Handlers, Client Components) por cambios que afecten a `app/api/provider/route.ts` o `components/forms/provider-form.tsx`, por el aviso de `AGENTS.md` de que esta versión de Next.js rompe con lo esperado — hacerlo antes de tocar código
 
 ---
 
@@ -29,9 +29,9 @@ Los campos de horarios y modalidad (FR-008/FR-010) no tienen una historia numera
 
 **Propósito**: mover la lógica de Google Places hoy privada en `use-quote-flow.ts` a un módulo compartido, sin romper el flujo de presupuesto existente. Ver `research.md`, Decisión 2.
 
-- [ ] T002 Crear `lib/google-places.ts` moviendo desde `components/quote-flow/use-quote-flow.ts`: la declaración global `Window.google`, los tipos `GoogleAddressComponent`/`GooglePlaceResult`, `PlaceGeo`, `EMPTY_GEO`, `findAddressComponent` y `GOOGLE_MAPS_API_KEY` — sin cambiar su comportamiento
-- [ ] T003 Actualizar `components/quote-flow/use-quote-flow.ts` para importar `PlaceGeo`, `EMPTY_GEO`, `GOOGLE_MAPS_API_KEY` y `findAddressComponent` desde `@/lib/google-places` en vez de declararlos localmente, re-exportando los mismos nombres para que `components/quote-flow/index.ts` no necesite cambios (depende de T002)
-- [ ] T004 Probar a mano el modal de pedido de presupuesto (seleccionar sugerencia, editar la dirección, enviar) para confirmar que no hay regresión después del refactor (depende de T003)
+- [X] T002 Crear `lib/google-places.ts` moviendo desde `components/quote-flow/use-quote-flow.ts`: la declaración global `Window.google`, los tipos `GoogleAddressComponent`/`GooglePlaceResult`, `PlaceGeo`, `EMPTY_GEO`, `findAddressComponent` y `GOOGLE_MAPS_API_KEY` — sin cambiar su comportamiento
+- [X] T003 Actualizar `components/quote-flow/use-quote-flow.ts` para importar `PlaceGeo`, `EMPTY_GEO`, `GOOGLE_MAPS_API_KEY` y `findAddressComponent` desde `@/lib/google-places` en vez de declararlos localmente, re-exportando los mismos nombres para que `components/quote-flow/index.ts` no necesite cambios (depende de T002)
+- [ ] T004 Probar a mano el modal de pedido de presupuesto (seleccionar sugerencia, editar la dirección, enviar) para confirmar que no hay regresión después del refactor (depende de T003) — **parcial**: verificado que `/pedido` sigue respondiendo 200 sin errores de runtime tras el refactor (curl + logs del dev server), pero falta el click-through real de elegir una sugerencia de Places en el browser (sin tool de browser disponible en esta sesión)
 
 **Checkpoint**: módulo compartido listo, flujo de presupuesto sin regresiones.
 
@@ -45,15 +45,15 @@ Los campos de horarios y modalidad (FR-008/FR-010) no tienen una historia numera
 
 ### Implementation
 
-- [ ] T005 [P] [US1] Agregar a `lib/content/providers.ts` el copy nuevo (texto de ayuda del campo de dirección, label/placeholder de horarios, labels de las opciones de modalidad), siguiendo el Principio II de la constitución — nada hardcodeado en el componente
-- [ ] T006 [P] [US1] Extender `PartnerApplicationSubmission` en `lib/autolibre-api.ts` con los campos opcionales `latitude`, `longitude`, `locality`, `province`, `hours`, `modality?: "en_local" | "a_domicilio" | "ambas"`, según `data-model.md`
-- [ ] T007 [US1] En `components/forms/provider-form.tsx`, cargar el script de Google Maps (`next/script`, `id="google-maps-places"`, `strategy="afterInteractive"`, mismo `src` que `components/quote-flow/quote-flow.tsx`), condicionado a `GOOGLE_MAPS_API_KEY` importado de `@/lib/google-places` (depende de T002)
-- [ ] T008 [US1] En `components/forms/provider-form.tsx`, enganchar `google.maps.places.Autocomplete` al input `prov-address` con `componentRestrictions: { country: "ar" }` y `types: ["address"]` (no `"(regions)"`), extrayendo el geocode con `findAddressComponent` de `@/lib/google-places`. **Regla del contrato**: si `address_components` no trae `locality` (ni `sublocality` como fallback) o `administrative_area_level_1`, tratar el resultado completo como `EMPTY_GEO` — nunca guardar lat/lng sin localidad/provincia, ni viceversa (depende de T007)
-- [ ] T009 [US1] En `components/forms/provider-form.tsx`, resetear el geocode capturado a `EMPTY_GEO` cada vez que se edita el texto de dirección después de haber seleccionado una sugerencia — mismo comportamiento que `setAddress` en `components/quote-flow/use-quote-flow.ts` (depende de T008)
-- [ ] T010 [US1] Agregar los campos de horarios (texto libre) y modalidad al formulario en `components/forms/provider-form.tsx`, reusando los primitivos `Field`/`Input`/`ChoiceRow` ya usados en el resto del form. Modalidad es de **selección única** (`en_local`/`a_domicilio`/`ambas`, un solo valor, no un array) — usar `ChoiceRow type="radio"`, mismo patrón que el grupo `brand_specialized` más arriba en el mismo archivo, no checkboxes. Ambos campos opcionales, sin bloquear el envío (research.md, Decisión 5)
-- [ ] T011 [US1] Actualizar `handleSubmit` en `components/forms/provider-form.tsx` para incluir `latitude`, `longitude`, `locality`, `province`, `hours`, `modality` en el body del POST a `/api/provider`, omitiendo por completo los cuatro campos de geocode cuando el estado sigue en `EMPTY_GEO` (depende de T009, T010)
-- [ ] T012 [US1] Actualizar `app/api/provider/route.ts` para leer y reenviar los campos nuevos (`latitude`, `longitude`, `locality`, `province`, `hours`, `modality`) a `submitPartnerApplication`, con el mismo estilo de coerción opcional (`asOptionalString`) que ya usa el archivo, sin marcar ninguno como obligatorio (depende de T006, T011)
-- [ ] T013 [US1] Revisar accesibilidad de los campos nuevos/modificados: el input de dirección conserva `<label>`/`htmlFor`, los controles de horarios/modalidad son alcanzables por teclado y tienen label asociado — sin regresión de WCAG 2.1 AA (depende de T010)
+- [X] T005 [P] [US1] Agregar a `lib/content/providers.ts` el copy nuevo (texto de ayuda del campo de dirección, label/placeholder de horarios, labels de las opciones de modalidad), siguiendo el Principio II de la constitución — nada hardcodeado en el componente
+- [X] T006 [P] [US1] Extender `PartnerApplicationSubmission` en `lib/autolibre-api.ts` con los campos opcionales `latitude`, `longitude`, `locality`, `province`, `hours`, `modality?: "en_local" | "a_domicilio" | "ambas"`, según `data-model.md`
+- [X] T007 [US1] En `components/forms/provider-form.tsx`, cargar el script de Google Maps (`next/script`, `id="google-maps-places"`, `strategy="afterInteractive"`, mismo `src` que `components/quote-flow/quote-flow.tsx`), condicionado a `GOOGLE_MAPS_API_KEY` importado de `@/lib/google-places` (depende de T002)
+- [X] T008 [US1] En `components/forms/provider-form.tsx`, enganchar `google.maps.places.Autocomplete` al input `prov-address` con `componentRestrictions: { country: "ar" }` y `types: ["address"]` (no `"(regions)"`), extrayendo el geocode con `findAddressComponent` de `@/lib/google-places`. **Regla del contrato**: si `address_components` no trae `locality` (ni `sublocality` como fallback) o `administrative_area_level_1`, tratar el resultado completo como `EMPTY_GEO` — nunca guardar lat/lng sin localidad/provincia, ni viceversa (depende de T007)
+- [X] T009 [US1] En `components/forms/provider-form.tsx`, resetear el geocode capturado a `EMPTY_GEO` cada vez que se edita el texto de dirección después de haber seleccionado una sugerencia — mismo comportamiento que `setAddress` en `components/quote-flow/use-quote-flow.ts` (depende de T008)
+- [X] T010 [US1] Agregar los campos de horarios (texto libre) y modalidad al formulario en `components/forms/provider-form.tsx`, reusando los primitivos `Field`/`Input`/`ChoiceRow` ya usados en el resto del form. Modalidad es de **selección única** (`en_local`/`a_domicilio`/`ambas`, un solo valor, no un array) — usar `ChoiceRow type="radio"`, mismo patrón que el grupo `brand_specialized` más arriba en el mismo archivo, no checkboxes. Ambos campos opcionales, sin bloquear el envío (research.md, Decisión 5)
+- [X] T011 [US1] Actualizar `handleSubmit` en `components/forms/provider-form.tsx` para incluir `latitude`, `longitude`, `locality`, `province`, `hours`, `modality` en el body del POST a `/api/provider`, omitiendo por completo los cuatro campos de geocode cuando el estado sigue en `EMPTY_GEO` (depende de T009, T010)
+- [X] T012 [US1] Actualizar `app/api/provider/route.ts` para leer y reenviar los campos nuevos (`latitude`, `longitude`, `locality`, `province`, `hours`, `modality`) a `submitPartnerApplication`, con el mismo estilo de coerción opcional (`asOptionalString`) que ya usa el archivo, sin marcar ninguno como obligatorio (depende de T006, T011)
+- [X] T013 [US1] Revisar accesibilidad de los campos nuevos/modificados: el input de dirección conserva `<label>`/`htmlFor`, los controles de horarios/modalidad son alcanzables por teclado y tienen label asociado — sin regresión de WCAG 2.1 AA (depende de T010)
 
 **Checkpoint**: US1 completa y testeable de forma independiente siguiendo los pasos 1-5 de `quickstart.md`.
 
@@ -75,8 +75,8 @@ Los campos de horarios y modalidad (FR-008/FR-010) no tienen una historia numera
 
 ## Phase 6: Polish & Cross-Cutting
 
-- [ ] T015 [P] Correr `npm run build` y confirmar cero errores de TypeScript y de ESLint (gate de la constitución)
-- [ ] T016 Recorrer a mano los pasos 1-6 de `quickstart.md` sobre `/proveedores`
+- [X] T015 [P] Correr `npm run build` y confirmar cero errores de TypeScript y de ESLint (gate de la constitución)
+- [ ] T016 Recorrer a mano los pasos 1-6 de `quickstart.md` sobre `/proveedores` — **parcial**: verificado por HTTP/SSR que la página responde 200 y los campos nuevos (`prov-hours`, copy de modalidad) están en el HTML; falta el click-through real de Places en el browser (mismo motivo que T004 — sin tool de browser en esta sesión)
 
 ---
 

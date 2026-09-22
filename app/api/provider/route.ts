@@ -70,6 +70,18 @@ const asOptionalString = (value: unknown): string | undefined => {
   return trimmed === "" ? undefined : trimmed;
 };
 
+const asOptionalNumber = (value: unknown): number | undefined =>
+  typeof value === "number" && Number.isFinite(value) ? value : undefined;
+
+const MODALITY_VALUES = ["en_local", "a_domicilio", "ambas"] as const;
+type Modality = (typeof MODALITY_VALUES)[number];
+
+const asOptionalModality = (value: unknown): Modality | undefined =>
+  typeof value === "string" &&
+  (MODALITY_VALUES as readonly string[]).includes(value)
+    ? (value as Modality)
+    : undefined;
+
 export async function POST(req: NextRequest) {
   const body = (await req.json()) as Record<string, unknown>;
 
@@ -89,6 +101,20 @@ export async function POST(req: NextRequest) {
   // las marcas, no se manda ninguna.
   const worksAllBrands = body.brand_specialized === "no";
 
+  // Geocode de `address`, capturado en el cliente al elegir una sugerencia de
+  // Google Places. Los cuatro viajan juntos o ninguno (el formulario ya lo
+  // garantiza), pero se revalida acá tambien: nunca mandar coordenadas sin
+  // localidad/provincia al backend, ni viceversa.
+  const latitude = asOptionalNumber(body.latitude);
+  const longitude = asOptionalNumber(body.longitude);
+  const locality = asOptionalString(body.locality);
+  const province = asOptionalString(body.province);
+  const hasGeo =
+    latitude !== undefined &&
+    longitude !== undefined &&
+    locality !== undefined &&
+    province !== undefined;
+
   const result = await submitPartnerApplication({
     businessName,
     whatsapp,
@@ -102,6 +128,9 @@ export async function POST(req: NextRequest) {
     serviceOther: asOptionalString(body.service_other),
     howFound: asOptionalString(body.how_found),
     howFoundOther: asOptionalString(body.how_found_other),
+    ...(hasGeo ? { latitude, longitude, locality, province } : {}),
+    hours: asOptionalString(body.hours),
+    modality: asOptionalModality(body.modality),
   });
 
   if (result.ok) {

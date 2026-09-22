@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Script from "next/script";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ServiceFamilyPicker } from "@/components/forms/service-family-picker";
@@ -15,13 +16,27 @@ import { FormError, FormSuccess } from "@/components/ui/form-feedback";
 import { ButtonLink } from "@/components/ui/button";
 import type { ServiceFamilyOption } from "@/lib/autolibre-api";
 import {
+  EMPTY_GEO,
+  findAddressComponent,
+  GOOGLE_MAPS_API_KEY,
+  type PlaceGeo,
+} from "@/lib/google-places";
+import {
   OTHER_OPTION,
   PROVIDER_BRANDS,
   PROVIDER_FUEL_TYPES,
   PROVIDER_HOW_FOUND,
+  PROVIDER_MODALITY_OPTIONS,
   PROVIDER_VEHICLE_TYPES,
   providersContent,
 } from "@/lib/content/providers";
+// Estilos del dropdown de Google Places. Compartido con components/quote-flow
+// (ver lib/google-places.ts) — es CSS global porque Google cuelga el listbox
+// de <body>, fuera del árbol de React, así que importarlo dos veces no
+// duplica nada, solo asegura que esté cargado en esta página también.
+import "@/components/quote-flow/places-autocomplete.css";
+
+type PartnerModality = (typeof PROVIDER_MODALITY_OPTIONS)[number]["value"];
 
 type SubmitState = "idle" | "loading" | "success" | "error";
 
@@ -124,8 +139,60 @@ export function ProviderForm({
   const [fuelTypes, setFuelTypes] = useState<string[]>([]);
   const [howFound, setHowFound] = useState("");
   const [otherHowFound, setOtherHowFound] = useState("");
+  /**
+   * Geocode de la dirección, capturado al elegir una sugerencia de Google
+   * Places. Se resetea a `EMPTY_GEO` si la persona edita el texto después de
+   * elegir una sugerencia (ver el `onChange` del input de dirección) — nunca
+   * viaja un geocode que ya no corresponde a lo que se ve en el campo.
+   */
+  const [geo, setGeo] = useState<PlaceGeo>(EMPTY_GEO);
+  const [mapsReady, setMapsReady] = useState(false);
+  const [modality, setModality] = useState<PartnerModality | "">("");
 
   const servicesErrorRef = useRef<HTMLParagraphElement>(null);
+  const addressInputRef = useRef<HTMLInputElement>(null);
+
+  // El Autocomplete pide direcciones puntuales ("address"), no zonas: acá
+  // importa la puerta del local, porque de eso depende que el orden por
+  // cercanía en los pedidos de presupuesto sirva (ver AUT-81). Compárese con
+  // components/quote-flow/use-quote-flow.ts, que usa "(regions)" a propósito.
+  useEffect(() => {
+    if (!mapsReady) return;
+    const input = addressInputRef.current;
+    if (!input || !window.google?.maps?.places) return;
+
+    const autocomplete = new window.google.maps.places.Autocomplete(input, {
+      componentRestrictions: { country: "ar" },
+      types: ["address"],
+      fields: ["formatted_address", "name", "geometry", "address_components"],
+    });
+
+    const listener = autocomplete.addListener("place_changed", () => {
+      const place = autocomplete.getPlace();
+      const latitude = place.geometry?.location?.lat() ?? null;
+      const longitude = place.geometry?.location?.lng() ?? null;
+      const locality =
+        findAddressComponent(place.address_components, "locality") ??
+        findAddressComponent(place.address_components, "sublocality");
+      const province = findAddressComponent(
+        place.address_components,
+        "administrative_area_level_1",
+      );
+
+      // Todo o nada: sin localidad o provincia no guardamos coordenadas
+      // sueltas (ver specs/004-partner-approval-data/contracts).
+      if (latitude === null || longitude === null || !locality || !province) {
+        setGeo(EMPTY_GEO);
+        return;
+      }
+      setGeo({ latitude, longitude, locality, province });
+    });
+
+    return () => {
+      listener.remove();
+      document.querySelectorAll(".pac-container").forEach((el) => el.remove());
+    };
+  }, [mapsReady]);
 
   /**
    * Un taller sin nada declarado no se puede publicar ni recomendar: no entra
@@ -194,6 +261,14 @@ export function ProviderForm({
     const email = (form.elements.namedItem("email") as HTMLInputElement).value;
     const direccion = (form.elements.namedItem("direccion") as HTMLInputElement)
       .value;
+    const hours = (
+      form.elements.namedItem("hours") as HTMLInputElement
+    ).value.trim();
+
+    // Los cuatro campos de geocode viajan juntos o ninguno — `geo` ya
+    // garantiza eso (ver el efecto de arriba), así que alcanza con chequear
+    // uno para decidir si se manda el bloque completo.
+    const hasGeo = geo.latitude !== null && geo.longitude !== null;
 
     try {
       const response = await fetch("/api/provider", {
@@ -212,6 +287,16 @@ export function ProviderForm({
           fuel_types: fuelTypes,
           how_found: howFound,
           how_found_other: otherHowFound || null,
+          ...(hasGeo
+            ? {
+                latitude: geo.latitude,
+                longitude: geo.longitude,
+                locality: geo.locality,
+                province: geo.province,
+              }
+            : {}),
+          hours: hours || null,
+          modality: modality || null,
         }),
       });
 
@@ -260,7 +345,17 @@ export function ProviderForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
+    <>
+      {GOOGLE_MAPS_API_KEY ? (
+        <Script
+          id="google-maps-places"
+          src={`https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}&libraries=places&language=es&region=AR`}
+          strategy="afterInteractive"
+          onReady={() => setMapsReady(true)}
+        />
+      ) : null}
+
+      <form onSubmit={handleSubmit} noValidate>
       <Card variant="solid" className="p-6 md:p-8">
         <div className="flex flex-col gap-6">
           <Field label="Nombre del taller" htmlFor="prov-name" required>
@@ -297,16 +392,47 @@ export function ProviderForm({
             </Field>
           </div>
 
-          <Field label="Dirección" htmlFor="prov-address" required>
+          <Field
+            label="Dirección"
+            htmlFor="prov-address"
+            required
+            hint={providersContent.form.addressHelper}
+          >
             <Input
               id="prov-address"
               name="direccion"
               type="text"
               placeholder="Calle y número"
               autoComplete="street-address"
+              ref={addressInputRef}
+              onChange={() => setGeo(EMPTY_GEO)}
               required
             />
           </Field>
+
+          <Field label={providersContent.form.hoursLabel} htmlFor="prov-hours">
+            <Input
+              id="prov-hours"
+              name="hours"
+              type="text"
+              placeholder={providersContent.form.hoursPlaceholder}
+            />
+          </Field>
+
+          <FieldGroup title={providersContent.form.modalityTitle}>
+            <div className="flex flex-col gap-2">
+              {PROVIDER_MODALITY_OPTIONS.map((option) => (
+                <ChoiceRow
+                  key={option.value}
+                  type="radio"
+                  name="modality"
+                  label={option.label}
+                  checked={modality === option.value}
+                  onChange={() => setModality(option.value)}
+                />
+              ))}
+            </div>
+          </FieldGroup>
 
           <FieldGroup title="Trabajan con marcas específicas?">
             <div className="flex flex-col gap-2">
@@ -589,6 +715,7 @@ export function ProviderForm({
       <p className="mt-3.5 text-center text-[0.8125rem] text-ink/65">
         {providersContent.form.note}
       </p>
-    </form>
+      </form>
+    </>
   );
 }
