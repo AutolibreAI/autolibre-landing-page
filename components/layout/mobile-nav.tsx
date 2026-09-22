@@ -29,13 +29,20 @@ export function MobileNav({
   // efecto sobre `pathname`: así no hay render en cascada al cambiar de ruta.
   const [open, setOpen] = useState(false);
 
-  // Bloquear el scroll del fondo mientras el menú está abierto.
+  // Bloquear el scroll del fondo mientras el menú está abierto. Va en
+  // `<html>` y NO en `<body>`: el `overflow` del elemento raíz se aplica al
+  // viewport (que es el que scrollea) y lo frena de verdad. En `<body>`, como
+  // `<html>` ya tiene `overflow-x: hidden`, no se propaga: convierte al body
+  // en un contenedor de scroll propio, el header `sticky` se despega (quedaba
+  // en `top: -scrollY`, fuera de pantalla, sin botón de cerrar) y la página
+  // seguía scrolleando por detrás.
   useEffect(() => {
     if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const root = document.documentElement;
+    const previous = root.style.overflow;
+    root.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = previous;
+      root.style.overflow = previous;
     };
   }, [open]);
 
@@ -105,7 +112,7 @@ export function MobileNav({
         ? createPortal(
             <div
               id="mobile-nav-panel"
-              className="fixed inset-x-0 top-[4.5rem] bottom-0 z-40 flex flex-col gap-2 overflow-y-auto bg-surface px-[6%] pt-8 pb-[calc(2rem+env(safe-area-inset-bottom))] lg:hidden"
+              className="fixed inset-x-0 top-[4.5rem] bottom-0 z-40 flex flex-col gap-2 overflow-y-auto overscroll-contain bg-surface px-[6%] pt-8 pb-[calc(2rem+env(safe-area-inset-bottom))] lg:hidden"
             >
               <nav aria-label="Menú principal" className="flex flex-col">
                 {allLinks.map((link) => (
