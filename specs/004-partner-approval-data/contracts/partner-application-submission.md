@@ -49,5 +49,6 @@ Este documento existe porque el trabajo de AUT-81 queda dividido en dos repos: e
 
 ## Abierto para el equipo de backend
 
-- ¿Los valores de `modality` (`en_local` / `a_domicilio` / `ambas`) coinciden con el enum que ya usa (o va a usar) `partners.modality`? Si el backend prefiere otros nombres, este repo los adapta — son un detalle de serialización, no de producto.
+- **El ticket original solo menciona modalidad binaria** (a domicilio / en local, usada como peso de scoring). Este repo agrega una tercera opción, `"ambas"`, porque un taller real puede combinar las dos y no tiene sentido forzarlo a elegir — pero si el scoring del lado del backend espera estrictamente un flag binario, `"ambas"` no tiene una traducción obvia ahí. Confirmar si el backend puede aceptar un tercer valor (y cómo lo pesa) o si conviene que este repo lo recorte a las dos opciones originales antes de mandarlo.
+- ¿Los valores de `modality` (`en_local` / `a_domicilio` / `ambas`, si se confirma la tercera) coinciden con el enum que ya usa (o va a usar) `partners.modality`? Si el backend prefiere otros nombres, este repo los adapta — son un detalle de serialización, no de producto.
 - ¿Qué pasa si `locality`/`province` vienen pero no alcanzan para derivar una `coverage_zone` válida (dirección ambigua, fuera de la cobertura conocida)? Este repo no bloquea el envío en ese caso (ver spec.md, Edge Cases) — el backend decide si la aprobación queda con `coverage_zone` vacía o requiere completarla a mano como excepción.
