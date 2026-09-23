@@ -104,6 +104,10 @@ export function Select({
  *
  * Es una defensa de cliente únicamente — un bot que postee directo a la
  * API la saltea. Suficiente para el volumen actual, no para spam dirigido.
+ *
+ * El nombre no debe parecerse a ningún dato personal (email, name, phone):
+ * el autocompletado del navegador ignora `autoComplete="off"` y lo llenaría,
+ * descartando envíos legítimos.
  */
 export function Honeypot({
   value,
@@ -115,7 +119,7 @@ export function Honeypot({
   return (
     <input
       type="text"
-      name="_hp_email"
+      name="_gotcha"
       value={value}
       onChange={(event) => onChange(event.target.value)}
       tabIndex={-1}
