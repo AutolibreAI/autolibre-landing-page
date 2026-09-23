@@ -44,17 +44,57 @@ export default function PrivacidadPage() {
 
         <h2>2. Datos que recolectamos</h2>
         <p>
-          Al registrarte en nuestra lista de Early Access, recolectamos tu{" "}
-          <strong>nombre y dirección de correo electrónico</strong>. Estos datos
-          se usan exclusivamente para enviarte información sobre el lanzamiento
-          del producto.
+          Recolectamos datos personales solo cuando completás alguno de los
+          formularios de este sitio. Cada uno pide lo siguiente:
+        </p>
+        <p>
+          <strong>Pedido de presupuesto.</strong> La patente de tu auto, tu
+          número de WhatsApp, tu zona o localidad, tu correo electrónico (es
+          opcional), la descripción de lo que necesita el auto y tu
+          consentimiento para compartir el pedido. Si elegís tu zona de la
+          lista de sugerencias, también guardamos sus coordenadas, localidad y
+          provincia. Con la patente consultamos la marca, el modelo, el año y la
+          localidad y provincia de radicación que figuran en el registro del
+          vehículo; si confirmás que es tu auto, esos datos quedan guardados con
+          el pedido. Tu zona la usamos para elegir los talleres de nuestra red
+          que trabajan cerca tuyo. A esos talleres les pasamos solo los datos de
+          tu auto y la descripción del problema; nosotros recibimos sus
+          respuestas y te las enviamos por WhatsApp.
+        </p>
+        <p>
+          <strong>Registro de talleres.</strong> El nombre del taller, el
+          WhatsApp de contacto, el correo electrónico, la dirección del local
+          (y, si la elegís de la lista de sugerencias, sus coordenadas,
+          localidad y provincia), los horarios, la modalidad de atención (en el
+          local, a domicilio o ambas), las marcas, los servicios, los tipos de
+          vehículo y de combustible con los que trabaja, y cómo nos conociste.
+          Los usamos para evaluar la solicitud, contactarte para activar el
+          perfil del taller en la app y hacerle llegar consultas de su zona y su
+          rubro.
+        </p>
+        <p>
+          <strong>Soporte.</strong> Tu nombre, tu correo electrónico o tu
+          teléfono (al menos uno de los dos), el motivo de la consulta y tu
+          mensaje. Los usamos para responderte.
+        </p>
+        <p>
+          <strong>Eliminación de cuenta.</strong> El correo electrónico de tu
+          cuenta de AutoLibre y, si querés, el motivo. Los usamos para procesar
+          la baja, que hace a mano una persona de nuestro equipo.
+        </p>
+        <p>
+          Además, al navegar el sitio se registran datos técnicos para medir
+          nuestros anuncios (ver el punto 7).
         </p>
 
         <h2>3. Finalidad del tratamiento</h2>
         <p>
-          Los datos se usan para: (a) informarte del lanzamiento de AutoLibre,
-          (b) enviarte novedades sobre el producto para las que te hayas
-          registrado, y (c) mejorar nuestra comunicación.
+          Los datos se usan para: (a) gestionar tu pedido de presupuesto,
+          compartir los datos de tu auto y la descripción del problema con
+          talleres de nuestra red y hacerte llegar sus respuestas,
+          (b) evaluar y activar las solicitudes de talleres, (c) responder
+          consultas de soporte y procesar pedidos de eliminación de cuenta, y
+          (d) medir la efectividad de nuestros anuncios.
         </p>
 
         <h2>4. Derechos del titular</h2>
@@ -72,9 +112,49 @@ export default function PrivacidadPage() {
 
         <h2>6. Terceros</h2>
         <p>
-          Utilizamos Supabase como proveedor de base de datos. No vendemos ni
-          cedemos tus datos a terceros con fines comerciales.
+          Los pedidos de presupuesto y los registros de talleres se guardan en
+          los sistemas propios de AutoLibre. Además, algunos datos pasan por
+          estos terceros:
         </p>
+        <p>
+          <strong>Vercel.</strong> Aloja y sirve este sitio. Para mostrártelo,
+          procesa datos técnicos de tu visita, como tu dirección IP y la
+          información de tu navegador.
+        </p>
+        <p>
+          <strong>Talleres de la red de AutoLibre.</strong> Reciben solo los
+          datos de tu auto y la descripción del problema de tu pedido de
+          presupuesto. No reciben tu WhatsApp, tu correo electrónico ni tu zona:
+          AutoLibre hace de intermediario y te acerca sus respuestas por
+          WhatsApp.
+        </p>
+        <p>
+          <strong>clasific.ar.</strong> Cuando buscás tu auto, le consultamos
+          desde nuestro servidor solo la patente para obtener la marca, el
+          modelo, el año y la radicación del vehículo.
+        </p>
+        <p>
+          <strong>Google Maps Platform (Google).</strong> El buscador de zonas y
+          direcciones de los formularios de presupuesto y de talleres usa Google
+          Places. Lo que escribís en ese campo, junto con datos técnicos de tu
+          navegador como tu dirección IP, llega a Google para sugerirte
+          ubicaciones.
+        </p>
+        <p>
+          <strong>Resend.</strong> Los mensajes de soporte y los pedidos de
+          eliminación de cuenta nos llegan por correo electrónico a través de
+          Resend.
+        </p>
+        <p>
+          <strong>Meta.</strong> Para medir nuestros anuncios, según se detalla
+          en el punto 7.
+        </p>
+        <p>
+          Algunos de estos proveedores (Vercel, Google, Resend y Meta, ver el
+          punto 7) pueden tratar datos fuera de Argentina, lo que puede implicar
+          una transferencia internacional de datos.
+        </p>
+        <p>No vendemos ni cedemos tus datos a terceros con fines comerciales.</p>
 
         <h2>7. Medición de anuncios con Meta</h2>
         <p>
@@ -90,9 +170,10 @@ export default function PrivacidadPage() {
         <p>
           Para eso se usan datos técnicos: tu dirección IP, información de tu
           navegador y dispositivo (el &ldquo;user agent&rdquo;) y las cookies
-          propias de Meta (<code>_fbp</code> y <code>_fbc</code>). El nombre, el
-          correo electrónico, el teléfono y los datos del vehículo que cargás en
-          el formulario de presupuesto <strong>no se envían a Meta</strong>.
+          propias de Meta (<code>_fbp</code> y <code>_fbc</code>). La patente,
+          el WhatsApp, la zona, el correo electrónico y la descripción que
+          cargás en el formulario de presupuesto{" "}
+          <strong>no se envían a Meta</strong>.
         </p>
         <p>
           Meta puede tratar estos datos según su propia{" "}
