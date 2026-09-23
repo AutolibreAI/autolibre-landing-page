@@ -5,6 +5,25 @@ export type NavLink = {
   readonly href: string;
 };
 
+/**
+ * CTA del header (y del menú mobile). Un `NavLink` que además puede salir del
+ * sitio (WhatsApp: `<a target="_blank">`), llevar ícono y medirse en el Pixel
+ * con el listener delegado de `MetaPixelEvents` (`data-meta-event` +
+ * `data-meta-placement`), sin volver client al header.
+ */
+export type NavCta = NavLink & {
+  readonly external?: boolean;
+  readonly icon?: IconName;
+  readonly tracking?: {
+    /** Nombre de `META_EVENTS`. */
+    readonly event: string;
+    /** `placement` del CTA en el header. */
+    readonly placement: string;
+    /** `placement` del mismo CTA dentro del menú mobile. */
+    readonly menuPlacement: string;
+  };
+};
+
 export type FaqItem = {
   readonly id: string;
   readonly question: string;

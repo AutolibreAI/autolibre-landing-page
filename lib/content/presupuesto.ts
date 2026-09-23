@@ -56,7 +56,7 @@ export function whatsappErrorMessage(error: ArWhatsappError, diff = 0): string {
 /** Copy de la sección de presupuesto de la home (`QuotesSection`), del modal de pedido y de la página /pedido. */
 export const presupuestoContent = {
   section: {
-    titleLines: ["Pedí presupuesto", "para tu auto."],
+    titleLines: ["Resolvemos todo", "para tu auto."],
     subtitle:
       "Contanos qué necesita y te responden talleres cerca tuyo. Un minuto, sin vueltas.",
     ctaLabel: "Pedí tu presupuesto",
@@ -68,6 +68,15 @@ export const presupuestoContent = {
     whatsapp: {
       label: "Consultanos por WhatsApp",
       href: whatsappUrl(PEDIDO_WHATSAPP_TEXT),
+    },
+    /**
+     * Link de texto a `/pedido`, debajo de los botones: la landing de pedido
+     * explica el paso a paso y la FAQ. Texto descriptivo (no "ver más") para
+     * que el ancla diga a dónde lleva.
+     */
+    pageLink: {
+      label: "Ver cómo funciona el pedido de presupuesto",
+      href: "/pedido",
     },
   },
 
@@ -89,7 +98,8 @@ export const presupuestoContent = {
         invalidHint: "Ingresá una patente válida.",
         searchLabel: "Buscar mi auto",
         searchingLabel: "Buscando...",
-        stillSearchingHint: "Puede tardar unos segundos más, estamos confirmando tu auto en el registro.",
+        stillSearchingHint:
+          "Puede tardar unos segundos más, estamos confirmando tu auto en el registro.",
         foundLabel: "Encontramos",
         foundConfirm: "Sí, es mi auto",
         foundReject: "No es mi auto, corregir",
@@ -200,31 +210,25 @@ export const presupuestoContent = {
     meta: {
       title: "Presupuestos gratis para tu auto, por WhatsApp",
       description:
-        "Contanos qué le pasa a tu auto y te pasamos presupuestos de proveedores de tu zona en AMBA por WhatsApp. Te respondemos en el día, gratis y sin compromiso.",
+        "Contanos qué le pasa a tu auto y te pasamos Presupuestos de proveedores en tu zona en AMBA por WhatsApp. Te respondemos en el día, gratis y sin compromiso.",
       breadcrumb: "Pedir presupuesto",
       homeBreadcrumb: "Inicio",
     },
 
+    /** Barra superior de la vista mobile del form (logo). */
     header: {
-      homeLabel: "AutoLibre — inicio",
       logoAlt: "AutoLibre.AI",
-      navLabel: "Secciones de la página",
-      links: [
-        { label: "Cómo funciona", href: "#como-funciona" },
-        { label: "Preguntas frecuentes", href: "#preguntas-frecuentes" },
-      ],
     },
 
     /** Todos los botones de WhatsApp de la página abren el mismo chat. */
     whatsapp: {
       text: PEDIDO_WHATSAPP_TEXT,
       label: "Escribinos por WhatsApp",
-      shortLabel: "WhatsApp",
     },
 
     hero: {
       badge: "Gratis · Proveedores en AMBA",
-      title: "Presupuestos de proveedores de tu zona, por WhatsApp.",
+      title: "Presupuestos de proveedores en tu zona, por WhatsApp.",
       subtitle:
         "Contanos qué le pasa a tu auto y te respondemos en el día. Gratis y sin compromiso.",
       whatsappNote: "Te respondemos en el día",
@@ -310,7 +314,8 @@ export const presupuestoContent = {
       items: [
         {
           question: "¿Cuánto cuesta?",
-          answer: "Nada. Solo le pagás al proveedor si decidís hacer el trabajo.",
+          answer:
+            "Nada. Solo le pagás al proveedor si decidís hacer el trabajo.",
         },
         {
           question: "¿Me van a llamar los proveedores?",
@@ -332,7 +337,9 @@ export const presupuestoContent = {
     },
 
     ctaBand: {
-      title: "Contanos qué le pasa a tu vehículo",
+      // Espacio duro entre "a" y "tu": si el título se parte, la preposición
+      // no queda colgando al final de la línea ("…le pasa / a tu vehículo").
+      title: "Contanos qué le pasa a tu vehículo",
       subtitle: "Te respondemos en el día.",
       formCta: "Quiero que me contacten",
     },
@@ -341,10 +348,6 @@ export const presupuestoContent = {
       /** Nombre del landmark de la barra fija (lectores de pantalla). */
       label: "Pedí tu presupuesto",
       formCta: "o dejanos tus datos",
-    },
-
-    footer: {
-      privacyLink: "Cómo cuidamos tus datos",
     },
 
     form: {
@@ -399,8 +402,10 @@ export const presupuestoContent = {
       body: "Último paso: mandanos un mensaje por WhatsApp. Así nos tenés agendados y te llegan los presupuestos.",
       whatsappLabel: "Abrir WhatsApp",
       /** `{code}` se reemplaza por el código del pedido (p. ej. `AL-1042`). */
-      whatsappTextWithCode: "¡Hola! Hice el pedido {code} en la web de AutoLibre.",
-      whatsappText: "¡Hola! Hice un pedido de presupuesto en la web de AutoLibre.",
+      whatsappTextWithCode:
+        "¡Hola! Hice el pedido {code} en la web de AutoLibre.",
+      whatsappText:
+        "¡Hola! Hice un pedido de presupuesto en la web de AutoLibre.",
       fallback: "Si no, te escribimos nosotros en el día.",
       orderLabel: "Tu pedido",
       /** `{code}` = código público del pedido (`AL-1042`): se muestra `#AL-1042`. */

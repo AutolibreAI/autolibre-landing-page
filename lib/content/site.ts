@@ -1,5 +1,9 @@
 import { siteConfig } from "@/lib/seo/config";
+import { providersContent } from "@/lib/content/providers";
 import type { NavLink, StoreLink } from "@/lib/content/types";
+
+/** Link a `/pedido`: el mismo en el header, el menú mobile y el footer. */
+const quoteLink = { label: "Pedir presupuesto", href: "/pedido" } as const;
 
 /** Contenido del header y del footer, compartido por todas las páginas. */
 export const siteContent = {
@@ -10,6 +14,11 @@ export const siteContent = {
       { label: "Compatibilidad", href: "/#compatibilidad" },
       { label: "FAQ", href: "/#faq" },
     ] satisfies readonly NavLink[],
+    /**
+     * Link fijo a `/pedido` en TODAS las páginas (header y menú mobile): es
+     * lo que saca a la landing de pedido de ser una página huérfana.
+     */
+    quoteLink,
     providerLink: { label: "Soy proveedor", href: "/proveedores" },
     cta: { label: "Descargar la app", href: "/#descargar" },
     /**
@@ -49,6 +58,19 @@ export const siteContent = {
   ] satisfies readonly StoreLink[],
   footer: {
     groups: [
+      /**
+       * Primero: son las dos puertas de entrada del sitio (dueño de auto y
+       * proveedor) y los únicos links internos a páginas de conversión.
+       */
+      {
+        id: "servicios",
+        title: "Servicios",
+        links: [
+          quoteLink,
+          // Mismo texto que el título del form de `/proveedores`.
+          { label: providersContent.form.title, href: "/proveedores" },
+        ],
+      },
       {
         id: "descargar",
         title: "Descargar",

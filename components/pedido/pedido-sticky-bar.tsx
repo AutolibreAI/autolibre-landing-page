@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { LAYOUT_IDS } from "@/components/layout/ids";
 import { cn } from "@/lib/utils";
 import { FORM_TOGGLE_EVENT, PEDIDO_IDS, type FormToggleDetail } from "./shared";
 
@@ -33,22 +34,27 @@ export function PedidoStickyBar({ label, children }: PedidoStickyBarProps) {
 
     const heroObserver = new IntersectionObserver(([entry]) => {
       // Solo "pasados": por encima del viewport, no todavía por debajo.
-      setPastHero(!entry.isIntersecting && entry.boundingClientRect.bottom <= 0);
+      setPastHero(
+        !entry.isIntersecting && entry.boundingClientRect.bottom <= 0,
+      );
     });
     heroObserver.observe(hero);
 
     const endVisibility = new Map<Element, boolean>();
     const endObserver = new IntersectionObserver((entries) => {
-      for (const entry of entries) endVisibility.set(entry.target, entry.isIntersecting);
+      for (const entry of entries)
+        endVisibility.set(entry.target, entry.isIntersecting);
       setEndVisible(Array.from(endVisibility.values()).some(Boolean));
     });
-    for (const id of [PEDIDO_IDS.ctaBand, PEDIDO_IDS.footer]) {
+    for (const id of [PEDIDO_IDS.ctaBand, LAYOUT_IDS.footer]) {
       const el = document.getElementById(id);
       if (el) endObserver.observe(el);
     }
 
     function onFormToggle(event: Event) {
-      setFormOpen(Boolean((event as CustomEvent<FormToggleDetail>).detail?.open));
+      setFormOpen(
+        Boolean((event as CustomEvent<FormToggleDetail>).detail?.open),
+      );
     }
     window.addEventListener(FORM_TOGGLE_EVENT, onFormToggle);
 
@@ -70,7 +76,12 @@ export function PedidoStickyBar({ label, children }: PedidoStickyBarProps) {
         // segura del iPhone (la barra del home no puede tapar los botones).
         // `px-[6%]`: el gutter de `Container`, alineado con la página.
         "fixed inset-x-0 bottom-0 z-40 flex flex-col gap-1 border-t border-line bg-surface px-[6%] pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] transition duration-300 ease-out motion-reduce:transition-none lg:hidden",
-        visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-full opacity-0",
+        visible
+          ? "translate-y-0 opacity-100"
+          : "pointer-events-none translate-y-full opacity-0",
+        // Variante arbitraria: no hay utility para "un ancestro tiene tal
+        // descendiente". Se oculta mientras existe el panel del menú mobile.
+        "[html:has(#mobile-nav-panel)_&]:invisible",
       )}
     >
       {children}

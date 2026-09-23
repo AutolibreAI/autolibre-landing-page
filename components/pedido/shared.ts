@@ -18,7 +18,6 @@ export const PEDIDO_IDS = {
   example: "asi-te-llega",
   faq: "preguntas-frecuentes",
   ctaBand: "pedido-cierre",
-  footer: "pedido-pie",
 } as const;
 
 /**

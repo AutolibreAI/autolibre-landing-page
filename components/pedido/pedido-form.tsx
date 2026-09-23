@@ -276,9 +276,13 @@ export function PedidoForm() {
   // si la ventana pasa a desktop (ahí el form es la tarjeta, no una vista).
   useEffect(() => {
     if (!open) return;
-    const { body } = document;
-    const previousOverflow = body.style.overflow;
-    body.style.overflow = "hidden";
+    // En `<html>` y NO en `<body>` (mismo criterio que `MobileNav`): como
+    // `<html>` tiene `overflow-x: hidden`, un `overflow` en el body no llega
+    // al viewport, vuelve al body un contenedor de scroll propio y despega el
+    // header sticky del sitio.
+    const root = document.documentElement;
+    const previousOverflow = root.style.overflow;
+    root.style.overflow = "hidden";
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -314,7 +318,7 @@ export function PedidoForm() {
     document.addEventListener("keydown", onKeyDown);
     desktop.addEventListener("change", onMediaChange);
     return () => {
-      body.style.overflow = previousOverflow;
+      root.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKeyDown);
       desktop.removeEventListener("change", onMediaChange);
     };
@@ -583,7 +587,9 @@ export function PedidoForm() {
       aria-modal={open ? true : undefined}
       className={cn(
         open
-          ? "fixed inset-0 z-50 flex flex-col overflow-y-auto overscroll-contain bg-surface"
+          ? // `z-60`: arriba del header sticky del sitio (`z-50`) y del
+            // panel del menú mobile (`z-40`). Es una vista de pantalla completa.
+            "fixed inset-0 z-60 flex flex-col overflow-y-auto overscroll-contain bg-surface"
           : "hidden rounded-card border border-line bg-surface p-8 lg:block",
       )}
     >
@@ -688,7 +694,14 @@ export function PedidoForm() {
                   />
                 </Field>
 
-                <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 sm:items-start">
+                {/* Patente y WhatsApp en dos columnas solo en la vista a
+                    pantalla completa de tablet (`sm`), donde sobra ancho. En
+                    la tarjeta de desktop (`lg`, 420-600px) las columnas
+                    partían las ayudas en dos líneas, cada una distinta según
+                    el ancho, y la fila se leía despareja: ahí van apiladas,
+                    cada ayuda en una línea. La tarjeta sigue más baja que la
+                    columna de texto del hero, así que el hero no crece. */}
+                <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 sm:items-start lg:flex lg:items-stretch">
                   <Field
                     label={
                       <>
@@ -804,11 +817,6 @@ export function PedidoForm() {
                     variant: "primary",
                     size: "lg",
                     block: true,
-                    // Desktop: al lado del CTA de WhatsApp del hero, el form es
-                    // la opción secundaria y se dibuja con la variante
-                    // `outline` de la home.
-                    className:
-                      "lg:border lg:border-ink/30 lg:bg-transparent lg:text-ink lg:hover:border-brand lg:hover:bg-transparent lg:hover:text-brand",
                   })}
                 >
                   {submitting ? copy.submitting : copy.submit}

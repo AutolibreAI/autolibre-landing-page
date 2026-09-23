@@ -65,12 +65,17 @@ export function PedidoSteps() {
   );
 }
 
-const bubble = "rounded-card px-4 py-3 text-sm leading-relaxed text-ink";
+/**
+ * Globo de chat. Mobile: tope fijo de `max-w-72`, como en el teléfono. En
+ * desktop la columna es mucho más ancha que un teléfono: el tope pasa a ser
+ * proporcional (5/6 de la tarjeta, lo que usa un globo en WhatsApp Web), así
+ * el ejemplo no deja media tarjeta vacía ni se estira más que la FAQ de al
+ * lado.
+ */
+const bubble =
+  "max-w-72 rounded-card px-4 py-3 text-sm leading-relaxed text-ink lg:max-w-11/12 lg:leading-snug";
 /** Globo recibido: blanco con borde sobre la tarjeta suave, como en el chat real. */
-const received = cn(
-  bubble,
-  "max-w-72 self-start rounded-bl-sm border border-line bg-surface lg:max-w-100",
-);
+const received = cn(bubble, "self-start rounded-bl-sm border border-line bg-surface");
 
 /**
  * Chat de ejemplo. Es un `<figure>` con su `<figcaption>` "Ejemplo
@@ -87,10 +92,12 @@ export function PedidoExample() {
       spacing="sm"
       aria-labelledby={titleId}
       className={cn("reveal", stacked)}
+      // Columna de la grilla de `/pedido`, que ya vive en un `Container`.
+      container={false}
     >
       <SectionHeading as="h2" size="md" id={titleId} title={example.title} />
       <figure className="mt-8 flex flex-col gap-3 rounded-card border border-line bg-surface-subtle p-5 md:mt-12 lg:p-6">
-        <div className={cn(bubble, "max-w-72 self-end rounded-br-sm bg-surface-muted lg:max-w-95")}>
+        <div className={cn(bubble, "self-end rounded-br-sm bg-surface-muted")}>
           <span className="sr-only">{example.you} </span>
           {example.userMessage}
         </div>
@@ -102,7 +109,11 @@ export function PedidoExample() {
           ))}
         </div>
 
-        <div className={cn(received, "flex flex-col gap-4")}>
+        {/* Desktop: los dos presupuestos lado a lado, como dos fichas del
+            mismo mensaje; se comparan de un vistazo y el globo no se estira
+            para abajo. Este globo puede usar todo el ancho (a 1024 cada
+            columna necesita el teléfono entero en una línea). */}
+        <div className={cn(received, "flex flex-col gap-4 lg:max-w-full lg:grid lg:grid-cols-2 lg:gap-x-4")}>
           <span className="sr-only">{example.us}</span>
           {example.providers.map((provider) => (
             <div key={provider.name}>
@@ -112,7 +123,7 @@ export function PedidoExample() {
                 <span aria-hidden="true">{emoji.address} </span>
                 {provider.address}
               </p>
-              <p>
+              <p className="whitespace-nowrap">
                 <span aria-hidden="true">{emoji.phone} </span>
                 {provider.phone}
               </p>
@@ -148,6 +159,8 @@ export function PedidoFaq() {
       spacing="sm"
       aria-labelledby={titleId}
       className={cn("reveal", stacked)}
+      // Columna de la grilla de `/pedido`, que ya vive en un `Container`.
+      container={false}
     >
       <SectionHeading as="h2" size="md" id={titleId} title={faq.title} />
       <div className="mt-8 flex flex-col gap-2.5 md:mt-12">
@@ -210,15 +223,18 @@ export function PedidoCtaBand() {
           id={titleId}
           title={ctaBand.title}
           subtitle={ctaBand.subtitle}
-          className="max-w-140"
+          className="min-w-0 flex-1 *:text-pretty"
         />
-        <div className="flex shrink-0 flex-wrap gap-3">
-          <WhatsappLink placement="cta_band" variant="inverse" className="w-full sm:w-auto" />
+        {/* Desktop: los botones apilados (mismo ancho) a la derecha. En fila
+            ocupaban ~530px y partían el título en dos aun a 1440; apilados,
+            el título entra en una línea desde 1280. */}
+        <div className="flex shrink-0 flex-wrap gap-3 lg:flex-col lg:flex-nowrap">
+          <WhatsappLink placement="cta_band" variant="inverse" className="w-full sm:w-auto lg:w-full" />
           <OpenFormButton
             className={buttonVariants({
               variant: "outlineInverse",
               size: "lg",
-              className: "w-full sm:w-auto",
+              className: "w-full sm:w-auto lg:w-full",
             })}
           >
             {ctaBand.formCta}

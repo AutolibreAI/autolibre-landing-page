@@ -4,7 +4,6 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { ProviderForm } from "@/components/forms/provider-form";
 import { ProvidersHeroSection } from "@/components/sections/providers/hero";
 import { ProvidersReasonsSection } from "@/components/sections/providers/reasons";
-import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { fetchServiceCatalog } from "@/lib/autolibre-api";
 import { providersContent } from "@/lib/content/providers";
@@ -55,20 +54,19 @@ export default async function ProveedoresPage() {
       <PageShell
         secondary={{ label: "Soy dueño de auto", href: "/" }}
         cta={{ label: "Sumar mi negocio", href: "#form" }}
+        currentPath="/proveedores"
       >
         <ProvidersHeroSection />
         <ProvidersReasonsSection />
 
-        <Section id="form" tone="muted" spacing="md">
-          <Container size="narrow">
-            <h2 className="text-center font-display text-2xl font-bold text-ink">
-              {providersContent.form.title}
-            </h2>
-            <p className="mt-3 mb-10 text-center text-[0.9375rem] text-ink/65">
-              {providersContent.form.subtitle}
-            </p>
-            <ProviderForm serviceFamilies={serviceFamilies} />
-          </Container>
+        <Section id="form" tone="muted" spacing="md" container="narrow">
+          <h2 className="text-center font-display text-2xl font-bold text-ink">
+            {providersContent.form.title}
+          </h2>
+          <p className="mt-3 mb-10 text-center text-[0.9375rem] text-ink/65">
+            {providersContent.form.subtitle}
+          </p>
+          <ProviderForm serviceFamilies={serviceFamilies} />
         </Section>
       </PageShell>
 

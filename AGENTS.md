@@ -74,12 +74,17 @@ La estructura del HTML es lo primero que leen buscadores y LLMs. Es una regla pr
 - Todo copy visible (títulos, textos, CTAs, labels, `alt`, metadata) vive en `lib/content/*`. Los componentes no traen strings hardcodeados.
 - URLs de tiendas, contacto y redes salen de `siteConfig`, nunca escritas a mano.
 
+### 9. Layout: ancho del contenido
+
+- Todo contenido de sección vive dentro de un contenedor: `Section` ya trae `Container size="wide"` por defecto (el ancho del header, el hero y el footer). Otro ancho (`prose`, `narrow`, `content`) solo como decisión deliberada y centrada, con `container="..."` y `containerClassName`; `container={false}` solo para bandas full-bleed que manejan su propio gutter (o secciones que son columnas de una grilla que ya vive en un `Container`). Nunca anidar un `Container` dentro de un `Section` a mano.
+
 ### Checklist antes de dar por terminada una página
 
 - [ ] Es Server Component; los `"use client"` que quedan son islas hoja justificadas.
 - [ ] Todo el contenido indexable está en el HTML del server (verificado con "ver código fuente", no con devtools).
 - [ ] Un único `<h1>` con el tema de la página; headings sin saltos de nivel; outline verificado.
 - [ ] Landmarks correctos (`<main>` único, `<section>` con heading y `aria-labelledby`), sin div-soup.
+- [ ] Los bordes del contenido de cada sección se alinean con el header y el footer (verificado a 390, 1024 y 1440 px).
 - [ ] `metadata` con `createMetadata` (title + description única + path).
 - [ ] `<JsonLd>` con `webPageSchema` + `breadcrumbSchema` (+ los específicos del tipo de página).
 - [ ] Ruta agregada a `app/sitemap.ts` y a `public/llms.txt`; `robots.ts` revisado si es privada.

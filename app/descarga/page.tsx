@@ -104,7 +104,9 @@ export default function DescargaPage() {
             alt={logoAlt}
             width={676}
             height={132}
-            priority
+            /* No es el LCP (lo es el h1): `eager` y no `priority`, que en
+               Next 16 está deprecado. */
+            loading="eager"
             sizes="123px"
             className="h-6 w-auto"
           />

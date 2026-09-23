@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
+import { PageShell } from "@/components/layout/page-shell";
 import { OpenFormButton } from "@/components/pedido/open-form-button";
-import { PedidoFooter } from "@/components/pedido/pedido-footer";
-import { PedidoHeader } from "@/components/pedido/pedido-header";
 import { PedidoHero } from "@/components/pedido/pedido-hero";
 import {
   PedidoCtaBand,
@@ -13,7 +12,9 @@ import { PedidoStickyBar } from "@/components/pedido/pedido-sticky-bar";
 import { WhatsappLink } from "@/components/pedido/whatsapp-link";
 import { JsonLd } from "@/components/seo/json-ld";
 import { Container } from "@/components/ui/container";
+import { META_EVENTS } from "@/lib/analytics/meta-pixel";
 import { presupuestoContent } from "@/lib/content/presupuesto";
+import type { NavCta } from "@/lib/content/types";
 import { createMetadata } from "@/lib/seo/metadata";
 import {
   breadcrumbSchema,
@@ -22,10 +23,28 @@ import {
   organizationSchema,
   webPageSchema,
 } from "@/lib/seo/schema";
+import { whatsappUrl } from "@/lib/whatsapp";
 
-const { meta, faq, stickyBar } = presupuestoContent.pedidoPage;
+const { meta, faq, stickyBar, whatsapp } = presupuestoContent.pedidoPage;
 
 const PATH = "/pedido";
+
+/**
+ * En `/pedido` el CTA del header es el mismo chat de WhatsApp que el resto de
+ * la página (no "Descargar la app"): una sola conversión. Se mide como
+ * `Contact` con `placement` `header`, y `header_menu` dentro del menú mobile.
+ */
+const headerCta: NavCta = {
+  label: whatsapp.label,
+  href: whatsappUrl(whatsapp.text),
+  external: true,
+  icon: "whatsapp",
+  tracking: {
+    event: META_EVENTS.contact,
+    placement: "header",
+    menuPlacement: "header_menu",
+  },
+};
 
 /**
  * Se indexa: es la landing que se comparte por WhatsApp y en anuncios, y la
@@ -40,7 +59,11 @@ export const metadata: Metadata = createMetadata({
 
 const schema = graph(
   organizationSchema(),
-  webPageSchema({ name: meta.title, description: meta.description, path: PATH }),
+  webPageSchema({
+    name: meta.title,
+    description: meta.description,
+    path: PATH,
+  }),
   breadcrumbSchema([
     { name: meta.homeBreadcrumb, path: "/" },
     { name: meta.breadcrumb, path: PATH },
@@ -56,33 +79,38 @@ const schema = graph(
  * server. Islas de cliente, solo dos: `PedidoForm` (form + vista mobile +
  * confirmación) y `PedidoStickyBar` (cuándo mostrar la barra fija mobile).
  *
- * No usa `PageShell`: header y footer propios y mínimos. Quien llega acá viene
- * de un link directo y tiene una sola cosa para hacer; la única salida del
- * header es el logo, que vuelve al inicio.
+ * Usa `PageShell` como el resto del sitio: header y footer compartidos, con
+ * el link "Pedir presupuesto" marcado como página actual y WhatsApp como CTA
+ * del header. Sin anclas de sección en el header (son de la home).
  *
  * Outline: h1 (hero) → h2 del form → h2 por sección → h3 por paso y por
  * pregunta.
  */
 export default function PedidoPage() {
   return (
-    <div className="flex min-h-dvh flex-col bg-surface-muted text-ink">
-      <PedidoHeader />
+    <>
+      <PageShell cta={headerCta} currentPath={PATH}>
+        {/* El fondo va en un wrapper y no en `<main>` (lo pone `PageShell`):
+            las secciones viven dentro de `Container` y el lavado verde tiene
+            que llegar de borde a borde. */}
+        <div className="bg-surface-muted text-ink">
+          <PedidoHero />
 
-      <main className="flex-1">
-        <PedidoHero />
-
-        {/* Mismo contenedor que las secciones de la home. */}
-        <Container>
+          {/* Cada `Section` trae su `Container` (ancho `wide`, el del header
+              y el footer). Ejemplo y FAQ comparten fila en desktop: la
+              grilla es el contenedor y ellas van con `container={false}`,
+              así los bordes externos de la fila siguen alineados. */}
           <PedidoSteps />
-          <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-16">
+          <Container
+            size="wide"
+            className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-16"
+          >
             <PedidoExample />
             <PedidoFaq />
-          </div>
+          </Container>
           <PedidoCtaBand />
-        </Container>
-      </main>
-
-      <PedidoFooter />
+        </div>
+      </PageShell>
 
       <PedidoStickyBar label={stickyBar.label}>
         <WhatsappLink placement="sticky_bar" size="lg" block />
@@ -92,6 +120,6 @@ export default function PedidoPage() {
       </PedidoStickyBar>
 
       <JsonLd schema={schema} />
-    </div>
+    </>
   );
 }
