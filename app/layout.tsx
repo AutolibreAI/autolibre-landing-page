@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { DM_Sans, Outfit } from "next/font/google";
+import Script from "next/script";
+import { MetaPixelEvents } from "@/components/analytics/meta-pixel-events";
+import { META_PIXEL_ID } from "@/lib/analytics/meta-pixel";
 import { siteConfig } from "@/lib/seo/config";
 import "./globals.css";
 
@@ -95,6 +98,24 @@ const platformScript = `try{var u=navigator.userAgent,p=/iPhone|iPad|iPod/.test(
  */
 const revealScript = `(function(){try{if(!("IntersectionObserver"in window)||!Element.prototype.animate||matchMedia("(prefers-reduced-motion: reduce)").matches)return;var seen=new WeakSet(),anims=new WeakMap(),frames=[{opacity:0,transform:"translateY(1.5rem)"},{opacity:1,transform:"none"}];var io=new IntersectionObserver(function(es){es.forEach(function(e){if(!e.isIntersecting)return;io.unobserve(e.target);var a=anims.get(e.target);if(a)a.play()})},{rootMargin:"100000px 0px -10% 0px"});function scan(){document.querySelectorAll(".reveal,.reveal-group>*").forEach(function(el){if(seen.has(el))return;seen.add(el);if(!el.getClientRects().length)return;var r=el.getBoundingClientRect();if(r.top<innerHeight&&r.bottom>0)return;var step=parseFloat(getComputedStyle(el).getPropertyValue("--reveal-step"))||0;var a=el.animate(frames,{duration:700,delay:step*90,easing:"cubic-bezier(0.22,1,0.36,1)",fill:"both"});a.pause();a.onfinish=function(){a.cancel()};anims.set(el,a);io.observe(el)})}scan();var t;new MutationObserver(function(){cancelAnimationFrame(t);t=requestAnimationFrame(scan)}).observe(document.body,{childList:true,subtree:true})}catch(e){}})()`;
 
+/**
+ * Meta Pixel en dos tiempos, para que nunca compita con el LCP ni el INP:
+ *
+ * 1. Stub inline en el `<head>`: el `fbq` oficial de Meta SIN la parte que
+ *    inyecta `fbevents.js`. Sólo encola llamadas, así que `init` + `PageView`
+ *    (y cualquier evento temprano) quedan registrados por unos bytes.
+ * 2. `fbevents.js` (~90KB) con `next/script` `lazyOnload`: baja en idle,
+ *    después de todo lo demás, y al cargar vacía la cola del stub.
+ *
+ * Sin `<noscript><img>`: sin JS no hay nada que medir que nos importe, y es
+ * un request extra. Sin `NEXT_PUBLIC_META_PIXEL_ID` no se renderiza nada.
+ * Va como `<script>` plano por lo mismo que `platformScript`: el stub tiene
+ * que existir antes de que hidrate cualquier isla que llame a `fbq`.
+ */
+const metaPixelScript = META_PIXEL_ID
+  ? `!function(f){if(f.fbq)return;var n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[]}(window);fbq("init",${JSON.stringify(META_PIXEL_ID)});fbq("track","PageView");`
+  : null;
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -113,10 +134,17 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: platformScript }} />
+        {metaPixelScript && <script dangerouslySetInnerHTML={{ __html: metaPixelScript }} />}
       </head>
       <body className="min-h-dvh bg-surface text-ink">
         {children}
         <script dangerouslySetInnerHTML={{ __html: revealScript }} />
+        {metaPixelScript && (
+          <>
+            <Script src="https://connect.facebook.net/en_US/fbevents.js" strategy="lazyOnload" />
+            <MetaPixelEvents />
+          </>
+        )}
       </body>
     </html>
   );

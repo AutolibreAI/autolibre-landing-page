@@ -1,5 +1,26 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
+import { sendMetaCapiEvent } from "@/lib/analytics/meta-capi";
+import { META_EVENTS } from "@/lib/analytics/meta-pixel";
+import { siteConfig } from "@/lib/seo/config";
 import { VEHICLE_LOOKUP_LIMITS, type VehicleLookupSnapshot } from "@/lib/vehicle-lookup";
+
+/**
+ * ID de deduplicación que genera el navegador (`createMetaEventId`). Es
+ * opcional y nunca invalida el pedido: si no viene o no tiene forma de UUID
+ * razonable, simplemente no se manda el `Lead` server-side (sin ID, Meta lo
+ * contaría dos veces junto con el del Pixel).
+ */
+const META_EVENT_ID_PATTERN = /^[A-Za-z0-9-]{8,64}$/;
+
+function metaEventIdOrNull(raw: unknown): string | null {
+  return typeof raw === "string" && META_EVENT_ID_PATTERN.test(raw) ? raw : null;
+}
+
+/** Primer hop de `x-forwarded-for` (el cliente real detrás del proxy). */
+function clientIpFrom(req: NextRequest): string | undefined {
+  const forwarded = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return forwarded || req.headers.get("x-real-ip")?.trim() || undefined;
+}
 
 const PLATE_PATTERNS: readonly RegExp[] = [
   /^[A-Z]{3}\d{3}$/,
@@ -147,6 +168,7 @@ export async function POST(req: NextRequest) {
     contactEmail,
     consent,
     vehicleLookup: rawVehicleLookup,
+    metaEventId: rawMetaEventId,
   } = body;
 
   const plate = canonicalPlate(rawPlate);
@@ -210,6 +232,23 @@ export async function POST(req: NextRequest) {
     }
 
     const id = data?.id as string | undefined;
+
+    // `Lead` server-side SOLO con el pedido ya registrado, y con `after()` para
+    // no demorar la respuesta. Headers y cookies se leen acá, no adentro del
+    // callback: el request ya está en mano y no hace falta `headers()`.
+    const metaEventId = metaEventIdOrNull(rawMetaEventId);
+    if (metaEventId) {
+      const capiEvent = {
+        eventName: META_EVENTS.lead,
+        eventId: metaEventId,
+        eventSourceUrl: req.headers.get("referer") || `${siteConfig.url}/pedido`,
+        clientIp: clientIpFrom(req),
+        userAgent: req.headers.get("user-agent") || undefined,
+        fbp: req.cookies.get("_fbp")?.value,
+        fbc: req.cookies.get("_fbc")?.value,
+      };
+      after(() => sendMetaCapiEvent(capiEvent));
+    }
 
     return NextResponse.json({ success: true, id });
   } catch (error) {

@@ -1,0 +1,70 @@
+/**
+ * Meta Pixel del lado del navegador. Sólo se miden TRES eventos, decididos a
+ * propósito (ver `META_EVENTS`); cualquier otro se agrega acá primero.
+ *
+ * Sin `NEXT_PUBLIC_META_PIXEL_ID` no se carga nada y todos los helpers son
+ * no-op: en dev sin la variable no se ensucian los datos del Pixel real.
+ */
+
+/** Público por diseño: el ID del Pixel viaja igual en el HTML de cualquier sitio. */
+export const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || undefined;
+
+/** Nombres estándar de Meta. Van tal cual: el Events Manager no reconoce otros. */
+export const META_EVENTS = {
+  pageView: "PageView",
+  lead: "Lead",
+  contact: "Contact",
+} as const;
+
+export type MetaEventName = (typeof META_EVENTS)[keyof typeof META_EVENTS];
+
+type MetaEventParams = Record<string, string | number | boolean>;
+
+/** Firma mínima de `fbq`: la que usamos, no la API entera. */
+export type Fbq = {
+  (command: "init", pixelId: string): void;
+  (
+    command: "track",
+    event: string,
+    params?: MetaEventParams,
+    options?: { eventID?: string },
+  ): void;
+};
+
+declare global {
+  interface Window {
+    fbq?: Fbq;
+    _fbq?: Fbq;
+  }
+}
+
+/**
+ * Manda un evento al Pixel. Si `fbevents.js` todavía no bajó (se carga con
+ * `lazyOnload`), el stub del layout lo encola y se despacha cuando llega.
+ * `eventId` es el que deduplica contra la Conversions API.
+ */
+export function trackMetaEvent(
+  name: MetaEventName,
+  params?: MetaEventParams,
+  eventId?: string,
+): void {
+  if (!META_PIXEL_ID || typeof window === "undefined" || !window.fbq) return;
+  try {
+    if (eventId) window.fbq("track", name, params ?? {}, { eventID: eventId });
+    else window.fbq("track", name, params);
+  } catch {
+    // La medición nunca rompe la página.
+  }
+}
+
+/**
+ * ID compartido entre el Pixel y la Conversions API para un mismo evento.
+ * `crypto.randomUUID` exige contexto seguro: en http por IP de LAN (probar en
+ * el celu contra el dev server) no existe, de ahí el fallback.
+ */
+export function createMetaEventId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createMetaEventId, META_EVENTS, trackMetaEvent } from "@/lib/analytics/meta-pixel";
 import { presupuestoContent } from "@/lib/content/presupuesto";
 import { EMAIL_REGEX } from "@/lib/validation";
 import { siteConfig } from "@/lib/seo/config";
@@ -283,6 +284,9 @@ export function useQuoteFlow(options?: {
 
   async function handleSubmit() {
     setSubmitState({ kind: "loading" });
+    // Mismo ID para el `Lead` del Pixel y el de la Conversions API (lo manda
+    // la route): así Meta cuenta un solo lead aunque le lleguen los dos.
+    const metaEventId = createMetaEventId();
     try {
       const response = await fetch("/api/presupuesto", {
         method: "POST",
@@ -309,6 +313,8 @@ export function useQuoteFlow(options?: {
             lookup.kind === "found"
               ? (lookup.snapshot ?? undefined)
               : undefined,
+          // Lo consume la route para la Conversions API; al backend no llega.
+          metaEventId,
           // TODO(attribution): los UTMs viajan en `attributionRef.current` y están listos para
           // mandarse acá. Bloqueado: el DTO del backend usa forbidNonWhitelisted, así que un campo
           // desconocido devuelve 400. Requiere agregar el campo en
@@ -318,6 +324,7 @@ export function useQuoteFlow(options?: {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? copy.genericError);
+      trackMetaEvent(META_EVENTS.lead, undefined, metaEventId);
       setSubmitState({ kind: "success", id: data.id });
     } catch (error) {
       setSubmitState({

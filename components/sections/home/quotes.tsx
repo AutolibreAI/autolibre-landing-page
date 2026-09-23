@@ -3,6 +3,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/heading";
 import { Section } from "@/components/ui/section";
+import { META_EVENTS } from "@/lib/analytics/meta-pixel";
 import { presupuestoContent } from "@/lib/content/presupuesto";
 
 /**
@@ -48,11 +49,14 @@ export function QuotesSection() {
           <div className="flex shrink-0 flex-wrap gap-3">
             <QuoteRequestModal size="lg">{ctaLabel}</QuoteRequestModal>
             {/* `<a>` nativo y no `ButtonLink`: sale del sitio, el router de
-                `next/link` no aporta nada (mismo criterio que `StoreLinks`). */}
+                `next/link` no aporta nada (mismo criterio que `StoreLinks`).
+                `data-meta-event`: lo mide `MetaPixelEvents` con un listener
+                delegado, así esta sección sigue siendo server. */}
             <a
               href={whatsapp.href}
               target="_blank"
               rel="noopener noreferrer"
+              data-meta-event={META_EVENTS.contact}
               className={buttonVariants({ variant: "outlineInverse", size: "lg" })}
             >
               {whatsapp.label}
