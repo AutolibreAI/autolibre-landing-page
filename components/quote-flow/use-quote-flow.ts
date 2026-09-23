@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { createMetaEventId, META_EVENTS, trackMetaEvent } from "@/lib/analytics/meta-pixel";
+import {
+  createMetaEventId,
+  META_CUSTOM_EVENTS,
+  META_EVENTS,
+  trackMetaCustomEvent,
+  trackMetaEvent,
+} from "@/lib/analytics/meta-pixel";
 import { presupuestoContent } from "@/lib/content/presupuesto";
 import { EMAIL_REGEX } from "@/lib/validation";
 import { siteConfig } from "@/lib/seo/config";
@@ -160,6 +166,10 @@ export function useQuoteFlow(options?: {
   const [mapsReady, setMapsReady] = useState(false);
   const addressInputRef = useRef<HTMLInputElement>(null);
   const pollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // `QuoteStart` sale una sola vez por instancia del flujo: volver al paso 1
+  // y avanzar de nuevo no lo repite. Ref y no estado (no pinta nada), y
+  // `reset()` no lo toca a propósito: sigue siendo la misma persona.
+  const quoteStartTrackedRef = useRef(false);
 
   // En un ref y no en estado: la atribución no pinta nada, no tiene que
   // provocar un render, y tiene que sobrevivir a un `reset()`.
@@ -282,6 +292,20 @@ export function useQuoteFlow(options?: {
     }
   }
 
+  /**
+   * Paso 1 completado = pasar al paso 2, por cualquiera de las dos salidas:
+   * confirmar el auto encontrado o seguir sin él (no encontrado / servicio
+   * caído). Encontrar el auto solo no alcanza: la persona todavía puede
+   * decir "no es mi auto". Sin params: nada de patente ni datos personales.
+   */
+  function completePlateStep() {
+    if (!quoteStartTrackedRef.current) {
+      quoteStartTrackedRef.current = true;
+      trackMetaCustomEvent(META_CUSTOM_EVENTS.quoteStart);
+    }
+    setStep(2);
+  }
+
   async function handleSubmit() {
     setSubmitState({ kind: "loading" });
     // Mismo ID para el `Lead` del Pixel y el de la Conversions API (lo manda
@@ -392,13 +416,13 @@ export function useQuoteFlow(options?: {
       runLookup();
     },
     confirmVehicle() {
-      setStep(2);
+      completePlateStep();
     },
     rejectVehicle() {
       setLookup({ kind: "idle" });
     },
     continueAnyway() {
-      setStep(2);
+      completePlateStep();
     },
     goBack() {
       setStep((current) => Math.max(1, current - 1));
