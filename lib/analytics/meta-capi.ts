@@ -1,5 +1,5 @@
 import "server-only";
-import { hashedWhatsappForMeta } from "./meta-user-data";
+import { hashedWhatsappVariantsForMeta } from "./meta-user-data";
 
 /**
  * Conversions API de Meta: el mismo evento que manda el Pixel, pero desde el
@@ -52,6 +52,9 @@ export async function sendMetaCapiEvent(event: MetaCapiEvent): Promise<void> {
   // el evento en esa pestaña pero NO lo cuenta como real.
   const testEventCode = process.env.META_CAPI_TEST_EVENT_CODE?.trim();
 
+  // `ph` lleva los hashes de ambas variantes del celular AR (con y sin el 9).
+  const phoneHashes = hashedWhatsappVariantsForMeta(event.phone);
+
   // Meta rechaza campos vacíos en `user_data`: sólo van los que existen.
   const userData = Object.fromEntries(
     Object.entries({
@@ -59,7 +62,7 @@ export async function sendMetaCapiEvent(event: MetaCapiEvent): Promise<void> {
       client_user_agent: event.userAgent,
       fbp: event.fbp,
       fbc: event.fbc,
-      ph: hashedWhatsappForMeta(event.phone),
+      ph: phoneHashes.length > 0 ? [...phoneHashes] : undefined,
     }).filter(([, value]) => Boolean(value)),
   );
 

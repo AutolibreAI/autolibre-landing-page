@@ -181,7 +181,7 @@ export default function PrivacidadPage() {
         <p>
           Cuando enviás un pedido de presupuesto, además le mandamos a Meta tu
           número de WhatsApp <strong>cifrado de forma irreversible (hash)</strong>:
-          Meta no recibe el número en sí, solo un código que le permite asociar
+          Meta no recibe el número en sí, solo códigos que le permiten asociar
           el envío del pedido con una cuenta suya, si la tenés. La patente, la
           zona, el correo electrónico y la descripción que cargás en el
           formulario de presupuesto <strong>no se envían a Meta</strong>.

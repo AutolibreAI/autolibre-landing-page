@@ -26,6 +26,13 @@ import { createHash } from "node:crypto";
  *   el área: también se omite.
  * Omitir `ph` es mejor que mandar un hash de un número mal armado: el `Lead`
  * sale igual, sólo sin ese dato de match.
+ *
+ * Por qué dos variantes: no sabemos si Meta tiene guardado el celular de la
+ * cuenta con el `9` de móvil (`549…`, el E.164 correcto) o sin él (`54…`,
+ * como lo carga mucha gente).
+ * `ph` acepta varios hashes, así que se mandan los dos: si el número de la
+ * cuenta coincide con cualquiera, matchea. Ambos salen del mismo número
+ * nacional validado, así que no se agrega ruido.
  */
 
 /** Número nacional argentino: característica + abonado, siempre 10 dígitos. */
@@ -76,10 +83,25 @@ export function normalizeArWhatsapp(raw: string): string | null {
   return `549${national}`;
 }
 
-/** `ph` listo para `user_data`: SHA-256 en hex del número normalizado. */
-export function hashedWhatsappForMeta(raw: unknown): string[] | undefined {
-  if (typeof raw !== "string") return undefined;
+/**
+ * Las dos formas en que Meta puede tener guardado el mismo celular AR: con el
+ * `9` de móvil (`549XXXXXXXXXX`) y sin él (`54XXXXXXXXXX`). `[]` si el número
+ * no se pudo normalizar. Pura: sin hash, para poder probarla.
+ */
+export function arWhatsappVariants(raw: string): string[] {
   const normalized = normalizeArWhatsapp(raw);
-  if (!normalized) return undefined;
-  return [createHash("sha256").update(normalized).digest("hex")];
+  if (!normalized) return [];
+  const national = normalized.slice("549".length);
+  return [`549${national}`, `54${national}`];
+}
+
+/**
+ * `ph` listo para `user_data`: SHA-256 en hex de cada variante del número.
+ * `[]` si el valor no es un string o no se pudo normalizar.
+ */
+export function hashedWhatsappVariantsForMeta(raw: unknown): string[] {
+  if (typeof raw !== "string") return [];
+  return arWhatsappVariants(raw).map((variant) =>
+    createHash("sha256").update(variant).digest("hex"),
+  );
 }
