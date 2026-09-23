@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
     await sendAccountDeletionEmail({ email: email.trim(), reason: safeReason });
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error("[api/account-deletion] Falló el envío por Resend:", error);
     const messageText = error instanceof Error ? error.message : "Error al enviar la solicitud.";
     return NextResponse.json({ error: messageText }, { status: 500 });
   }

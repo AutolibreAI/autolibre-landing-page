@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
     await sendSupportEmail({ name, email: email || undefined, phone: phone || undefined, subject, message });
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error("[api/support] Falló el envío por Resend:", error);
     const messageText = error instanceof Error ? error.message : "Error al enviar el mensaje.";
     return NextResponse.json({ error: messageText }, { status: 500 });
   }

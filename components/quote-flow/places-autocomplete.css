@@ -24,6 +24,14 @@
      arriba. Si el modal sube de z-index, esto tiene que subir tambien. */
   z-index: 1000;
 
+  /* Compensación del scroll-lock del modal: con el `<body>` en
+     `position: fixed; top: -scrollY`, Google calcula la posición con
+     `scrollY = 0` y el dropdown quedaba corrido hacia arriba exactamente lo
+     scrolleado (se veía flotando lejos del campo). El modal escribe ese
+     scroll en `--scroll-lock-offset`; fuera del modal vale 0 y no mueve
+     nada (p. ej. /pedido y /proveedores). */
+  translate: 0 var(--scroll-lock-offset, 0px);
+
   margin-top: 0.25rem;
   padding: 0.25rem 0;
   border: 1px solid var(--color-line);

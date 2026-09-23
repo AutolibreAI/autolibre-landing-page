@@ -74,6 +74,13 @@ export function QuoteRequestModal({
 
     body.style.position = "fixed";
     body.style.top = `-${scrollY}px`;
+    // Con el body fijo, `window.scrollY` vale 0 y el body (corrido
+    // `-scrollY`) pasa a ser la referencia de lo que cuelga de él. El
+    // dropdown de Google Places (`.pac-container`) calcula su posición con
+    // ese scroll en 0 y aparecía corrido hacia arriba exactamente `scrollY`.
+    // `places-autocomplete.css` lo compensa con esta variable.
+    const root = document.documentElement;
+    root.style.setProperty("--scroll-lock-offset", `${scrollY}px`);
     body.style.left = "0";
     body.style.right = "0";
     body.style.width = "100%";
@@ -86,6 +93,7 @@ export function QuoteRequestModal({
       body.style.right = previous.right;
       body.style.width = previous.width;
       body.style.overflow = previous.overflow;
+      root.style.removeProperty("--scroll-lock-offset");
       // rAF y no sincronico: el body recien salio de `position: fixed` (que
       // lo achicaba al alto del viewport) y el navegador todavia no
       // recalculo cuanto mide el documento. Un `scrollTo` inmediato corre
