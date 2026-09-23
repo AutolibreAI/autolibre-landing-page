@@ -32,7 +32,7 @@ const schema = graph(
 export default function PrivacidadPage() {
   return (
     <>
-      <LegalPage title={TITLE} updatedAt="junio 2026">
+      <LegalPage title={TITLE} updatedAt="septiembre 2026">
         <h2>1. Responsable del tratamiento</h2>
         <p>
           AutoLibre (en adelante &ldquo;la empresa&rdquo;,
@@ -76,7 +76,51 @@ export default function PrivacidadPage() {
           cedemos tus datos a terceros con fines comerciales.
         </p>
 
-        <h2>7. Contacto</h2>
+        <h2>7. Medición de anuncios con Meta</h2>
+        <p>
+          Este sitio usa el <strong>Píxel de Meta</strong> y la{" "}
+          <strong>API de Conversiones de Meta</strong> (Meta Platforms, Inc.)
+          para medir la efectividad de nuestros anuncios.
+        </p>
+        <p>
+          Registramos tres acciones: las visitas a las páginas del sitio, el
+          clic en el botón de contacto por WhatsApp y el envío de un pedido de
+          presupuesto.
+        </p>
+        <p>
+          Para eso se usan datos técnicos: tu dirección IP, información de tu
+          navegador y dispositivo (el &ldquo;user agent&rdquo;) y las cookies
+          propias de Meta (<code>_fbp</code> y <code>_fbc</code>). El nombre, el
+          correo electrónico, el teléfono y los datos del vehículo que cargás en
+          el formulario de presupuesto <strong>no se envían a Meta</strong>.
+        </p>
+        <p>
+          Meta puede tratar estos datos según su propia{" "}
+          <a
+            href="https://www.facebook.com/privacy/policy/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Política de privacidad
+          </a>
+          , lo que puede implicar una transferencia internacional de datos.
+        </p>
+        <p>
+          Si no querés que se haga esta medición, podés bloquear o borrar las
+          cookies desde la configuración de tu navegador y ajustar tus{" "}
+          <a
+            href="https://www.facebook.com/adpreferences"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            preferencias de anuncios en Meta
+          </a>
+          . También podés ejercer los derechos que te da la Ley 25.326 (ver el
+          punto 4) escribiendo a{" "}
+          <a href="mailto:contact@autolibre.ai">contact@autolibre.ai</a>.
+        </p>
+
+        <h2>8. Contacto</h2>
         <p>
           Para cualquier consulta sobre esta política escribí a{" "}
           <a href="mailto:contact@autolibre.ai">contact@autolibre.ai</a>.
