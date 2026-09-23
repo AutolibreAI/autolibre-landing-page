@@ -107,13 +107,18 @@ const revealScript = `(function(){try{if(!("IntersectionObserver"in window)||!El
  * 2. `fbevents.js` (~90KB) con `next/script` `lazyOnload`: baja en idle,
  *    después de todo lo demás, y al cargar vacía la cola del stub.
  *
+ * `set autoConfig false` va ANTES de `init`: apagamos la configuración
+ * automática (clics en botones y metadatos que Meta trackea por su cuenta)
+ * para medir solo PageView, Lead y Contact, como declara /privacidad, y
+ * evitar trabajo extra en cada clic (INP).
+ *
  * Sin `<noscript><img>`: sin JS no hay nada que medir que nos importe, y es
  * un request extra. Sin `NEXT_PUBLIC_META_PIXEL_ID` no se renderiza nada.
  * Va como `<script>` plano por lo mismo que `platformScript`: el stub tiene
  * que existir antes de que hidrate cualquier isla que llame a `fbq`.
  */
 const metaPixelScript = META_PIXEL_ID
-  ? `!function(f){if(f.fbq)return;var n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[]}(window);fbq("init",${JSON.stringify(META_PIXEL_ID)});fbq("track","PageView");`
+  ? `!function(f){if(f.fbq)return;var n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[]}(window);fbq("set","autoConfig",false,${JSON.stringify(META_PIXEL_ID)});fbq("init",${JSON.stringify(META_PIXEL_ID)});fbq("track","PageView");`
   : null;
 
 export default function RootLayout({
