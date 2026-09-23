@@ -84,7 +84,9 @@ export default function PrivacidadPage() {
         </p>
         <p>
           Además, al navegar el sitio se registran datos técnicos para medir
-          nuestros anuncios (ver el punto 7).
+          nuestros anuncios y, cuando enviás un pedido de presupuesto, tu
+          WhatsApp se comparte con Meta cifrado de forma irreversible (ver el
+          punto 7).
         </p>
 
         <h2>3. Finalidad del tratamiento</h2>
@@ -146,8 +148,10 @@ export default function PrivacidadPage() {
           Resend.
         </p>
         <p>
-          <strong>Meta.</strong> Para medir nuestros anuncios, según se detalla
-          en el punto 7.
+          <strong>Meta.</strong> Para medir nuestros anuncios recibe datos
+          técnicos de tu visita y, cuando enviás un pedido de presupuesto, tu
+          WhatsApp cifrado de forma irreversible (hash), según se detalla en
+          el punto 7.
         </p>
         <p>
           Algunos de estos proveedores (Vercel, Google, Resend y Meta, ver el
@@ -171,10 +175,15 @@ export default function PrivacidadPage() {
         <p>
           Para eso se usan datos técnicos: tu dirección IP, información de tu
           navegador y dispositivo (el &ldquo;user agent&rdquo;) y las cookies
-          propias de Meta (<code>_fbp</code> y <code>_fbc</code>). La patente,
-          el WhatsApp, la zona, el correo electrónico y la descripción que
-          cargás en el formulario de presupuesto{" "}
-          <strong>no se envían a Meta</strong>.
+          propias de Meta (<code>_fbp</code> y <code>_fbc</code>).
+        </p>
+        <p>
+          Cuando enviás un pedido de presupuesto, además le mandamos a Meta tu
+          número de WhatsApp <strong>cifrado de forma irreversible (hash)</strong>:
+          Meta no recibe el número en sí, solo un código que le permite asociar
+          el envío del pedido con una cuenta suya, si la tenés. La patente, la
+          zona, el correo electrónico y la descripción que cargás en el
+          formulario de presupuesto <strong>no se envían a Meta</strong>.
         </p>
         <p>
           Meta puede tratar estos datos según su propia{" "}

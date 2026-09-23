@@ -1,4 +1,5 @@
 import "server-only";
+import { hashedWhatsappForMeta } from "./meta-user-data";
 
 /**
  * Conversions API de Meta: el mismo evento que manda el Pixel, pero desde el
@@ -26,6 +27,11 @@ type MetaCapiEvent = {
   fbp?: string;
   /** Cookie `_fbc`: existe si la persona llegó desde un anuncio (`fbclid`). */
   fbc?: string;
+  /**
+   * WhatsApp tal cual lo tipeó la persona. NUNCA viaja crudo: acá adentro se
+   * normaliza y se hashea (`ph`), y no se loguea en ningún caso.
+   */
+  phone?: string;
 };
 
 let warnedMissingToken = false;
@@ -53,6 +59,7 @@ export async function sendMetaCapiEvent(event: MetaCapiEvent): Promise<void> {
       client_user_agent: event.userAgent,
       fbp: event.fbp,
       fbc: event.fbc,
+      ph: hashedWhatsappForMeta(event.phone),
     }).filter(([, value]) => Boolean(value)),
   );
 

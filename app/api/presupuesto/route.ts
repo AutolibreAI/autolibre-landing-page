@@ -246,6 +246,8 @@ export async function POST(req: NextRequest) {
         userAgent: req.headers.get("user-agent") || undefined,
         fbp: req.cookies.get("_fbp")?.value,
         fbc: req.cookies.get("_fbc")?.value,
+        // Se hashea en `sendMetaCapiEvent`: a Meta sólo llega el SHA-256.
+        phone: String(contactPhone),
       };
       after(() => sendMetaCapiEvent(capiEvent));
     }
