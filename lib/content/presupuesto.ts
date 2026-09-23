@@ -67,7 +67,7 @@ export const presupuestoContent = {
         whatsappInvalid: "Ingresá un WhatsApp válido.",
         addressLabel: "Zona o localidad",
         addressPlaceholder: "Palermo, San Isidro, La Plata...",
-        addressHint: "Así los talleres saben desde dónde buscar cerca tuyo.",
+        addressHint: "Así buscamos talleres que trabajen cerca tuyo.",
         addressInvalid: "Ingresá tu zona o localidad.",
         emailLabel: "Email (opcional)",
         emailPlaceholder: "tu@email.com",
@@ -83,7 +83,7 @@ export const presupuestoContent = {
       consent: {
         heading: "Último paso",
         prefix:
-          "Acepto que AutoLibre comparta estos datos con talleres de su red para que puedan responderme, según la ",
+          "Acepto que AutoLibre comparta los datos de mi auto y la descripción del problema con talleres de su red, y que me envíe sus respuestas por WhatsApp, según la ",
         privacyLinkLabel: "Política de Privacidad",
         suffix: ".",
       },
