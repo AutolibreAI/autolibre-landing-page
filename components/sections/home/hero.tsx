@@ -29,8 +29,10 @@ function stepDelay(index: number, total: number, cycle: number) {
  *   pantallas por su cuenta, sin relación con las palabras.
  * - Único adorno: una ruta punteada que termina en un pin junto al
  *   teléfono (desde `xl`, estática).
- * - `prefers-reduced-motion`: nada se mueve; quedan la primera palabra y la
- *   primera pantalla fijas.
+ * - `prefers-reduced-motion`: el teléfono queda fijo en la primera pantalla.
+ *   EXCEPCIÓN de producto (2026-09-23): las palabras siguen cambiando, pero
+ *   con un fundido en el lugar, sin subir ni rebotar (`motion-exempt` +
+ *   `hero-word-fade`; ver la regla global en `globals.css`).
  * - Sin control de pausa por decisión de producto (2026-09-22). Ojo: WCAG
  *   2.2.2 lo pide para movimiento automático de más de 5s.
  *
@@ -119,7 +121,7 @@ export function HeroSection() {
                         WORD_CYCLE_SECONDS,
                       ),
                     }}
-                    className={`col-start-1 row-start-1 animate-hero-word whitespace-nowrap motion-reduce:animate-none ${index > 0 ? "motion-reduce:invisible" : ""}`}
+                    className="motion-exempt col-start-1 row-start-1 animate-hero-word whitespace-nowrap motion-reduce:animate-hero-word-fade"
                   >
                     {word}
                   </span>

@@ -331,7 +331,9 @@ to the words. Its only static ornament (from `xl`) is a thin dotted route in
 the phone — "we take you to what you need, near you". No blobs, waves, halos
 or gradients — organic shapes read
 playful, and this brand sells trust. Motion is CSS only (`transform` and
-`opacity`, compositor-friendly) and honors `prefers-reduced-motion`; there is
+`opacity`, compositor-friendly) and honors `prefers-reduced-motion` — with one
+product exception: the rotating words keep changing via an in-place fade, no
+rise or bounce (`motion-exempt`); the phone screens stop. There is
 no pause control by product decision (note: WCAG 2.2.2 asks for one on
 autoplay over 5s). No other section adds autoplay motion or decorative shapes.
 The only other motion (2026-09-22, product decision): every home section below

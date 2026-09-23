@@ -47,7 +47,7 @@ Every component MUST accept all its data via explicitly typed props derived from
 
 ### IV. Accessibility and Performance (NON-NEGOTIABLE)
 
-Every page element MUST meet WCAG 2.1 AA. All images MUST use `next/image` with explicit `width`, `height` (or `fill` inside a sized container), `sizes`, and meaningful `alt` text; `preload` is reserved for the LCP image only (`priority` is deprecated since Next.js 16 and MUST NOT be used; when the LCP image varies by viewport, use `loading="eager"` or `fetchPriority="high"` instead). Fonts MUST load through `next/font`. Focus MUST be visible and `prefers-reduced-motion` MUST be respected. Core Web Vitals targets: LCP < 2.5 s, CLS < 0.1, INP < 200 ms. No layout shifts caused by late-loading fonts or images. Heavy client-side libraries require justification.
+Every page element MUST meet WCAG 2.1 AA. All images MUST use `next/image` with explicit `width`, `height` (or `fill` inside a sized container), `sizes`, and meaningful `alt` text; `preload` is reserved for the LCP image only (`priority` is deprecated since Next.js 16 and MUST NOT be used; when the LCP image varies by viewport, use `loading="eager"` or `fetchPriority="high"` instead). Fonts MUST load through `next/font`. Focus MUST be visible and `prefers-reduced-motion` MUST be respected (sole approved exception: the hero rotating words keep changing with an in-place fade and no displacement, marked `motion-exempt`; see AGENTS.md). Core Web Vitals targets: LCP < 2.5 s, CLS < 0.1, INP < 200 ms. No layout shifts caused by late-loading fonts or images. Heavy client-side libraries require justification.
 
 **Rationale**: Accessibility is a baseline requirement, not a polish step. Performance directly affects conversion on a landing page.
 

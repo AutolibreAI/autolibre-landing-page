@@ -35,7 +35,7 @@ La estructura del HTML es lo primero que leen buscadores y LLMs. Es una regla pr
 - WCAG 2.1 AA como piso, no como extra.
 - `alt` significativo en toda imagen con contenido; `alt=""` y `aria-hidden` en las decorativas.
 - Focus visible siempre. No se quita el outline sin reemplazo.
-- Respetá `prefers-reduced-motion`: ninguna animación es obligatoria para entender o usar la página.
+- Respetá `prefers-reduced-motion`: ninguna animación es obligatoria para entender o usar la página. Única excepción aprobada: las palabras rotativas del hero siguen cambiando, con un fundido en el lugar y sin desplazamiento (clase `motion-exempt`). No sumar otras excepciones sin decisión explícita de producto.
 - Contraste, objetivos táctiles de 44px en mobile e inputs de 16px para evitar el zoom de iOS.
 
 ### 4. Performance
