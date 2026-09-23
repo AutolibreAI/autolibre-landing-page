@@ -109,9 +109,9 @@ const revealScript = `(function(){try{if(!("IntersectionObserver"in window)||!El
  *
  * `set autoConfig false` va ANTES de `init`: apagamos la configuración
  * automática (clics en botones y metadatos que Meta trackea por su cuenta)
- * para medir solo PageView, Lead, Contact y QuoteStart, como declara
- * /privacidad, y
- * evitar trabajo extra en cada clic (INP).
+ * para medir solo PageView, Lead, Contact, QuoteStart y PedidoPaso (un
+ * evento por paso visto del pedido), como declara /privacidad, y evitar
+ * trabajo extra en cada clic (INP).
  *
  * Sin `<noscript><img>`: sin JS no hay nada que medir que nos importe, y es
  * un request extra. Sin `NEXT_PUBLIC_META_PIXEL_ID` no se renderiza nada.

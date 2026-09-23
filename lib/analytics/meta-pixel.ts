@@ -1,6 +1,6 @@
 /**
- * Meta Pixel del lado del navegador. Sólo se miden CUATRO eventos, decididos a
- * propósito: tres estándar (`META_EVENTS`) y uno custom
+ * Meta Pixel del lado del navegador. Sólo se miden CINCO eventos, decididos a
+ * propósito: tres estándar (`META_EVENTS`) y dos custom
  * (`META_CUSTOM_EVENTS`); cualquier otro se agrega acá primero.
  *
  * Sin `NEXT_PUBLIC_META_PIXEL_ID` no se carga nada y todos los helpers son
@@ -28,6 +28,11 @@ export type MetaEventName = (typeof META_EVENTS)[keyof typeof META_EVENTS];
 export const META_CUSTOM_EVENTS = {
   /** Completó el primer paso (patente/vehículo) del pedido de presupuesto. */
   quoteStart: "QuoteStart",
+  /**
+   * Embudo del pedido: la persona VE el paso `{ step: n }` (1..4). Una vez
+   * por paso y por instancia del flujo. Sin datos de lo que cargó.
+   */
+  quoteStep: "PedidoPaso",
 } as const;
 
 export type MetaCustomEventName =

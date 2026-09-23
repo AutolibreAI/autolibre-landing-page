@@ -170,6 +170,18 @@ export function useQuoteFlow(options?: {
   // y avanzar de nuevo no lo repite. Ref y no estado (no pinta nada), y
   // `reset()` no lo toca a propósito: sigue siendo la misma persona.
   const quoteStartTrackedRef = useRef(false);
+  // `PedidoPaso` por paso visto, con la misma regla: una vez por paso y por
+  // instancia (ir y volver no lo repite, `reset()` tampoco lo limpia).
+  const trackedStepsRef = useRef<Set<number>>(new Set());
+
+  // El hook vive en `QuoteFlow`, que en la home se monta recién al abrir el
+  // modal (y se desmonta al cerrarlo): el paso 1 sale cuando el flujo se ve,
+  // no al cargar la página. En `/pedido` el flujo está a la vista de entrada.
+  useEffect(() => {
+    if (trackedStepsRef.current.has(step)) return;
+    trackedStepsRef.current.add(step);
+    trackMetaCustomEvent(META_CUSTOM_EVENTS.quoteStep, { step });
+  }, [step]);
 
   // En un ref y no en estado: la atribución no pinta nada, no tiene que
   // provocar un render, y tiene que sobrevivir a un `reset()`.

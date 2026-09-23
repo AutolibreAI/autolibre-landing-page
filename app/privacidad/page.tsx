@@ -167,10 +167,11 @@ export default function PrivacidadPage() {
           para medir la efectividad de nuestros anuncios.
         </p>
         <p>
-          Registramos cuatro acciones: las visitas a las páginas del sitio, el
+          Registramos estas acciones: las visitas a las páginas del sitio, el
           clic en el botón de contacto por WhatsApp, el inicio de un pedido de
-          presupuesto (cuando completás el primer paso) y el envío de ese
-          pedido.
+          presupuesto (cuando completás el primer paso), tu avance por cada
+          paso del formulario de presupuesto (solo qué paso viste, sin los
+          datos que cargás) y el envío de ese pedido.
         </p>
         <p>
           Para eso se usan datos técnicos: tu dirección IP, información de tu
