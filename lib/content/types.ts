@@ -32,7 +32,15 @@ export type IconName =
   | "car"
   | "pin"
   | "arrow-right"
-  | "check";
+  | "arrow-left"
+  | "check"
+  | "chat"
+  | "whatsapp"
+  | "receipt"
+  | "spinner"
+  | "ellipsis"
+  | "info"
+  | "alert";
 
 /** Tiendas donde está publicada la app. */
 export type StoreId = "appStore" | "playStore";

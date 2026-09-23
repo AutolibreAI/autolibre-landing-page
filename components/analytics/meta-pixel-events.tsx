@@ -17,7 +17,10 @@ const TRACKABLE_EVENTS = new Set<string>(Object.values(META_EVENTS));
  * - UN listener delegado de click: cualquier elemento con
  *   `data-meta-event="Contact"` (o otro nombre de `META_EVENTS`) lo manda al
  *   Pixel. Así los links medidos siguen siendo Server Components. En captura
- *   para que un `stopPropagation` ajeno no se coma el evento.
+ *   para que un `stopPropagation` ajeno no se coma el evento. Dos atributos
+ *   opcionales suman params: `data-meta-placement="hero"` → `placement`
+ *   (qué ubicación del CTA convirtió) y `data-meta-pedido` → `pedido: true`
+ *   (el click vino después de dejar un pedido). Nunca datos personales.
  */
 export function MetaPixelEvents() {
   const pathname = usePathname();
@@ -34,7 +37,17 @@ export function MetaPixelEvents() {
       if (!(event.target instanceof Element)) return;
       const el = event.target.closest<HTMLElement>("[data-meta-event]");
       const name = el?.dataset.metaEvent;
-      if (name && TRACKABLE_EVENTS.has(name)) trackMetaEvent(name as MetaEventName);
+      if (!el || !name || !TRACKABLE_EVENTS.has(name)) return;
+
+      const params: Record<string, string | boolean> = {};
+      const placement = el.dataset.metaPlacement;
+      if (placement) params.placement = placement;
+      if (el.dataset.metaPedido !== undefined) params.pedido = true;
+
+      trackMetaEvent(
+        name as MetaEventName,
+        Object.keys(params).length > 0 ? params : undefined,
+      );
     }
     document.addEventListener("click", onClick, { capture: true });
     return () => document.removeEventListener("click", onClick, { capture: true });

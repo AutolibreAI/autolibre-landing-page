@@ -21,7 +21,7 @@ Datos clave:
 
 - [Inicio](https://autolibre.ai/): qué es AutoLibre, funciones, cómo funciona, compatibilidad OBD2 y preguntas frecuentes.
 - [Descargar la app](https://autolibre.ai/descarga): enlaces a App Store y Google Play, y código QR para instalarla desde la compu.
-- [Pedir presupuesto](https://autolibre.ai/pedido): formulario para pedir presupuesto a talleres cercanos. Gratis y sin compromiso.
+- [Pedir presupuesto](https://autolibre.ai/pedido): pedido de presupuestos gratis a proveedores de la zona del usuario en AMBA, escribiendo por WhatsApp o dejando zona, problema, patente (opcional) y WhatsApp en un formulario. AutoLibre responde por WhatsApp en el día y el usuario elige el proveedor, sin compromiso y sin necesidad de bajar la app.
 - [Proveedores](https://autolibre.ai/proveedores): registro para talleres y servicios que quieren recibir consultas de dueños de auto con marca, modelo, año y el problema ya delimitado.
 - [Soporte](https://autolibre.ai/support): formulario de contacto para usuarios con problemas en la app.
 

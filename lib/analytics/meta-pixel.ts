@@ -3,6 +3,17 @@
  * propósito: tres estándar (`META_EVENTS`) y dos custom
  * (`META_CUSTOM_EVENTS`); cualquier otro se agrega acá primero.
  *
+ * - `PageView`: carga inicial (stub del layout) y cada navegación.
+ * - `Lead`: pedido de presupuesto registrado (modal y `/pedido`), con el
+ *   mismo `eventID` que el `Lead` de la Conversions API para deduplicar.
+ * - `Contact`: click en un link de WhatsApp marcado con `data-meta-event`.
+ *   En `/pedido` lleva `placement` (`header`, `hero`, `sticky_bar`,
+ *   `cta_band`, `confirmation`) para comparar qué ubicación convierte, y
+ *   `pedido: true` el de la confirmación (ya dejó el pedido).
+ * - `QuoteStart` (custom): empezó un pedido. Modal: completó el paso 1.
+ *   `/pedido`: primer foco en cualquier campo del form, una vez por visita.
+ * - `PedidoPaso` (custom): embudo por paso, sólo en el modal.
+ *
  * Sin `NEXT_PUBLIC_META_PIXEL_ID` no se carga nada y todos los helpers son
  * no-op: en dev sin la variable no se ensucian los datos del Pixel real.
  */
@@ -26,7 +37,10 @@ export type MetaEventName = (typeof META_EVENTS)[keyof typeof META_EVENTS];
  * `data-meta-event` (ver `components/analytics/meta-pixel-events.tsx`).
  */
 export const META_CUSTOM_EVENTS = {
-  /** Completó el primer paso (patente/vehículo) del pedido de presupuesto. */
+  /**
+   * Empezó un pedido de presupuesto. En el modal: completó el primer paso
+   * (patente/vehículo). En `/pedido`: primer foco en un campo del form.
+   */
   quoteStart: "QuoteStart",
   /**
    * Embudo del pedido: la persona VE el paso `{ step: n }` (1..4). Una vez

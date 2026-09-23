@@ -4,6 +4,8 @@ type IconProps = {
   readonly name: IconName;
   readonly className?: string;
   readonly size?: number;
+  /** Grosor del trazo. El default es el de los íconos de línea del sitio. */
+  readonly strokeWidth?: number;
 };
 
 /**
@@ -47,10 +49,55 @@ const paths: Record<IconName, React.ReactNode> = {
     </>
   ),
   "arrow-right": <path d="M4 12h14M14 6l6 6-6 6" />,
+  "arrow-left": <path d="M19 12H5M11 18l-6-6 6-6" />,
   check: <path d="M4 12.5l5 5L20 6.5" />,
+  /** Globo de chat: el contorno del de WhatsApp, sin el tubo. */
+  chat: <path d="M4 20l1.3-3.9A8.5 8.5 0 1 1 8.2 19z" />,
+  /** Globo + tubo: se lee como WhatsApp sin usar el logo de la marca. */
+  whatsapp: (
+    <>
+      <path d="M4 20l1.3-3.9A8.5 8.5 0 1 1 8.2 19z" />
+      <path d="M9.2 8.6c-.3 2.9 3.2 6.4 6.2 6.2l.9-1.6-2-1-1 .9c-1-.4-2-1.4-2.4-2.4l.9-1-1-2z" />
+    </>
+  ),
+  /** Arco de carga: se anima con `animate-spin` desde afuera. */
+  spinner: <path d="M21 12a9 9 0 0 0-9-9" />,
+  /** "Todavía no": el reemplazo quieto del spinner con movimiento reducido. */
+  ellipsis: (
+    <>
+      <circle cx="6" cy="12" r="0.6" />
+      <circle cx="12" cy="12" r="0.6" />
+      <circle cx="18" cy="12" r="0.6" />
+    </>
+  ),
+  /** Aviso neutro (no es un error). */
+  info: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5M12 7.5v.01" />
+    </>
+  ),
+  /** Error de un campo. */
+  alert: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7.5v5M12 16v.01" />
+    </>
+  ),
+  receipt: (
+    <>
+      <path d="M6 3h12v18l-3-2-3 2-3-2-3 2z" />
+      <path d="M9 8h6M9 12h6" />
+    </>
+  ),
 };
 
-export function Icon({ name, className, size = 30 }: IconProps) {
+export function Icon({
+  name,
+  className,
+  size = 30,
+  strokeWidth = 1.6,
+}: IconProps) {
   return (
     <svg
       width={size}
@@ -58,7 +105,7 @@ export function Icon({ name, className, size = 30 }: IconProps) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.6}
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}

@@ -1,6 +1,9 @@
 import { after, NextRequest, NextResponse } from "next/server";
 import { sendMetaCapiEvent } from "@/lib/analytics/meta-capi";
 import { META_EVENTS } from "@/lib/analytics/meta-pixel";
+import { whatsappErrorMessage } from "@/lib/content/presupuesto";
+import { parseArWhatsapp } from "@/lib/phone";
+import { canonicalPlate } from "@/lib/plate";
 import { siteConfig } from "@/lib/seo/config";
 import { VEHICLE_LOOKUP_LIMITS, type VehicleLookupSnapshot } from "@/lib/vehicle-lookup";
 
@@ -22,17 +25,15 @@ function clientIpFrom(req: NextRequest): string | undefined {
   return forwarded || req.headers.get("x-real-ip")?.trim() || undefined;
 }
 
-const PLATE_PATTERNS: readonly RegExp[] = [
-  /^[A-Z]{3}\d{3}$/,
-  /^[A-Z]{2}\d{3}[A-Z]{2}$/,
-  /^\d{3}[A-Z]{3}$/,
-  /^[A-Z]\d{3}[A-Z]{3}$/,
-];
-
-function canonicalPlate(raw: unknown): string | null {
-  if (typeof raw !== "string") return null;
-  const stripped = raw.trim().toUpperCase().replace(/[\s-]/g, "");
-  return PLATE_PATTERNS.some((pattern) => pattern.test(stripped)) ? stripped : null;
+/**
+ * Patente opcional: ausente o vacía es `undefined` (el pedido entra sin
+ * patente); presente pero mal formada es `null` (400). Vacía cuenta como
+ * ausente porque el form de `/pedido` puede mandar el campo sin completar.
+ */
+function optionalPlate(raw: unknown): string | null | undefined {
+  if (raw === undefined || raw === null) return undefined;
+  if (typeof raw === "string" && raw.trim() === "") return undefined;
+  return canonicalPlate(raw);
 }
 
 /**
@@ -153,6 +154,20 @@ function buildVehicleLookup(raw: unknown, plate: string): VehicleLookupSnapshot 
  * `vehicles.id` de una cuenta logueada, no el resultado anónimo del lookup
  * de /api/vehicle-lookup. Ese resultado viaja aparte, como `vehicleLookup`
  * (ver `buildVehicleLookup`), y el backend lo deja en `raw_submission`.
+ *
+ * Dos clientes: el modal de la home (patente obligatoria + checkbox de
+ * consentimiento + snapshot del auto confirmado) y el form de `/pedido`
+ * (patente opcional + snapshot si la validó, y el envío mismo es el
+ * consentimiento: manda `consent: true`). El lookup de la patente lo hace
+ * SIEMPRE el browser contra `/api/vehicle-lookup`: esta route no consulta
+ * clasific.ar (sería una segunda llamada con cuota por el mismo pedido).
+ *
+ * El WhatsApp se valida con `parseArWhatsapp` (la misma regla que los forms)
+ * y viaja normalizado (`549XXXXXXXXXX`): es la forma canónica que guarda el
+ * `WhatsappNumber` del backend, que además RECHAZA el `15` local
+ * (`11 15 2345 6789`) que acá sí sabemos sacar.
+ *
+ * Responde `{ success, id, publicCode }`; `publicCode` es `AL-1042`.
  */
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -171,16 +186,19 @@ export async function POST(req: NextRequest) {
     metaEventId: rawMetaEventId,
   } = body;
 
-  const plate = canonicalPlate(rawPlate);
-  const phoneDigits = typeof contactPhone === "string" ? contactPhone.replace(/\D/g, "") : "";
+  const plate = optionalPlate(rawPlate);
+  const phone = parseArWhatsapp(contactPhone);
   const trimmedDescription = typeof description === "string" ? description.trim() : "";
   const trimmedAddress = typeof address === "string" ? address.trim() : "";
 
-  if (!plate) {
+  if (plate === null) {
     return NextResponse.json({ error: "Ingresá una patente válida." }, { status: 400 });
   }
-  if (phoneDigits.length < 8) {
-    return NextResponse.json({ error: "Ingresá un WhatsApp válido." }, { status: 400 });
+  if (!phone.ok) {
+    return NextResponse.json(
+      { error: whatsappErrorMessage(phone.error, phone.diff) },
+      { status: 400 },
+    );
   }
   if (!trimmedAddress) {
     return NextResponse.json({ error: "Ingresá una dirección válida." }, { status: 400 });
@@ -204,7 +222,10 @@ export async function POST(req: NextRequest) {
   }
 
   const trimmedEmail = typeof contactEmail === "string" ? contactEmail.trim() : "";
-  const vehicleLookup = buildVehicleLookup(rawVehicleLookup, plate);
+  // Snapshot del lookup que hizo el browser (modal: auto confirmado; `/pedido`:
+  // patente validada). Sin patente nunca viaja: el backend da 400 si llega
+  // `vehicleLookup` sin `plate`.
+  const vehicleLookup = plate ? buildVehicleLookup(rawVehicleLookup, plate) : undefined;
 
   try {
     const response = await fetch(`${apiUrl}/api/v1/quote-requests`, {
@@ -212,9 +233,10 @@ export async function POST(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         channel: "web",
-        plate,
+        // Opcional en el backend: sin patente el campo no viaja.
+        ...(plate ? { plate } : {}),
         description: trimmedDescription,
-        contactPhone: String(contactPhone).trim(),
+        contactPhone: phone.canonical,
         location: buildLocation(trimmedAddress, latitude, longitude, locality, province),
         ...(trimmedEmail ? { contactEmail: trimmedEmail } : {}),
         ...(vehicleLookup ? { vehicleLookup } : {}),
@@ -232,6 +254,13 @@ export async function POST(req: NextRequest) {
     }
 
     const id = data?.id as string | undefined;
+    // Código corto y legible del pedido (`AL-1042`, sin `#`: el `#` lo pone
+    // la UI) para mostrárselo a la persona y que lo cite por WhatsApp. El
+    // backend siempre lo manda; si igual faltara, la UI lo omite.
+    const publicCode =
+      typeof data?.publicCode === "string" && data.publicCode.trim() !== ""
+        ? data.publicCode.trim().replace(/^#+/, "")
+        : null;
 
     // `Lead` server-side SOLO con el pedido ya registrado, y con `after()` para
     // no demorar la respuesta. Headers y cookies se leen acá, no adentro del
@@ -247,12 +276,12 @@ export async function POST(req: NextRequest) {
         fbp: req.cookies.get("_fbp")?.value,
         fbc: req.cookies.get("_fbc")?.value,
         // Se hashea en `sendMetaCapiEvent`: a Meta sólo llega el SHA-256.
-        phone: String(contactPhone),
+        phone: phone.canonical,
       };
       after(() => sendMetaCapiEvent(capiEvent));
     }
 
-    return NextResponse.json({ success: true, id });
+    return NextResponse.json({ success: true, id, publicCode });
   } catch (error) {
     console.error("[presupuesto] error al llamar al backend", error);
     return NextResponse.json(

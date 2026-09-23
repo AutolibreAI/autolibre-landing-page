@@ -24,7 +24,7 @@ const routes = [
   },
   {
     path: "/pedido",
-    lastModified: "2026-09-17",
+    lastModified: "2026-09-23",
     changeFrequency: "monthly",
     priority: 0.9,
   },

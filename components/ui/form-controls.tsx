@@ -9,16 +9,25 @@ type FieldProps = {
   readonly htmlFor?: string;
   readonly required?: boolean;
   readonly hint?: React.ReactNode;
+  /** `id` de la ayuda, para el `aria-describedby` del control. */
+  readonly hintId?: string;
+  /** Error del campo, debajo de la ayuda. */
+  readonly error?: React.ReactNode;
+  /** `id` del error, para el `aria-describedby` del control. */
+  readonly errorId?: string;
   readonly children: React.ReactNode;
   readonly className?: string;
 };
 
-/** Label + control + ayuda opcional, con el asterisco de requerido unificado. */
+/** Label + control + ayuda y error opcionales, con el asterisco de requerido unificado. */
 export function Field({
   label,
   htmlFor,
   required = false,
   hint,
+  hintId,
+  error,
+  errorId,
   children,
   className,
 }: FieldProps) {
@@ -37,7 +46,16 @@ export function Field({
         ) : null}
       </label>
       {children}
-      {hint ? <p className="text-xs text-ink/65">{hint}</p> : null}
+      {hint ? (
+        <p id={hintId} className="text-xs text-ink/65">
+          {hint}
+        </p>
+      ) : null}
+      {error ? (
+        <p id={errorId} className="text-xs font-medium text-danger">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }
