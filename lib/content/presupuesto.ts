@@ -231,9 +231,10 @@ export const presupuestoContent = {
       title: "Presupuestos de proveedores en tu zona, por WhatsApp.",
       subtitle:
         "Contanos qué le pasa a tu auto y te respondemos en el día. Gratis y sin compromiso.",
-      whatsappNote: "Te respondemos en el día",
+      /** Debajo del botón de WhatsApp: por qué elegir este camino. */
+      whatsappNote: "Lo más rápido: hablás directo con nosotros.",
       divider: "o",
-      formCta: "Quiero que me contacten",
+      formCta: "Prefiero que me escriban",
       checks: [
         "Sin llamadas de proveedores: hablás con nosotros",
         "No hace falta bajar ninguna app",
@@ -256,7 +257,7 @@ export const presupuestoContent = {
         {
           icon: "pin",
           title: "Consultamos proveedores cerca tuyo",
-          body: "Buscamos soluciones cerca tuyo.",
+          body: "Le pasamos tu pedido a los proveedores que trabajan en tu zona.",
         },
         {
           icon: "receipt",
@@ -341,7 +342,7 @@ export const presupuestoContent = {
       // no queda colgando al final de la línea ("…le pasa / a tu vehículo").
       title: "Contanos qué le pasa a tu vehículo",
       subtitle: "Te respondemos en el día.",
-      formCta: "Quiero que me contacten",
+      formCta: "Prefiero que me escriban",
     },
 
     stickyBar: {
@@ -351,8 +352,9 @@ export const presupuestoContent = {
     },
 
     form: {
-      title: "Dejanos tus datos y te escribimos",
-      subtitle: "Te pasamos los presupuestos por WhatsApp en el día.",
+      /** Es la alternativa al chat: el título lo dice (en desktop va al lado del botón de WhatsApp). */
+      title: "¿Preferís que te escribamos?",
+      subtitle: "Dejanos tus datos y te pasamos los presupuestos por WhatsApp en el día.",
       back: "Volver",
       optional: "(opcional)",
       fields: {
@@ -363,8 +365,26 @@ export const presupuestoContent = {
         },
         problema: {
           label: "¿Qué le pasa al auto?",
-          placeholder: "Ej: se prendió una luz en el tablero",
+          placeholder: "O contalo con tus palabras. Ej: hace un ruido al frenar",
           error: "Contanos qué le pasa al auto.",
+          /**
+           * Atajos para no tipear en el teléfono: cada uno suma (o saca) su
+           * texto en el campo. Son categorías de pedido, no un catálogo de
+           * servicios garantizados.
+           */
+          quickPicks: {
+            label: "Tocá lo que corresponda",
+            items: [
+              "Service",
+              "Frenos",
+              "Luz en el tablero",
+              "Batería",
+              "No arranca",
+              "Ruido raro",
+              "Neumáticos",
+              "Chapa y pintura",
+            ],
+          },
         },
         patente: {
           label: "Patente",
@@ -389,7 +409,7 @@ export const presupuestoContent = {
       },
       submit: "Pedir presupuestos",
       submitting: "Enviando…",
-      free: "Gratis y sin compromiso.",
+      free: "Gratis y sin compromiso",
       legal:
         "Al pedir presupuestos aceptás que compartamos tu consulta con proveedores de nuestra red y te respondamos por WhatsApp.",
       privacyLink: "Cómo cuidamos tus datos",
@@ -399,14 +419,15 @@ export const presupuestoContent = {
 
     confirmation: {
       title: "¡Listo! Ya tenemos tu pedido",
-      body: "Último paso: mandanos un mensaje por WhatsApp. Así nos tenés agendados y te llegan los presupuestos.",
-      whatsappLabel: "Abrir WhatsApp",
+      /** Cumple lo que prometió el form ("te escribimos"): el chat es opcional. */
+      body: "Te escribimos por WhatsApp en el día con los presupuestos.",
+      whatsappLabel: "Mandanos un mensaje ahora",
       /** `{code}` se reemplaza por el código del pedido (p. ej. `AL-1042`). */
       whatsappTextWithCode:
         "¡Hola! Hice el pedido {code} en la web de AutoLibre.",
       whatsappText:
         "¡Hola! Hice un pedido de presupuesto en la web de AutoLibre.",
-      fallback: "Si no, te escribimos nosotros en el día.",
+      fallback: "Es opcional: así nos tenés agendados y seguimos la charla por ahí.",
       orderLabel: "Tu pedido",
       /** `{code}` = código público del pedido (`AL-1042`): se muestra `#AL-1042`. */
       orderCode: "#{code}",

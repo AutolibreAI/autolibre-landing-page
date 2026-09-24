@@ -42,13 +42,22 @@ export function PedidoHero() {
               subtitle={hero.subtitle}
             />
 
+            {/* Dos caminos, con su porqué a la vista: el chat (lo más
+                rápido) y, como alternativa, que le escribamos nosotros. En
+                desktop la alternativa es la tarjeta del form de al lado; en
+                mobile, el botón que la abre. */}
             <div
               id={PEDIDO_IDS.heroCtas}
-              className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5"
+              className="mt-10 flex flex-col gap-3 sm:max-w-md lg:max-w-none"
             >
-              <WhatsappLink placement="hero" />
-              <p className="text-label text-ink/65">{hero.whatsappNote}</p>
-              <p className="flex items-center gap-3 text-label text-ink/65 lg:hidden sm:w-full">
+              <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-5">
+                <WhatsappLink placement="hero" />
+                <p className="flex items-center justify-center gap-2 text-sm text-ink/70 sm:justify-start">
+                  <Icon name="clock" size={16} className="shrink-0 text-brand" />
+                  {hero.whatsappNote}
+                </p>
+              </div>
+              <p className="mt-1 flex items-center gap-3 text-label text-ink/65 lg:hidden">
                 <span aria-hidden="true" className="h-px flex-1 bg-line" />
                 {hero.divider}
                 <span aria-hidden="true" className="h-px flex-1 bg-line" />
@@ -64,9 +73,21 @@ export function PedidoHero() {
               </OpenFormButton>
             </div>
 
+            {/* Confianza pegada a la decisión, no al fondo de la columna. */}
+            <ul className="mt-8 flex flex-col gap-3 border-t border-line pt-6 lg:flex-row lg:flex-wrap lg:gap-x-8">
+              {hero.checks.map((check) => (
+                <li key={check} className="flex items-center gap-2.5 text-[0.9375rem] font-medium text-ink/80">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-muted text-brand-hover">
+                    <Icon name="check" size={14} strokeWidth={2.6} />
+                  </span>
+                  {check}
+                </li>
+              ))}
+            </ul>
+
             {/* Puente para quien llegó desde la compu: el chat se abre en el
                 teléfono. En mobile no tiene sentido (ya está en el teléfono). */}
-            <div className="mt-10 hidden max-w-120 items-center gap-5 rounded-card border border-line bg-surface-subtle p-5 lg:flex">
+            <div className="mt-8 hidden max-w-120 items-center gap-5 rounded-card border border-line bg-surface-subtle p-5 lg:flex">
               <QrCode
                 code="pedidoWhatsapp"
                 title={hero.qr.alt}
@@ -79,15 +100,6 @@ export function PedidoHero() {
                 <p className="mt-1.5 text-sm leading-relaxed text-ink/70">{hero.qr.body}</p>
               </div>
             </div>
-
-            <ul className="mt-8 flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:gap-x-6">
-              {hero.checks.map((check) => (
-                <li key={check} className="flex items-center gap-2.5 text-sm text-ink/70">
-                  <Icon name="check" size={18} strokeWidth={2.2} className="shrink-0 text-brand" />
-                  {check}
-                </li>
-              ))}
-            </ul>
           </div>
 
           <PedidoForm />

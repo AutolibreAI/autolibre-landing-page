@@ -56,7 +56,7 @@ type FieldValues = Record<FieldName, string>;
 type FieldErrors = Partial<Record<FieldName, string>>;
 
 /** Orden visual: el primer campo inválido en este orden es el que recibe el foco. */
-const FIELD_ORDER: readonly FieldName[] = ["zona", "problema", "patente", "whatsapp"];
+const FIELD_ORDER: readonly FieldName[] = ["problema", "zona", "patente", "whatsapp"];
 
 const FIELD_IDS: Record<FieldName, string> = {
   zona: "pedido-zona",
@@ -223,7 +223,7 @@ export function PedidoForm() {
     // pantalla y se enfoca el primer campo. Nada de history ni de overlay.
     if (window.matchMedia(LG_MEDIA_QUERY).matches) {
       rootRef.current?.scrollIntoView({ block: "center" });
-      const target = zonaRef.current ?? headingRef.current;
+      const target = problemaRef.current ?? headingRef.current;
       target?.focus({ preventScroll: true });
       return;
     }
@@ -451,6 +451,29 @@ export function PedidoForm() {
     setValues((current) => ({ ...current, [name]: value }));
   }
 
+  /**
+   * Atajo de "¿Qué le pasa al auto?": suma el texto al campo, separado por
+   * coma, o lo saca si ya estaba. El campo sigue siendo texto libre: la
+   * persona puede completar o corregir lo que armaron los atajos.
+   */
+  function toggleQuickPick(term: string) {
+    // Tocar un atajo también es empezar el pedido (el foco en un botón no
+    // lo cuenta `trackQuoteStart`).
+    if (!quoteStartTrackedRef.current) {
+      quoteStartTrackedRef.current = true;
+      trackMetaCustomEvent(META_CUSTOM_EVENTS.quoteStart);
+    }
+    setValues((current) => {
+      const parts = current.problema
+        .split(",")
+        .map((part) => part.trim())
+        .filter(Boolean);
+      const at = parts.findIndex((part) => part.toLowerCase() === term.toLowerCase());
+      const next = at === -1 ? [...parts, term] : parts.filter((_, index) => index !== at);
+      return { ...current, problema: next.join(", ") };
+    });
+  }
+
   function handleBlur(name: FieldName) {
     if (VALIDATE_ON_BLUR.includes(name)) {
       setTouched((current) => (current[name] ? current : { ...current, [name]: true }));
@@ -642,6 +665,31 @@ export function PedidoForm() {
             >
               <div className="flex flex-col gap-4">
                 <Field
+                  label={copy.fields.problema.label}
+                  htmlFor={FIELD_IDS.problema}
+                  error={errors.problema}
+                  errorId={`${FIELD_IDS.problema}-error`}
+                >
+                  <QuickPicks
+                    id={`${FIELD_IDS.problema}-atajos`}
+                    value={values.problema}
+                    onToggle={toggleQuickPick}
+                  />
+                  <Textarea
+                    id={FIELD_IDS.problema}
+                    ref={problemaRef}
+                    required
+                    rows={3}
+                    value={values.problema}
+                    onChange={(event) => setField("problema", event.target.value)}
+                    placeholder={copy.fields.problema.placeholder}
+                    aria-invalid={errors.problema ? true : undefined}
+                    aria-describedby={describedBy("problema")}
+                    className={cn(controlClass, "resize-none")}
+                  />
+                </Field>
+
+                <Field
                   label={copy.fields.zona.label}
                   htmlFor={FIELD_IDS.zona}
                   error={errors.zona}
@@ -674,26 +722,6 @@ export function PedidoForm() {
                   />
                 </Field>
 
-                <Field
-                  label={copy.fields.problema.label}
-                  htmlFor={FIELD_IDS.problema}
-                  error={errors.problema}
-                  errorId={`${FIELD_IDS.problema}-error`}
-                >
-                  <Textarea
-                    id={FIELD_IDS.problema}
-                    ref={problemaRef}
-                    required
-                    rows={3}
-                    value={values.problema}
-                    onChange={(event) => setField("problema", event.target.value)}
-                    placeholder={copy.fields.problema.placeholder}
-                    aria-invalid={errors.problema ? true : undefined}
-                    aria-describedby={describedBy("problema")}
-                    className={cn(controlClass, "resize-none")}
-                  />
-                </Field>
-
                 {/* Patente y WhatsApp en dos columnas solo en la vista a
                     pantalla completa de tablet (`sm`), donde sobra ancho. En
                     la tarjeta de desktop (`lg`, 420-600px) las columnas
@@ -701,7 +729,7 @@ export function PedidoForm() {
                     el ancho, y la fila se leía despareja: ahí van apiladas,
                     cada ayuda en una línea. La tarjeta sigue más baja que la
                     columna de texto del hero, así que el hero no crece. */}
-                <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 sm:items-start lg:flex lg:items-stretch">
+                <div className="grid gap-4 sm:grid-cols-2 sm:items-start lg:grid-cols-1">
                   <Field
                     label={
                       <>
@@ -821,8 +849,12 @@ export function PedidoForm() {
                 >
                   {submitting ? copy.submitting : copy.submit}
                 </button>
+                <p className="flex items-center justify-center gap-2 text-sm font-medium text-ink/80">
+                  <Icon name="check" size={16} strokeWidth={2.4} className="shrink-0 text-brand" />
+                  {copy.free}
+                </p>
                 <p className="text-center text-xs leading-relaxed text-ink/65">
-                  {copy.free} {copy.legal}{" "}
+                  {copy.legal}{" "}
                   <Link href="/privacidad" className={inlineLink}>
                     {copy.privacyLink}
                   </Link>
@@ -846,6 +878,61 @@ const controlClass = "placeholder:text-ink/65 aria-[invalid=true]:border-danger"
 /** Link dentro de un texto: el de la home (`HeroSection`). */
 const inlineLink =
   "font-semibold text-brand-hover underline decoration-brand-hover/40 underline-offset-4 transition-colors hover:text-ink hover:decoration-ink";
+
+/**
+ * Atajos de "¿Qué le pasa al auto?". Botones toggle (`aria-pressed`), no
+ * checkboxes: no son un campo propio, escriben en el textarea, que es lo que
+ * se envía. Un atajo está "puesto" si su texto está en el campo, así que
+ * borrarlo a mano también lo apaga. Chips: la anatomía de DESIGN.md (pill,
+ * borde `line` sobre `surface-subtle`; puesto, borde `brand` sobre su lavado).
+ */
+function QuickPicks({
+  id,
+  value,
+  onToggle,
+}: {
+  readonly id: string;
+  readonly value: string;
+  readonly onToggle: (term: string) => void;
+}) {
+  const { label, items } = copy.fields.problema.quickPicks;
+  const current = value
+    .split(",")
+    .map((part) => part.trim().toLowerCase())
+    .filter(Boolean);
+  return (
+    <div role="group" aria-labelledby={`${id}-label`} className="flex flex-col gap-2">
+      <p id={`${id}-label`} className="sr-only">
+        {label}
+      </p>
+      <ul className="flex flex-wrap gap-2">
+        {items.map((item) => {
+          const pressed = current.includes(item.toLowerCase());
+          return (
+            <li key={item}>
+              <button
+                type="button"
+                aria-pressed={pressed}
+                onClick={() => onToggle(item)}
+                className={cn(
+                  "inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm text-ink transition-colors lg:min-h-9",
+                  pressed
+                    ? "border-brand bg-brand/8"
+                    : "border-line bg-surface-subtle hover:border-brand/40",
+                )}
+              >
+                {pressed ? (
+                  <Icon name="check" size={14} strokeWidth={2.6} className="-ml-0.5 text-brand-hover" />
+                ) : null}
+                {item}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
 
 /**
  * Texto del lookup debajo de la patente. La región `aria-live` existe siempre

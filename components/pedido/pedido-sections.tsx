@@ -2,7 +2,6 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SectionHeading } from "@/components/ui/heading";
-import { Icon } from "@/components/ui/icon";
 import { Section } from "@/components/ui/section";
 import { presupuestoContent } from "@/lib/content/presupuesto";
 import { cn } from "@/lib/utils";
@@ -19,9 +18,8 @@ const { steps, example, faq, ctaBand } = presupuestoContent.pedidoPage;
  *
  * Escala de la home, rol por rol:
  * - `h2` de sección: `SectionHeading size="md"` (el de `QuotesSection`).
- * - Tarjetas: `Card` con la anatomía de `FeaturesSection` (ícono de línea en
- *   verde, `h3` en display `text-base` semibold, cuerpo `text-sm` al 70%).
- * - Preguntas: la tipografía de `FaqSection`, abiertas (sin acordeón).
+ * - Pasos: secuencia numerada unida por una línea, sin tarjetas.
+ * - Preguntas: `Card` con la tipografía de `FaqSection`, abiertas (sin acordeón).
  * - Ritmo: `Section spacing="sm"` (`py-12 md:py-16`). Van seguidas sobre el
  *   mismo fondo, así que cada una lleva solo su padding de arriba (si no, el
  *   aire entre dos se duplica); el de abajo lo pone la banda de cierre.
@@ -35,6 +33,7 @@ const inlineLink =
 
 export function PedidoSteps() {
   const titleId = `${PEDIDO_IDS.steps}-titulo`;
+  const last = steps.items.length - 1;
   return (
     <Section
       id={PEDIDO_IDS.steps}
@@ -44,21 +43,32 @@ export function PedidoSteps() {
       className={cn("reveal", stacked)}
     >
       <SectionHeading as="h2" size="md" id={titleId} title={steps.title} />
-      <ol className="mt-8 grid gap-4 md:mt-12 lg:grid-cols-3 lg:gap-6">
+      {/* Una secuencia, no tres tarjetas sueltas: el número es la
+          información (el orden importa) y una línea los une. Mobile en
+          columna con la línea vertical; desktop en fila con la horizontal. */}
+      <ol className="mt-8 grid md:mt-12 lg:grid-cols-3 lg:gap-8">
         {steps.items.map((step, index) => (
-          <Card
-            key={step.title}
-            as="li"
-            className="flex gap-4 px-5 py-6 lg:flex-col lg:gap-4.5 lg:py-7"
-          >
-            <Icon name={step.icon} className="shrink-0 text-brand" />
-            <div>
-              <h3 className="mb-2 font-display text-base font-semibold text-ink">
-                {index + 1}. {step.title}
+          <li key={step.title} className="relative flex gap-5 pb-8 last:pb-0 lg:flex-col lg:gap-5 lg:pb-0">
+            {index < last ? (
+              <span
+                aria-hidden="true"
+                className="absolute top-12 bottom-2 left-5.5 w-px bg-brand/25 lg:top-5.5 lg:-right-4 lg:bottom-auto lg:left-15 lg:h-px lg:w-auto"
+              />
+            ) : null}
+            <span
+              aria-hidden="true"
+              className="relative flex size-11 shrink-0 items-center justify-center rounded-full border border-brand/25 bg-surface font-display text-lg font-bold text-brand-hover tabular-nums"
+            >
+              {index + 1}
+            </span>
+            <div className="pt-2 lg:pt-0 lg:pr-6">
+              <h3 className="font-display text-lg font-semibold text-ink">
+                <span className="sr-only">{index + 1}. </span>
+                {step.title}
               </h3>
-              <p className="text-sm leading-relaxed text-ink/70">{step.body}</p>
+              <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-ink/72">{step.body}</p>
             </div>
-          </Card>
+          </li>
         ))}
       </ol>
     </Section>
@@ -72,8 +82,7 @@ export function PedidoSteps() {
  * el ejemplo no deja media tarjeta vacía ni se estira más que la FAQ de al
  * lado.
  */
-const bubble =
-  "max-w-72 rounded-card px-4 py-3 text-sm leading-relaxed text-ink lg:max-w-11/12 lg:leading-snug";
+const bubble = "max-w-72 rounded-card px-4 py-3 text-sm leading-relaxed text-ink lg:max-w-5/6";
 /** Globo recibido: blanco con borde sobre la tarjeta suave, como en el chat real. */
 const received = cn(bubble, "self-start rounded-bl-sm border border-line bg-surface");
 
@@ -111,9 +120,8 @@ export function PedidoExample() {
 
         {/* Desktop: los dos presupuestos lado a lado, como dos fichas del
             mismo mensaje; se comparan de un vistazo y el globo no se estira
-            para abajo. Este globo puede usar todo el ancho (a 1024 cada
-            columna necesita el teléfono entero en una línea). */}
-        <div className={cn(received, "flex flex-col gap-4 lg:max-w-full lg:grid lg:grid-cols-2 lg:gap-x-4")}>
+            para abajo. */}
+        <div className={cn(received, "flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-x-6")}>
           <span className="sr-only">{example.us}</span>
           {example.providers.map((provider) => (
             <div key={provider.name}>
@@ -123,7 +131,7 @@ export function PedidoExample() {
                 <span aria-hidden="true">{emoji.address} </span>
                 {provider.address}
               </p>
-              <p className="whitespace-nowrap">
+              <p>
                 <span aria-hidden="true">{emoji.phone} </span>
                 {provider.phone}
               </p>
