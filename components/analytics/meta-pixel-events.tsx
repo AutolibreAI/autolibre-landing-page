@@ -2,9 +2,15 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { META_EVENTS, trackMetaEvent, type MetaEventName } from "@/lib/analytics/meta-pixel";
+import {
+  META_EVENTS,
+  META_LEAD_SOURCES,
+  trackMetaEvent,
+  type MetaEventName,
+} from "@/lib/analytics/meta-pixel";
 
 const TRACKABLE_EVENTS = new Set<string>(Object.values(META_EVENTS));
+const LEAD_SOURCES = new Set<string>(Object.values(META_LEAD_SOURCES));
 
 /**
  * Isla hoja del Meta Pixel. No renderiza nada: sólo engancha dos cosas que
@@ -17,10 +23,14 @@ const TRACKABLE_EVENTS = new Set<string>(Object.values(META_EVENTS));
  * - UN listener delegado de click: cualquier elemento con
  *   `data-meta-event="Contact"` (o otro nombre de `META_EVENTS`) lo manda al
  *   Pixel. Así los links medidos siguen siendo Server Components. En captura
- *   para que un `stopPropagation` ajeno no se coma el evento. Dos atributos
+ *   para que un `stopPropagation` ajeno no se coma el evento. Tres atributos
  *   opcionales suman params: `data-meta-placement="hero"` → `placement`
- *   (qué ubicación del CTA convirtió) y `data-meta-pedido` → `pedido: true`
- *   (el click vino después de dejar un pedido). Nunca datos personales.
+ *   (qué ubicación del CTA convirtió), `data-meta-pedido` → `pedido: true`
+ *   (el click vino después de dejar un pedido) y
+ *   `data-meta-lead-source="whatsapp"` → `lead_source` (de qué camino vino
+ *   el `Lead`; sólo valores de `META_LEAD_SOURCES`, el resto se ignora para
+ *   que un typo no abra una fuente nueva en los reportes). Nunca datos
+ *   personales.
  */
 export function MetaPixelEvents() {
   const pathname = usePathname();
@@ -43,6 +53,10 @@ export function MetaPixelEvents() {
       const placement = el.dataset.metaPlacement;
       if (placement) params.placement = placement;
       if (el.dataset.metaPedido !== undefined) params.pedido = true;
+      const leadSource = el.dataset.metaLeadSource;
+      if (leadSource && LEAD_SOURCES.has(leadSource)) {
+        params.lead_source = leadSource;
+      }
 
       trackMetaEvent(
         name as MetaEventName,

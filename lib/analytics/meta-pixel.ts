@@ -4,12 +4,19 @@
  * (`META_CUSTOM_EVENTS`); cualquier otro se agrega acá primero.
  *
  * - `PageView`: carga inicial (stub del layout) y cada navegación.
- * - `Lead`: pedido de presupuesto registrado (modal y `/pedido`), con el
- *   mismo `eventID` que el `Lead` de la Conversions API para deduplicar.
- * - `Contact`: click en un link de WhatsApp marcado con `data-meta-event`.
- *   En `/pedido` lleva `placement` (`header`, `hero`, `sticky_bar`,
- *   `cta_band`, `confirmation`) para comparar qué ubicación convierte, y
- *   `pedido: true` el de la confirmación (ya dejó el pedido).
+ * - `Lead`: las dos conversiones del pedido, separadas por `lead_source`
+ *   (`META_LEAD_SOURCES`) para que la campaña a `/pedido` optimice sobre UN
+ *   solo evento estándar:
+ *   - pedido de presupuesto registrado (modal y `/pedido`; en `/pedido` con
+ *     `lead_source: "form"`), con el mismo `eventID` que el `Lead` de la
+ *     Conversions API para deduplicar.
+ *   - click en WhatsApp en `/pedido` (`lead_source: "whatsapp"`), con
+ *     `placement` (`header`, `header_menu`, `hero`, `sticky_bar`,
+ *     `cta_band`) para comparar qué ubicación convierte. Sólo Pixel.
+ * - `Contact`: click en un link de WhatsApp marcado con `data-meta-event`
+ *   fuera de `/pedido` (home), y el de la confirmación de `/pedido`
+ *   (`placement: "confirmation"`, `pedido: true`): esa persona ya contó como
+ *   `Lead` al enviar el form, mandarlo de nuevo la contaría dos veces.
  * - `QuoteStart` (custom): empezó un pedido. Modal: completó el paso 1.
  *   `/pedido`: primer foco en cualquier campo del form, una vez por visita.
  * - `PedidoPaso` (custom): embudo por paso, sólo en el modal.
@@ -29,6 +36,23 @@ export const META_EVENTS = {
 } as const;
 
 export type MetaEventName = (typeof META_EVENTS)[keyof typeof META_EVENTS];
+
+/**
+ * De dónde vino un `Lead`: viaja como `lead_source`. Los dos caminos de
+ * `/pedido` convierten con el mismo evento estándar (la campaña optimiza
+ * sobre `Lead`) y este param es lo que permite separarlos en los reportes.
+ * Cerrado a propósito: el listener de `data-meta-lead-source` descarta
+ * cualquier otro valor.
+ */
+export const META_LEAD_SOURCES = {
+  /** Envió el form de `/pedido` y el backend lo registró. */
+  form: "form",
+  /** Tocó un botón de WhatsApp en `/pedido` (salvo el de la confirmación). */
+  whatsapp: "whatsapp",
+} as const;
+
+export type MetaLeadSource =
+  (typeof META_LEAD_SOURCES)[keyof typeof META_LEAD_SOURCES];
 
 /**
  * Eventos custom: van por `trackCustom`, no por `track`. Sirven para

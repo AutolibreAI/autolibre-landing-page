@@ -17,6 +17,7 @@ import {
   createMetaEventId,
   META_CUSTOM_EVENTS,
   META_EVENTS,
+  META_LEAD_SOURCES,
   trackMetaCustomEvent,
   trackMetaEvent,
 } from "@/lib/analytics/meta-pixel";
@@ -559,7 +560,13 @@ export function PedidoForm() {
 
     // El pedido ya entró: si el lookup seguía con su polling, no hace falta.
     plateLookupRef.current?.controller.abort();
-    trackMetaEvent(META_EVENTS.lead, undefined, metaEventId);
+    // `lead_source` separa este `Lead` del de los botones de WhatsApp: los
+    // dos son la conversión de la campaña (ver `META_LEAD_SOURCES`).
+    trackMetaEvent(
+      META_EVENTS.lead,
+      { lead_source: META_LEAD_SOURCES.form },
+      metaEventId,
+    );
     setStatus({
       kind: "success",
       publicCode:

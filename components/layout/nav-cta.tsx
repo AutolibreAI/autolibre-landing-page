@@ -22,7 +22,8 @@ type NavCtaLinkProps = Pick<
  * criterio que `WhatsappLink`).
  *
  * Sin "use client": el evento del Pixel lo manda el listener delegado de
- * `MetaPixelEvents` leyendo `data-meta-event` y `data-meta-placement`. Así lo
+ * `MetaPixelEvents` leyendo `data-meta-event`, `data-meta-placement` y, si
+ * el CTA la define, `data-meta-lead-source`. Así lo
  * pueden renderizar el header (server) y `MobileNav` (client) por igual.
  */
 export function NavCtaLink({
@@ -37,6 +38,7 @@ export function NavCtaLink({
     ? {
         "data-meta-event": cta.tracking.event,
         "data-meta-placement": placement ?? cta.tracking.placement,
+        "data-meta-lead-source": cta.tracking.leadSource,
       }
     : {};
   const content = (

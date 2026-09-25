@@ -21,6 +21,11 @@ export type NavCta = NavLink & {
     readonly placement: string;
     /** `placement` del mismo CTA dentro del menú mobile. */
     readonly menuPlacement: string;
+    /**
+     * `lead_source` cuando el evento es `Lead` (valor de
+     * `META_LEAD_SOURCES`). Sin él, el evento sale sin fuente.
+     */
+    readonly leadSource?: string;
   };
 };
 
