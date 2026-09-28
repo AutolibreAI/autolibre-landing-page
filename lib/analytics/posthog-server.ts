@@ -7,9 +7,12 @@ import { ANALYTICS_APP, type AnalyticsEventName, type AnalyticsProps } from "./e
  * backend puede confirmar (hoy: `quote_submitted`, con el pedido ya
  * registrado).
  *
- * - Mismo token público que el navegador (`NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`;
- *   sin él no se manda nada) y `POSTHOG_HOST` (sólo server) como host de
- *   ingesta, con fallback a la región US.
+ * - Mismo corte que el navegador: sólo en el deploy de Production de Vercel
+ *   (`VERCEL_ENV === "production"`) y con el token público
+ *   (`NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`). Un pedido de prueba en dev o en un
+ *   preview no llega a PostHog.
+ * - `POSTHOG_HOST` (sólo server) como host de ingesta, con fallback a la
+ *   región US.
  * - Serverless: `captureImmediate` espera el envío HTTP en la misma llamada,
  *   sin cola que se pierda cuando la función se congela. Se llama desde
  *   `after()`, así que no demora la respuesta al usuario.
@@ -25,6 +28,7 @@ const POSTHOG_ID_PATTERN = /^[A-Za-z0-9-]{8,64}$/;
 let client: PostHog | null = null;
 
 function getClient(): PostHog | null {
+  if (process.env.VERCEL_ENV !== "production") return null;
   const token = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
   if (!token) return null;
   client ??= new PostHog(token, {

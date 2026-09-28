@@ -308,7 +308,9 @@ export async function POST(req: NextRequest) {
     // descripción; del auto, sólo marca/modelo/año si se validó.
     const flow = quoteFlowOrNull(rawQuoteFlow);
     const posthogProperties: AnalyticsProps = {
-      lead_source: LEAD_SOURCES.form,
+      // Igual que el `Lead` del Pixel: `lead_source: "form"` sólo en `/pedido`
+      // (lo separa del `Lead` de sus botones de WhatsApp); el modal va sin él.
+      ...(flow === QUOTE_FLOWS.page ? { lead_source: LEAD_SOURCES.form } : {}),
       ...(flow ? { flow } : {}),
       has_plate: Boolean(plate),
       vehicle_identified: Boolean(vehicleLookup),

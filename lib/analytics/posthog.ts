@@ -11,9 +11,12 @@ import { ANALYTICS_APP, type AnalyticsProps } from "./events";
  *   idle. No compite con el LCP ni con la hidratación (INP).
  * - Lo que se trackea antes de que cargue (`capturePostHog`) queda en una
  *   cola con su timestamp y se vacía apenas termina el `init`.
- * - Sin `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` no se carga nada y todo es no-op,
- *   igual que el Meta Pixel sin su ID: la variable está sólo en Production,
- *   así que dev y previews no ensucian los datos.
+ * - Sólo mide en el deploy de Production de Vercel
+ *   (`NEXT_PUBLIC_VERCEL_ENV === "production"`) y con
+ *   `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`. Fuera de eso no se carga nada y todo
+ *   es no-op: dev (aunque el token esté en el `.env` local) y previews no
+ *   ensucian los datos. El corte es por código y no por dónde se cargó la
+ *   variable, así no depende de acordarse.
  *
  * Variables de entorno:
  * - `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`: token `phc_…` del proyecto. Público
@@ -32,7 +35,15 @@ import { ANALYTICS_APP, type AnalyticsProps } from "./events";
  * `lib/content/privacidad.ts`.
  */
 
-const POSTHOG_TOKEN = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN || undefined;
+/**
+ * `NEXT_PUBLIC_VERCEL_ENV` la expone Vercel sola en el build (variables de
+ * sistema). Fuera de Vercel no existe, así que local nunca mide.
+ */
+const IS_MEASURED_ENV = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
+
+const POSTHOG_TOKEN = IS_MEASURED_ENV
+  ? process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN || undefined
+  : undefined;
 
 /** Tope de la cola previa al `init`: un bucle no puede crecerla sin límite. */
 const MAX_QUEUED_EVENTS = 50;
