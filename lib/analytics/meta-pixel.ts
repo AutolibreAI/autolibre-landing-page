@@ -1,28 +1,27 @@
 /**
- * Meta Pixel del lado del navegador. Sólo se miden CINCO eventos, decididos a
- * propósito: tres estándar (`META_EVENTS`) y dos custom
- * (`META_CUSTOM_EVENTS`); cualquier otro se agrega acá primero.
+ * Meta Pixel del lado del navegador: el vocabulario de Meta y el envío a
+ * `fbq`. QUÉ se mide y con qué params lo decide el catálogo único de
+ * `lib/analytics/events.ts`; los componentes llaman a `track()`
+ * (`lib/analytics/track.ts`), nunca a este módulo directo. Al Pixel llegan
+ * CINCO eventos, decididos a propósito: tres estándar (`META_EVENTS`) y dos
+ * custom (`META_CUSTOM_EVENTS`).
  *
- * - `PageView`: carga inicial (stub del layout) y cada navegación.
+ * - `PageView`: carga inicial (stub del layout) y cada navegación
+ *   (`AnalyticsEvents`).
  * - `Lead`: las dos conversiones del pedido, separadas por `lead_source`
- *   (`META_LEAD_SOURCES`) para que la campaña a `/pedido` optimice sobre UN
- *   solo evento estándar:
- *   - pedido de presupuesto registrado (modal y `/pedido`; en `/pedido` con
- *     `lead_source: "form"`), con el mismo `eventID` que el `Lead` de la
- *     Conversions API para deduplicar.
- *   - click en WhatsApp en `/pedido` (`lead_source: "whatsapp"`), con
- *     `placement` (`header`, `header_menu`, `hero`, `sticky_bar`,
- *     `cta_band`) para comparar qué ubicación convierte. Sólo Pixel.
- * - `Contact`: click en un link de WhatsApp marcado con `data-meta-event`
- *   fuera de `/pedido` (home), y el de la confirmación de `/pedido`
- *   (`placement: "confirmation"`, `pedido: true`): esa persona ya contó como
- *   `Lead` al enviar el form, mandarlo de nuevo la contaría dos veces.
- * - `QuoteStart` (custom): empezó un pedido. Modal: completó el paso 1.
- *   `/pedido`: primer foco en cualquier campo del form, una vez por visita.
- * - `PedidoPaso` (custom): embudo por paso, sólo en el modal.
+ *   para que la campaña a `/pedido` optimice sobre UN solo evento estándar:
+ *   - pedido de presupuesto registrado (`quote_submitted`, modal y
+ *     `/pedido`; en `/pedido` con `lead_source: "form"`), con el mismo
+ *     `eventID` que el `Lead` de la Conversions API para deduplicar.
+ *   - click en WhatsApp en `/pedido` (`whatsapp_clicked` con
+ *     `lead_source: "whatsapp"`), con `placement`. Sólo Pixel.
+ * - `Contact`: `whatsapp_clicked` sin `lead_source` (home, y la confirmación
+ *   de un pedido con `pedido: true`: esa persona ya contó como `Lead`).
+ * - `QuoteStart` (custom): `quote_started`.
+ * - `PedidoPaso` (custom): `quote_step_viewed`, sólo en el modal.
  *
- * Sin `NEXT_PUBLIC_META_PIXEL_ID` no se carga nada y todos los helpers son
- * no-op: en dev sin la variable no se ensucian los datos del Pixel real.
+ * Sin `NEXT_PUBLIC_META_PIXEL_ID` no se carga nada y todo es no-op: en dev
+ * sin la variable no se ensucian los datos del Pixel real.
  */
 
 /** Público por diseño: el ID del Pixel viaja igual en el HTML de cualquier sitio. */
@@ -38,32 +37,13 @@ export const META_EVENTS = {
 export type MetaEventName = (typeof META_EVENTS)[keyof typeof META_EVENTS];
 
 /**
- * De dónde vino un `Lead`: viaja como `lead_source`. Los dos caminos de
- * `/pedido` convierten con el mismo evento estándar (la campaña optimiza
- * sobre `Lead`) y este param es lo que permite separarlos en los reportes.
- * Cerrado a propósito: el listener de `data-meta-lead-source` descarta
- * cualquier otro valor.
- */
-export const META_LEAD_SOURCES = {
-  /** Envió el form de `/pedido` y el backend lo registró. */
-  form: "form",
-  /** Tocó un botón de WhatsApp en `/pedido` (salvo el de la confirmación). */
-  whatsapp: "whatsapp",
-} as const;
-
-export type MetaLeadSource =
-  (typeof META_LEAD_SOURCES)[keyof typeof META_LEAD_SOURCES];
-
-/**
  * Eventos custom: van por `trackCustom`, no por `track`. Sirven para
- * audiencias y embudo; las campañas siguen optimizando sobre `Lead`. Van
- * aparte de `META_EVENTS` para que no entren en la allow-list de
- * `data-meta-event` (ver `components/analytics/meta-pixel-events.tsx`).
+ * audiencias y embudo; las campañas siguen optimizando sobre `Lead`.
  */
 export const META_CUSTOM_EVENTS = {
   /**
    * Empezó un pedido de presupuesto. En el modal: completó el primer paso
-   * (patente/vehículo). En `/pedido`: primer foco en un campo del form.
+   * (patente/vehículo). En `/pedido`: primera interacción con el form.
    */
   quoteStart: "QuoteStart",
   /**
@@ -99,37 +79,32 @@ declare global {
 /**
  * Manda un evento al Pixel. Si `fbevents.js` todavía no bajó (se carga con
  * `lazyOnload`), el stub del layout lo encola y se despacha cuando llega.
- * `eventId` es el que deduplica contra la Conversions API.
+ *
+ * - `custom`: va por `trackCustom`. No tiene contraparte en la Conversions
+ *   API, así que nunca lleva `eventID`.
+ * - `eventId`: el que deduplica contra la Conversions API (sólo estándar).
  */
-export function trackMetaEvent(
-  name: MetaEventName,
-  params?: MetaEventParams,
-  eventId?: string,
+export function sendMetaEvent(
+  name: string,
+  { custom = false, params, eventId }: {
+    custom?: boolean;
+    params?: MetaEventParams;
+    eventId?: string;
+  } = {},
 ): void {
   if (!META_PIXEL_ID || typeof window === "undefined" || !window.fbq) return;
   try {
-    if (eventId) window.fbq("track", name, params ?? {}, { eventID: eventId });
+    if (custom) window.fbq("trackCustom", name, params);
+    else if (eventId) window.fbq("track", name, params ?? {}, { eventID: eventId });
     else window.fbq("track", name, params);
   } catch {
     // La medición nunca rompe la página.
   }
 }
 
-/**
- * Manda un evento custom al Pixel (`trackCustom`). Sólo navegador: no tiene
- * contraparte en la Conversions API, así que no lleva `eventID`. Nunca le
- * pases datos personales en `params`.
- */
-export function trackMetaCustomEvent(
-  name: MetaCustomEventName,
-  params?: MetaEventParams,
-): void {
-  if (!META_PIXEL_ID || typeof window === "undefined" || !window.fbq) return;
-  try {
-    window.fbq("trackCustom", name, params);
-  } catch {
-    // La medición nunca rompe la página.
-  }
+/** `PageView` de una navegación del router (la carga inicial la manda el stub). */
+export function trackMetaPageView(): void {
+  sendMetaEvent(META_EVENTS.pageView);
 }
 
 /**

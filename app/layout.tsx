@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { DM_Sans, Outfit } from "next/font/google";
 import Script from "next/script";
-import { MetaPixelEvents } from "@/components/analytics/meta-pixel-events";
+import { AnalyticsEvents } from "@/components/analytics/analytics-events";
 import { META_PIXEL_ID } from "@/lib/analytics/meta-pixel";
 import { siteConfig } from "@/lib/seo/config";
 import "./globals.css";
@@ -122,6 +122,14 @@ const metaPixelScript = META_PIXEL_ID
   ? `!function(f){if(f.fbq)return;var n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[]}(window);fbq("set","autoConfig",false,${JSON.stringify(META_PIXEL_ID)});fbq("init",${JSON.stringify(META_PIXEL_ID)});fbq("track","PageView");`
   : null;
 
+/**
+ * PostHog no tiene nada en el `<head>`: lo inicializa
+ * `instrumentation-client.ts` con un `import()` diferido (ver
+ * `lib/analytics/posthog.ts`). Acá sólo decide si hace falta la isla de
+ * medición: sin token ni Pixel no hay nada que escuchar.
+ */
+const POSTHOG_ENABLED = Boolean(process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN);
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -146,11 +154,9 @@ export default function RootLayout({
         {children}
         <script dangerouslySetInnerHTML={{ __html: revealScript }} />
         {metaPixelScript && (
-          <>
-            <Script src="https://connect.facebook.net/en_US/fbevents.js" strategy="lazyOnload" />
-            <MetaPixelEvents />
-          </>
+          <Script src="https://connect.facebook.net/en_US/fbevents.js" strategy="lazyOnload" />
         )}
+        {(metaPixelScript || POSTHOG_ENABLED) && <AnalyticsEvents />}
       </body>
     </html>
   );

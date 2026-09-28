@@ -9,7 +9,7 @@ type NavCtaLinkProps = Pick<
   "size" | "block"
 > & {
   readonly cta: NavCta;
-  /** `placement` del Pixel en este lugar (header o menú mobile). */
+  /** `placement` del evento en este lugar (header o menú mobile). */
   readonly placement?: string;
   readonly className?: string;
   readonly onClick?: React.MouseEventHandler<HTMLAnchorElement>;
@@ -21,9 +21,10 @@ type NavCtaLinkProps = Pick<
  * (`<a>` nativo con `target="_blank"`, p. ej. WhatsApp en `/pedido`, mismo
  * criterio que `WhatsappLink`).
  *
- * Sin "use client": el evento del Pixel lo manda el listener delegado de
- * `MetaPixelEvents` leyendo `data-meta-event`, `data-meta-placement` y, si
- * el CTA la define, `data-meta-lead-source`. Así lo
+ * Sin "use client": el evento lo manda el listener delegado de
+ * `AnalyticsEvents` leyendo `data-analytics-event`,
+ * `data-analytics-placement` y, si el CTA la define,
+ * `data-analytics-lead-source`. Así lo
  * pueden renderizar el header (server) y `MobileNav` (client) por igual.
  */
 export function NavCtaLink({
@@ -36,9 +37,9 @@ export function NavCtaLink({
 }: NavCtaLinkProps) {
   const tracking = cta.tracking
     ? {
-        "data-meta-event": cta.tracking.event,
-        "data-meta-placement": placement ?? cta.tracking.placement,
-        "data-meta-lead-source": cta.tracking.leadSource,
+        "data-analytics-event": cta.tracking.event,
+        "data-analytics-placement": placement ?? cta.tracking.placement,
+        "data-analytics-lead-source": cta.tracking.leadSource,
       }
     : {};
   const content = (

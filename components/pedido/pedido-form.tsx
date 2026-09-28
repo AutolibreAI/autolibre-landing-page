@@ -13,17 +13,14 @@ import { Field, Input, Textarea } from "@/components/ui/form-controls";
 import { FormError } from "@/components/ui/form-feedback";
 import { Icon } from "@/components/ui/icon";
 import { WhatsappInput } from "@/components/ui/whatsapp-input";
-import {
-  createMetaEventId,
-  META_CUSTOM_EVENTS,
-  META_EVENTS,
-  META_LEAD_SOURCES,
-  trackMetaCustomEvent,
-  trackMetaEvent,
-} from "@/lib/analytics/meta-pixel";
+import { ANALYTICS_EVENTS, LEAD_SOURCES, QUOTE_FLOWS } from "@/lib/analytics/events";
+import { createMetaEventId } from "@/lib/analytics/meta-pixel";
+import { getPostHogIds } from "@/lib/analytics/posthog";
+import { track } from "@/lib/analytics/track";
 import { presupuestoContent, whatsappErrorMessage } from "@/lib/content/presupuesto";
 import {
   EMPTY_GEO,
+  hidePlacesDropdownFromReplay,
   loadGooglePlaces,
   placeSelection,
   QUOTE_AUTOCOMPLETE_OPTIONS,
@@ -368,6 +365,7 @@ export function PedidoForm() {
         input,
         QUOTE_AUTOCOMPLETE_OPTIONS,
       );
+      hidePlacesDropdownFromReplay();
       placesListenerRef.current = autocomplete.addListener("place_changed", () => {
         const selection = placeSelection(autocomplete.getPlace());
         if (!selection) return;
@@ -460,10 +458,7 @@ export function PedidoForm() {
   function toggleQuickPick(term: string) {
     // Tocar un atajo también es empezar el pedido (el foco en un botón no
     // lo cuenta `trackQuoteStart`).
-    if (!quoteStartTrackedRef.current) {
-      quoteStartTrackedRef.current = true;
-      trackMetaCustomEvent(META_CUSTOM_EVENTS.quoteStart);
-    }
+    markQuoteStarted();
     setValues((current) => {
       const parts = current.problema
         .split(",")
@@ -485,14 +480,21 @@ export function PedidoForm() {
     }
   }
 
-  /** `QuoteStart`: primer foco en cualquier campo, una vez por visita. */
+  /**
+   * `quote_started` (Meta: `QuoteStart`): primera interacción con el form
+   * (foco en un campo o un atajo), una vez por montaje del form.
+   */
+  function markQuoteStarted() {
+    if (quoteStartTrackedRef.current) return;
+    quoteStartTrackedRef.current = true;
+    track(ANALYTICS_EVENTS.quoteStarted, { flow: QUOTE_FLOWS.page });
+  }
+
   function trackQuoteStart(event: React.FocusEvent<HTMLFormElement>) {
     const isField =
       event.target instanceof HTMLInputElement ||
       event.target instanceof HTMLTextAreaElement;
-    if (!isField || quoteStartTrackedRef.current) return;
-    quoteStartTrackedRef.current = true;
-    trackMetaCustomEvent(META_CUSTOM_EVENTS.quoteStart);
+    if (isField) markQuoteStarted();
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -514,6 +516,9 @@ export function PedidoForm() {
     const plateValue = values.patente;
     // Con patente, espera (con tope) al lookup en curso. Nunca bloquea.
     const vehicleLookup = await snapshotForSubmit(plateValue);
+    // Para que el `quote_submitted` que manda la route caiga en esta misma
+    // persona y sesión de PostHog. Sin PostHog, no viajan.
+    const posthogIds = getPostHogIds();
 
     let response: Response;
     let data: { error?: unknown; publicCode?: unknown } | null;
@@ -541,15 +546,25 @@ export function PedidoForm() {
           consent: true,
           // Lo consume la route para la Conversions API; al backend no llega.
           metaEventId,
+          // Los consume la route para PostHog; al backend no llegan.
+          quoteFlow: QUOTE_FLOWS.page,
+          posthogDistinctId: posthogIds?.distinctId,
+          posthogSessionId: posthogIds?.sessionId,
         }),
       });
       data = await response.json().catch(() => null);
     } catch {
+      track(ANALYTICS_EVENTS.quoteFailed, { flow: QUOTE_FLOWS.page, reason: "network" });
       setStatus({ kind: "error", message: copy.genericError });
       return;
     }
 
     if (!response.ok) {
+      track(ANALYTICS_EVENTS.quoteFailed, {
+        flow: QUOTE_FLOWS.page,
+        reason: "server",
+        status: response.status,
+      });
       setStatus({
         kind: "error",
         message:
@@ -560,12 +575,14 @@ export function PedidoForm() {
 
     // El pedido ya entró: si el lookup seguía con su polling, no hace falta.
     plateLookupRef.current?.controller.abort();
-    // `lead_source` separa este `Lead` del de los botones de WhatsApp: los
-    // dos son la conversión de la campaña (ver `META_LEAD_SOURCES`).
-    trackMetaEvent(
-      META_EVENTS.lead,
-      { lead_source: META_LEAD_SOURCES.form },
-      metaEventId,
+    // `Lead` de Meta con el `eventID` de la Conversions API. `lead_source`
+    // lo separa del de los botones de WhatsApp: los dos son la conversión de
+    // la campaña (ver `LEAD_SOURCES`). En PostHog `quote_submitted` lo manda
+    // la route: `track` no lo repite acá.
+    track(
+      ANALYTICS_EVENTS.quoteSubmitted,
+      { flow: QUOTE_FLOWS.page, lead_source: LEAD_SOURCES.form },
+      { metaEventId },
     );
     setStatus({
       kind: "success",
@@ -1028,7 +1045,9 @@ function Confirmation({
             {done.orderCode.replace("{code}", publicCode)}
           </p>
         ) : null}
-        <p className="mt-1 text-sm text-ink/70">
+        {/* Zona y patente que cargó la persona, fuera de un input:
+            `ph-no-capture` las saca de la grabación de sesiones. */}
+        <p className="ph-no-capture mt-1 text-sm text-ink/70">
           {zona} · {plate || done.noPlate}
         </p>
       </div>

@@ -1,13 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import {
-  createMetaEventId,
-  META_CUSTOM_EVENTS,
-  META_EVENTS,
-  trackMetaCustomEvent,
-  trackMetaEvent,
-} from "@/lib/analytics/meta-pixel";
+import { ANALYTICS_EVENTS, QUOTE_FLOWS } from "@/lib/analytics/events";
+import { createMetaEventId } from "@/lib/analytics/meta-pixel";
+import { getPostHogIds } from "@/lib/analytics/posthog";
+import { track } from "@/lib/analytics/track";
 import { presupuestoContent } from "@/lib/content/presupuesto";
 import { isValidPlate, normalizePlateInput, PLATE_PATTERNS } from "@/lib/plate";
 import { isValidArWhatsapp } from "@/lib/phone";
@@ -18,6 +15,7 @@ import { lookupVehicleFromBrowser } from "@/lib/vehicle-lookup-client";
 import {
   EMPTY_GEO,
   GOOGLE_MAPS_API_KEY,
+  hidePlacesDropdownFromReplay,
   placeSelection,
   QUOTE_AUTOCOMPLETE_OPTIONS,
   type PlaceGeo,
@@ -143,11 +141,11 @@ export function useQuoteFlow(options?: {
   // Lookup en curso (fetch + polling). Abortarlo corta el fetch y la espera
   // entre reintentos: ver `lib/vehicle-lookup-client.ts`.
   const lookupAbortRef = useRef<AbortController | null>(null);
-  // `QuoteStart` sale una sola vez por instancia del flujo: volver al paso 1
+  // `quote_started` sale una sola vez por instancia del flujo: volver al paso 1
   // y avanzar de nuevo no lo repite. Ref y no estado (no pinta nada), y
   // `reset()` no lo toca a propósito: sigue siendo la misma persona.
   const quoteStartTrackedRef = useRef(false);
-  // `PedidoPaso` por paso visto, con la misma regla: una vez por paso y por
+  // `quote_step_viewed` por paso visto, con la misma regla: una vez por paso y por
   // instancia (ir y volver no lo repite, `reset()` tampoco lo limpia).
   const trackedStepsRef = useRef<Set<number>>(new Set());
 
@@ -157,7 +155,7 @@ export function useQuoteFlow(options?: {
   useEffect(() => {
     if (trackedStepsRef.current.has(step)) return;
     trackedStepsRef.current.add(step);
-    trackMetaCustomEvent(META_CUSTOM_EVENTS.quoteStep, { step });
+    track(ANALYTICS_EVENTS.quoteStepViewed, { flow: QUOTE_FLOWS.modal, step });
   }, [step]);
 
   // En un ref y no en estado: la atribución no pinta nada, no tiene que
@@ -184,6 +182,7 @@ export function useQuoteFlow(options?: {
       input,
       QUOTE_AUTOCOMPLETE_OPTIONS,
     );
+    hidePlacesDropdownFromReplay();
 
     const listener = autocomplete.addListener("place_changed", () => {
       const selection = placeSelection(autocomplete.getPlace());
@@ -251,7 +250,7 @@ export function useQuoteFlow(options?: {
   function completePlateStep() {
     if (!quoteStartTrackedRef.current) {
       quoteStartTrackedRef.current = true;
-      trackMetaCustomEvent(META_CUSTOM_EVENTS.quoteStart);
+      track(ANALYTICS_EVENTS.quoteStarted, { flow: QUOTE_FLOWS.modal });
     }
     setStep(2);
   }
@@ -261,6 +260,12 @@ export function useQuoteFlow(options?: {
     // Mismo ID para el `Lead` del Pixel y el de la Conversions API (lo manda
     // la route): así Meta cuenta un solo lead aunque le lleguen los dos.
     const metaEventId = createMetaEventId();
+    // Para que el `quote_submitted` que manda la route caiga en esta misma
+    // persona y sesión de PostHog. Sin PostHog, no viajan.
+    const posthogIds = getPostHogIds();
+    // Status de la respuesta, si hubo: separa en `quote_failed` un error del
+    // backend (`server`) de uno de red (`network`).
+    let responseStatus: number | undefined;
     try {
       const response = await fetch("/api/presupuesto", {
         method: "POST",
@@ -289,6 +294,10 @@ export function useQuoteFlow(options?: {
               : undefined,
           // Lo consume la route para la Conversions API; al backend no llega.
           metaEventId,
+          // Los consume la route para PostHog; al backend no llegan.
+          quoteFlow: QUOTE_FLOWS.modal,
+          posthogDistinctId: posthogIds?.distinctId,
+          posthogSessionId: posthogIds?.sessionId,
           // TODO(attribution): los UTMs viajan en `attributionRef.current` y están listos para
           // mandarse acá. Bloqueado: el DTO del backend usa forbidNonWhitelisted, así que un campo
           // desconocido devuelve 400. Requiere agregar el campo en
@@ -296,11 +305,20 @@ export function useQuoteFlow(options?: {
           // y propagarlo en app/api/presupuesto/route.ts. NO meterlo en `description` ni en `contactName`.
         }),
       });
+      responseStatus = response.status;
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? copy.genericError);
-      trackMetaEvent(META_EVENTS.lead, undefined, metaEventId);
+      // `Lead` de Meta sin params y con el `eventID` de la Conversions API.
+      // En PostHog `quote_submitted` lo manda la route: `track` no lo repite.
+      track(ANALYTICS_EVENTS.quoteSubmitted, { flow: QUOTE_FLOWS.modal }, { metaEventId });
       setSubmitState({ kind: "success", id: data.id });
     } catch (error) {
+      track(ANALYTICS_EVENTS.quoteFailed, {
+        flow: QUOTE_FLOWS.modal,
+        ...(responseStatus !== undefined
+          ? { reason: "server", status: responseStatus }
+          : { reason: "network" }),
+      });
       setSubmitState({
         kind: "error",
         message:

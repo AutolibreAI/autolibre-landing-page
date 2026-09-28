@@ -133,7 +133,7 @@ export function HeroSection() {
               {subtitle}
             </p>
 
-            <StoreLinks id="descargar" note={downloadNote} className="mt-10" />
+            <StoreLinks id="descargar" placement="hero" note={downloadNote} className="mt-10" />
 
             <p className="mt-6 text-base text-ink/70">
               {quoteLink.lead}{" "}

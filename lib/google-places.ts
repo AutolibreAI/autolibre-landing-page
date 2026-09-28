@@ -157,3 +157,17 @@ export function loadGooglePlaces(): Promise<boolean> {
   });
   return placesLoad;
 }
+
+/**
+ * El dropdown de sugerencias (`.pac-container`) lo cuelga Google de `<body>`
+ * y repite lo que la persona escribió en el campo de dirección: es texto
+ * libre FUERA de un input, así que la grabación de sesiones de PostHog (que
+ * sólo enmascara inputs) lo vería. `ph-no-capture` lo bloquea en el replay.
+ * Se llama justo después de crear cada `Autocomplete`, antes de que tenga
+ * sugerencias.
+ */
+export function hidePlacesDropdownFromReplay(): void {
+  document
+    .querySelectorAll(".pac-container")
+    .forEach((el) => el.classList.add("ph-no-capture"));
+}

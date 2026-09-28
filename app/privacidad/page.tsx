@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/layout/legal-page";
 import { JsonLd } from "@/components/seo/json-ld";
+import { privacidadContent } from "@/lib/content/privacidad";
 import { createMetadata } from "@/lib/seo/metadata";
 import {
   breadcrumbSchema,
@@ -13,6 +14,8 @@ const TITLE = "Política de Privacidad";
 const DESCRIPTION =
   "Política de privacidad de AutoLibre conforme a la Ley 25.326 de Protección de Datos Personales de Argentina.";
 const PATH = "/privacidad";
+
+const { posthog, thirdParty } = privacidadContent;
 
 export const metadata: Metadata = createMetadata({
   title: TITLE,
@@ -84,9 +87,9 @@ export default function PrivacidadPage() {
         </p>
         <p>
           Además, al navegar el sitio se registran datos técnicos para medir
-          nuestros anuncios y, cuando enviás un pedido de presupuesto, tu
-          WhatsApp se comparte con Meta cifrado de forma irreversible (ver el
-          punto 7).
+          nuestros anuncios y el uso del sitio y, cuando enviás un pedido de
+          presupuesto, tu WhatsApp se comparte con Meta cifrado de forma
+          irreversible (ver los puntos 7 y 8).
         </p>
 
         <h2>3. Finalidad del tratamiento</h2>
@@ -95,8 +98,9 @@ export default function PrivacidadPage() {
           compartir los datos de tu auto y la descripción del problema con
           talleres de nuestra red y hacerte llegar sus respuestas,
           (b) evaluar y activar las solicitudes de talleres, (c) responder
-          consultas de soporte y procesar pedidos de eliminación de cuenta, y
-          (d) medir la efectividad de nuestros anuncios.
+          consultas de soporte y procesar pedidos de eliminación de cuenta,
+          (d) medir la efectividad de nuestros anuncios, y (e) entender cómo se
+          usa el sitio para mejorarlo.
         </p>
 
         <h2>4. Derechos del titular</h2>
@@ -154,8 +158,11 @@ export default function PrivacidadPage() {
           el punto 7.
         </p>
         <p>
-          Algunos de estos proveedores (Vercel, Google, Resend y Meta, ver el
-          punto 7) pueden tratar datos fuera de Argentina, lo que puede implicar
+          <strong>{thirdParty.name}</strong> {thirdParty.body}
+        </p>
+        <p>
+          Algunos de estos proveedores (Vercel, Google, Resend, Meta y PostHog,
+          ver los puntos 7 y 8) pueden tratar datos fuera de Argentina, lo que puede implicar
           una transferencia internacional de datos.
         </p>
         <p>No vendemos ni cedemos tus datos a terceros con fines comerciales.</p>
@@ -212,7 +219,19 @@ export default function PrivacidadPage() {
           <a href="mailto:contact@autolibre.ai">contact@autolibre.ai</a>.
         </p>
 
-        <h2>8. Contacto</h2>
+        <h2>{posthog.title}</h2>
+        {posthog.paragraphs.map((paragraph) => (
+          <p key={paragraph}>{paragraph}</p>
+        ))}
+        <p>
+          {posthog.policy.lead}
+          <a href={posthog.policy.href} target="_blank" rel="noopener noreferrer">
+            {posthog.policy.label}
+          </a>
+          {posthog.policy.tail}
+        </p>
+
+        <h2>9. Contacto</h2>
         <p>
           Para cualquier consulta sobre esta política escribí a{" "}
           <a href="mailto:contact@autolibre.ai">contact@autolibre.ai</a>.

@@ -1,6 +1,14 @@
 import { after, NextRequest, NextResponse } from "next/server";
 import { sendMetaCapiEvent } from "@/lib/analytics/meta-capi";
+import {
+  ANALYTICS_EVENTS,
+  LEAD_SOURCES,
+  QUOTE_FLOWS,
+  type AnalyticsProps,
+  type QuoteFlow,
+} from "@/lib/analytics/events";
 import { META_EVENTS } from "@/lib/analytics/meta-pixel";
+import { capturePostHogServerEvent, posthogIdOrNull } from "@/lib/analytics/posthog-server";
 import { whatsappErrorMessage } from "@/lib/content/presupuesto";
 import { parseArWhatsapp } from "@/lib/phone";
 import { canonicalPlate } from "@/lib/plate";
@@ -17,6 +25,15 @@ const META_EVENT_ID_PATTERN = /^[A-Za-z0-9-]{8,64}$/;
 
 function metaEventIdOrNull(raw: unknown): string | null {
   return typeof raw === "string" && META_EVENT_ID_PATTERN.test(raw) ? raw : null;
+}
+
+/**
+ * Qué flujo mandó el pedido (`modal` o `page`). Opcional y cerrado: cualquier
+ * otro valor se descarta y el evento de PostHog sale sin `flow`. Nunca
+ * invalida el pedido.
+ */
+function quoteFlowOrNull(raw: unknown): QuoteFlow | null {
+  return raw === QUOTE_FLOWS.modal || raw === QUOTE_FLOWS.page ? raw : null;
 }
 
 /** Primer hop de `x-forwarded-for` (el cliente real detrás del proxy). */
@@ -184,6 +201,9 @@ export async function POST(req: NextRequest) {
     consent,
     vehicleLookup: rawVehicleLookup,
     metaEventId: rawMetaEventId,
+    posthogDistinctId: rawPosthogDistinctId,
+    posthogSessionId: rawPosthogSessionId,
+    quoteFlow: rawQuoteFlow,
   } = body;
 
   const plate = optionalPlate(rawPlate);
@@ -280,6 +300,36 @@ export async function POST(req: NextRequest) {
       };
       after(() => sendMetaCapiEvent(capiEvent));
     }
+
+    // `quote_submitted` en PostHog, también SOLO con el pedido registrado y
+    // con `after()`. Se une a la persona y la sesión del navegador con los
+    // IDs que mandó `posthog-js` (ver `capturePostHogServerEvent`). Props sin
+    // datos personales: nada de WhatsApp, correo, zona, patente ni
+    // descripción; del auto, sólo marca/modelo/año si se validó.
+    const flow = quoteFlowOrNull(rawQuoteFlow);
+    const posthogProperties: AnalyticsProps = {
+      lead_source: LEAD_SOURCES.form,
+      ...(flow ? { flow } : {}),
+      has_plate: Boolean(plate),
+      vehicle_identified: Boolean(vehicleLookup),
+      ...(vehicleLookup
+        ? {
+            vehicle_make: vehicleLookup.make,
+            vehicle_model: vehicleLookup.model,
+            ...(vehicleLookup.year !== null ? { vehicle_year: vehicleLookup.year } : {}),
+          }
+        : {}),
+      has_email: Boolean(trimmedEmail),
+      location_from_suggestion:
+        finiteCoordinate(latitude) !== null && finiteCoordinate(longitude) !== null,
+    };
+    const posthogEvent = {
+      event: ANALYTICS_EVENTS.quoteSubmitted,
+      distinctId: posthogIdOrNull(rawPosthogDistinctId),
+      sessionId: posthogIdOrNull(rawPosthogSessionId),
+      properties: posthogProperties,
+    };
+    after(() => capturePostHogServerEvent(posthogEvent));
 
     return NextResponse.json({ success: true, id, publicCode });
   } catch (error) {

@@ -19,6 +19,7 @@ import {
   EMPTY_GEO,
   findAddressComponent,
   GOOGLE_MAPS_API_KEY,
+  hidePlacesDropdownFromReplay,
   type PlaceGeo,
 } from "@/lib/google-places";
 import {
@@ -188,6 +189,7 @@ export function ProviderForm({
       fields: ["formatted_address", "name", "geometry", "address_components"],
     });
     autocompleteRef.current = autocomplete;
+    hidePlacesDropdownFromReplay();
 
     const listener = autocomplete.addListener("place_changed", () => {
       const place = autocomplete.getPlace();

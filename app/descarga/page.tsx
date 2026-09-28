@@ -133,6 +133,7 @@ export default function DescargaPage() {
           <div className="mt-11 flex flex-col items-center">
             <StoreLinks
               tone="brand"
+              placement="descarga"
               note={downloadNote}
               className="w-full max-w-68 text-center sm:max-w-none [&>div]:justify-center [&>div>a]:w-full [&>div>a]:justify-center sm:[&>div>a]:w-auto"
             />

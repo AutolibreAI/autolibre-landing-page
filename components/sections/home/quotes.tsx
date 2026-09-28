@@ -3,7 +3,7 @@ import { QuoteRequestModal } from "@/components/quote-modal/quote-request-modal"
 import { buttonVariants } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/heading";
 import { Section } from "@/components/ui/section";
-import { META_EVENTS } from "@/lib/analytics/meta-pixel";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { presupuestoContent } from "@/lib/content/presupuesto";
 
 /**
@@ -51,13 +51,15 @@ export function QuotesSection() {
             <QuoteRequestModal size="lg">{ctaLabel}</QuoteRequestModal>
             {/* `<a>` nativo y no `ButtonLink`: sale del sitio, el router de
               `next/link` no aporta nada (mismo criterio que `StoreLinks`).
-              `data-meta-event`: lo mide `MetaPixelEvents` con un listener
-              delegado, así esta sección sigue siendo server. */}
+              `data-analytics-event`: lo mide `AnalyticsEvents` con un
+              listener delegado, así esta sección sigue siendo server. Sin
+              `lead_source`: en Meta es `Contact`, no `Lead`. */}
             <a
               href={whatsapp.href}
               target="_blank"
               rel="noopener noreferrer"
-              data-meta-event={META_EVENTS.contact}
+              data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
+              data-analytics-placement="home_quotes"
               className={buttonVariants({
                 variant: "outlineInverse",
                 size: "lg",

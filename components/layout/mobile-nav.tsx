@@ -165,6 +165,7 @@ export function MobileNav({
                 */}
                 {isDownloadCta ? (
                   <DownloadCta
+                    placement="header_menu"
                     size="lg"
                     block
                     onClick={() => setOpen(false)}

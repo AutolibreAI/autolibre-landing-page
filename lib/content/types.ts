@@ -1,5 +1,7 @@
 /** Tipos compartidos por la capa de contenido. */
 
+import type { AnalyticsEventName, LeadSource } from "@/lib/analytics/events";
+
 export type NavLink = {
   readonly label: string;
   readonly href: string;
@@ -7,25 +9,25 @@ export type NavLink = {
 
 /**
  * CTA del header (y del menú mobile). Un `NavLink` que además puede salir del
- * sitio (WhatsApp: `<a target="_blank">`), llevar ícono y medirse en el Pixel
- * con el listener delegado de `MetaPixelEvents` (`data-meta-event` +
- * `data-meta-placement`), sin volver client al header.
+ * sitio (WhatsApp: `<a target="_blank">`), llevar ícono y medirse con el
+ * listener delegado de `AnalyticsEvents` (`data-analytics-event` +
+ * `data-analytics-placement`), sin volver client al header.
  */
 export type NavCta = NavLink & {
   readonly external?: boolean;
   readonly icon?: IconName;
   readonly tracking?: {
-    /** Nombre de `META_EVENTS`. */
-    readonly event: string;
+    /** Evento del catálogo (`ANALYTICS_EVENTS`) marcado `clickable`. */
+    readonly event: AnalyticsEventName;
     /** `placement` del CTA en el header. */
     readonly placement: string;
     /** `placement` del mismo CTA dentro del menú mobile. */
     readonly menuPlacement: string;
     /**
-     * `lead_source` cuando el evento es `Lead` (valor de
-     * `META_LEAD_SOURCES`). Sin él, el evento sale sin fuente.
+     * `lead_source` (valor de `LEAD_SOURCES`): convierte como `Lead` en Meta.
+     * Sin él, el evento sale sin fuente.
      */
-    readonly leadSource?: string;
+    readonly leadSource?: LeadSource;
   };
 };
 

@@ -1,5 +1,6 @@
 import type { VariantProps } from "class-variance-authority";
 import { buttonVariants } from "@/components/ui/button";
+import { ANALYTICS_EVENTS, APP_STORES } from "@/lib/analytics/events";
 import { siteContent } from "@/lib/content/site";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +16,8 @@ type DownloadCtaProps = Pick<
   readonly className?: string;
   /** Clases extra para cada uno de los links de tienda. */
   readonly linkClassName?: string;
+  /** `placement` de `app_store_clicked`: `header` o `header_menu`. */
+  readonly placement?: string;
   readonly onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 };
 
@@ -31,7 +34,8 @@ type DownloadCtaProps = Pick<
  * con `display: none`, así que salen del árbol de accesibilidad.
  *
  * No lleva `"use client"`: el header lo renderiza en el server y `MobileNav`
- * lo importa como un componente más.
+ * lo importa como un componente más. El click lo mide el listener delegado
+ * de `AnalyticsEvents` (`app_store_clicked`, por los `data-analytics-*`).
  */
 export function DownloadCta({
   variant,
@@ -39,6 +43,7 @@ export function DownloadCta({
   block,
   className,
   linkClassName,
+  placement = "header",
   onClick,
 }: DownloadCtaProps) {
   const { cta, downloadTargets } = siteContent.nav;
@@ -58,6 +63,9 @@ export function DownloadCta({
         target="_blank"
         rel="noopener noreferrer"
         aria-label={downloadTargets.ios.ariaLabel}
+        data-analytics-event={ANALYTICS_EVENTS.appStoreClicked}
+        data-analytics-store={APP_STORES.appStore}
+        data-analytics-placement={placement}
         onClick={onClick}
         className={cn(storeClassName, "hidden platform-ios:inline-flex")}
       >
@@ -68,6 +76,9 @@ export function DownloadCta({
         target="_blank"
         rel="noopener noreferrer"
         aria-label={downloadTargets.android.ariaLabel}
+        data-analytics-event={ANALYTICS_EVENTS.appStoreClicked}
+        data-analytics-store={APP_STORES.playStore}
+        data-analytics-placement={placement}
         onClick={onClick}
         className={cn(storeClassName, "hidden platform-android:inline-flex")}
       >

@@ -12,7 +12,7 @@ import { PedidoStickyBar } from "@/components/pedido/pedido-sticky-bar";
 import { WhatsappLink } from "@/components/pedido/whatsapp-link";
 import { JsonLd } from "@/components/seo/json-ld";
 import { Container } from "@/components/ui/container";
-import { META_EVENTS, META_LEAD_SOURCES } from "@/lib/analytics/meta-pixel";
+import { ANALYTICS_EVENTS, LEAD_SOURCES } from "@/lib/analytics/events";
 import { presupuestoContent } from "@/lib/content/presupuesto";
 import type { NavCta } from "@/lib/content/types";
 import { createMetadata } from "@/lib/seo/metadata";
@@ -32,8 +32,8 @@ const PATH = "/pedido";
 /**
  * En `/pedido` el CTA del header es el mismo chat de WhatsApp que el resto de
  * la página (no "Descargar la app"): una sola conversión. Se mide igual que
- * `WhatsappLink`: `Lead` con `lead_source: "whatsapp"` y `placement`
- * `header`, y `header_menu` dentro del menú mobile.
+ * `WhatsappLink`: `whatsapp_clicked` con `lead_source: "whatsapp"` (en Meta,
+ * `Lead`) y `placement` `header`, y `header_menu` dentro del menú mobile.
  */
 const headerCta: NavCta = {
   label: whatsapp.label,
@@ -41,10 +41,10 @@ const headerCta: NavCta = {
   external: true,
   icon: "whatsapp",
   tracking: {
-    event: META_EVENTS.lead,
+    event: ANALYTICS_EVENTS.whatsappClicked,
     placement: "header",
     menuPlacement: "header_menu",
-    leadSource: META_LEAD_SOURCES.whatsapp,
+    leadSource: LEAD_SOURCES.whatsapp,
   },
 };
 
