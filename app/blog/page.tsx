@@ -8,7 +8,6 @@ import { PostCard } from "@/components/blog/post-card";
 import { ClosingCtaSection } from "@/components/sections/home/closing-cta";
 import { PageShell } from "@/components/layout/page-shell";
 import { JsonLd } from "@/components/seo/json-ld";
-import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { SectionHeading } from "@/components/ui/heading";
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
@@ -78,7 +77,6 @@ export default async function BlogPage({ searchParams }: PageProps) {
     <>
       <PageShell secondary={{ label: "Soy dueño de auto", href: "/" }} currentPath={PATH}>
         <Section spacing="sm">
-          <Container>
             <div className="grid gap-10 border-b border-line pb-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end lg:gap-20">
               <SectionHeading
                 as="h1"
@@ -92,22 +90,18 @@ export default async function BlogPage({ searchParams }: PageProps) {
             <div className="mt-8">
               <CategoryChips categories={categories} active={filters.category} q={filters.q} />
             </div>
-          </Container>
         </Section>
 
         {featured ? (
           <Section spacing="md">
-            <Container>
-              <div className="grid gap-16 lg:grid-cols-[minmax(0,1fr)_26rem] lg:gap-20">
+                <div className="grid gap-16 lg:grid-cols-[minmax(0,1fr)_26rem] lg:gap-20">
                 <FeaturedPost post={featured} />
                 <LatestList posts={latest} />
               </div>
-            </Container>
-          </Section>
+            </Section>
         ) : null}
 
         <Section tone="muted" spacing="md">
-          <Container>
             {gridPosts.length > 0 ? (
               <div className="flex flex-col gap-12">
                 {!featured ? (
@@ -149,11 +143,10 @@ export default async function BlogPage({ searchParams }: PageProps) {
                 ) : null}
               </div>
             )}
-          </Container>
         </Section>
-      </PageShell>
 
-      <ClosingCtaSection />
+        <ClosingCtaSection />
+      </PageShell>
 
       <JsonLd schema={schema} />
     </>
