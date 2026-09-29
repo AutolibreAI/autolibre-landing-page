@@ -13,6 +13,7 @@ import { HowItWorksSection } from "@/components/sections/home/how-it-works";
 import { MarketplaceSection } from "@/components/sections/home/marketplace";
 import { ProblemSection } from "@/components/sections/home/problem";
 import { ProviderBandSection } from "@/components/sections/home/provider-band";
+import { QuotesSection } from "@/components/sections/home/quotes";
 import { siteConfig } from "@/lib/seo/config";
 import { createMetadata } from "@/lib/seo/metadata";
 import {
@@ -49,6 +50,7 @@ export default function HomePage() {
 
       <main>
         <HeroSection />
+        <QuotesSection />
         <ProblemSection />
         <FeaturesSection />
         <MarketplaceSection />

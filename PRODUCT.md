@@ -68,8 +68,10 @@ Restricciones técnicas:
   (`colorScheme: "light"` fijo en `app/layout.tsx`). Los íconos se agregan como
   path en `components/ui/icon.tsx`.
 - Server components por defecto; la frontera de cliente se empuja lo más profundo posible.
-- `position: sticky` no funciona dentro de la app: `globals.css` aplica
-  `overflow-x: hidden` a `html` y `body` (documentado en `app/pedido/pedido-client.tsx`).
+- `position: sticky` y las animaciones por scroll funcionan desde 2026-09-22:
+  `body` pasó a `overflow-x: clip` (`html` mantiene `hidden`). Para recortar
+  un contenedor que envuelva un sticky o un `reveal`, usar `overflow-clip`,
+  nunca `overflow-hidden`.
 - Las URLs de tienda salen siempre de `siteConfig.stores`, nunca hardcodeadas.
 
 Decisiones explícitamente NO tomadas (2026-09-17), a no inventar:

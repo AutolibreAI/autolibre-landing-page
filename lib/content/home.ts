@@ -3,11 +3,63 @@ import { siteConfig } from "@/lib/seo/config";
 
 /** Copy de la home. Un objeto por sección, en el mismo orden que la página. */
 export const homeContent = {
+  /**
+   * Hero de la home: qué es AutoLibre, en general. Tiene el único `<h1>` de
+   * la página y absorbe la descarga (tiendas + ancla `#descargar`). El pedido
+   * de presupuesto va justo debajo, en `QuotesSection`.
+   */
   hero: {
     titleLines: ["Todo tu auto,", "en un solo lugar."],
     subtitle:
       "Documentación, vencimientos, historial, diagnóstico con IA, talleres y servicios cerca tuyo.",
     downloadNote: "Gratis, para iPhone y Android.",
+    /** Salida secundaria hacia `QuotesSection` para quien ya necesita un taller. */
+    quoteLink: {
+      lead: "¿Necesitás algún servicio?",
+      label: "¡Pedí tu presupuesto!",
+      href: "#presupuesto",
+    },
+    /**
+     * Palabras que suben (con rebote) debajo del eslogan, mismo tamaño y en
+     * verde. Son 8 a propósito: el keyframe `hero-word` de `globals.css`
+     * asume 8 pasos. La primera queda fija con
+     * `prefers-reduced-motion`.
+     */
+    words: [
+      "VTV",
+      "Multas",
+      "Seguros",
+      "Registro",
+      "Mantenimientos",
+      "Services",
+      "Talleres",
+      "Documentación",
+    ],
+    /** Lo que leen los lectores de pantalla en lugar de la animación. */
+    wordsSrText:
+      "VTV, multas, seguros, registro, mantenimientos, services, talleres y documentación.",
+    /**
+     * Pantallas del teléfono: capturas reales de `public/screenshots/`, en el
+     * orden de sus nombres (IMG_0577 → IMG_0584). Ciclo propio, NO
+     * sincronizado con las palabras. Son 8 a propósito: el keyframe
+     * `hero-screen` asume 8 pasos. La primera es la imagen LCP.
+     */
+    screens: [
+      "IMG_0577", // Inicio: tu garage y talleres
+      "IMG_0578", // Garage
+      "IMG_0579", // Ficha del auto: alertas y documentos
+      "IMG_0580", // Servicios y talleres aliados
+      "IMG_0581", // Pedir cotización
+      "IMG_0582", // Pedido enviado
+      "IMG_0583", // Servicios con el pedido en curso
+      "IMG_0584", // Chat con la IA
+    ].map((name) => ({
+      src: `/screenshots/${name}.PNG`,
+      width: 1170,
+      height: 2532,
+    })),
+    phoneLabel:
+      "Pantallas de la app AutoLibre: el inicio con tu garage, la ficha del auto con alertas y documentos, los talleres aliados, el pedido de cotización y su seguimiento, y el chat de diagnóstico con IA.",
   },
 
   problem: {

@@ -47,6 +47,11 @@ export const providersContent = {
     note: "Te contactamos para activar tu perfil.",
     addressHelper:
       "Empezá a escribir y elegí tu dirección de la lista para que te ubiquemos bien en el mapa.",
+    /** Se escribió la dirección a mano (o se editó después de elegirla). */
+    addressNotPickedError: "Elegí tu dirección de la lista de sugerencias.",
+    /** Se eligió una sugerencia, pero Google no devolvió localidad o provincia. */
+    addressImpreciseError:
+      "Esa dirección no es lo bastante precisa. Probá con calle y número y elegila de la lista.",
     hoursLabel: "Horarios de atención",
     hoursPlaceholder: "Ej: Lun a Vie 9 a 18hs, Sáb 9 a 13hs",
     modalityTitle: "¿Cómo atendés?",

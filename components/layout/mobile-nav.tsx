@@ -3,31 +3,61 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { ButtonLink } from "@/components/ui/button";
-import type { NavLink } from "@/lib/content/types";
+import { NavCtaLink } from "@/components/layout/nav-cta";
+import { DownloadCta } from "@/components/ui/download-cta";
+import { cn } from "@/lib/utils";
+import type { NavCta, NavLink } from "@/lib/content/types";
 
 type MobileNavProps = {
+  /** Anclas de sección (solo en la home). */
   readonly links: readonly NavLink[];
-  readonly secondary: NavLink;
-  readonly cta: NavLink;
+  /** Links a páginas ("Pedir presupuesto" y el secundario). */
+  readonly pageLinks: readonly NavLink[];
+  readonly cta: NavCta;
+  /** Si es el CTA de descarga, apunta a la tienda según la plataforma. */
+  readonly isDownloadCta?: boolean;
+  /** Ruta actual: su link lleva `aria-current="page"`. */
+  readonly currentPath?: string;
+  /**
+   * Desde qué breakpoint el header muestra todo y el menú sobra. Con anclas
+   * de sección (home) recién en `xl`; en páginas internas, en `lg`.
+   */
+  readonly hideFrom?: "lg" | "xl";
 };
+
+/** Clases estáticas (Tailwind no ve clases armadas con template strings). */
+const hideClass = { lg: "lg:hidden", xl: "xl:hidden" } as const;
 
 /**
  * Menú desplegable para pantallas chicas. Única parte del header que se
  * hidrata: todo lo demás es HTML estático.
  */
-export function MobileNav({ links, secondary, cta }: MobileNavProps) {
+export function MobileNav({
+  links,
+  pageLinks,
+  cta,
+  isDownloadCta = false,
+  currentPath,
+  hideFrom = "lg",
+}: MobileNavProps) {
   // El cierre al navegar lo maneja el `onClick` de cada enlace, no un
   // efecto sobre `pathname`: así no hay render en cascada al cambiar de ruta.
   const [open, setOpen] = useState(false);
 
-  // Bloquear el scroll del fondo mientras el menú está abierto.
+  // Bloquear el scroll del fondo mientras el menú está abierto. Va en
+  // `<html>` y NO en `<body>`: el `overflow` del elemento raíz se aplica al
+  // viewport (que es el que scrollea) y lo frena de verdad. En `<body>`, como
+  // `<html>` ya tiene `overflow-x: hidden`, no se propaga: convierte al body
+  // en un contenedor de scroll propio, el header `sticky` se despega (quedaba
+  // en `top: -scrollY`, fuera de pantalla, sin botón de cerrar) y la página
+  // seguía scrolleando por detrás.
   useEffect(() => {
     if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const root = document.documentElement;
+    const previous = root.style.overflow;
+    root.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = previous;
+      root.style.overflow = previous;
     };
   }, [open]);
 
@@ -41,7 +71,7 @@ export function MobileNav({ links, secondary, cta }: MobileNavProps) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
-  const allLinks: readonly NavLink[] = [...links, secondary];
+  const allLinks: readonly NavLink[] = [...links, ...pageLinks];
 
   return (
     <>
@@ -54,7 +84,10 @@ export function MobileNav({ links, secondary, cta }: MobileNavProps) {
         /* 44px es el mínimo táctil de WCAG 2.5.5 y de la HIG de Apple. El
            ícono sigue siendo de 18px: lo que crece es el área de toque, que
            es lo que el dedo necesita. */
-        className="flex size-11 items-center justify-center rounded-field border border-ink/15 text-ink transition-colors hover:border-brand hover:text-brand lg:hidden"
+        className={cn(
+          "flex size-11 items-center justify-center rounded-field border border-ink/15 text-ink transition-colors hover:border-brand hover:text-brand",
+          hideClass[hideFrom],
+        )}
       >
         <svg
           width="18"
@@ -97,7 +130,10 @@ export function MobileNav({ links, secondary, cta }: MobileNavProps) {
         ? createPortal(
             <div
               id="mobile-nav-panel"
-              className="fixed inset-x-0 top-[4.5rem] bottom-0 z-40 flex flex-col gap-2 overflow-y-auto bg-surface px-[6%] pt-8 pb-[calc(2rem+env(safe-area-inset-bottom))] lg:hidden"
+              className={cn(
+                "fixed inset-x-0 top-18 bottom-0 z-40 flex flex-col gap-2 overflow-y-auto overscroll-contain bg-surface px-[6%] pt-8 pb-[calc(2rem+env(safe-area-inset-bottom))]",
+                hideClass[hideFrom],
+              )}
             >
               <nav aria-label="Menú principal" className="flex flex-col">
                 {allLinks.map((link) => (
@@ -105,7 +141,10 @@ export function MobileNav({ links, secondary, cta }: MobileNavProps) {
                     key={link.href}
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    className="border-b border-line py-4 font-display text-xl font-semibold text-ink"
+                    aria-current={
+                      link.href === currentPath ? "page" : undefined
+                    }
+                    className="border-b border-line py-4 font-display text-xl font-semibold text-ink aria-[current=page]:text-brand-hover aria-[current=page]:underline aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8"
                   >
                     {link.label}
                   </Link>
@@ -124,15 +163,24 @@ export function MobileNav({ links, secondary, cta }: MobileNavProps) {
                   links de navegación a propósito: el CTA es la conversión de
                   la landing, no puede pesar visualmente menos que "FAQ".
                 */}
-                <ButtonLink
-                  href={cta.href}
-                  size="lg"
-                  block
-                  onClick={() => setOpen(false)}
-                  className="text-xl"
-                >
-                  {cta.label}
-                </ButtonLink>
+                {isDownloadCta ? (
+                  <DownloadCta
+                    placement="header_menu"
+                    size="lg"
+                    block
+                    onClick={() => setOpen(false)}
+                    linkClassName="text-xl"
+                  />
+                ) : (
+                  <NavCtaLink
+                    cta={cta}
+                    placement={cta.tracking?.menuPlacement}
+                    size="lg"
+                    block
+                    onClick={() => setOpen(false)}
+                    className="text-xl"
+                  />
+                )}
               </div>
             </div>,
             document.body,

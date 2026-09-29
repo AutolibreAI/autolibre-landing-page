@@ -5,21 +5,6 @@
  * de soporte. Editarlo cambia lo que llega al equipo.
  */
 
-export const earlyAccessCopy = {
-  submitLabel: "Quiero acceso",
-  submitLoadingLabel: "Enviando...",
-  success: {
-    title: "¡Ya estás adentro!",
-    description:
-      "Te avisamos en cuanto abramos el acceso. Gracias por sumarte a AutoLibre.",
-  },
-  duplicate: {
-    title: "¡Ya estás en la lista!",
-    description: "Tu email ya está registrado. Te avisamos cuando sea tu turno.",
-  },
-  genericError: "Algo salió mal. Por favor intentá de nuevo.",
-} as const;
-
 export const SUPPORT_SUBJECTS = [
   "Problema técnico",
   "Cuenta o acceso",

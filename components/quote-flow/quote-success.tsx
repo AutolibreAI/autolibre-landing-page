@@ -2,10 +2,23 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { StoreLinks } from "@/components/ui/store-links";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { presupuestoContent } from "@/lib/content/presupuesto";
 import { PRESUPUESTO_WHATSAPP_URL } from "./use-quote-flow";
 
 const copy = presupuestoContent.modal;
+
+/**
+ * El WhatsApp de la confirmación se mide como el de `/pedido`
+ * (`WhatsappLink` con `afterOrder`): `whatsapp_clicked` con `pedido: true` y
+ * sin `lead_source`, así en Meta es `Contact` y no un segundo `Lead`. Lo
+ * manda el listener delegado de `AnalyticsEvents`.
+ */
+const whatsappTracking = {
+  "data-analytics-event": ANALYTICS_EVENTS.whatsappClicked,
+  "data-analytics-placement": "quote_success",
+  "data-analytics-pedido": "",
+} as const;
 
 type QuoteSuccessProps = {
   readonly variant: "modal" | "page";
@@ -33,6 +46,7 @@ function SuccessModal({ onClose }: { readonly onClose?: () => void }) {
           href={PRESUPUESTO_WHATSAPP_URL}
           target="_blank"
           rel="noopener noreferrer"
+          {...whatsappTracking}
           className="mt-2 inline-block text-sm font-semibold text-brand hover:text-brand-hover"
         >
           {copy.success.whatsappLinkLabel}
@@ -104,7 +118,7 @@ function SuccessPage() {
             </li>
           ))}
         </ul>
-        <StoreLinks tone="light" className="mt-6" />
+        <StoreLinks tone="light" placement="quote_success" className="mt-6" />
       </div>
 
       <div className="mt-8 border-t border-line pt-5">
@@ -113,6 +127,7 @@ function SuccessPage() {
           href={PRESUPUESTO_WHATSAPP_URL}
           target="_blank"
           rel="noopener noreferrer"
+          {...whatsappTracking}
           className="mt-1.5 inline-block text-sm font-semibold text-brand hover:text-brand-hover"
         >
           {copy.success.whatsappLinkLabel}

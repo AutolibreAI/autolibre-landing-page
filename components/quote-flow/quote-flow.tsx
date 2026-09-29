@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/form-controls";
 import { FormError } from "@/components/ui/form-feedback";
-import { presupuestoContent } from "@/lib/content/presupuesto";
+import { WhatsappInput } from "@/components/ui/whatsapp-input";
+import { presupuestoContent, whatsappErrorMessage } from "@/lib/content/presupuesto";
+import { parseArWhatsapp } from "@/lib/phone";
 import { cn } from "@/lib/utils";
 import { PlateField } from "./plate-field";
 import { QuoteProgress } from "./quote-progress";
@@ -14,7 +16,6 @@ import { QuoteSuccess } from "./quote-success";
 import {
   GOOGLE_MAPS_API_KEY,
   useQuoteFlow,
-  whatsappDigitCount,
   type QuoteFlowAttribution,
 } from "./use-quote-flow";
 // Estilos del dropdown de Google Places. Es CSS global y no un Module
@@ -61,6 +62,10 @@ export function QuoteFlow({ layout, onClose, attribution }: QuoteFlowProps) {
   } = flow;
 
   const isPage = layout === "page";
+  // El error del WhatsApp aparece recién después del primer blur: mientras
+  // escribe, "faltan 7 dígitos" es ruido. Misma regla que `/pedido`.
+  const [whatsappTouched, setWhatsappTouched] = useState(false);
+  const whatsappCheck = parseArWhatsapp(whatsapp);
   const isSuccess = submitState.kind === "success";
   const headingRef = useRef<HTMLElement>(null);
 
@@ -180,16 +185,17 @@ export function QuoteFlow({ layout, onClose, attribution }: QuoteFlowProps) {
                     htmlFor="quote-whatsapp"
                     required
                     hint={
-                      whatsapp && whatsappDigitCount(whatsapp) < 8
-                        ? copy.steps.contact.whatsappInvalid
+                      whatsappTouched && !whatsappCheck.ok
+                        ? whatsappErrorMessage(whatsappCheck.error, whatsappCheck.diff)
                         : copy.steps.contact.whatsappHint
                     }
                   >
-                    <Input
+                    {/* Formato mientras se escribe, igual que en `/pedido`. */}
+                    <WhatsappInput
                       id="quote-whatsapp"
-                      type="tel"
                       value={whatsapp}
-                      onChange={(event) => flow.setWhatsapp(event.target.value)}
+                      onValueChange={flow.setWhatsapp}
+                      onBlur={() => setWhatsappTouched(true)}
                       placeholder={copy.steps.contact.whatsappPlaceholder}
                       autoComplete="tel"
                       autoFocus={!isPage}

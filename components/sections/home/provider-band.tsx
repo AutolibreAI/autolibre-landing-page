@@ -8,14 +8,14 @@ export function ProviderBandSection() {
   return (
     <section id="proveedor" className="bg-ink py-11">
       <Container size="wide">
-        <div className="flex flex-col items-center gap-6 text-center md:flex-row md:justify-between md:text-left">
+        <div className="reveal-group flex flex-col items-center gap-6 text-center md:flex-row md:justify-between md:text-left">
           <div>
             <h2 className="font-display text-xl font-bold text-white">
               {title}
             </h2>
             <p className="mt-1.5 text-sm text-white/65">{subtitle}</p>
           </div>
-          <ButtonLink href={cta.href} variant="soft" size="lg">
+          <ButtonLink href={cta.href} size="lg">
             {cta.label}
           </ButtonLink>
         </div>

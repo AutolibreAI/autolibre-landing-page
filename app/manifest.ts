@@ -17,7 +17,12 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     start_url: "/",
     scope: "/",
-    display: "standalone",
+    /**
+     * `browser` y NO `standalone`: la landing no es una PWA. Con `standalone`
+     * + íconos de 192/512, Chrome y Edge la marcan instalable y ofrecen
+     * "Instalar AutoLibre" en desktop, que confunde con la app nativa.
+     */
+    display: "browser",
     lang: siteConfig.lang,
     dir: "ltr",
     categories: ["automotive", "productivity", "utilities"],

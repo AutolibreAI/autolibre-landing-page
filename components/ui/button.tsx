@@ -7,13 +7,19 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        /** CTA principal sobre fondos claros. */
-        primary: "bg-brand text-white hover:bg-brand-hover",
+        /**
+         * CTA principal (sobre claro y sobre ink). En reposo va el verde
+         * oscuro y en hover se aclara: blanco sobre `brand-hover` mide 5.74:1
+         * (AA para el texto del botón); sobre `brand` serían 4.28:1 y no
+         * llegaría.
+         */
+        primary: "bg-brand-hover text-white hover:bg-brand",
         /** Secundario sobre fondos claros: contorno. */
         outline:
           "border border-ink/30 text-ink hover:border-brand hover:text-brand",
-        /** CTA sobre la banda oscura de proveedores. */
-        soft: "bg-brand-soft text-ink hover:bg-brand-soft/85",
+        /** Secundario sobre fondos oscuros (ink): contorno blanco. */
+        outlineInverse:
+          "border border-white/40 text-white hover:border-white hover:bg-white/10",
         /** CTA sobre la sección verde de cierre. */
         inverse: "bg-white text-ink hover:bg-white/90",
       },

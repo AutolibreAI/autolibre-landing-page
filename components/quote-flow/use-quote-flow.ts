@@ -1,14 +1,23 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ANALYTICS_EVENTS, QUOTE_FLOWS } from "@/lib/analytics/events";
+import { createMetaEventId } from "@/lib/analytics/meta-pixel";
+import { getPostHogIds } from "@/lib/analytics/posthog";
+import { track } from "@/lib/analytics/track";
 import { presupuestoContent } from "@/lib/content/presupuesto";
-import { EMAIL_REGEX } from "@/lib/validation";
-import { siteConfig } from "@/lib/seo/config";
+import { isValidPlate, normalizePlateInput, PLATE_PATTERNS } from "@/lib/plate";
+import { isValidArWhatsapp } from "@/lib/phone";
+import { EMAIL_REGEX, whatsappDigitCount } from "@/lib/validation";
+import { whatsappUrl } from "@/lib/whatsapp";
 import type { VehicleLookupSnapshot } from "@/lib/vehicle-lookup";
+import { lookupVehicleFromBrowser } from "@/lib/vehicle-lookup-client";
 import {
   EMPTY_GEO,
-  findAddressComponent,
   GOOGLE_MAPS_API_KEY,
+  hidePlacesDropdownFromReplay,
+  placeSelection,
+  QUOTE_AUTOCOMPLETE_OPTIONS,
   type PlaceGeo,
 } from "@/lib/google-places";
 
@@ -19,38 +28,21 @@ import {
 export { EMPTY_GEO, GOOGLE_MAPS_API_KEY };
 export type { PlaceGeo };
 
-export const PLATE_PATTERNS: readonly RegExp[] = [
-  /^[A-Z]{3}\d{3}$/, // auto legacy   - ABC123
-  /^[A-Z]{2}\d{3}[A-Z]{2}$/, // auto Mercosur - AB123CD
-  /^\d{3}[A-Z]{3}$/, // moto legacy   - 123ABC
-  /^[A-Z]\d{3}[A-Z]{3}$/, // moto Mercosur - A123BCD
-];
-
-export function isValidPlate(value: string): boolean {
-  return PLATE_PATTERNS.some((pattern) => pattern.test(value));
-}
-
-export function normalizePlateInput(raw: string): string {
-  return raw
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, "")
-    .slice(0, 7);
-}
-
-export function whatsappDigitCount(raw: string): number {
-  return raw.replace(/\D/g, "").length;
-}
+// Helpers puros compartidos con `/pedido` y las rutas de servidor: viven en
+// `lib/plate.ts` y `lib/validation.ts`. Se re-exportan para no romper a quien
+// ya los importa desde acá.
+export { isValidPlate, normalizePlateInput, PLATE_PATTERNS, whatsappDigitCount };
 
 /**
  * `siteConfig.contact.whatsapp` es el link genérico del sitio (footer, FAQ) y
  * su texto precargado es de otro contexto ("Me interesa comprar un
  * escáner!") — no sirve para el fallback del pedido de presupuesto. Se arma
  * un link propio con el mismo número pero un mensaje que tiene sentido acá.
- * wa.me solo acepta dígitos: sin `+`, sin espacios y sin guiones.
+ * El número y el formato de wa.me los resuelve `whatsappUrl`.
  */
 const PRESUPUESTO_WHATSAPP_TEXT =
   "¡Hola! Hice un pedido de presupuesto en la web de AutoLibre.";
-export const PRESUPUESTO_WHATSAPP_URL = `https://wa.me/${siteConfig.contact.phoneE164.replace(/\D/g, "")}?text=${encodeURIComponent(PRESUPUESTO_WHATSAPP_TEXT)}`;
+export const PRESUPUESTO_WHATSAPP_URL = whatsappUrl(PRESUPUESTO_WHATSAPP_TEXT);
 
 export const TOTAL_STEPS = 4;
 const copy = presupuestoContent.modal;
@@ -69,18 +61,6 @@ export type LookupState =
     }
   | { kind: "not_found" }
   | { kind: "unavailable" };
-
-/**
- * clasific.ar no tiene un endpoint de "consultar estado" para la búsqueda
- * básica (a diferencia de Modules/Reports, que sí lo tienen): cuando la
- * patente no está en su base histórica, `onMiss=search` la encola y hay que
- * volver a pedir el MISMO endpoint más tarde para ver si ya apareció. 4
- * intentos cada 4s (16s totales) porque cada reintento manda `onMiss=search`
- * de nuevo y consume cuota `miss` — una ventana más larga agotaría esa cuota
- * compartida por poco beneficio.
- */
-const SEARCH_POLL_INTERVAL_MS = 4000;
-const SEARCH_POLL_MAX_ATTEMPTS = 4;
 
 export type SubmitState =
   | { kind: "idle" }
@@ -158,7 +138,25 @@ export function useQuoteFlow(options?: {
   const [submitState, setSubmitState] = useState<SubmitState>({ kind: "idle" });
   const [mapsReady, setMapsReady] = useState(false);
   const addressInputRef = useRef<HTMLInputElement>(null);
-  const pollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Lookup en curso (fetch + polling). Abortarlo corta el fetch y la espera
+  // entre reintentos: ver `lib/vehicle-lookup-client.ts`.
+  const lookupAbortRef = useRef<AbortController | null>(null);
+  // `quote_started` sale una sola vez por instancia del flujo: volver al paso 1
+  // y avanzar de nuevo no lo repite. Ref y no estado (no pinta nada), y
+  // `reset()` no lo toca a propósito: sigue siendo la misma persona.
+  const quoteStartTrackedRef = useRef(false);
+  // `quote_step_viewed` por paso visto, con la misma regla: una vez por paso y por
+  // instancia (ir y volver no lo repite, `reset()` tampoco lo limpia).
+  const trackedStepsRef = useRef<Set<number>>(new Set());
+
+  // El hook vive en `QuoteFlow`, que en la home se monta recién al abrir el
+  // modal (y se desmonta al cerrarlo): el paso 1 sale cuando el flujo se ve,
+  // no al cargar la página. En `/pedido` el flujo está a la vista de entrada.
+  useEffect(() => {
+    if (trackedStepsRef.current.has(step)) return;
+    trackedStepsRef.current.add(step);
+    track(ANALYTICS_EVENTS.quoteStepViewed, { flow: QUOTE_FLOWS.modal, step });
+  }, [step]);
 
   // En un ref y no en estado: la atribución no pinta nada, no tiene que
   // provocar un render, y tiene que sobrevivir a un `reset()`.
@@ -179,32 +177,18 @@ export function useQuoteFlow(options?: {
     const input = addressInputRef.current;
     if (!input || !window.google?.maps?.places) return;
 
-    const autocomplete = new window.google.maps.places.Autocomplete(input, {
-      componentRestrictions: { country: "ar" },
-      // Pedimos zona/localidad, no la calle y altura: "(regions)" agrupa
-      // barrio, localidad, partido y provincia, y saca las sugerencias de
-      // direcciones puntuales que el widget mostraría por default.
-      types: ["(regions)"],
-      fields: ["formatted_address", "name", "geometry", "address_components"],
-    });
+    // Opciones compartidas con `/pedido`: zona/localidad, no calle y altura.
+    const autocomplete = new window.google.maps.places.Autocomplete(
+      input,
+      QUOTE_AUTOCOMPLETE_OPTIONS,
+    );
+    hidePlacesDropdownFromReplay();
 
     const listener = autocomplete.addListener("place_changed", () => {
-      const place = autocomplete.getPlace();
-      const value = place.formatted_address ?? place.name;
-      if (!value) return;
-
-      setAddressState(value);
-      setGeo({
-        latitude: place.geometry?.location?.lat() ?? null,
-        longitude: place.geometry?.location?.lng() ?? null,
-        locality:
-          findAddressComponent(place.address_components, "locality") ??
-          findAddressComponent(place.address_components, "sublocality"),
-        province: findAddressComponent(
-          place.address_components,
-          "administrative_area_level_1",
-        ),
-      });
+      const selection = placeSelection(autocomplete.getPlace());
+      if (!selection) return;
+      setAddressState(selection.value);
+      setGeo(selection.geo);
     });
 
     return () => {
@@ -214,13 +198,11 @@ export function useQuoteFlow(options?: {
   }, [mapsReady, step]);
 
   function clearLookupPoll() {
-    if (pollTimeoutRef.current) {
-      clearTimeout(pollTimeoutRef.current);
-      pollTimeoutRef.current = null;
-    }
+    lookupAbortRef.current?.abort();
+    lookupAbortRef.current = null;
   }
 
-  // Ningun timeout de polling puede seguir vivo despues de que el flujo se
+  // Ningun lookup ni polling puede seguir vivo despues de que el flujo se
   // desmonta (ej. el modal se cierra, o la persona navega a otra pagina).
   useEffect(() => clearLookupPoll, []);
 
@@ -240,49 +222,50 @@ export function useQuoteFlow(options?: {
   }
 
   /**
-   * `attempt` 0 es el click de "Buscar mi auto"; los siguientes son los
-   * reintentos automaticos mientras clasific.ar todavia esta buscando la
-   * patente (ver SEARCH_POLL_MAX_ATTEMPTS). `plateToQuery` va fijo por
-   * clausura y no se relee de `plate`: si la persona edita la patente a mitad
-   * de un poll, ese poll tiene que seguir preguntando por la de antes o el
-   * resultado le llegaria pegado al campo equivocado.
+   * Click de "Buscar mi auto". El polling mientras clasific.ar sigue buscando
+   * vive en `lookupVehicleFromBrowser` (compartido con `/pedido`). La patente
+   * va fija por clausura: si la persona la edita a mitad de un poll,
+   * `setPlate` aborta este lookup y su resultado nunca llega al estado.
    */
-  async function runLookup(plateToQuery: string = plate, attempt = 0) {
+  async function runLookup(plateToQuery: string = plate) {
     clearLookupPoll();
-    setLookup({ kind: attempt === 0 ? "loading" : "searching" });
-    try {
-      const response = await fetch(
-        `/api/vehicle-lookup?plate=${encodeURIComponent(plateToQuery)}`,
-      );
-      const data = await response.json();
+    const controller = new AbortController();
+    lookupAbortRef.current = controller;
+    setLookup({ kind: "loading" });
+    const outcome = await lookupVehicleFromBrowser(plateToQuery, {
+      signal: controller.signal,
+      onSearching: () => setLookup({ kind: "searching" }),
+    });
+    if (outcome.kind === "aborted" || controller.signal.aborted) return;
+    lookupAbortRef.current = null;
+    setLookup(outcome);
+  }
 
-      if (data.found) {
-        setLookup({
-          kind: "found",
-          brand: data.brand,
-          model: data.model,
-          year: data.year ?? null,
-          snapshot: data.snapshot ?? null,
-        });
-        return;
-      }
-
-      if (data.searching && attempt < SEARCH_POLL_MAX_ATTEMPTS) {
-        setLookup({ kind: "searching" });
-        pollTimeoutRef.current = setTimeout(() => {
-          runLookup(plateToQuery, attempt + 1);
-        }, SEARCH_POLL_INTERVAL_MS);
-        return;
-      }
-
-      setLookup({ kind: data.error ? "unavailable" : "not_found" });
-    } catch {
-      setLookup({ kind: "unavailable" });
+  /**
+   * Paso 1 completado = pasar al paso 2, por cualquiera de las dos salidas:
+   * confirmar el auto encontrado o seguir sin él (no encontrado / servicio
+   * caído). Encontrar el auto solo no alcanza: la persona todavía puede
+   * decir "no es mi auto". Sin params: nada de patente ni datos personales.
+   */
+  function completePlateStep() {
+    if (!quoteStartTrackedRef.current) {
+      quoteStartTrackedRef.current = true;
+      track(ANALYTICS_EVENTS.quoteStarted, { flow: QUOTE_FLOWS.modal });
     }
+    setStep(2);
   }
 
   async function handleSubmit() {
     setSubmitState({ kind: "loading" });
+    // Mismo ID para el `Lead` del Pixel y el de la Conversions API (lo manda
+    // la route): así Meta cuenta un solo lead aunque le lleguen los dos.
+    const metaEventId = createMetaEventId();
+    // Para que el `quote_submitted` que manda la route caiga en esta misma
+    // persona y sesión de PostHog. Sin PostHog, no viajan.
+    const posthogIds = getPostHogIds();
+    // Status de la respuesta, si hubo: separa en `quote_failed` un error del
+    // backend (`server`) de uno de red (`network`).
+    let responseStatus: number | undefined;
     try {
       const response = await fetch("/api/presupuesto", {
         method: "POST",
@@ -309,6 +292,12 @@ export function useQuoteFlow(options?: {
             lookup.kind === "found"
               ? (lookup.snapshot ?? undefined)
               : undefined,
+          // Lo consume la route para la Conversions API; al backend no llega.
+          metaEventId,
+          // Los consume la route para PostHog; al backend no llegan.
+          quoteFlow: QUOTE_FLOWS.modal,
+          posthogDistinctId: posthogIds?.distinctId,
+          posthogSessionId: posthogIds?.sessionId,
           // TODO(attribution): los UTMs viajan en `attributionRef.current` y están listos para
           // mandarse acá. Bloqueado: el DTO del backend usa forbidNonWhitelisted, así que un campo
           // desconocido devuelve 400. Requiere agregar el campo en
@@ -316,10 +305,20 @@ export function useQuoteFlow(options?: {
           // y propagarlo en app/api/presupuesto/route.ts. NO meterlo en `description` ni en `contactName`.
         }),
       });
+      responseStatus = response.status;
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? copy.genericError);
+      // `Lead` de Meta sin params y con el `eventID` de la Conversions API.
+      // En PostHog `quote_submitted` lo manda la route: `track` no lo repite.
+      track(ANALYTICS_EVENTS.quoteSubmitted, { flow: QUOTE_FLOWS.modal }, { metaEventId });
       setSubmitState({ kind: "success", id: data.id });
     } catch (error) {
+      track(ANALYTICS_EVENTS.quoteFailed, {
+        flow: QUOTE_FLOWS.modal,
+        ...(responseStatus !== undefined
+          ? { reason: "server", status: responseStatus }
+          : { reason: "network" }),
+      });
       setSubmitState({
         kind: "error",
         message:
@@ -334,7 +333,7 @@ export function useQuoteFlow(options?: {
   const emailValid = email === "" || EMAIL_REGEX.test(email);
   const addressValid = address.trim().length > 0;
   const canContinueFromContact =
-    whatsappDigitCount(whatsapp) >= 8 && emailValid && addressValid;
+    isValidArWhatsapp(whatsapp) && emailValid && addressValid;
   const canContinueFromNeed = description.trim().length > 0;
 
   return {
@@ -385,13 +384,13 @@ export function useQuoteFlow(options?: {
       runLookup();
     },
     confirmVehicle() {
-      setStep(2);
+      completePlateStep();
     },
     rejectVehicle() {
       setLookup({ kind: "idle" });
     },
     continueAnyway() {
-      setStep(2);
+      completePlateStep();
     },
     goBack() {
       setStep((current) => Math.max(1, current - 1));

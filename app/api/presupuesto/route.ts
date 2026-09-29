@@ -1,17 +1,56 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
+import { sendMetaCapiEvent } from "@/lib/analytics/meta-capi";
+import {
+  ANALYTICS_EVENTS,
+  LEAD_SOURCES,
+  QUOTE_FLOWS,
+  type AnalyticsProps,
+  type QuoteFlow,
+} from "@/lib/analytics/events";
+import { META_EVENTS } from "@/lib/analytics/meta-pixel";
+import { capturePostHogServerEvent, posthogIdOrNull } from "@/lib/analytics/posthog-server";
+import { whatsappErrorMessage } from "@/lib/content/presupuesto";
+import { parseArWhatsapp } from "@/lib/phone";
+import { canonicalPlate } from "@/lib/plate";
+import { siteConfig } from "@/lib/seo/config";
 import { VEHICLE_LOOKUP_LIMITS, type VehicleLookupSnapshot } from "@/lib/vehicle-lookup";
 
-const PLATE_PATTERNS: readonly RegExp[] = [
-  /^[A-Z]{3}\d{3}$/,
-  /^[A-Z]{2}\d{3}[A-Z]{2}$/,
-  /^\d{3}[A-Z]{3}$/,
-  /^[A-Z]\d{3}[A-Z]{3}$/,
-];
+/**
+ * ID de deduplicación que genera el navegador (`createMetaEventId`). Es
+ * opcional y nunca invalida el pedido: si no viene o no tiene forma de UUID
+ * razonable, simplemente no se manda el `Lead` server-side (sin ID, Meta lo
+ * contaría dos veces junto con el del Pixel).
+ */
+const META_EVENT_ID_PATTERN = /^[A-Za-z0-9-]{8,64}$/;
 
-function canonicalPlate(raw: unknown): string | null {
-  if (typeof raw !== "string") return null;
-  const stripped = raw.trim().toUpperCase().replace(/[\s-]/g, "");
-  return PLATE_PATTERNS.some((pattern) => pattern.test(stripped)) ? stripped : null;
+function metaEventIdOrNull(raw: unknown): string | null {
+  return typeof raw === "string" && META_EVENT_ID_PATTERN.test(raw) ? raw : null;
+}
+
+/**
+ * Qué flujo mandó el pedido (`modal` o `page`). Opcional y cerrado: cualquier
+ * otro valor se descarta y el evento de PostHog sale sin `flow`. Nunca
+ * invalida el pedido.
+ */
+function quoteFlowOrNull(raw: unknown): QuoteFlow | null {
+  return raw === QUOTE_FLOWS.modal || raw === QUOTE_FLOWS.page ? raw : null;
+}
+
+/** Primer hop de `x-forwarded-for` (el cliente real detrás del proxy). */
+function clientIpFrom(req: NextRequest): string | undefined {
+  const forwarded = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return forwarded || req.headers.get("x-real-ip")?.trim() || undefined;
+}
+
+/**
+ * Patente opcional: ausente o vacía es `undefined` (el pedido entra sin
+ * patente); presente pero mal formada es `null` (400). Vacía cuenta como
+ * ausente porque el form de `/pedido` puede mandar el campo sin completar.
+ */
+function optionalPlate(raw: unknown): string | null | undefined {
+  if (raw === undefined || raw === null) return undefined;
+  if (typeof raw === "string" && raw.trim() === "") return undefined;
+  return canonicalPlate(raw);
 }
 
 /**
@@ -132,6 +171,20 @@ function buildVehicleLookup(raw: unknown, plate: string): VehicleLookupSnapshot 
  * `vehicles.id` de una cuenta logueada, no el resultado anónimo del lookup
  * de /api/vehicle-lookup. Ese resultado viaja aparte, como `vehicleLookup`
  * (ver `buildVehicleLookup`), y el backend lo deja en `raw_submission`.
+ *
+ * Dos clientes: el modal de la home (patente obligatoria + checkbox de
+ * consentimiento + snapshot del auto confirmado) y el form de `/pedido`
+ * (patente opcional + snapshot si la validó, y el envío mismo es el
+ * consentimiento: manda `consent: true`). El lookup de la patente lo hace
+ * SIEMPRE el browser contra `/api/vehicle-lookup`: esta route no consulta
+ * clasific.ar (sería una segunda llamada con cuota por el mismo pedido).
+ *
+ * El WhatsApp se valida con `parseArWhatsapp` (la misma regla que los forms)
+ * y viaja normalizado (`549XXXXXXXXXX`): es la forma canónica que guarda el
+ * `WhatsappNumber` del backend, que además RECHAZA el `15` local
+ * (`11 15 2345 6789`) que acá sí sabemos sacar.
+ *
+ * Responde `{ success, id, publicCode }`; `publicCode` es `AL-1042`.
  */
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -147,18 +200,25 @@ export async function POST(req: NextRequest) {
     contactEmail,
     consent,
     vehicleLookup: rawVehicleLookup,
+    metaEventId: rawMetaEventId,
+    posthogDistinctId: rawPosthogDistinctId,
+    posthogSessionId: rawPosthogSessionId,
+    quoteFlow: rawQuoteFlow,
   } = body;
 
-  const plate = canonicalPlate(rawPlate);
-  const phoneDigits = typeof contactPhone === "string" ? contactPhone.replace(/\D/g, "") : "";
+  const plate = optionalPlate(rawPlate);
+  const phone = parseArWhatsapp(contactPhone);
   const trimmedDescription = typeof description === "string" ? description.trim() : "";
   const trimmedAddress = typeof address === "string" ? address.trim() : "";
 
-  if (!plate) {
+  if (plate === null) {
     return NextResponse.json({ error: "Ingresá una patente válida." }, { status: 400 });
   }
-  if (phoneDigits.length < 8) {
-    return NextResponse.json({ error: "Ingresá un WhatsApp válido." }, { status: 400 });
+  if (!phone.ok) {
+    return NextResponse.json(
+      { error: whatsappErrorMessage(phone.error, phone.diff) },
+      { status: 400 },
+    );
   }
   if (!trimmedAddress) {
     return NextResponse.json({ error: "Ingresá una dirección válida." }, { status: 400 });
@@ -182,7 +242,10 @@ export async function POST(req: NextRequest) {
   }
 
   const trimmedEmail = typeof contactEmail === "string" ? contactEmail.trim() : "";
-  const vehicleLookup = buildVehicleLookup(rawVehicleLookup, plate);
+  // Snapshot del lookup que hizo el browser (modal: auto confirmado; `/pedido`:
+  // patente validada). Sin patente nunca viaja: el backend da 400 si llega
+  // `vehicleLookup` sin `plate`.
+  const vehicleLookup = plate ? buildVehicleLookup(rawVehicleLookup, plate) : undefined;
 
   try {
     const response = await fetch(`${apiUrl}/api/v1/quote-requests`, {
@@ -190,9 +253,10 @@ export async function POST(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         channel: "web",
-        plate,
+        // Opcional en el backend: sin patente el campo no viaja.
+        ...(plate ? { plate } : {}),
         description: trimmedDescription,
-        contactPhone: String(contactPhone).trim(),
+        contactPhone: phone.canonical,
         location: buildLocation(trimmedAddress, latitude, longitude, locality, province),
         ...(trimmedEmail ? { contactEmail: trimmedEmail } : {}),
         ...(vehicleLookup ? { vehicleLookup } : {}),
@@ -210,8 +274,66 @@ export async function POST(req: NextRequest) {
     }
 
     const id = data?.id as string | undefined;
+    // Código corto y legible del pedido (`AL-1042`, sin `#`: el `#` lo pone
+    // la UI) para mostrárselo a la persona y que lo cite por WhatsApp. El
+    // backend siempre lo manda; si igual faltara, la UI lo omite.
+    const publicCode =
+      typeof data?.publicCode === "string" && data.publicCode.trim() !== ""
+        ? data.publicCode.trim().replace(/^#+/, "")
+        : null;
 
-    return NextResponse.json({ success: true, id });
+    // `Lead` server-side SOLO con el pedido ya registrado, y con `after()` para
+    // no demorar la respuesta. Headers y cookies se leen acá, no adentro del
+    // callback: el request ya está en mano y no hace falta `headers()`.
+    const metaEventId = metaEventIdOrNull(rawMetaEventId);
+    if (metaEventId) {
+      const capiEvent = {
+        eventName: META_EVENTS.lead,
+        eventId: metaEventId,
+        eventSourceUrl: req.headers.get("referer") || `${siteConfig.url}/pedido`,
+        clientIp: clientIpFrom(req),
+        userAgent: req.headers.get("user-agent") || undefined,
+        fbp: req.cookies.get("_fbp")?.value,
+        fbc: req.cookies.get("_fbc")?.value,
+        // Se hashea en `sendMetaCapiEvent`: a Meta sólo llega el SHA-256.
+        phone: phone.canonical,
+      };
+      after(() => sendMetaCapiEvent(capiEvent));
+    }
+
+    // `quote_submitted` en PostHog, también SOLO con el pedido registrado y
+    // con `after()`. Se une a la persona y la sesión del navegador con los
+    // IDs que mandó `posthog-js` (ver `capturePostHogServerEvent`). Props sin
+    // datos personales: nada de WhatsApp, correo, zona, patente ni
+    // descripción; del auto, sólo marca/modelo/año si se validó.
+    const flow = quoteFlowOrNull(rawQuoteFlow);
+    const posthogProperties: AnalyticsProps = {
+      // Igual que el `Lead` del Pixel: `lead_source: "form"` sólo en `/pedido`
+      // (lo separa del `Lead` de sus botones de WhatsApp); el modal va sin él.
+      ...(flow === QUOTE_FLOWS.page ? { lead_source: LEAD_SOURCES.form } : {}),
+      ...(flow ? { flow } : {}),
+      has_plate: Boolean(plate),
+      vehicle_identified: Boolean(vehicleLookup),
+      ...(vehicleLookup
+        ? {
+            vehicle_make: vehicleLookup.make,
+            vehicle_model: vehicleLookup.model,
+            ...(vehicleLookup.year !== null ? { vehicle_year: vehicleLookup.year } : {}),
+          }
+        : {}),
+      has_email: Boolean(trimmedEmail),
+      location_from_suggestion:
+        finiteCoordinate(latitude) !== null && finiteCoordinate(longitude) !== null,
+    };
+    const posthogEvent = {
+      event: ANALYTICS_EVENTS.quoteSubmitted,
+      distinctId: posthogIdOrNull(rawPosthogDistinctId),
+      sessionId: posthogIdOrNull(rawPosthogSessionId),
+      properties: posthogProperties,
+    };
+    after(() => capturePostHogServerEvent(posthogEvent));
+
+    return NextResponse.json({ success: true, id, publicCode });
   } catch (error) {
     console.error("[presupuesto] error al llamar al backend", error);
     return NextResponse.json(

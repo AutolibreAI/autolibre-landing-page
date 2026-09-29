@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { LAYOUT_IDS } from "@/components/layout/ids";
+import { Container } from "@/components/ui/container";
 import { siteContent } from "@/lib/content/site";
 
 /** Es un link externo si sale del sitio (redes, mail, WhatsApp). */
@@ -11,9 +13,8 @@ export function SiteFooter() {
   const { groups, copyright } = siteContent.footer;
 
   return (
-    <footer className="bg-ink text-white">
-      <div className="w-full px-[6%] py-14">
-        <div className="mx-auto w-full max-w-[1440px]">
+    <footer id={LAYOUT_IDS.footer} className="bg-ink py-14 text-white">
+      <Container size="wide">
         <div className="mb-10 flex flex-wrap justify-between gap-10">
           <Link href="/" aria-label="AutoLibre — inicio">
             <Image
@@ -26,7 +27,10 @@ export function SiteFooter() {
             />
           </Link>
 
-          <div className="flex flex-wrap gap-x-14 gap-y-8">
+          {/* Cinco grupos: en grilla hasta `lg` (2 y 3 columnas parejas en vez
+              de un `flex-wrap` que deja filas desparejas) y en una sola fila
+              desde `lg`, al lado del logo. */}
+          <div className="grid grid-cols-2 gap-x-10 gap-y-8 sm:grid-cols-3 lg:flex lg:gap-x-14">
             {groups.map((group) => (
               <nav key={group.id} aria-label={group.title}>
                 <p className="mb-3 text-[0.8125rem] tracking-[0.05em] text-white/50 uppercase">
@@ -52,11 +56,10 @@ export function SiteFooter() {
           </div>
         </div>
 
-          <p className="border-t border-white/15 pt-6 text-[0.8125rem] text-white/50">
-            {copyright}
-          </p>
-        </div>
-      </div>
+        <p className="border-t border-white/15 pt-6 text-[0.8125rem] text-white/50">
+          {copyright}
+        </p>
+      </Container>
     </footer>
   );
 }

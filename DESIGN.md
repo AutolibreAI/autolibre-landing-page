@@ -59,20 +59,15 @@ spacing:
   touch-min: "2.75rem"
 components:
   button-primary:
-    backgroundColor: "{colors.brand}"
+    backgroundColor: "{colors.brand-hover}"
     textColor: "{colors.surface}"
     rounded: "{rounded.field}"
     padding: "0.625rem 1.25rem"
     typography: "{typography.label}"
   button-primary-hover:
-    backgroundColor: "{colors.brand-hover}"
+    backgroundColor: "{colors.brand}"
   button-outline:
     backgroundColor: "transparent"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.field}"
-    padding: "0.625rem 1.25rem"
-  button-soft:
-    backgroundColor: "{colors.brand-soft}"
     textColor: "{colors.ink}"
     rounded: "{rounded.field}"
     padding: "0.625rem 1.25rem"
@@ -159,10 +154,12 @@ the palette never leaves its own hue.
   the global focus ring, the accent-color of native checkboxes and radios, the
   required-field asterisk, the closing band's ground, and text selection on the
   dark download route. Its scarcity is what makes it read as "act here".
-- **Workshop Green Pressed** (`brand-hover`): the hover state of every primary
-  CTA. It exists only as a state; never as a resting fill.
+- **Workshop Green Deep** (`brand-hover`): the resting fill of every primary
+  CTA (white on it measures 5.74:1, AA for button text; on `brand` it would be
+  4.28:1) and the color of small green text. Primary CTAs lighten to `brand`
+  on hover (2026-09-22: states swapped on purpose).
 - **Meadow Green** (`brand-soft`): the lighter green for grounds and marks that
-  sit *on* ink or on the provider band — the soft CTA fill, directional arrows,
+  sit *on* ink or on the provider band — directional arrows,
   and the focus ring scoped to the dark `/descarga` route.
 
 ### Neutral
@@ -269,9 +266,14 @@ set their own paddings by hand.
 hairline bottom border. `html` carries `scroll-padding-top: 5rem` so an anchor
 jump never lands under it.
 
-**Overflow.** `html` and `body` both carry `overflow-x: hidden` as a safety net
-against horizontal drag on mobile. Consequence worth knowing: `position: sticky`
-does not work inside the app because of it.
+**Overflow.** `html` carries `overflow-x: hidden` (as the root, it applies to
+the viewport) as the safety net against horizontal drag on mobile; `body`
+carries `overflow-x: clip` (2026-09-22), which clips without becoming a scroll
+container. With `hidden` on `body`, the body turned into a never-scrolling
+scrollport and broke everything tied to document scroll: `position: sticky` and
+`animation-timeline: view()`. Same rule inside components: to round-clip a
+container that holds a `reveal` or a sticky child, use `overflow-clip`, never
+`overflow-hidden`.
 
 ### Named Rules
 
@@ -317,6 +319,35 @@ never black, never a hard offset.
 white. It earns a shadow only by being lifted above the page — an overlay, a
 floating object, or a physical mockup. Decorative elevation is not part of this
 system.
+
+**The One-Motion Rule.** The home hero (2026-09-22) is the single moving,
+expressive moment of the page, and it stays geometric: one continuous
+`surface-muted` ground, the slogan as `<h1>`, and right below it — same display
+size, in brand green — a word (VTV, Multas, Seguros…) that rises from below
+with a small bounce and exits upward, masked by its own line. Next to it, real
+app screens cross-fade inside a CSS `PhoneFrame` on their own cycle, not synced
+to the words. Its only static ornament (from `xl`) is a thin dotted route in
+`brand/60` that runs under the text block and ends in a location pin beside
+the phone — "we take you to what you need, near you". No blobs, waves, halos
+or gradients — organic shapes read
+playful, and this brand sells trust. Motion is CSS only (`transform` and
+`opacity`, compositor-friendly) and honors `prefers-reduced-motion` — with one
+product exception: the rotating words keep changing via an in-place fade, no
+rise or bounce (`motion-exempt`); the phone screens stop. There is
+no pause control by product decision (note: WCAG 2.2.2 asks for one on
+autoplay over 5s). No other section adds autoplay motion or decorative shapes.
+The only other motion (2026-09-22, product decision): every home section below
+the hero reveals as you scroll — each element rises 1.5rem and fades in over
+0.7s, once, staggered 90ms by sibling. It is triggered by `revealScript` in
+`app/layout.tsx` (an inline IntersectionObserver + Web Animations API, no
+React, no hydration) on elements marked with `reveal` or as direct children of
+`reveal-group`; `reveal-stagger` numbers siblings (`--reveal-step`). The CSS
+never hides anything: without JS, without IntersectionObserver or with
+`prefers-reduced-motion`, everything simply shows. Never on the hero, never on
+what is on screen at load, never on unrendered (`display: none`) content.
+Don't nest `reveal-group` with a `reveal` child: it would animate twice.
+(A first, CSS-only version tied to `animation-timeline: view()` was dropped:
+scrubbing with the scroll read as "nothing happens" and Firefox lacks it.)
 
 **The Ink-Tinted Shadow Rule.** Shadows are `rgba(28,43,28,…)` (or the brand
 equivalent for a green chip), with `0` horizontal offset and a blur at least
@@ -520,6 +551,6 @@ pays for itself locally.
 - **Don't** change `globals.css` to fix a single route.
 - **Don't** set an input below 16px under 900px — iOS will zoom the viewport on
   focus.
-- **Don't** rely on `position: sticky` inside page content; `overflow-x: hidden`
-  on `html`/`body` disables it.
+- **Don't** put `overflow-hidden` on an ancestor of a sticky element or a
+  `reveal`; use `overflow-clip` (it clips without creating a scroll container).
 - **Don't** hardcode a store URL; it comes from `siteConfig.stores`.

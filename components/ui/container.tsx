@@ -1,10 +1,12 @@
 import { cn } from "@/lib/utils";
 
+export type ContainerSize = "narrow" | "prose" | "content" | "wide" | "full";
+
 type ContainerProps = {
   readonly children: React.ReactNode;
   readonly className?: string;
   /** Ancho máximo del contenido, sin contar el padding lateral. */
-  readonly size?: "narrow" | "prose" | "content" | "wide" | "full";
+  readonly size?: ContainerSize;
 };
 
 const sizes = {
@@ -30,7 +32,12 @@ export function Container({
 }: ContainerProps) {
   return (
     <div className="w-full px-[6%]">
-      <div className={cn("mx-auto w-full", sizes[size], className)}>
+      {/* `data-container`: marca el borde del contenido para medir la
+          alineación entre secciones (header, secciones y footer). */}
+      <div
+        data-container={size}
+        className={cn("mx-auto w-full", sizes[size], className)}
+      >
         {children}
       </div>
     </div>

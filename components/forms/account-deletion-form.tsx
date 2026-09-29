@@ -66,9 +66,14 @@ export function AccountDeletionForm() {
         body: JSON.stringify({ email, reason: reason || null }),
       });
 
-      if (!response.ok) throw new Error();
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error ?? `HTTP ${response.status}`);
+      }
       setSubmitState({ kind: "success" });
-    } catch {
+    } catch (error) {
+      // El usuario ve un mensaje genérico; el motivo real queda en consola.
+      console.error("[account-deletion-form] Falló el envío:", error);
       setSubmitState({
         kind: "error",
         message: accountDeletionCopy.genericError,

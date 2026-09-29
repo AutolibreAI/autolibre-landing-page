@@ -96,10 +96,17 @@ export function softwareApplicationSchema() {
   };
 }
 
-export function faqPageSchema() {
+/**
+ * `FAQPage` a partir de preguntas VISIBLES en la página que lo declara: Google
+ * exige que el structured data coincida con lo que ve el usuario. Sin
+ * argumento usa la FAQ de la home; `/pedido` le pasa la suya.
+ */
+export function faqPageSchema(
+  items: readonly { question: string; answer: string }[] = allFaqItems,
+) {
   return {
     "@type": "FAQPage",
-    mainEntity: allFaqItems.map((item) => ({
+    mainEntity: items.map((item) => ({
       "@type": "Question",
       name: item.question,
       acceptedAnswer: { "@type": "Answer", text: item.answer },

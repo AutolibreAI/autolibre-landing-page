@@ -10,8 +10,8 @@
 
 @theme {
   /* ── Marca ── */
-  --color-brand: #2a8c3a; /* verde principal — CTAs, acentos */
-  --color-brand-hover: #23752f; /* hover de CTAs */
+  --color-brand: #2a8c3a; /* verde principal — hover de CTAs, acentos, texto grande */
+  --color-brand-hover: #23752f; /* verde oscuro — reposo de CTAs y texto verde chico (AA) */
   --color-brand-soft: #5fa86b; /* verde claro — banda proveedores, flechas */
   --color-ink: #1c2b1c; /* verde-negro — texto y secciones oscuras */
   --color-surface: #ffffff; /* fondo base */
@@ -28,10 +28,155 @@
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
 
+  /* Display: titulares de página que SON su headline (h1 del hero).
+     xs (celulares angostos) → sm → md → lg. Cada paso trae su line-height, así no hace falta
+     un `leading-*` aparte. */
+  --text-display-xs: 2.5rem; /* 40px — celulares < 384px */
+  --text-display-xs--line-height: 1.05;
+  --text-display-sm: 2.75rem; /* 44px */
+  --text-display-sm--line-height: 1.05;
+  --text-display-md: 3.5rem; /* 56px */
+  --text-display-md--line-height: 1.05;
+  --text-display-lg: 4rem; /* 64px */
+  --text-display-lg--line-height: 1.05;
+
+  /* Texto corrido y etiquetas (DESIGN.md: Body y Label). Sin line-height
+     propio: el `leading-*` lo decide cada call site.
+     OJO: todo `--text-*` nuevo se registra también en `lib/utils.ts`, o
+     `cn()` lo confunde con un color y lo borra. */
+  --text-lead: 1.0625rem; /* 17px — bajadas en mobile */
+  --text-lead-lg: 1.1875rem; /* 19px — bajadas desde md */
+  --text-label: 0.8125rem; /* 13px — notas, hints, labels */
+
+  /* ── Animación del hero ──
+     Dos ciclos INDEPENDIENTES (palabras 20s, pantallas 24s: distintos a
+     propósito para que no cambien juntas). Los % de cada keyframe asumen una cantidad fija de
+     pasos: si cambia el largo de `homeContent.hero.words` o `.screens`,
+     cambian estos %. Cada elemento arranca con un `animation-delay`
+     negativo (paso × duración − ciclo): la animación ya corre al cargar,
+     sin estado inicial vacío. */
+
+  /* Palabras: 8 pasos de 2,5s → cada una ocupa el 12,5% del ciclo.
+     Solo `transform` y `opacity`: corren en el compositor, sin repintar. */
+  --animate-hero-word: hero-word 20s infinite;
+  /* Variante para `prefers-reduced-motion`: mismas ventanas que `hero-word`,
+     solo `opacity`, sin desplazamiento. */
+  --animate-hero-word-fade: hero-word-fade 20s linear infinite;
+  /* Pantallas: 8 pasos de 3s → cada una es visible el 12,5% del ciclo. */
+  --animate-hero-screen: hero-screen 24s linear infinite;
+
+  /* Entra desde abajo pasándose un poco (0–2,4%), rebota a su lugar
+     (2,4–3,4%), queda (hasta 10,5%) y sale hacia arriba (10,5–12,5%)
+     mientras la siguiente ya viene subiendo. */
+  @keyframes hero-word {
+    0% {
+      opacity: 0;
+      transform: translateY(100%);
+      animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    2.4% {
+      opacity: 1;
+      transform: translateY(-12%);
+      animation-timing-function: ease-in-out;
+    }
+    3.4%,
+    10.5% {
+      opacity: 1;
+      transform: translateY(0);
+      animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+    }
+    12.5%,
+    100% {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+  }
+
+  @keyframes hero-word-fade {
+    0% {
+      opacity: 0;
+    }
+    2%,
+    10.5% {
+      opacity: 1;
+    }
+    12.5%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  /* Fundido cruzado de 0,4s entre pantallas (1,7% de 24s). */
+  @keyframes hero-screen {
+    0%,
+    10.8% {
+      opacity: 1;
+    }
+    12.5%,
+    98.3% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+
+  /* Celulares angostos (< 384px, p. ej. 360px): el titular del hero baja a
+     `display-xs` para que "Mantenimientos" no se coma el margen lateral. */
+  --breakpoint-xs: 24rem;
+
   /* ── Radios ── */
   --radius-field: 0.625rem; /* 10px — inputs y botones */
   --radius-card: 1rem; /* 16px — tarjetas */
   --radius-panel: 1.25rem; /* 20px — paneles grandes */
+}
+
+/* ── Plataforma del visitante ──
+   El script inline del `<head>` (app/layout.tsx) marca `<html>` con
+   `data-platform="ios" | "android" | "web"` antes del primer paint. Estas
+   variantes dejan que el CSS elija qué CTA de descarga mostrar sin hidratar
+   nada: el HTML es el mismo para todos. Sin atributo (sin JS) o con "web" no
+   matchea ninguna y queda el estado por defecto. `:where` no suma
+   especificidad, así que pisan igual que cualquier variante. */
+@custom-variant platform-ios (&:where([data-platform="ios"] *));
+@custom-variant platform-android (&:where([data-platform="android"] *));
+
+/* ── Entrada al scrollear ──
+   La animación la dispara `revealScript` (app/layout.tsx): un
+   IntersectionObserver que, cuando un elemento entra en pantalla, reproduce
+   una Web Animation (sube 1.5rem y aparece). Acá solo viven los MARCADORES:
+   - `reveal`: clase marcador, sin CSS propio. El script la busca.
+   - `reveal-group`: en el contenedor de una sección; cada hijo DIRECTO entra.
+   - `reveal-stagger`: numera a los hijos (`--reveal-step`) para escalonar.
+   Sin JS, sin IntersectionObserver o con `prefers-reduced-motion` no pasa
+   nada y todo se ve normal: el CSS nunca oculta contenido.
+   NO usar en el hero: es el LCP. No anidar `reveal-group` con un `reveal`
+   en un hijo directo: se animaría dos veces. */
+
+/* `reveal-stagger` en el padre: numera a los hijos para que sus `reveal`
+   (propios o de un descendiente: la variable se hereda) entren escalonados.
+   El script convierte cada paso en 90ms de delay. */
+@utility reveal-stagger {
+  & > :nth-child(2) {
+    --reveal-step: 1;
+  }
+  & > :nth-child(3) {
+    --reveal-step: 2;
+  }
+  & > :nth-child(4) {
+    --reveal-step: 3;
+  }
+  & > :nth-child(5) {
+    --reveal-step: 4;
+  }
+  & > :nth-child(n + 6) {
+    --reveal-step: 5;
+  }
+}
+
+@utility reveal-group {
+  @apply reveal-stagger;
 }
 
 @layer base {
@@ -49,7 +194,14 @@
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
+    /* `clip` y NO `hidden`: `hidden` convierte al body en contenedor de
+       scroll (aunque nunca scrollee: scrollea el viewport), y eso rompe todo
+       lo que se ata al scroll del documento — `animation-timeline: view()`
+       y `position: sticky`.
+       `clip` recorta igual sin crear contenedor. El arrastre horizontal en
+       mobile lo sigue frenando el `overflow-x: hidden` de `html`, que al ser
+       el elemento raíz se aplica al viewport. */
+    overflow-x: clip;
   }
 
   h1,
@@ -105,7 +257,11 @@
       scroll-behavior: auto;
     }
 
-    *,
+    /* `motion-exempt` = excepción de producto explícita (2026-09-23): solo
+       las palabras del hero. Con esta preferencia NO suben ni rebotan:
+       cambian con un fundido en el lugar (`hero-word-fade`), sin
+       desplazamiento, que es lo que marea. Todo lo demás queda frenado. */
+    *:not(.motion-exempt),
     *::before,
     *::after {
       animation-duration: 0.01ms !important;

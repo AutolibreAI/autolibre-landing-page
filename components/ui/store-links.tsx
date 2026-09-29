@@ -1,3 +1,4 @@
+import { ANALYTICS_EVENTS, APP_STORES } from "@/lib/analytics/events";
 import { cn } from "@/lib/utils";
 import { siteContent } from "@/lib/content/site";
 import type { StoreId } from "@/lib/content/types";
@@ -21,9 +22,20 @@ const storeLogos: Record<StoreId, React.ReactNode> = {
 };
 
 type StoreLinksProps = {
-  /** `brand` = sobre la sección verde de cierre. `light` = sobre blanco. */
-  readonly tone?: "light" | "brand";
+  /**
+   * `light` = sobre blanco. `brand` = sobre la sección verde de cierre.
+   * `ink` = sobre la banda verde-negra de descarga. Los dos oscuros usan el
+   * mismo botón blanco.
+   */
+  readonly tone?: "light" | "brand" | "ink";
   readonly note?: string;
+  /**
+   * Dónde están los botones: viaja como `placement` en `app_store_clicked`
+   * (p. ej. `hero`, `closing_cta`).
+   */
+  readonly placement?: string;
+  /** Ancla de navegación (p. ej. `descargar` en el hero de la home). */
+  readonly id?: string;
   readonly className?: string;
 };
 
@@ -35,16 +47,22 @@ type StoreLinksProps = {
  * prefetch y el router de `next/link` no aportan nada, y la anatomía del
  * botón (bajada chica + nombre de tienda) no entra en las variantes de
  * `Button`.
+ *
+ * Medición: `app_store_clicked` con `store` y `placement` por atributos
+ * `data-analytics-*`, que lee el listener delegado de `AnalyticsEvents`. Así
+ * sigue siendo server. Sólo PostHog: no tiene equivalente en Meta.
  */
 export function StoreLinks({
   tone = "light",
   note,
+  placement,
+  id,
   className,
 }: StoreLinksProps) {
-  const onBrand = tone === "brand";
+  const onDark = tone !== "light";
 
   return (
-    <div className={className}>
+    <div id={id} className={className}>
       <div className="flex flex-wrap gap-3">
         {siteContent.stores.map((store) => (
           <a
@@ -53,9 +71,12 @@ export function StoreLinks({
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`${store.label} — ${store.name}`}
+            data-analytics-event={ANALYTICS_EVENTS.appStoreClicked}
+            data-analytics-store={APP_STORES[store.id]}
+            data-analytics-placement={placement}
             className={cn(
               "inline-flex items-center gap-3 rounded-field px-5 py-3 transition-colors",
-              onBrand
+              onDark
                 ? "bg-white text-ink hover:bg-white/90"
                 : "bg-ink text-white hover:bg-ink/85",
             )}
@@ -86,7 +107,7 @@ export function StoreLinks({
         <p
           className={cn(
             "mt-3 text-[0.8125rem]",
-            onBrand ? "text-white/70" : "text-ink/65",
+            onDark ? "text-white/70" : "text-ink/65",
           )}
         >
           {note}
