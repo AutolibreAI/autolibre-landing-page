@@ -125,19 +125,7 @@ export default function DescargaPage() {
             {subtitle}
           </p>
 
-          {/* En mobile los dos botones no entran en una línea: apilados y con
-              su ancho natural quedan desparejos, así que van a ancho completo
-              y con el contenido centrado. Desde `sm` vuelven a su ancho propio,
-              uno al lado del otro. Se ajusta desde acá y no tocando
-              `StoreLinks`, que lo comparten el hero y el cierre del home. */}
-          <div className="mt-11 flex flex-col items-center">
-            <StoreLinks
-              tone="brand"
-              placement="descarga"
-              note={downloadNote}
-              className="w-full max-w-68 text-center sm:max-w-none [&>div]:justify-center [&>div>a]:w-full [&>div>a]:justify-center sm:[&>div>a]:w-auto"
-            />
-          </div>
+          <StoreLinks tone="brand" placement="descarga" note={downloadNote} align="center" className="mt-11" />
 
           {/* El QR vive detrás de una regla propia: no es una alternativa a los
               botones, es el camino del que llegó desde el escritorio. */}

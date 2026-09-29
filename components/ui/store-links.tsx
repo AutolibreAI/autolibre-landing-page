@@ -36,6 +36,14 @@ type StoreLinksProps = {
   readonly placement?: string;
   /** Ancla de navegación (p. ej. `descargar` en el hero de la home). */
   readonly id?: string;
+  /**
+   * `center` para bloques centrados (cierre del home, `/descarga`). En mobile
+   * los dos botones no entran en una línea: apilados con su ancho natural
+   * quedan desparejos y corridos a la izquierda, así que van a ancho
+   * completo (tope `max-w-68`) y con el contenido centrado. Desde `sm`
+   * vuelven a su ancho propio, uno al lado del otro.
+   */
+  readonly align?: "start" | "center";
   readonly className?: string;
 };
 
@@ -57,13 +65,18 @@ export function StoreLinks({
   note,
   placement,
   id,
+  align = "start",
   className,
 }: StoreLinksProps) {
   const onDark = tone !== "light";
+  const centered = align === "center";
 
   return (
-    <div id={id} className={className}>
-      <div className="flex flex-wrap gap-3">
+    <div
+      id={id}
+      className={cn(centered && "mx-auto w-full max-w-68 text-center sm:max-w-none", className)}
+    >
+      <div className={cn("flex flex-wrap gap-3", centered && "justify-center")}>
         {siteContent.stores.map((store) => (
           <a
             key={store.id}
@@ -76,6 +89,7 @@ export function StoreLinks({
             data-analytics-placement={placement}
             className={cn(
               "inline-flex items-center gap-3 rounded-field px-5 py-3 transition-colors",
+              centered && "w-full justify-center sm:w-auto",
               onDark
                 ? "bg-white text-ink hover:bg-white/90"
                 : "bg-ink text-white hover:bg-ink/85",

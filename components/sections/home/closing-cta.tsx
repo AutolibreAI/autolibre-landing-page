@@ -33,7 +33,7 @@ export function ClosingCtaSection() {
       </h2>
 
       <div className="mt-10 flex flex-col items-center">
-        <StoreLinks tone="brand" placement="closing_cta" note={downloadNote} className="text-center" />
+        <StoreLinks tone="brand" placement="closing_cta" note={downloadNote} align="center" />
       </div>
     </Section>
   );
