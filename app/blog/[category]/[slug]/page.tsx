@@ -12,6 +12,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { Container } from "@/components/ui/container";
 import { Icon } from "@/components/ui/icon";
 import { Section } from "@/components/ui/section";
+import { BLOG_PUBLIC } from "@/lib/blog/visibility";
 import {
   getPostBySlug,
   getPosts,
@@ -70,6 +71,7 @@ export async function generateMetadata({
     title: post.title,
     description: post.excerpt || siteConfig.description,
     path: postPath(post),
+    index: BLOG_PUBLIC,
     article: { publishedTime: post.date, authors: [post.authorName] },
     image: post.coverImage
       ? {

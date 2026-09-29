@@ -1,3 +1,4 @@
+import { BLOG_PUBLIC } from "@/lib/blog/visibility";
 import { siteConfig } from "@/lib/seo/config";
 import { providersContent } from "@/lib/content/providers";
 import type { NavLink, StoreLink } from "@/lib/content/types";
@@ -15,7 +16,7 @@ export const siteContent = {
       { label: "Cómo funciona", href: "/#como-funciona" },
       { label: "Compatibilidad", href: "/#compatibilidad" },
       { label: "FAQ", href: "/#faq" },
-      blogLink,
+      ...(BLOG_PUBLIC ? [blogLink] : []),
     ] satisfies readonly NavLink[],
     /**
      * Link fijo a `/pedido` en TODAS las páginas (header y menú mobile): es
@@ -82,11 +83,11 @@ export const siteContent = {
           { label: "Google Play", href: siteConfig.stores.playStore },
         ],
       },
-      {
-        id: "recursos",
-        title: "Recursos",
-        links: [blogLink],
-      },
+      // El grupo entero sale mientras el blog no es público: un grupo
+      // "Recursos" sin links dejaría un título suelto en el footer.
+      ...(BLOG_PUBLIC
+        ? [{ id: "recursos", title: "Recursos", links: [blogLink] }]
+        : []),
       {
         id: "legal",
         title: "Legal",

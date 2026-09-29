@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { BLOG_PUBLIC } from "@/lib/blog/visibility";
 import { getPosts, postPath } from "@/lib/hygraph/posts";
 import { siteConfig } from "@/lib/seo/config";
 
@@ -73,16 +74,20 @@ const routes = [
 }[];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const pages = routes.map((route) => ({
-    url: route.path === "/" ? siteConfig.url : `${siteConfig.url}${route.path}`,
-    lastModified: route.lastModified,
-    changeFrequency: route.changeFrequency,
-    priority: route.priority,
-  }));
+  // Mientras el blog no es público (`lib/blog/visibility.ts`), ni el listado
+  // ni los posts van al sitemap: sus páginas llevan `noindex`.
+  const pages = routes
+    .filter((route) => BLOG_PUBLIC || route.path !== "/blog")
+    .map((route) => ({
+      url: route.path === "/" ? siteConfig.url : `${siteConfig.url}${route.path}`,
+      lastModified: route.lastModified,
+      changeFrequency: route.changeFrequency,
+      priority: route.priority,
+    }));
 
   // Los posts salen de Hygraph, no de la lista fija de arriba. Su fecha de
   // publicación hace de `lastModified`: es estable entre deploys.
-  const posts = (await getPosts()).map((post) => ({
+  const posts = (BLOG_PUBLIC ? await getPosts() : []).map((post) => ({
     url: `${siteConfig.url}${postPath(post)}`,
     lastModified: post.date || undefined,
     changeFrequency: "monthly" as const,

@@ -11,6 +11,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { SectionHeading } from "@/components/ui/heading";
+import { BLOG_PUBLIC } from "@/lib/blog/visibility";
 import { PAGE_SIZE, blogHref, filterPosts, hasActiveFilter, paginate, parseBlogFilters } from "@/lib/blog/query";
 import { collectCategories, getPosts } from "@/lib/hygraph/posts";
 import { createMetadata } from "@/lib/seo/metadata";
@@ -32,6 +33,7 @@ export const metadata: Metadata = createMetadata({
   title: TITLE,
   description: DESCRIPTION,
   path: PATH,
+  index: BLOG_PUBLIC,
 });
 
 const schema = graph(
