@@ -10,6 +10,8 @@ type CreateMetadataInput = {
   index?: boolean;
   /** Override de la imagen OG; por defecto usa la del sitio. */
   image?: { url: string; width: number; height: number; alt: string };
+  /** Para posts del blog: pasa el `og:type` a `article` con su fecha. */
+  article?: { publishedTime: string; authors: string[] };
 };
 
 /**
@@ -23,6 +25,7 @@ export function createMetadata({
   path,
   index = true,
   image = siteConfig.ogImage,
+  article,
 }: CreateMetadataInput): Metadata {
   const url = path === "/" ? siteConfig.url : `${siteConfig.url}${path}`;
 
@@ -36,7 +39,9 @@ export function createMetadata({
       googleBot: { index, follow: index, "max-image-preview": "large" },
     },
     openGraph: {
-      type: "website",
+      ...(article
+        ? { type: "article" as const, ...article }
+        : { type: "website" as const }),
       siteName: siteConfig.name,
       locale: siteConfig.locale,
       url,

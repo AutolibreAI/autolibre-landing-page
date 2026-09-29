@@ -48,6 +48,12 @@ const paths: Record<IconName, React.ReactNode> = {
   ),
   "arrow-right": <path d="M4 12h14M14 6l6 6-6 6" />,
   check: <path d="M4 12.5l5 5L20 6.5" />,
+  search: (
+    <>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
+    </>
+  ),
 };
 
 export function Icon({ name, className, size = 30 }: IconProps) {

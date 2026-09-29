@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { getPosts, postPath } from "@/lib/hygraph/posts";
 import { siteConfig } from "@/lib/seo/config";
 
 /**
@@ -27,6 +28,12 @@ const routes = [
     lastModified: "2026-09-17",
     changeFrequency: "monthly",
     priority: 0.9,
+  },
+  {
+    path: "/blog",
+    lastModified: "2026-09-23",
+    changeFrequency: "weekly",
+    priority: 0.7,
   },
   {
     path: "/proveedores",
@@ -65,11 +72,22 @@ const routes = [
   priority: number;
 }[];
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  return routes.map((route) => ({
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const pages = routes.map((route) => ({
     url: route.path === "/" ? siteConfig.url : `${siteConfig.url}${route.path}`,
     lastModified: route.lastModified,
     changeFrequency: route.changeFrequency,
     priority: route.priority,
   }));
+
+  // Los posts salen de Hygraph, no de la lista fija de arriba. Su fecha de
+  // publicación hace de `lastModified`: es estable entre deploys.
+  const posts = (await getPosts()).map((post) => ({
+    url: `${siteConfig.url}${postPath(post)}`,
+    lastModified: post.date || undefined,
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
+
+  return [...pages, ...posts];
 }

@@ -141,6 +141,39 @@ export function webPageSchema({
   };
 }
 
+export function blogPostingSchema({
+  title,
+  description,
+  path,
+  datePublished,
+  authorName,
+  imageUrl,
+}: {
+  title: string;
+  description: string;
+  path: string;
+  datePublished: string;
+  authorName: string;
+  /** URL absoluta de la portada; se omite si el post no tiene. */
+  imageUrl?: string;
+}) {
+  const url = `${siteConfig.url}${path}`;
+
+  return {
+    "@type": "BlogPosting",
+    "@id": `${url}#article`,
+    headline: title,
+    description,
+    url,
+    mainEntityOfPage: { "@id": `${url}#webpage` },
+    datePublished,
+    inLanguage: siteConfig.lang,
+    ...(imageUrl ? { image: imageUrl } : {}),
+    author: { "@type": "Person", name: authorName },
+    publisher: { "@id": ORGANIZATION_ID },
+  };
+}
+
 /** Envuelve varios nodos en un único `@graph`, que es lo que Google prefiere. */
 export function graph(...nodes: object[]) {
   return {

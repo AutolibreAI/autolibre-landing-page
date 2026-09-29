@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@graphcms/rich-text-react-renderer": "^0.6.2",
+    "@graphcms/rich-text-types": "^0.5.1",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.1",
     "class-variance-authority": "^0.7.1",

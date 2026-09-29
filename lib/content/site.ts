@@ -43,6 +43,11 @@ export const siteContent = {
         ],
       },
       {
+        id: "recursos",
+        title: "Recursos",
+        links: [{ label: "Blog", href: "/blog" }],
+      },
+      {
         id: "legal",
         title: "Legal",
         links: [
