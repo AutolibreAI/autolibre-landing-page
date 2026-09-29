@@ -119,7 +119,7 @@ export default async function PostPage({ params }: PageProps) {
 
   return (
     <>
-      <PageShell secondary={{ label: "Soy dueño de auto", href: "/" }}>
+      <PageShell secondary={{ label: "Soy dueño de auto", href: "/" }} currentPath="/blog">
         {/* `pb-24` reserva el lugar de la barra de descarga fija en mobile. */}
         <article className="pb-24 lg:pb-0">
           {/*

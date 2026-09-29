@@ -74,7 +74,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
 
   return (
     <>
-      <PageShell secondary={{ label: "Soy dueño de auto", href: "/" }}>
+      <PageShell secondary={{ label: "Soy dueño de auto", href: "/" }} currentPath={PATH}>
         <Section spacing="sm">
           <Container>
             <div className="grid gap-10 border-b border-line pb-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end lg:gap-20">

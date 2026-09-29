@@ -4,6 +4,8 @@ import type { NavLink, StoreLink } from "@/lib/content/types";
 
 /** Link a `/pedido`: el mismo en el header, el menú mobile y el footer. */
 const quoteLink = { label: "Pedir presupuesto", href: "/pedido" } as const;
+/** Link a `/blog`: el mismo en el header, el menú mobile y el footer. */
+const blogLink = { label: "Blog", href: "/blog" } as const;
 
 /** Contenido del header y del footer, compartido por todas las páginas. */
 export const siteContent = {
@@ -13,6 +15,7 @@ export const siteContent = {
       { label: "Cómo funciona", href: "/#como-funciona" },
       { label: "Compatibilidad", href: "/#compatibilidad" },
       { label: "FAQ", href: "/#faq" },
+      blogLink,
     ] satisfies readonly NavLink[],
     /**
      * Link fijo a `/pedido` en TODAS las páginas (header y menú mobile): es
@@ -82,7 +85,7 @@ export const siteContent = {
       {
         id: "recursos",
         title: "Recursos",
-        links: [{ label: "Blog", href: "/blog" }],
+        links: [blogLink],
       },
       {
         id: "legal",
