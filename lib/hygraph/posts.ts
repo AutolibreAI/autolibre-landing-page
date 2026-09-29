@@ -14,6 +14,8 @@ import { hygraphFetch } from "@/lib/hygraph/client";
  *   coverImage  Asset              (single)
  *   content     Rich text          (con Embeds > Assets habilitado)
  *   date        Date               (obligatorio: es el que ordena el listado)
+ *   updatedAt   (campo de sistema) última edición publicada: alimenta el
+ *                                    "Actualizado el" y el `dateModified`.
  *   authorName  Single line text   (opcional; sin él firma "AutoLibre")
  *   category    Reference          (obligatoria, a un modelo `Category` con
  *                                    `name` y `slug`) — define la URL del
@@ -41,6 +43,11 @@ export interface BlogPostSummary {
   readonly excerpt: string;
   /** ISO `YYYY-MM-DD`. */
   readonly date: string;
+  /**
+   * ISO `YYYY-MM-DD` de la última edición, o `""` si no es posterior a
+   * `date`: republicar el mismo día no cuenta como actualización.
+   */
+  readonly updatedAt: string;
   readonly authorName: string;
   readonly coverImage: BlogImage | null;
   readonly category: BlogCategory;
@@ -62,6 +69,7 @@ const SUMMARY_FIELDS = /* GraphQL */ `
   title
   excerpt
   date
+  updatedAt
   authorName
   coverImage {
     url
@@ -108,6 +116,7 @@ type RawSummary = {
   title: string;
   excerpt?: string | null;
   date?: string | null;
+  updatedAt?: string | null;
   authorName?: string | null;
   coverImage?: {
     url: string;
@@ -120,6 +129,16 @@ type RawSummary = {
 type RawPost = RawSummary & {
   content?: { raw: RichTextContent; references?: EmbedReferences } | null;
 };
+
+/**
+ * `updatedAt` es un timestamp (`2026-09-29T14:03:11Z`) y `date` un día. Se
+ * compara por día: si la edición es del mismo día de publicación (o anterior,
+ * con un `date` puesto a futuro), la nota no se muestra como "actualizada".
+ */
+function laterDay(updatedAt: string | null | undefined, date: string | null | undefined): string {
+  const day = updatedAt?.slice(0, 10) ?? "";
+  return day && (!date || day > date) ? day : "";
+}
 
 /**
  * `category` es requerido en el schema, pero un post viejo migrado sin uno
@@ -135,6 +154,7 @@ function toSummary(raw: RawSummary): BlogPostSummary | null {
     title: raw.title,
     excerpt: raw.excerpt?.trim() ?? "",
     date: raw.date ?? "",
+    updatedAt: laterDay(raw.updatedAt, raw.date),
     authorName: raw.authorName?.trim() || DEFAULT_AUTHOR,
     coverImage: raw.coverImage
       ? {

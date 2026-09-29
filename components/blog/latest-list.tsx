@@ -1,27 +1,29 @@
 import Link from "next/link";
 import { formatPostDate } from "@/components/blog/format-date";
-import { blogHref } from "@/lib/blog/query";
+import { blogContent } from "@/lib/content/blog";
 import { postPath, type BlogPostSummary } from "@/lib/hygraph/posts";
 
 type LatestListProps = {
   readonly posts: readonly BlogPostSummary[];
+  /** Destino de "Ver todas": la grilla completa, más abajo en la misma página. */
+  readonly seeAllHref: string;
 };
 
 /** Columna lateral junto a la nota destacada: lista compacta, sin imagen. */
-export function LatestList({ posts }: LatestListProps) {
+export function LatestList({ posts, seeAllHref }: LatestListProps) {
   if (posts.length === 0) return null;
 
   return (
     <aside aria-labelledby="ultimas-notas">
       <div className="flex items-baseline justify-between gap-4 border-b border-ink pb-4">
-        <h2 id="ultimas-notas" className="font-display text-xl font-bold text-ink lg:text-2xl">
-          Últimas notas
+        <h2 id="ultimas-notas" className="text-2xl text-ink">
+          {blogContent.latest.heading}
         </h2>
         <Link
-          href={blogHref({})}
-          className="text-sm font-semibold text-brand-hover hover:text-brand"
+          href={seeAllHref}
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-hover hover:text-brand"
         >
-          Ver todas
+          {blogContent.latest.seeAll}
         </Link>
       </div>
       <ul>
@@ -29,18 +31,19 @@ export function LatestList({ posts }: LatestListProps) {
           const date = formatPostDate(post.date);
           return (
             <li key={post.id} className="border-b border-line last:border-b-0">
-              <Link
-                href={postPath(post)}
-                className="group flex flex-col gap-1.5 py-5"
-              >
-                <p className="text-[0.8125rem] font-semibold text-brand-hover">
-                  {post.category.name}
-                </p>
-                <h3 className="text-lg leading-snug font-bold text-ink group-hover:text-brand-hover">
-                  {post.title}
-                </h3>
-                {date ? <p className="text-[0.8125rem] text-ink/50">{date}</p> : null}
-              </Link>
+              <article>
+                <Link href={postPath(post)} className="group flex flex-col gap-1.5 py-5">
+                  <p className="text-label font-semibold text-brand-hover">{post.category.name}</p>
+                  <h3 className="text-xl leading-snug text-ink transition-colors group-hover:text-brand-hover">
+                    {post.title}
+                  </h3>
+                  {date ? (
+                    <p className="text-label text-ink/60">
+                      <time dateTime={post.date}>{date}</time>
+                    </p>
+                  ) : null}
+                </Link>
+              </article>
             </li>
           );
         })}

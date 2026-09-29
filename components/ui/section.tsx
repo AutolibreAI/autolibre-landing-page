@@ -1,7 +1,7 @@
 import { Container, type ContainerSize } from "@/components/ui/container";
 import { cn } from "@/lib/utils";
 
-type SectionTone = "surface" | "muted" | "ink" | "brand";
+type SectionTone = "surface" | "subtle" | "muted" | "ink" | "brand";
 type SectionSpacing = "sm" | "md" | "lg";
 
 type SectionProps = {
@@ -31,6 +31,8 @@ type SectionProps = {
 
 const tones: Record<SectionTone, string> = {
   surface: "bg-surface text-ink",
+  /** El escalón más suave: deja que las tarjetas `surface-muted` se lean encima. */
+  subtle: "bg-surface-subtle text-ink",
   muted: "bg-surface-muted text-ink",
   ink: "bg-ink text-white",
   brand: "bg-brand text-white",

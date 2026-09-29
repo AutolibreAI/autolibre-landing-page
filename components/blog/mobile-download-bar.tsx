@@ -1,4 +1,5 @@
 import { ButtonLink } from "@/components/ui/button";
+import { blogContent } from "@/lib/content/blog";
 
 /**
  * Barra fija al pie en mobile. Sólo en el artículo (no en el listado): es la
@@ -10,7 +11,7 @@ export function MobileDownloadBar() {
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 px-[6%] py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md lg:hidden">
       <ButtonLink href="/#descargar" block size="lg">
-        Descargar la app gratis
+        {blogContent.mobileBar.cta}
       </ButtonLink>
     </div>
   );

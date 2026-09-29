@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
-import { getPosts, postPath } from "@/lib/hygraph/posts";
+import { categoryPath } from "@/lib/blog/query";
+import { collectCategories, getPosts, postPath } from "@/lib/hygraph/posts";
 import { siteConfig } from "@/lib/seo/config";
 
 /**
@@ -87,12 +88,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Los posts salen de Hygraph, no de la lista fija de arriba. Su fecha de
   // publicación hace de `lastModified`: es estable entre deploys.
-  const posts = (BLOG_PUBLIC ? await getPosts() : []).map((post) => ({
+  const allPosts = BLOG_PUBLIC ? await getPosts() : [];
+
+  // Una página por categoría con posts. Su `lastModified` es el del post más
+  // nuevo que contiene (la lista viene ordenada por fecha, más nuevo primero).
+  const categories = collectCategories(allPosts).map((category) => ({
+    url: `${siteConfig.url}${categoryPath(category.slug)}`,
+    lastModified:
+      allPosts.find((post) => post.category.slug === category.slug)?.date || undefined,
+    changeFrequency: "weekly" as const,
+    priority: 0.6,
+  }));
+
+  const posts = allPosts.map((post) => ({
     url: `${siteConfig.url}${postPath(post)}`,
-    lastModified: post.date || undefined,
+    lastModified: post.updatedAt || post.date || undefined,
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));
 
-  return [...pages, ...posts];
+  return [...pages, ...categories, ...posts];
 }

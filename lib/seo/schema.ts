@@ -132,13 +132,16 @@ export function webPageSchema({
   name,
   description,
   path,
+  type = "WebPage",
 }: {
   name: string;
   description: string;
   path: string;
+  /** `CollectionPage` para los listados (blog y categorías). */
+  type?: "WebPage" | "CollectionPage";
 }) {
   return {
-    "@type": "WebPage",
+    "@type": type,
     "@id": `${siteConfig.url}${path === "/" ? "" : path}#webpage`,
     url: `${siteConfig.url}${path === "/" ? "" : path}`,
     name,
@@ -153,6 +156,7 @@ export function blogPostingSchema({
   description,
   path,
   datePublished,
+  dateModified,
   authorName,
   imageUrl,
 }: {
@@ -160,6 +164,8 @@ export function blogPostingSchema({
   description: string;
   path: string;
   datePublished: string;
+  /** Última edición; sin ella se usa `datePublished`, que es lo que pide Google. */
+  dateModified?: string;
   authorName: string;
   /** URL absoluta de la portada; se omite si el post no tiene. */
   imageUrl?: string;
@@ -174,6 +180,7 @@ export function blogPostingSchema({
     url,
     mainEntityOfPage: { "@id": `${url}#webpage` },
     datePublished,
+    dateModified: dateModified || datePublished,
     inLanguage: siteConfig.lang,
     ...(imageUrl ? { image: imageUrl } : {}),
     author: { "@type": "Person", name: authorName },

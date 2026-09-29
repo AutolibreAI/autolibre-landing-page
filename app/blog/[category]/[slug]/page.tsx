@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArticleAppCta } from "@/components/blog/article-app-cta";
 import { ArticleTocDesktop, ArticleTocMobile } from "@/components/blog/article-toc";
 import { authorInitials } from "@/components/blog/author-initials";
+import { Breadcrumbs } from "@/components/blog/breadcrumbs";
 import { formatPostDate } from "@/components/blog/format-date";
 import { MobileDownloadBar } from "@/components/blog/mobile-download-bar";
 import { PostCard } from "@/components/blog/post-card";
@@ -12,7 +14,9 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { Container } from "@/components/ui/container";
 import { Icon } from "@/components/ui/icon";
 import { Section } from "@/components/ui/section";
+import { categoryPath } from "@/lib/blog/query";
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
+import { blogContent } from "@/lib/content/blog";
 import {
   getPostBySlug,
   getPosts,
@@ -59,9 +63,7 @@ async function getPostForRoute(category: string, slug: string) {
   return post && post.category.slug === category ? post : null;
 }
 
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { category, slug } = await params;
   const post = await getPostForRoute(category, slug);
 
@@ -86,19 +88,33 @@ export async function generateMetadata({
 
 export default async function PostPage({ params }: PageProps) {
   const { category, slug } = await params;
-  const [post, allPosts] = await Promise.all([
-    getPostForRoute(category, slug),
-    getPosts(),
-  ]);
+  const [post, allPosts] = await Promise.all([getPostForRoute(category, slug), getPosts()]);
 
   if (!post) notFound();
 
+  const { article: copy } = blogContent;
   const path = postPath(post);
   const description = post.excerpt || siteConfig.description;
-  const date = formatPostDate(post.date);
   const toc = extractToc(post.content);
   const readingMinutes = estimateReadingMinutes(post.content);
   const related = relatedPosts(allPosts, post, RELATED_COUNT);
+  // `relatedPosts` completa con otras categorías; "Del mismo tema" no.
+  const sameTopic = related
+    .filter((item) => item.category.slug === post.category.slug)
+    .slice(0, 2);
+
+  // "Actualizado el" solo si hubo una edición posterior al día de
+  // publicación; si no, "Publicado el". La fecha que se ve es la del schema.
+  const shownDate = post.updatedAt || post.date;
+  const dateLabel = shownDate
+    ? (post.updatedAt ? copy.updated : copy.published)(formatPostDate(shownDate))
+    : "";
+
+  const trail = [
+    { name: blogContent.breadcrumb.home, path: "/" },
+    { name: blogContent.breadcrumb.blog, path: "/blog" },
+    { name: post.category.name, path: categoryPath(post.category.slug) },
+  ];
 
   const schema = graph(
     organizationSchema(),
@@ -108,75 +124,44 @@ export default async function PostPage({ params }: PageProps) {
       description,
       path,
       datePublished: post.date,
+      dateModified: post.updatedAt,
       authorName: post.authorName,
       imageUrl: post.coverImage?.url,
     }),
-    breadcrumbSchema([
-      { name: "Inicio", path: "/" },
-      { name: "Blog", path: "/blog" },
-      { name: post.category.name, path: `/blog/${post.category.slug}` },
-      { name: post.title, path },
-    ]),
+    breadcrumbSchema([...trail, { name: post.title, path }]),
   );
 
   return (
     <>
       <PageShell secondary={{ label: "Soy dueño de auto", href: "/" }} currentPath="/blog">
-        {/* `pb-24` reserva el lugar de la barra de descarga fija en mobile. */}
-        <article className="pb-24 lg:pb-0">
-          {/*
-            Título y cuerpo comparten el mismo contenedor y el mismo `max-w`
-            SIN `mx-auto` en la columna de texto a propósito: si el cuerpo se
-            centra dentro de la columna `1fr` (que en desktop es más ancha
-            que 720px por el sidebar) y el título se centra en el ancho
-            completo del viewport, los dos quedan centrados en ejes distintos
-            y el texto no alinea con el título. Un solo contenedor con una
-            sola columna de texto pegada a la izquierda evita el problema de
-            raíz en vez de forzarlos a coincidir con retoques de margen.
-          */}
-          <Container
-            size="content"
-            className="grid gap-14 pt-10 pb-8 md:pt-14 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start lg:gap-20"
-          >
-            <div className="flex max-w-[720px] flex-col gap-8">
-              <div className="flex flex-col gap-5">
-                <nav aria-label="Migas de pan">
-                  <ol className="flex items-center gap-2 text-sm text-ink/50">
-                    <li>
-                      <Link href="/" className="hover:text-ink">
-                        Inicio
-                      </Link>
-                    </li>
-                    <li aria-hidden="true">/</li>
-                    <li>
-                      <Link href="/blog" className="hover:text-ink">
-                        Blog
-                      </Link>
-                    </li>
-                    <li aria-hidden="true">/</li>
-                    <li>
-                      <Link href={`/blog?category=${post.category.slug}`} className="hover:text-ink">
-                        {post.category.name}
-                      </Link>
-                    </li>
-                  </ol>
-                </nav>
+        <article>
+          {/* Encabezado a todo el ancho del contenedor, cerrado por una
+              línea: el título manda y el índice arranca recién con el cuerpo. */}
+          <header>
+            <Container size="wide">
+              <div className="flex flex-col gap-5 border-b border-line pt-10 pb-10 md:pt-14 md:pb-12">
+                <Breadcrumbs items={trail} endsAtCurrent={false} />
 
-                <p className="inline-flex w-fit items-center rounded-full bg-surface-muted px-3.5 py-1.5 text-[0.8125rem] font-semibold text-brand-hover">
+                <Link
+                  href={categoryPath(post.category.slug)}
+                  className="inline-flex min-h-8 w-fit items-center rounded-full bg-surface-muted px-3.5 text-label font-semibold text-brand-hover hover:text-ink"
+                >
                   {post.category.name}
-                </p>
+                </Link>
 
-                <h1 className="font-display text-[2rem] leading-[1.1] font-bold text-ink md:text-[2.875rem]">
+                {/* Line-height propio y no el del token display (1.05): es un
+                    título de 2-3 líneas en mobile, más largo que un eslogan. */}
+                <h1 className="max-w-220 text-4xl leading-[1.1] text-ink md:text-5xl lg:text-display-md lg:leading-[1.05]">
                   {post.title}
                 </h1>
 
                 {post.excerpt ? (
-                  <p className="text-lg leading-relaxed text-ink/70 md:text-xl">
+                  <p className="max-w-190 text-lead-lg leading-relaxed text-ink/70 md:text-xl">
                     {post.excerpt}
                   </p>
                 ) : null}
 
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-2">
+                <div className="flex flex-wrap items-center gap-x-7 gap-y-3 pt-2">
                   <div className="flex items-center gap-3">
                     <span
                       aria-hidden="true"
@@ -184,66 +169,81 @@ export default async function PostPage({ params }: PageProps) {
                     >
                       {authorInitials(post.authorName)}
                     </span>
-                    <p className="text-sm font-semibold text-ink">{post.authorName}</p>
+                    <p className="text-[0.9375rem] font-semibold text-ink">
+                      {copy.byline(post.authorName)}
+                    </p>
                   </div>
-                  {date ? (
-                    <p className="text-sm text-ink/50">
-                      <time dateTime={post.date}>{date}</time>
+                  {dateLabel ? (
+                    <p className="text-sm text-ink/60">
+                      <time dateTime={shownDate}>{dateLabel}</time>
                     </p>
                   ) : null}
-                  <p className="flex items-center gap-1.5 text-sm text-ink/50">
+                  <p className="flex items-center gap-1.5 text-sm text-ink/60">
                     <Icon name="clock" size={16} />
-                    {readingMinutes} min de lectura
+                    {copy.readingTime(readingMinutes)}
                   </p>
                 </div>
               </div>
+            </Container>
+          </header>
 
-              <div className="lg:hidden">
-                <ArticleTocMobile items={toc} />
+          <Container size="wide">
+            <div className="grid gap-12 pt-10 pb-16 md:pt-14 md:pb-24 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:gap-12 xl:gap-24">
+              <div className="flex max-w-180 min-w-0 flex-col">
+                <div className="lg:hidden">
+                  <ArticleTocMobile items={toc} />
+                </div>
+
+                {/* El primer bloque del cuerpo no suma margen arriba: el aire
+                    ya lo da el contenedor. */}
+                <div className="[&>:first-child]:mt-0 max-lg:mt-8">
+                  <RichText content={post.content} references={post.references} />
+                </div>
+
+                <ArticleAppCta />
               </div>
 
-              <RichText content={post.content} references={post.references} />
+              <aside className="hidden flex-col gap-10 lg:sticky lg:top-24 lg:flex lg:w-64 xl:w-75">
+                <ArticleTocDesktop items={toc} />
+
+                {sameTopic.length > 0 ? (
+                  <div className="flex flex-col gap-3 border-t border-line pt-6">
+                    <p className="text-label font-semibold text-ink">{copy.sameTopic}</p>
+                    {sameTopic.map((item) => (
+                      <Link
+                        key={item.id}
+                        href={postPath(item)}
+                        className="text-[0.9375rem] leading-snug font-medium text-brand-hover hover:text-brand"
+                      >
+                        {item.title}
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
+              </aside>
             </div>
-
-            <aside className="hidden flex-col gap-10 lg:sticky lg:top-24 lg:flex">
-              <ArticleTocDesktop items={toc} />
-
-              {related.length > 0 ? (
-                <div className="flex flex-col gap-3 border-t border-line pt-6">
-                  <p className="text-[0.8125rem] font-semibold text-ink">Del mismo tema</p>
-                  {related.slice(0, 2).map((item) => (
-                    <Link
-                      key={item.id}
-                      href={postPath(item)}
-                      className="text-sm leading-snug font-medium text-ink/80 hover:text-brand-hover"
-                    >
-                      {item.title}
-                    </Link>
-                  ))}
-                </div>
-              ) : null}
-            </aside>
           </Container>
         </article>
 
         {related.length > 0 ? (
-          <Section tone="muted" spacing="md">
-            <Container>
-              <h2 className="font-display text-[1.75rem] leading-tight font-bold text-ink md:text-[2rem]">
-                Seguí leyendo
-              </h2>
-              <ul className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                {related.map((item) => (
-                  <li key={item.id}>
-                    <PostCard post={item} />
-                  </li>
-                ))}
-              </ul>
-            </Container>
+          <Section tone="subtle" spacing="md" aria-labelledby="relacionadas">
+            <h2 id="relacionadas" className="text-3xl leading-tight text-ink md:text-4xl">
+              {copy.related}
+            </h2>
+            <ul className="mt-10 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+              {related.map((item) => (
+                <li key={item.id}>
+                  <PostCard post={item} />
+                </li>
+              ))}
+            </ul>
           </Section>
         ) : null}
       </PageShell>
 
+      {/* Reserva el alto de la barra fija de mobile DESPUÉS del footer: así
+          el final de la página (footer incluido) no queda tapado por ella. */}
+      <div aria-hidden="true" className="h-24 lg:hidden" />
       <MobileDownloadBar />
 
       <JsonLd schema={schema} />

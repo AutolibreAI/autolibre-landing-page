@@ -76,9 +76,16 @@ export function paginate<T>(
   return { items: items.slice(start, start + pageSize), page: clampedPage, totalPages };
 }
 
+/** `/blog/[category]`: la página de una categoría. Único lugar que arma esta URL. */
+export function categoryPath(slug: string): string {
+  return `/blog/${slug}`;
+}
+
 /**
- * Arma un link a `/blog` con los filtros dados, omitiendo los que están
- * vacíos o en su default — así "Todas" es `/blog` liso y no `/blog?category=`.
+ * Arma un link del listado con los filtros dados, omitiendo los vacíos o en
+ * su default. La categoría es parte del PATH (`/blog/mantenimiento`), no un
+ * query param: cada categoría es una página indexable propia con una sola
+ * URL. `?category=` solo sobrevive como URL vieja que `/blog` redirige.
  */
 export function blogHref({
   q,
@@ -87,9 +94,9 @@ export function blogHref({
 }: Partial<BlogFilters>): string {
   const params = new URLSearchParams();
   if (q) params.set("q", q);
-  if (category) params.set("category", category);
   if (page && page > 1) params.set("page", String(page));
 
+  const base = category ? categoryPath(category) : "/blog";
   const query = params.toString();
-  return query ? `/blog?${query}` : "/blog";
+  return query ? `${base}?${query}` : base;
 }
