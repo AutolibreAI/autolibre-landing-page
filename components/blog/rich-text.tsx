@@ -26,27 +26,44 @@ import type {
  */
 const bodyText = "text-lead leading-relaxed text-ink md:text-lead-lg";
 
-function buildRenderers(): NodeRendererType {
+const h2Class = "mt-14 mb-4 text-2xl leading-tight text-ink md:text-3xl";
+const h3Class = "mt-10 mb-3 text-xl leading-snug text-ink md:text-2xl";
+const h4Class = "mt-8 mb-2 text-lg text-ink";
+
+/**
+ * Headings de un rich text anidado bajo el `h2` de una sección (el texto
+ * pilar de una categoría): todo baja un nivel para que el outline no salte
+ * ni repita el nivel de la sección — `h1`/`h2` → `h3`, `h3` → `h4`, `h4` →
+ * `h5`, `h5`/`h6` → `h6`. El estilo sigue al nivel que eligió el editor, no
+ * al tag. Sin ids: esos headings no entran en ninguna tabla de contenidos.
+ */
+const nestedHeadings: NodeRendererType = {
+  h1: ({ children }) => <h3 className={h2Class}>{children}</h3>,
+  h2: ({ children }) => <h3 className={h2Class}>{children}</h3>,
+  h3: ({ children }) => <h4 className={h3Class}>{children}</h4>,
+  h4: ({ children }) => <h5 className={h4Class}>{children}</h5>,
+  h5: ({ children }) => <h6 className={h4Class}>{children}</h6>,
+  h6: ({ children }) => <h6 className={h4Class}>{children}</h6>,
+};
+
+function buildRenderers(nested: boolean): NodeRendererType {
   let headingIndex = 0;
 
-  return {
+  const articleHeadings: NodeRendererType = {
     // El `h1` es el título de la nota: un `h1` dentro del cuerpo baja a `h2`
     // para que la página tenga uno solo.
-    h1: ({ children }) => (
-      <h2 className="mt-14 mb-4 text-2xl leading-tight text-ink md:text-3xl">{children}</h2>
-    ),
+    h1: ({ children }) => <h2 className={h2Class}>{children}</h2>,
     h2: ({ children }) => (
-      <h2
-        id={`section-${headingIndex++}`}
-        className="mt-14 mb-4 scroll-mt-24 text-2xl leading-tight text-ink md:text-3xl"
-      >
+      <h2 id={`section-${headingIndex++}`} className={`scroll-mt-24 ${h2Class}`}>
         {children}
       </h2>
     ),
-    h3: ({ children }) => (
-      <h3 className="mt-10 mb-3 text-xl leading-snug text-ink md:text-2xl">{children}</h3>
-    ),
-    h4: ({ children }) => <h4 className="mt-8 mb-2 text-lg text-ink">{children}</h4>,
+    h3: ({ children }) => <h3 className={h3Class}>{children}</h3>,
+    h4: ({ children }) => <h4 className={h4Class}>{children}</h4>,
+  };
+
+  return {
+    ...(nested ? nestedHeadings : articleHeadings),
     p: ({ children }) => <p className={`my-5 ${bodyText}`}>{children}</p>,
     ul: ({ children }) => (
       <ul className={`my-6 list-disc space-y-2.5 pl-6 marker:text-brand ${bodyText}`}>{children}</ul>
@@ -139,11 +156,21 @@ function buildRenderers(): NodeRendererType {
 type RichTextProps = {
   readonly content: RichTextContent;
   readonly references: EmbedReferences;
+  /**
+   * `true` cuando el texto vive dentro de una sección que ya tiene su `h2`
+   * (ver `nestedHeadings`). Por defecto es el cuerpo de una nota, colgado
+   * directo del `h1`.
+   */
+  readonly nested?: boolean;
 };
 
-/** Cuerpo de un post: el AST `raw` de Hygraph renderizado con los tokens del sitio. */
-export function RichText({ content, references }: RichTextProps) {
+/** Rich text de Hygraph (el AST `raw`) renderizado con los tokens del sitio. */
+export function RichText({ content, references, nested = false }: RichTextProps) {
   return (
-    <HygraphRichText content={content} references={references} renderers={buildRenderers()} />
+    <HygraphRichText
+      content={content}
+      references={references}
+      renderers={buildRenderers(nested)}
+    />
   );
 }

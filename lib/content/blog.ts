@@ -15,9 +15,14 @@ export const blogContent = {
   category: {
     /** "Guías de Mantenimiento". */
     heading: (name: string) => `Guías de ${name}`,
-    /** Meta description y bajada de la página de una categoría. */
+    /**
+     * Meta description y bajada de la página de una categoría, cuando la
+     * categoría no trae `description` propia desde Hygraph.
+     */
     description: (name: string) =>
       `Todas las guías de ${name.toLowerCase()} del blog de AutoLibre, explicadas sin vueltas y con respuestas concretas.`,
+    /** `h2` de la sección con el texto pilar de la categoría. */
+    pillarHeading: (name: string) => `Guía completa de ${name}`,
   },
 
   search: {
@@ -73,6 +78,8 @@ export const blogContent = {
     tocCount: (count: number) => `${count} ${count === 1 ? "sección" : "secciones"}`,
     sameTopic: "Del mismo tema",
     related: "Seguí leyendo",
+    /** Nombre accesible de la lista de tags de la nota. */
+    tags: "Temas de esta nota",
   },
 
   /** Bloque de descarga al final de cada nota. */

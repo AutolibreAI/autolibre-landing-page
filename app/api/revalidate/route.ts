@@ -13,15 +13,18 @@ function secretMatches(received: string | null, expected: string): boolean {
 }
 
 /**
- * Webhook de Hygraph (Project settings > Webhooks). Al publicar o despublicar
- * un post invalida todo lo que se leyó de Hygraph, así que el blog se
- * actualiza en segundos sin esperar la ventana de revalidación ni un deploy.
+ * Webhook de Hygraph (Project settings > Webhooks). Al publicar, despublicar
+ * o editar un post, una categoría o un tag invalida todo lo que se leyó de
+ * Hygraph, así que el blog se actualiza en segundos sin esperar la ventana de
+ * revalidación ni un deploy. Las categorías y los tags entran porque su
+ * bajada, su SEO y el texto pilar se muestran en las páginas del blog.
  *
  * Configuración en Hygraph:
  *   URL      https://autolibre.ai/api/revalidate
  *   Método   POST
  *   Headers  x-revalidate-secret: <el valor de HYGRAPH_REVALIDATE_SECRET>
- *   Trigger  Model Post · Stage Published · Actions Publish, Unpublish, Update
+ *   Trigger  Models Post, Category, Tag · Stage Published ·
+ *            Actions Publish, Unpublish, Update
  */
 export async function POST(request: NextRequest) {
   const secret = process.env.HYGRAPH_REVALIDATE_SECRET?.trim();

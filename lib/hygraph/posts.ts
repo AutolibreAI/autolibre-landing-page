@@ -10,7 +10,8 @@ import { hygraphFetch } from "@/lib/hygraph/client";
  *
  *   title       Single line text   (obligatorio)
  *   slug        Slug               (obligatorio, único — sale de `title`)
- *   excerpt     Multi line text    (bajada; también es la meta description)
+ *   excerpt     Multi line text    (bajada visible; es la meta description
+ *                                    solo si el post no trae `seo`)
  *   coverImage  Asset              (single)
  *   content     Rich text          (con Embeds > Assets habilitado)
  *   date        Date               (obligatorio: es el que ordena el listado)
@@ -20,6 +21,11 @@ import { hygraphFetch } from "@/lib/hygraph/client";
  *   category    Reference          (obligatoria, a un modelo `Category` con
  *                                    `name` y `slug`) — define la URL del
  *                                    post: `/blog/[category.slug]/[slug]`.
+ *   tags        Reference          (muchos a muchos, a un modelo `Tag` con
+ *                                    `name` y `slug`; puede venir vacía)
+ *   seo         Component `Seo`    (opcional: `metaTitle` y `metaDescription`
+ *                                    para Google; si faltan, se usan `title`
+ *                                    y `excerpt`. Solo se pide en la nota)
  *
  * Si se renombra un campo en Hygraph, se cambia acá y en nada más: las
  * páginas consumen `BlogPost`, no la forma cruda de la API.
@@ -34,6 +40,20 @@ export interface BlogImage {
 export interface BlogCategory {
   readonly slug: string;
   readonly name: string;
+}
+
+export interface BlogTag {
+  readonly slug: string;
+  readonly name: string;
+}
+
+/**
+ * Componente `Seo` de Hygraph ya normalizado: strings trimeados, `""` si el
+ * campo vino vacío o `null`. Quien lo usa resuelve el fallback con `||`.
+ */
+export interface BlogSeo {
+  readonly title: string;
+  readonly description: string;
 }
 
 export interface BlogPostSummary {
@@ -51,16 +71,18 @@ export interface BlogPostSummary {
   readonly authorName: string;
   readonly coverImage: BlogImage | null;
   readonly category: BlogCategory;
+  readonly tags: readonly BlogTag[];
 }
 
 export interface BlogPost extends BlogPostSummary {
   readonly content: RichTextContent;
   readonly references: EmbedReferences;
+  readonly seo: BlogSeo;
 }
 
 const DEFAULT_AUTHOR = "AutoLibre";
 
-/** Hygraph limita `first` a 100. Con más posts hay que paginar con `skip`. */
+/** Hygraph limita `first` a 100: `getPosts` pagina con `skip` de a este tamaño. */
 const LIST_LIMIT = 100;
 
 const SUMMARY_FIELDS = /* GraphQL */ `
@@ -80,11 +102,15 @@ const SUMMARY_FIELDS = /* GraphQL */ `
     slug
     name
   }
+  tags {
+    slug
+    name
+  }
 `;
 
 const POSTS_QUERY = /* GraphQL */ `
-  query BlogPosts($first: Int!) {
-    posts(first: $first, orderBy: date_DESC, stage: PUBLISHED) {
+  query BlogPosts($first: Int!, $skip: Int!) {
+    posts(first: $first, skip: $skip, orderBy: date_DESC, stage: PUBLISHED) {
       ${SUMMARY_FIELDS}
     }
   }
@@ -94,6 +120,10 @@ const POST_QUERY = /* GraphQL */ `
   query BlogPost($slug: String!) {
     post(where: { slug: $slug }, stage: PUBLISHED) {
       ${SUMMARY_FIELDS}
+      seo {
+        metaTitle
+        metaDescription
+      }
       content {
         raw
         references {
@@ -124,9 +154,16 @@ type RawSummary = {
     height?: number | null;
   } | null;
   category?: { slug: string; name: string } | null;
+  tags?: { slug: string; name: string }[] | null;
 };
 
+export type RawSeo = {
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+} | null;
+
 type RawPost = RawSummary & {
+  seo?: RawSeo;
   content?: { raw: RichTextContent; references?: EmbedReferences } | null;
 };
 
@@ -138,6 +175,14 @@ type RawPost = RawSummary & {
 function laterDay(updatedAt: string | null | undefined, date: string | null | undefined): string {
   const day = updatedAt?.slice(0, 10) ?? "";
   return day && (!date || day > date) ? day : "";
+}
+
+/** Normaliza el componente `Seo` (compartido con `categories.ts`). */
+export function toSeo(raw: RawSeo | undefined): BlogSeo {
+  return {
+    title: raw?.metaTitle?.trim() ?? "",
+    description: raw?.metaDescription?.trim() ?? "",
+  };
 }
 
 /**
@@ -164,22 +209,36 @@ function toSummary(raw: RawSummary): BlogPostSummary | null {
         }
       : null,
     category: raw.category,
+    tags: raw.tags ?? [],
   };
 }
 
 /**
- * Posts publicados, del más nuevo al más viejo.
+ * Todos los posts publicados, del más nuevo al más viejo.
+ *
+ * Hygraph no devuelve más de 100 por query, así que se piden páginas de
+ * `LIST_LIMIT` con `skip` hasta que una vuelve incompleta. Las páginas van
+ * en serie: cada una depende de saber si la anterior vino llena.
  *
  * Devuelve `[]` —nunca tira— si Hygraph no contesta o falta la config: que el
  * CMS esté caído no puede tumbar el build de una página de marketing, pero
- * tampoco pasa inadvertido, de ahí el log.
+ * tampoco pasa inadvertido, de ahí el log. Si falla una página intermedia
+ * también es `[]`: un listado a medias escondería notas sin avisar.
  */
 export async function getPosts(): Promise<BlogPostSummary[]> {
   try {
-    const data = await hygraphFetch<{ posts: RawSummary[] }>(POSTS_QUERY, {
-      first: LIST_LIMIT,
-    });
-    return data.posts
+    const raw: RawSummary[] = [];
+
+    for (let skip = 0; ; skip += LIST_LIMIT) {
+      const data = await hygraphFetch<{ posts: RawSummary[] }>(POSTS_QUERY, {
+        first: LIST_LIMIT,
+        skip,
+      });
+      raw.push(...data.posts);
+      if (data.posts.length < LIST_LIMIT) break;
+    }
+
+    return raw
       .map(toSummary)
       .filter((post): post is BlogPostSummary => post !== null);
   } catch (error) {
@@ -214,6 +273,7 @@ export const getPostBySlug = cache(
       ...summary,
       content: raw.content.raw,
       references: raw.content.references ?? [],
+      seo: toSeo(raw.seo),
     };
   },
 );

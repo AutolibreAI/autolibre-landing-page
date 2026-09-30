@@ -22,6 +22,7 @@ import {
   getPosts,
   postPath,
   relatedPosts,
+  type BlogPost,
 } from "@/lib/hygraph/posts";
 import { extractToc, estimateReadingMinutes } from "@/lib/hygraph/toc";
 import { siteConfig } from "@/lib/seo/config";
@@ -63,15 +64,25 @@ async function getPostForRoute(category: string, slug: string) {
   return post && post.category.slug === category ? post : null;
 }
 
+/**
+ * Meta description de la nota: la de `seo` si el editor la cargó, si no la
+ * bajada. La misma va a la metadata y al JSON-LD para que coincidan.
+ */
+function postDescription(post: BlogPost): string {
+  return post.seo.description || post.excerpt || siteConfig.description;
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { category, slug } = await params;
   const post = await getPostForRoute(category, slug);
 
   if (!post) return { title: "Artículo no encontrado", robots: { index: false } };
 
+  // El meta title es para Google (~60 caracteres) y puede diferir del
+  // título de la nota, que sigue siendo el `h1`.
   return createMetadata({
-    title: post.title,
-    description: post.excerpt || siteConfig.description,
+    title: post.seo.title || post.title,
+    description: postDescription(post),
     path: postPath(post),
     index: BLOG_PUBLIC,
     article: { publishedTime: post.date, authors: [post.authorName] },
@@ -94,7 +105,7 @@ export default async function PostPage({ params }: PageProps) {
 
   const { article: copy } = blogContent;
   const path = postPath(post);
-  const description = post.excerpt || siteConfig.description;
+  const description = postDescription(post);
   const toc = extractToc(post.content);
   const readingMinutes = estimateReadingMinutes(post.content);
   const related = relatedPosts(allPosts, post, RELATED_COUNT);
@@ -127,6 +138,7 @@ export default async function PostPage({ params }: PageProps) {
       dateModified: post.updatedAt,
       authorName: post.authorName,
       imageUrl: post.coverImage?.url,
+      keywords: post.tags.map((tag) => tag.name),
     }),
     breadcrumbSchema([...trail, { name: post.title, path }]),
   );
@@ -199,6 +211,20 @@ export default async function PostPage({ params }: PageProps) {
                 <div className="[&>:first-child]:mt-0 max-lg:mt-8">
                   <RichText content={post.content} references={post.references} />
                 </div>
+
+                {/* Tags como texto, sin link: todavía no hay páginas de tag. */}
+                {post.tags.length > 0 ? (
+                  <ul aria-label={copy.tags} className="mt-10 flex flex-wrap gap-2.5">
+                    {post.tags.map((tag) => (
+                      <li
+                        key={tag.slug}
+                        className="inline-flex min-h-9 items-center rounded-full border border-line bg-surface-subtle px-4 text-sm font-medium text-ink"
+                      >
+                        {tag.name}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
 
                 <ArticleAppCta />
               </div>

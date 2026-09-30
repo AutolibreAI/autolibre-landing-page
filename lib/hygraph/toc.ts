@@ -48,6 +48,14 @@ export function extractToc(content: RichTextContent): TocItem[] {
   return items.filter((item) => item.text !== "");
 }
 
+/**
+ * `true` si el rich text tiene algún texto. Un campo que el editor vació en
+ * Hygraph no llega en `null` sino como un párrafo vacío.
+ */
+export function hasText(content: RichTextContent): boolean {
+  return topLevel(content).some((node) => textOf(node).trim() !== "");
+}
+
 /** ~200 palabras por minuto, redondeado para arriba, mínimo 1. */
 export function estimateReadingMinutes(content: RichTextContent): number {
   const words = topLevel(content)

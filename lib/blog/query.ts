@@ -42,6 +42,10 @@ function normalize(value: string): string {
     .toLowerCase();
 }
 
+/**
+ * El texto busca en título, bajada y nombres de tags: así "vencimientos" o un
+ * modelo de auto encuentran la nota aunque la palabra no esté en el título.
+ */
 export function filterPosts(
   posts: readonly BlogPostSummary[],
   filters: Pick<BlogFilters, "q" | "category">,
@@ -50,8 +54,9 @@ export function filterPosts(
 
   return posts.filter((post) => {
     if (filters.category && post.category.slug !== filters.category) return false;
-    if (needle && !normalize(`${post.title} ${post.excerpt}`).includes(needle)) {
-      return false;
+    if (needle) {
+      const haystack = `${post.title} ${post.excerpt} ${post.tags.map((tag) => tag.name).join(" ")}`;
+      if (!normalize(haystack).includes(needle)) return false;
     }
     return true;
   });

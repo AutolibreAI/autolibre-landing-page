@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BlogListingHeader } from "@/components/blog/blog-listing-header";
 import { PostGridSection } from "@/components/blog/post-grid-section";
+import { RichText } from "@/components/blog/rich-text";
 import { ClosingCtaSection } from "@/components/sections/home/closing-cta";
 import { PageShell } from "@/components/layout/page-shell";
 import { JsonLd } from "@/components/seo/json-ld";
+import { Section } from "@/components/ui/section";
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
 import {
   PAGE_SIZE,
@@ -15,7 +17,8 @@ import {
   parseBlogFilters,
 } from "@/lib/blog/query";
 import { blogContent } from "@/lib/content/blog";
-import { collectCategories, getPosts, type BlogCategory } from "@/lib/hygraph/posts";
+import { getCategoryBySlug, type BlogCategoryDetail } from "@/lib/hygraph/categories";
+import { collectCategories, getPosts, type BlogPostSummary } from "@/lib/hygraph/posts";
 import { createMetadata } from "@/lib/seo/metadata";
 import {
   breadcrumbSchema,
@@ -37,11 +40,31 @@ type PageProps = {
  *
  * Una categoría existe si tiene al menos un post publicado (ver
  * `collectCategories`): una categoría vacía creada en Hygraph da 404 en vez
- * de una página sin contenido.
+ * de una página sin contenido. Recién validado eso se piden sus datos
+ * propios (bajada, SEO, texto pilar). Si la categoría todavía no está
+ * publicada en Hygraph (el post la referencia igual), esos datos faltan y
+ * la página cae a las plantillas de `blogContent.category`: no es un 404.
  */
-async function getCategory(slug: string): Promise<BlogCategory | null> {
-  const categories = collectCategories(await getPosts());
-  return categories.find((category) => category.slug === slug) ?? null;
+async function getCategory(
+  slug: string,
+  posts: readonly BlogPostSummary[],
+): Promise<BlogCategoryDetail | null> {
+  const category = collectCategories(posts).find((item) => item.slug === slug);
+  if (!category) return null;
+
+  return (
+    (await getCategoryBySlug(slug)) ?? {
+      ...category,
+      description: "",
+      seo: { title: "", description: "" },
+      content: null,
+    }
+  );
+}
+
+/** Bajada visible y meta description: la de Hygraph, o la plantilla genérica. */
+function categoryDescription(category: BlogCategoryDetail): string {
+  return category.description || blogContent.category.description(category.name);
 }
 
 export async function generateStaticParams() {
@@ -50,14 +73,14 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const [{ category: slug }, rawSearch] = await Promise.all([params, searchParams]);
-  const category = await getCategory(slug);
+  const category = await getCategory(slug, await getPosts());
   if (!category) return { title: "Categoría no encontrada", robots: { index: false } };
 
   const { q, page } = parseBlogFilters(rawSearch);
 
   return createMetadata({
-    title: blogContent.category.heading(category.name),
-    description: blogContent.category.description(category.name),
+    title: category.seo.title || blogContent.category.heading(category.name),
+    description: category.seo.description || categoryDescription(category),
     path: blogHref({ category: category.slug, page }),
     index: BLOG_PUBLIC && q === "",
   });
@@ -67,7 +90,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const [{ category: slug }, rawSearch] = await Promise.all([params, searchParams]);
   const allPosts = await getPosts();
   const categories = collectCategories(allPosts);
-  const category = categories.find((item) => item.slug === slug);
+  const category = await getCategory(slug, allPosts);
   if (!category) notFound();
 
   // La categoría sale del path; un `?category=` suelto en la URL se ignora.
@@ -76,8 +99,14 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const { items, page, totalPages } = paginate(filtered, filters.page, PAGE_SIZE);
 
   const heading = blogContent.category.heading(category.name);
-  const description = blogContent.category.description(category.name);
+  const description = categoryDescription(category);
+  // La meta description (y la del JSON-LD) prioriza la de `seo`; la bajada
+  // visible no: es texto para el lector, no para Google.
+  const metaDescription = category.seo.description || description;
   const path = categoryPath(category.slug);
+  // El texto pilar va solo en la página 1 sin búsqueda: en `?page=2` o en
+  // los resultados sería contenido duplicado.
+  const pillar = page === 1 && filters.q === "" ? category.content : null;
   const trail = [
     { name: blogContent.breadcrumb.home, path: "/" },
     { name: blogContent.breadcrumb.blog, path: "/blog" },
@@ -86,7 +115,12 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
   const schema = graph(
     organizationSchema(),
-    webPageSchema({ name: heading, description, path, type: "CollectionPage" }),
+    webPageSchema({
+      name: heading,
+      description: metaDescription,
+      path,
+      type: "CollectionPage",
+    }),
     breadcrumbSchema(trail),
   );
 
@@ -112,6 +146,21 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
           filters={{ q: filters.q, category: category.slug }}
           emptyFiltered={items.length === 0}
         />
+
+        {pillar ? (
+          <Section spacing="md" aria-labelledby="guia-titulo">
+            <div className="max-w-180">
+              <h2 id="guia-titulo" className="text-3xl leading-tight text-ink md:text-4xl">
+                {blogContent.category.pillarHeading(category.name)}
+              </h2>
+              {/* `nested`: los headings del editor bajan a `h3`+, colgados
+                  de este `h2`. */}
+              <div className="mt-8 [&>:first-child]:mt-0">
+                <RichText content={pillar.raw} references={pillar.references} nested />
+              </div>
+            </div>
+          </Section>
+        ) : null}
 
         <ClosingCtaSection />
       </PageShell>

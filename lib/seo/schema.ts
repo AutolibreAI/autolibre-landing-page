@@ -223,6 +223,7 @@ export function blogPostingSchema({
   dateModified,
   authorName,
   imageUrl,
+  keywords = [],
 }: {
   title: string;
   description: string;
@@ -233,6 +234,8 @@ export function blogPostingSchema({
   authorName: string;
   /** URL absoluta de la portada; se omite si el post no tiene. */
   imageUrl?: string;
+  /** Tags del post; van como `keywords` separados por coma, si hay. */
+  keywords?: readonly string[];
 }) {
   const url = `${siteConfig.url}${path}`;
 
@@ -247,6 +250,7 @@ export function blogPostingSchema({
     dateModified: dateModified || datePublished,
     inLanguage: siteConfig.lang,
     ...(imageUrl ? { image: imageUrl } : {}),
+    ...(keywords.length > 0 ? { keywords: keywords.join(", ") } : {}),
     author: { "@type": "Person", name: authorName },
     publisher: { "@id": ORGANIZATION_ID },
   };
