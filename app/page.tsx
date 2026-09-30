@@ -10,6 +10,7 @@ import { FeaturesSection } from "@/components/sections/home/features";
 import { HeroSection } from "@/components/sections/home/hero";
 import { HistorySection } from "@/components/sections/home/history";
 import { HowItWorksSection } from "@/components/sections/home/how-it-works";
+import { LatestGuidesSection } from "@/components/sections/home/latest-guides";
 import { MarketplaceSection } from "@/components/sections/home/marketplace";
 import { ProblemSection } from "@/components/sections/home/problem";
 import { ProviderBandSection } from "@/components/sections/home/provider-band";
@@ -60,6 +61,7 @@ export default function HomePage() {
         <CompatibilitySection />
         <ProviderBandSection />
         <FaqSection />
+        <LatestGuidesSection />
         <ClosingCtaSection />
       </main>
 

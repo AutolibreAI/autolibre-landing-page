@@ -25,6 +25,12 @@ export const siteContent = {
      * lo que saca a la landing de pedido de ser una página huérfana.
      */
     quoteLink,
+    /**
+     * Link al blog en el header de las páginas internas (nav y menú mobile).
+     * En la home ya va entre las anclas de `links`. `null` mientras el blog
+     * no es público.
+     */
+    blogLink: BLOG_PUBLIC ? blogLink : null,
     providerLink: { label: "Soy proveedor", href: "/proveedores" },
     cta: { label: "Descargar la app", href: "/#descargar" },
     /**

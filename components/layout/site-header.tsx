@@ -42,8 +42,8 @@ const headerTextLink =
  * - < sm: logo + botón de menú.
  * - sm: + CTA.
  * - md: + "Pedir presupuesto".
- * - lg: + link secundario ("Soy proveedor"). En páginas internas acá ya está
- *   todo a la vista y el botón de menú se va.
+ * - lg: + link secundario ("Soy proveedor") y, en páginas internas, "Blog".
+ *   En páginas internas acá ya está todo a la vista y el botón de menú se va.
  * - xl (solo home): + anclas de sección, y recién ahí se va el menú. En `lg`
  *   las cuatro anclas más los dos links y el CTA no entran en 1024px.
  */
@@ -55,6 +55,9 @@ export function SiteHeader({
 }: SiteHeaderProps) {
   const links = showSectionLinks ? siteContent.nav.links : [];
   const { quoteLink } = siteContent.nav;
+  // En la home el blog ya está entre las anclas de sección: solo las páginas
+  // internas lo suman a sus links, así no aparece dos veces en el menú.
+  const blogLink = showSectionLinks ? null : siteContent.nav.blogLink;
   /**
    * Sólo el CTA de descarga cambia de destino según la plataforma. Las
    * páginas que pisan `cta` con otra acción (p. ej. /proveedores, /pedido)
@@ -106,6 +109,17 @@ export function SiteHeader({
         <div className="flex items-center gap-4 lg:gap-6">
           <nav aria-label="Páginas" className="hidden md:block">
             <ul className="flex items-center gap-6">
+              {blogLink ? (
+                <li className="hidden lg:block">
+                  <Link
+                    href={blogLink.href}
+                    aria-current={current(blogLink.href)}
+                    className={headerTextLink}
+                  >
+                    {blogLink.label}
+                  </Link>
+                </li>
+              ) : null}
               <li>
                 <Link
                   href={quoteLink.href}
@@ -133,7 +147,7 @@ export function SiteHeader({
           )}
           <MobileNav
             links={links}
-            pageLinks={[quoteLink, secondary]}
+            pageLinks={blogLink ? [blogLink, quoteLink, secondary] : [quoteLink, secondary]}
             cta={cta}
             isDownloadCta={isDownloadCta}
             currentPath={currentPath}

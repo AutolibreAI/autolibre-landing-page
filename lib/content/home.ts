@@ -233,6 +233,14 @@ export const homeContent = {
     title: "Preguntas frecuentes",
   },
 
+  /** Últimas notas del blog (`LatestGuidesSection`). */
+  guides: {
+    title: "Guías para tener tu auto en regla",
+    subtitle:
+      "Trámites, seguros y papeles del auto, explicados paso a paso por el equipo de AutoLibre.",
+    cta: "Ver todas las guías",
+  },
+
   closing: {
     title: "Tu auto siempre supo qué tenía. Ahora vos también.",
     downloadNote: "Gratis, para iPhone y Android.",
