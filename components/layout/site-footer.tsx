@@ -27,7 +27,7 @@ export function SiteFooter() {
             />
           </Link>
 
-          {/* Cinco grupos: en grilla hasta `lg` (2 y 3 columnas parejas en vez
+          {/* Seis grupos: en grilla hasta `lg` (2 y 3 columnas parejas en vez
               de un `flex-wrap` que deja filas desparejas) y en una sola fila
               desde `lg`, al lado del logo. */}
           <div className="grid grid-cols-2 gap-x-10 gap-y-8 sm:grid-cols-3 lg:flex lg:gap-x-14">

@@ -67,7 +67,9 @@ export type IconName =
   | "spinner"
   | "ellipsis"
   | "info"
-  | "alert";
+  | "alert"
+  | "image"
+  | "linkedin";
 
 /** Tiendas donde está publicada la app. */
 export type StoreId = "appStore" | "playStore";

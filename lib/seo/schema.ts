@@ -12,7 +12,34 @@ import { allFaqItems } from "@/lib/content/faq";
 const ORGANIZATION_ID = `${siteConfig.url}/#organization`;
 const WEBSITE_ID = `${siteConfig.url}/#website`;
 
-export function organizationSchema() {
+/**
+ * `@id` estable de una persona del equipo. Vive en `/sobre-nosotros`, que es
+ * la página que la presenta: así `founder`/`employee` del `Organization` y el
+ * nodo `Person` se unen en una sola entidad.
+ */
+export function personId(id: string) {
+  return `${siteConfig.url}/sobre-nosotros#${id}`;
+}
+
+type OrganizationExtras = {
+  /** `@id` (ver `personId`) de los fundadores. */
+  founderIds?: readonly string[];
+  /** `@id` del resto del equipo. */
+  employeeIds?: readonly string[];
+  /** Fecha ISO de fundación. Solo si es real: sin dato, no se emite. */
+  foundingDate?: string;
+};
+
+/**
+ * Sin argumentos es la organización de siempre (todas las páginas). La página
+ * "Sobre nosotros" le suma fundadores, equipo y fecha de fundación: cada campo
+ * sale solo si tiene valor.
+ */
+export function organizationSchema({
+  founderIds = [],
+  employeeIds = [],
+  foundingDate,
+}: OrganizationExtras = {}) {
   return {
     "@type": "Organization",
     "@id": ORGANIZATION_ID,
@@ -48,6 +75,39 @@ export function organizationSchema() {
       availableLanguage: "Spanish",
       areaServed: "AR",
     },
+    ...(foundingDate ? { foundingDate } : {}),
+    ...(founderIds.length > 0
+      ? { founder: founderIds.map((id) => ({ "@id": id })) }
+      : {}),
+    ...(employeeIds.length > 0
+      ? { employee: employeeIds.map((id) => ({ "@id": id })) }
+      : {}),
+  };
+}
+
+/**
+ * Una persona del equipo. `sameAs` son sus perfiles públicos (LinkedIn): le
+ * confirman a buscadores y LLMs que es la misma persona.
+ */
+export function personSchema({
+  id,
+  name,
+  jobTitle,
+  sameAs = [],
+}: {
+  /** `@id` completo (ver `personId`). */
+  id: string;
+  name: string;
+  jobTitle: string;
+  sameAs?: readonly string[];
+}) {
+  return {
+    "@type": "Person",
+    "@id": id,
+    name,
+    jobTitle,
+    worksFor: { "@id": ORGANIZATION_ID },
+    ...(sameAs.length > 0 ? { sameAs: [...sameAs] } : {}),
   };
 }
 
@@ -137,8 +197,11 @@ export function webPageSchema({
   name: string;
   description: string;
   path: string;
-  /** `CollectionPage` para los listados (blog y categorías). */
-  type?: "WebPage" | "CollectionPage";
+  /**
+   * `CollectionPage` para los listados (blog y categorías). `AboutPage` para
+   * "Sobre nosotros": además la ata a la organización con `about`.
+   */
+  type?: "WebPage" | "CollectionPage" | "AboutPage";
 }) {
   return {
     "@type": type,
@@ -148,6 +211,7 @@ export function webPageSchema({
     description,
     inLanguage: siteConfig.lang,
     isPartOf: { "@id": WEBSITE_ID },
+    ...(type === "AboutPage" ? { about: { "@id": ORGANIZATION_ID } } : {}),
   };
 }
 

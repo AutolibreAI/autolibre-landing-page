@@ -90,6 +90,21 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M12 7.5v5M12 16v.01" />
     </>
   ),
+  /** Foto pendiente: el marco vacío de una imagen. */
+  image: (
+    <>
+      <rect x="3" y="4.5" width="18" height="15" rx="2" />
+      <circle cx="9" cy="10" r="1.6" />
+      <path d="M21 16l-5-5-8.5 8.5" />
+    </>
+  ),
+  /** LinkedIn en línea: el "in" dentro del cuadrado, sin el logo de la marca. */
+  linkedin: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="2.5" />
+      <path d="M8 10.5v6M8 7.5v.01M12 16.5v-6M12 13a2.5 2.5 0 0 1 5 0v3.5" />
+    </>
+  ),
   receipt: (
     <>
       <path d="M6 3h12v18l-3-2-3 2-3-2-3 2z" />

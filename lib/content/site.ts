@@ -7,6 +7,8 @@ import type { NavLink, StoreLink } from "@/lib/content/types";
 const quoteLink = { label: "Pedir presupuesto", href: "/pedido" } as const;
 /** Link a `/blog`: el mismo en el header, el menú mobile y el footer. */
 const blogLink = { label: "Blog", href: "/blog" } as const;
+/** Link a `/sobre-nosotros`: solo en el footer (el header ya está completo). */
+const aboutLink = { label: "Sobre nosotros", href: "/sobre-nosotros" } as const;
 
 /** Contenido del header y del footer, compartido por todas las páginas. */
 export const siteContent = {
@@ -83,11 +85,13 @@ export const siteContent = {
           { label: "Google Play", href: siteConfig.stores.playStore },
         ],
       },
-      // El grupo entero sale mientras el blog no es público: un grupo
-      // "Recursos" sin links dejaría un título suelto en el footer.
-      ...(BLOG_PUBLIC
-        ? [{ id: "recursos", title: "Recursos", links: [blogLink] }]
-        : []),
+      // "Sobre nosotros" y el blog comparten grupo: así el footer no suma
+      // una columna de un solo link. El blog entra recién cuando es público.
+      {
+        id: "empresa",
+        title: "Empresa",
+        links: [aboutLink, ...(BLOG_PUBLIC ? [blogLink] : [])],
+      },
       {
         id: "legal",
         title: "Legal",

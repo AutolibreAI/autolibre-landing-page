@@ -44,6 +44,12 @@ const routes = [
     priority: 0.8,
   },
   {
+    path: "/sobre-nosotros",
+    lastModified: "2026-09-29",
+    changeFrequency: "monthly",
+    priority: 0.6,
+  },
+  {
     path: "/support",
     lastModified: "2026-08-14",
     changeFrequency: "monthly",
