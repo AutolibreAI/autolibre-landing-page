@@ -26,6 +26,17 @@ Datos clave:
 - [Sobre nosotros](https://autolibre.ai/sobre-nosotros): quiénes somos en AutoLibre.AI: misión, visión, historia de la empresa y el equipo que hace la app.
 - [Soporte](https://autolibre.ai/support): formulario de contacto para usuarios con problemas en la app.
 
+## Blog
+
+Guías sobre trámites, papeles, seguros y mantenimiento del auto en Argentina, escritas por el equipo de AutoLibre. Cada nota responde una pregunta concreta, cita sus fuentes y muestra su fecha de actualización.
+
+- [Blog de AutoLibre](https://autolibre.ai/blog): todas las guías, con búsqueda y filtro por tema.
+- [Trámites y documentación](https://autolibre.ai/blog/tramites-y-documentacion): VTV, licencia de conducir, cédula, multas y otros trámites del auto, paso a paso.
+- [Seguros](https://autolibre.ai/blog/seguros): seguro obligatorio, coberturas y qué hacer después de un choque.
+- [Compra y venta](https://autolibre.ai/blog/compra-y-venta): trámites y recaudos al comprar o vender un auto usado, como la denuncia de venta.
+- [GNC y combustible](https://autolibre.ai/blog/gnc-y-combustible): oblea de GNC, prueba hidráulica y consumo.
+- [Feed RSS del blog](https://autolibre.ai/blog/rss.xml): lista completa y actualizada de las notas, de la más nueva a la más vieja.
+
 ## Descargas
 
 - [AutoLibre en App Store](https://apps.apple.com/ar/app/autolibreai/id6777068403): ficha oficial para iPhone.

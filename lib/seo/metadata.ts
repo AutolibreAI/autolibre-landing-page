@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { BLOG_FEED_PATH } from "@/lib/blog/feed";
+import { BLOG_PUBLIC } from "@/lib/blog/visibility";
+import { blogContent } from "@/lib/content/blog";
 import { siteConfig } from "@/lib/seo/config";
 
 type CreateMetadataInput = {
@@ -35,7 +38,15 @@ export function createMetadata({
   return {
     title,
     description,
-    alternates: { canonical: path },
+    alternates: {
+      canonical: path,
+      // Autodescubrimiento del feed del blog desde cualquier página del sitio.
+      // Va acá y no en el layout: el `alternates` de cada página reemplaza
+      // entero al del layout (Next no los mezcla), y se perdería.
+      ...(BLOG_PUBLIC
+        ? { types: { "application/rss+xml": [{ url: BLOG_FEED_PATH, title: blogContent.feed.title }] } }
+        : {}),
+    },
     robots: {
       index,
       follow: index,

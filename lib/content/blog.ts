@@ -99,6 +99,13 @@ export const blogContent = {
       "Ficha de un auto en AutoLibre con sus alertas activas y los documentos vigentes.",
   },
 
+  /** Feed RSS del blog (`/blog/rss.xml`). */
+  feed: {
+    title: "Blog de AutoLibre",
+    description:
+      "Guías claras para tener tu auto en regla: vencimientos, papeles, mantenimiento y diagnóstico.",
+  },
+
   mobileBar: {
     cta: "Descargar la app gratis",
   },
