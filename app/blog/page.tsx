@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { permanentRedirect } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { BlogListingHeader } from "@/components/blog/blog-listing-header";
 import { FeaturedPost } from "@/components/blog/featured-post";
 import { LatestList } from "@/components/blog/latest-list";
@@ -91,6 +91,10 @@ export default async function BlogPage({ searchParams }: PageProps) {
   const latest = showSpotlight ? rest.slice(0, LATEST_COUNT) : [];
   const gridSource = showSpotlight ? rest.slice(LATEST_COUNT) : filtered;
   const { items: gridPosts, page, totalPages } = paginate(gridSource, filters.page, PAGE_SIZE);
+
+  // Una página fuera de rango es 404 y no la última página con otro número:
+  // si no, `?page=99` sería una URL indexable duplicada (y hay infinitas).
+  if (filters.page > totalPages) notFound();
 
   const isSearch = hasActiveFilter(filters);
   const gridFilters: Pick<BlogFilters, "q" | "category"> = { q: filters.q, category: "" };

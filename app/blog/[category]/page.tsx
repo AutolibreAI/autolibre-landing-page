@@ -98,6 +98,9 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const filtered = filterPosts(allPosts, filters);
   const { items, page, totalPages } = paginate(filtered, filters.page, PAGE_SIZE);
 
+  // Fuera de rango, 404: `?page=99` no puede ser un duplicado indexable.
+  if (filters.page > totalPages) notFound();
+
   const heading = blogContent.category.heading(category.name);
   const description = categoryDescription(category);
   // La meta description (y la del JSON-LD) prioriza la de `seo`; la bajada
