@@ -1,0 +1,83 @@
+slug: denuncia-de-venta
+title: "Denuncia de venta: qué hacer si vendiste el auto y no lo transfirieron"
+primaryQuery: "vendí el auto y el comprador no lo transfirió"
+secondaryQueries:
+  - "qué es la denuncia de venta"
+  - "vendí el auto hace meses y me siguen llegando multas"
+  - "me llegó una fotomulta de un auto que ya vendí"
+  - "cuánto tiempo tengo para hacer la transferencia"
+intent: informacional
+audience: "persona que vendió su auto (en CABA o Provincia de Buenos Aires) y el comprador todavía no inscribió la transferencia, o a la que le siguen llegando multas de ese auto"
+jurisdiction: [nacional, pba]
+angle: "Qué riesgo corrés mientras el auto siga a tu nombre, cómo te protege la denuncia de venta y qué hacer con las multas que llegaron antes de hacerla"
+
+outline:
+  - h2: "Qué pasa si vendiste el auto y no se hizo la transferencia"
+    points:
+      - "respuesta directa: mientras no se inscriba la transferencia, seguís siendo civilmente responsable por los daños que cause el auto"
+      - "art. 27 del Régimen Jurídico del Automotor (Decreto-Ley 6582/58): respondés como dueño hasta la inscripción"
+    sourceIds: [VEN-01]
+  - h2: "Qué es la denuncia de venta y qué efecto tiene"
+    points:
+      - "comunicación al Registro del Automotor de que entregaste el auto; se puede iniciar online en la DNRPA"
+      - "te libera de la responsabilidad civil desde que la presentás: el comprador pasa a ser un tercero por quien no respondés"
+      - "después de la denuncia, el comprador tiene 30 días hábiles para transferir; si no, prohibición de circular y secuestro"
+    sourceIds: [VEN-01]
+  - h2: "Cómo hacer la denuncia de venta paso a paso"
+    points:
+      - "lista numerada: juntar datos, iniciar el trámite online en la DNRPA o en el Registro, presentar, guardar la constancia"
+      - "datos que te piden: dominio, datos del comprador, lugar y fecha de entrega (aproximada), constancias de la venta"
+      - "si comprador y vendedor van juntos al Registro, se hace directo la transferencia y no hace falta la denuncia"
+    sourceIds: [VEN-01]
+  - h2: "Qué hacer con las multas que te llegan de un auto que vendiste"
+    points:
+      - "PBA: si no se identificó al conductor, se presume que fue el titular"
+      - "descargo en el juzgado denunciando al comprador o tenedor; si no, la multa queda a cargo del titular registral"
+      - "empresas: 10 días hábiles desde la primera notificación para informar quién manejaba"
+      - "la denuncia de venta rige desde que la presentás: las multas anteriores se resuelven con descargo"
+    sourceIds: [MUL-04, VEN-01]
+  - h2: "Cuánto tiempo tiene el comprador para transferir"
+    points:
+      - "tabla: antes y después de la denuncia de venta"
+      - "plazo desde la compra: pendiente de confirmación oficial (VEN-02 🔍); opción segura: transferir juntos o denunciar apenas entregás"
+    sourceIds: [VEN-01]
+  - h2: "Preguntas frecuentes"
+    sourceIds: [VEN-01, MUL-04]
+  - h2: "Fuentes oficiales"
+    points:
+      - "URLs https de VEN-01 y MUL-04"
+
+faq:
+  - q: "¿La denuncia de venta me libera de las multas que ya me llegaron?"
+    sourceIds: [VEN-01, MUL-04]
+  - q: "¿Necesito hacer la denuncia de venta si vamos juntos al Registro?"
+    sourceIds: [VEN-01]
+  - q: "¿Qué pasa si el comprador no transfiere después de la denuncia?"
+    sourceIds: [VEN-01]
+  - q: "¿Qué datos necesito si no me acuerdo la fecha exacta de entrega?"
+    sourceIds: [VEN-01]
+
+tables:
+  - purpose: "Antes vs. después de la denuncia de venta: responsabilidad, plazo del comprador, multas"
+    columns: ["Situación", "Antes de la denuncia", "Después de la denuncia"]
+    sourceIds: [VEN-01, MUL-04]
+
+caveats:
+  - id: VEN-02
+    issue: "🔍 entero: el plazo para que el comprador inscriba la transferencia desde la compra (art. 15) viene de una fuente secundaria"
+    handling: "no citar VEN-02 ni dar el número de días; decir que ese plazo está pendiente de confirmación oficial y recomendar transferir juntos o hacer la denuncia apenas entregás el auto"
+  - id: MUL-04
+    issue: "nota 🔍: la FAQ oficial cita 'Ley 13.924' (probable error de tipeo de 13.927)"
+    handling: "no nombrar el número de ley bonaerense; describir la regla y citar MUL-04 solo por la parte ✅"
+  - id: VEN-01
+    issue: "la liberación rige desde la presentación; no afirmar efectos retroactivos"
+    handling: "para multas anteriores en PBA remitir al descargo (MUL-04); no es asesoramiento legal"
+
+internalLinks:
+  - slug: papeles-para-circular-amba
+    anchor: "qué papeles hacen falta para circular"
+
+cta: "Guardá en AutoLibre el título, la cédula y los papeles del auto para tenerlos a mano cuando vendas o hagas un trámite. Es gratis."
+
+cover:
+  concept: "Close-up of two people's hands exchanging a set of car keys over a blank folder on the hood of a generic parked sedan on a quiet tree-lined Buenos Aires street"

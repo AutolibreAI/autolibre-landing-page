@@ -1,0 +1,78 @@
+slug: telepase-obligatorio
+title: "¿Es obligatorio el TelePASE? Qué pasa si pasás sin tenerlo"
+primaryQuery: "pasé por la autopista sin TelePASE, ¿qué hago?"
+secondaryQueries:
+  - "cuánto me cobran si paso sin TelePASE"
+  - "es obligatorio el TelePASE"
+intent: informacional
+audience: "conductor que usa las autopistas de la Ciudad o la Autopista Buenos Aires–La Plata y pasó (o puede pasar) sin TelePASE"
+jurisdiction: [caba, pba]
+angle: "Respuesta directa por autopista: en las de la Ciudad (AUSA) es obligatorio y sin dispositivo pagás el doble; en la Buenos Aires–La Plata (AUBASA) queda una deuda por patente a tarifa normal. Adherirse es gratis. Sin afirmar plazos ni sanciones no confirmados."
+
+outline:
+  - h2: "¿Es obligatorio el TelePASE?"
+    points:
+      - "respuesta directa: depende de la autopista"
+      - "AUSA: obligatorio; AUBASA: deuda por tarifa normal; resto según concesionaria"
+      - "tabla comparativa AUSA vs AUBASA"
+    sourceIds: [TEL-01]
+  - h2: "Autopistas de la Ciudad: pagás el doble de la tarifa manual"
+    points:
+      - "25 de Mayo, Perito Moreno, Illia y Dellepiane; obligatorio desde el 28/09/2020"
+      - "sin dispositivo: el doble de la tarifa manual"
+      - "caveat: plazo y forma de regularizar / consecuencias sin confirmación oficial (ver caveats)"
+    sourceIds: [TEL-01]
+  - h2: "Autopista Buenos Aires–La Plata: queda una deuda asociada a tu patente"
+    points:
+      - "deuda por la tarifa normal, sin recargo inicial"
+      - "se paga en pagopatente.com.ar"
+    sourceIds: [TEL-01]
+  - h2: "Si todavía no ves la pasada"
+    points:
+      - "las pasadas pueden tardar en aparecer en los sistemas de cobro"
+    sourceIds: [TEL-01]
+  - h2: "Cómo adherirte a TelePASE"
+    points:
+      - "gratis en telepase.com.ar"
+    sourceIds: [TEL-01]
+  - h2: "Cuidado con las estafas"
+    points:
+      - "los sitios oficiales no piden datos bancarios por mail o WhatsApp para desbloquear cuentas"
+    sourceIds: [TEL-01]
+  - h2: "Preguntas frecuentes"
+    sourceIds: [TEL-01]
+  - h2: "Fuentes oficiales"
+    points:
+      - "solo las URLs https del campo Fuentes de TEL-01"
+
+faq:
+  - q: "¿Es obligatorio el TelePASE en las autopistas de la Ciudad?"
+    sourceIds: [TEL-01]
+  - q: "¿Cuánto pago si paso sin TelePASE por la Autopista Buenos Aires–La Plata?"
+    sourceIds: [TEL-01]
+  - q: "¿Cuánto cuesta adherirse a TelePASE?"
+    sourceIds: [TEL-01]
+  - q: "¿Por qué no me aparece la pasada que hice sin TelePASE?"
+    sourceIds: [TEL-01]
+
+tables:
+  - purpose: "Qué pasa si pasás sin TelePASE en AUSA vs. AUBASA"
+    columns: ["Qué", "Autopistas de la Ciudad (AUSA)", "Buenos Aires–La Plata (AUBASA)"]
+    sourceIds: [TEL-01]
+
+caveats:
+  - id: TEL-01
+    issue: "✅ mixto: el plazo para regularizar una pasada sin TelePASE en AUSA y que después se labre una infracción es 🔍 (fuentes secundarias)"
+    handling: "no mencionar ningún plazo, ni la web de pago de AUSA, ni infracción/evasión. Decir que no encontramos confirmación oficial de cómo ni cuándo se regulariza ni qué pasa si no se paga; lo más seguro es no dejarla pendiente y adherirse a TelePASE."
+  - id: TEL-01
+    issue: "AUBASA: la fuente dice 'sin recargo inicial' y no aclara qué pasa después"
+    handling: "afirmar solo 'sin recargo inicial'; no afirmar ni negar recargos posteriores; recomendar pagarla cuando aparezca."
+
+internalLinks:
+  - slug: papeles-para-circular-amba
+    anchor: "qué papeles tenés que llevar para circular"
+
+cta: "Guardá la cédula y la póliza en AutoLibre para tenerlas siempre a mano, y recibí el aviso antes de que venzan la VTV, el seguro y la patente. Es gratis."
+
+cover:
+  concept: "View from the driver's seat of a generic car approaching an out-of-focus toll plaza lane on an urban highway, with a small plain white toll tag device stuck on the windshield near the rear-view mirror, no signs, text or company branding anywhere."

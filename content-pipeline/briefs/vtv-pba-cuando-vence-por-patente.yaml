@@ -1,0 +1,82 @@
+slug: vtv-pba-cuando-vence-por-patente
+title: "VTV en Provincia de Buenos Aires: cuándo vence según tu patente"
+primaryQuery: "qué mes me vence la VTV en Provincia según la patente"
+secondaryQueries:
+  - "mi auto es 0km cuándo hago la primera VTV"
+  - "la VTV es anual o cada dos años en Provincia"
+  - "tengo turno y se me venció la VTV puedo circular"
+  - "si hago la VTV antes pierdo meses"
+intent: informacional
+audience: "dueño de auto o moto radicado en Provincia de Buenos Aires que quiere saber cuándo le toca la VTV"
+jurisdiction: [pba]
+angle: "Tabla del calendario por último número de patente (lo más buscado y citable), más las dudas que generan multas: primera VTV del 0km, anual vs. cada 2 años, hacerla antes o vencida, y que el turno no te habilita"
+
+outline:
+  - h2: "Cuándo vence la VTV según el último número de la patente"
+    points:
+      - "respuesta directa en el primer párrafo, citable sola"
+      - "tabla: último número → mes de vencimiento (1 noviembre … 0 octubre)"
+    sourceIds: [VTV-01]
+  - h2: "Cuándo hacés la primera VTV si tu auto es 0 km"
+    points:
+      - "autos: a los 2 años del patentamiento; motos: al año"
+      - "después, el mes lo fija el último número de la patente"
+    sourceIds: [VTV-01]
+  - h2: "¿La VTV en Provincia es anual o cada 2 años?"
+    points:
+      - "en Provincia la renovación es anual"
+      - "la VTV cada 2 años para autos de hasta 10 años es del régimen nacional (Decreto 196/2025) y la Provincia no adhirió"
+      - "caveat sobre el estado judicial del régimen nacional (ver caveats)"
+    sourceIds: [VTV-02]
+  - h2: "Si la hacés antes o después de tu mes"
+    points:
+      - "podés hacerla hasta 30 días antes, pero el vencimiento sigue siendo tu mes: no extiende la vigencia"
+      - "si la hacés vencida no hay recargo, pero circular con la VTV vencida puede ser sancionado; el vencimiento vuelve a tu mes por patente"
+      - "si el vehículo no se usa, no hace falta: es obligatoria para circular"
+    sourceIds: [VTV-01]
+  - h2: "Tener turno no te habilita a circular con la VTV vencida"
+    points:
+      - "hoy el turno no te habilita y te pueden multar"
+      - "la medida transitoria que lo permitía rigió solo hasta el 31/03/2024"
+      - "conviene sacar turno con tiempo, antes de que venza"
+      - "si ya te multaron: el turno no anula la infracción, pero podés presentarlo en el descargo (sin garantía de resultado)"
+    sourceIds: [VTV-03]
+  - h2: "Cómo sacar el turno"
+    points:
+      - "solo en el portal oficial; la reserva no pide datos bancarios ni pago por adelantado (evitar estafas)"
+      - "link interno a la nota de papeles para circular (la VTV al día es parte de lo obligatorio)"
+    sourceIds: [VTV-01]
+  - h2: "Preguntas frecuentes"
+    sourceIds: [VTV-01, VTV-02, VTV-03]
+  - h2: "Fuentes oficiales"
+
+faq:
+  - q: "¿Qué mes me vence la VTV si mi patente termina en 5?"
+    sourceIds: [VTV-01]
+  - q: "¿Si hago la VTV antes de mi mes pierdo meses de vigencia?"
+    sourceIds: [VTV-01]
+  - q: "¿Hay recargo por hacer la VTV vencida?"
+    sourceIds: [VTV-01]
+  - q: "¿Puedo circular con la VTV vencida si ya tengo turno?"
+    sourceIds: [VTV-03]
+  - q: "¿Cada cuánto se hace la VTV en Provincia?"
+    sourceIds: [VTV-02]
+
+tables:
+  - purpose: "Calendario de vencimiento por último número de patente"
+    columns: ["Último número de la patente", "Mes de vencimiento"]
+    sourceIds: [VTV-01]
+
+caveats:
+  - id: VTV-02
+    issue: "✅ confirmado en la práctica, pero el texto literal oficial de vtv.gba.gob.ar/plazos está 🔍; y la suspensión judicial del régimen nacional depende de VTV-06 (no verificado en fuente oficial)"
+    handling: "afirmar renovación anual en Provincia y que PBA no adhirió al régimen nacional; NO afirmar la suspensión judicial ni su fecha. Recomendar verificar en el sitio oficial de la VTV bonaerense."
+
+internalLinks:
+  - slug: papeles-para-circular-amba
+    anchor: "qué papeles tenés que llevar para circular"
+
+cta: "Cargá tu auto en AutoLibre y recibí el aviso antes de que venza la VTV, además del seguro y la patente. Es gratis."
+
+cover:
+  concept: "A generic car seen from the side entering a simple schematic vehicle inspection station, blank license plate, flat workshop-manual illustration"

@@ -1,0 +1,98 @@
+slug: consultar-y-pagar-multas
+title: "Cómo consultar y pagar multas de tránsito (con descuento)"
+primaryQuery: "cómo sé si tengo multas"
+secondaryQueries:
+  - "dónde veo las fotomultas de mi auto"
+  - "si pago la multa rápido me hacen descuento"
+  - "qué es el pago voluntario"
+  - "cuánto vale una UF"
+  - "cómo paso una multa de UF a pesos"
+  - "hay plan de pagos para multas en Provincia"
+  - "pagué la multa y todavía me figura"
+intent: transaccional
+audience: "dueño de auto en CABA o Provincia de Buenos Aires que quiere saber si tiene multas y pagarlas pagando lo menos posible"
+jurisdiction: [caba, pba, nacional]
+angle: "Dónde consultar según la jurisdicción, cómo no perder el 50% del pago voluntario (CABA vs. PBA, plazos distintos), cómo leer el monto en UF y qué hacer en Provincia si no llegaste a tiempo o el pago no se acreditó"
+
+outline:
+  - h2: "Dónde consultar tus multas"
+    points:
+      - "respuesta directa en el primer párrafo, citable sola"
+      - "CABA: consulta de infracciones con DNI o patente; libre deuda si no tenés actas"
+      - "PBA: Web del Infractor"
+      - "municipios o jurisdicciones adheridas al SINAI: sitio de la ANSV"
+      - "tabla jurisdicción / dónde / con qué"
+    sourceIds: [MUL-01]
+  - h2: "El descuento del 50%: cómo funciona el pago voluntario"
+    points:
+      - "tabla CABA vs. PBA: descuento, plazo, cuándo se pierde"
+      - "CABA: 40 días desde la notificación; pedir audiencia de descargo hace perder el descuento"
+      - "PBA: 50% del mínimo dentro del plazo de la primera notificación (automáticas: vencimiento impreso; manuales: 30 días hábiles desde que se labró)"
+      - "h3 PBA: si no te llegó la notificación o llegó vencida → prórroga con 50% desde Mi Web"
+      - "PBA: vencido el voluntario se paga igual, sin descuento"
+    sourceIds: [MUL-02]
+  - h2: "Cuánto vale una multa: la Unidad Fija"
+    points:
+      - "las multas se expresan en UF, no en pesos"
+      - "PBA: valor de la UF para septiembre y octubre de 2026, con fecha; actualización bimestral por nafta de mayor octanaje del ACA La Plata"
+      - "cálculo UF × valor vigente, con ejemplo ilustrativo marcado como tal"
+      - "CABA: caveat (ver caveats)"
+    sourceIds: [MUL-07, MUL-02]
+  - h2: "Pagar en cuotas en Provincia"
+    points:
+      - "lo otorga el juez una vez vencido el pago voluntario, pedido personal o con representante"
+      - "adherir = reconocer la deuda y renunciar a descargos y recursos, incluso los presentados"
+    sourceIds: [MUL-06]
+  - h2: "Ya pagué y la multa sigue figurando (Provincia)"
+    points:
+      - "acreditación ~72 horas; mientras tanto sigue bloqueando trámites"
+      - "pasado el plazo: comprobante original al Juzgado de Infracciones o 0800-222-0024"
+    sourceIds: [MUL-05]
+  - h2: "Si no estás de acuerdo con la multa"
+    points:
+      - "CABA: la audiencia de descargo hace perder el 50%, decidilo antes"
+      - "el descargo en Provincia y la multa por VTV vencida van en notas aparte (sin desarrollarlos)"
+    sourceIds: [MUL-02]
+  - h2: "Preguntas frecuentes"
+    sourceIds: [MUL-01, MUL-02, MUL-05, MUL-06, MUL-07]
+  - h2: "Fuentes oficiales"
+    points:
+      - "solo URLs https de los campos Fuentes de las entradas citadas; sin el link de UF CABA (dato 🔍)"
+
+faq:
+  - q: "¿Me hacen descuento si pago la multa rápido?"
+    sourceIds: [MUL-02]
+  - q: "¿Dónde veo multas de un municipio adherido al sistema nacional?"
+    sourceIds: [MUL-01]
+  - q: "¿Cuánto tarda en acreditarse el pago de una multa en Provincia?"
+    sourceIds: [MUL-05]
+  - q: "¿Puedo pagar una multa en cuotas en Provincia?"
+    sourceIds: [MUL-06]
+
+tables:
+  - purpose: "Dónde consultar multas según la jurisdicción"
+    columns: ["Dónde es la multa", "Dónde la consultás", "Con qué"]
+    sourceIds: [MUL-01]
+  - purpose: "Pago voluntario con 50%: CABA vs. PBA"
+    columns: ["", "CABA", "Provincia de Buenos Aires"]
+    sourceIds: [MUL-02]
+
+caveats:
+  - id: MUL-07
+    issue: "✅ mixto: ✅ PBA · 🔍 CABA (el uso y valor de la UF en CABA no está confirmado)"
+    handling: "afirmar solo lo de PBA (UF, valor con fecha, actualización). Para CABA decir que no tenemos el valor confirmado oficialmente y que el monto se ve en la consulta de infracciones de la Ciudad. No listar el link de estadística de CABA en Fuentes."
+  - id: MUL-07
+    issue: "monto en pesos que cambia cada dos meses"
+    handling: "siempre 'al 28/09/2026' y 'verificalo en el sitio oficial'; el ejemplo de cálculo se marca como ilustrativo, no como el valor de una infracción real"
+  - id: MUL-03/MUL-04/VTV-10
+    issue: "descargo en PBA y multa por VTV vencida los cubren otros posts planificados"
+    handling: "mencionarlos en una oración sin desarrollarlos ni citarlos"
+
+internalLinks:
+  - slug: papeles-para-circular-amba
+    anchor: "qué papeles tenés que llevar para circular"
+
+cta: "Cargá la VTV, el seguro y la patente de tu auto en AutoLibre y recibí el aviso antes de que venzan; guardá también la cédula, la póliza y la licencia para tenerlas a mano. Es gratis. (La app no consulta ni avisa multas.)"
+
+cover:
+  concept: "Cropped hands holding a smartphone with a plain blank screen above a sealed blank paper envelope and a generic car key on a wooden kitchen table, a small green plant softly out of focus behind"

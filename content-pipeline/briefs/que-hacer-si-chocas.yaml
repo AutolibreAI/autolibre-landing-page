@@ -1,0 +1,95 @@
+slug: que-hacer-si-chocas
+title: "Qué hacer si chocás o te chocan: paso a paso"
+primaryQuery: "qué tengo que hacer si choco o me chocan"
+secondaryQueries:
+  - "me chocaron, qué hago"
+  - "qué datos anoto después de un choque"
+  - "me tiene que mostrar el seguro el que me chocó"
+  - "tengo que denunciar aunque no haya sido mi culpa"
+  - "son 72 horas hábiles"
+  - "me llegó una carta documento por un choque"
+  - "cuánto tiempo tengo para reclamar por un choque"
+intent: informacional
+audience: "conductor de auto en CABA o Provincia de Buenos Aires que acaba de tener un choque (o quiere saber qué hacer si le pasa)"
+jurisdiction: [nacional]
+angle: "Paso a paso en orden cronológico: en el lugar (obligaciones del art. 65), qué datos tomar, la denuncia a tu aseguradora (con la discrepancia de plazos explicada y la opción segura), qué hacer si después te llega una carta documento o demanda, y hasta cuándo se puede reclamar"
+
+outline:
+  - h2: "Qué tenés que hacer en el lugar del choque"
+    points:
+      - "respuesta directa en el primer párrafo, citable sola"
+      - "si hay personas lastimadas, la prioridad es llamar a emergencias (911 en AMBA)"
+      - "lista numerada de obligaciones del art. 65 de la Ley 24.449: detenerse, dar datos de licencia y seguro a la otra parte y a la autoridad, denunciar el accidente ante la autoridad, presentarse a declarar si te citan"
+    sourceIds: [SIN-01]
+  - h2: "Qué datos le tenés que pedir al otro conductor"
+    points:
+      - "obligatorio: datos de su licencia y de su seguro obligatorio"
+      - "tabla: qué conviene anotar del vehículo, del conductor y de los testigos"
+      - "para qué sirven: reclamo ante su aseguradora o, si hiciera falta, un juicio"
+      - "fotos: la guía no las exige ni las prohíbe; práctica útil, no obligación legal"
+    sourceIds: [SIN-02, SIN-01]
+  - h2: "La denuncia a tu aseguradora"
+    points:
+      - "hay que hacerla aunque no hayas tenido la culpa (sin [src:], SIN-03 es ⚠️)"
+      - "explicar la discrepancia: guía oficial 72 horas; Ley 17.418 art. 46 tres días; aseguradoras dicen 72 horas hábiles, precisión que no aparece en fuentes oficiales"
+      - "opción segura: hacerla cuanto antes, dentro de las 72 horas corridas; revisar tu póliza"
+    sourceIds: []
+  - h2: "Si te llega una carta documento, una mediación o una demanda"
+    points:
+      - "avisale a tu aseguradora y mandale la documentación"
+      - "si no responde en 2 días hábiles, se entiende que asume tu defensa y designa abogado para vos y para quien manejaba"
+    sourceIds: [SIN-04]
+  - h2: "Hasta cuándo se puede reclamar por los daños"
+    points:
+      - "plazo general de prescripción de 3 años (CCyC art. 2561)"
+      - "para un caso concreto, abogado"
+    sourceIds: [SIN-05]
+  - h2: "Checklist rápido"
+    points:
+      - "tabla resumen: momento / qué hacer / estado"
+    sourceIds: [SIN-01, SIN-02, SIN-04, SIN-05]
+  - h2: "Preguntas frecuentes"
+    sourceIds: [SIN-01, SIN-02, SIN-04, SIN-05]
+  - h2: "Fuentes oficiales"
+    points:
+      - "Derecho Fácil (seguro automotor) y Ley 17.418 en argentina.gob.ar (https); CCyC art. 2561 sin link (la fuente no trae URL)"
+
+faq:
+  - q: "¿Tengo que llamar a la policía si choco?"
+    sourceIds: [SIN-01]
+  - q: "¿El otro conductor me tiene que mostrar el seguro?"
+    sourceIds: [SIN-02]
+  - q: "¿Tengo que denunciar el choque al seguro aunque no haya sido mi culpa?"
+    sourceIds: []   # SIN-03 ⚠️: sin [src:], con la opción segura
+  - q: "¿Es obligatorio sacar fotos del choque?"
+    sourceIds: [SIN-02]
+  - q: "¿El seguro me pone un abogado si me demandan?"
+    sourceIds: [SIN-04]
+
+tables:
+  - purpose: "Qué datos anotar después de un choque, por quién"
+    columns: ["De quién", "Qué datos", "¿Obligatorio?"]
+    sourceIds: [SIN-01, SIN-02]
+  - purpose: "Checklist por momento: en el lugar, en los días siguientes, si te reclaman"
+    columns: ["Cuándo", "Qué hacer"]
+    sourceIds: [SIN-01, SIN-02, SIN-04, SIN-05]
+
+caveats:
+  - id: SIN-03
+    issue: "⚠️ contradicción menor: Derecho Fácil dice 72 horas; Ley 17.418 art. 46 dice tres días de conocer el siniestro; aseguradoras hablan de 72 horas hábiles (no aparece en fuentes oficiales)"
+    handling: "no citar SIN-03 con [src:]. Explicar que las fuentes no coinciden en cómo se cuenta el plazo, recomendar denunciar cuanto antes dentro de las 72 horas corridas y revisar la póliza. Tampoco afirmar como hecho que 'hay que denunciar aunque no tengas la culpa' con cita; se dice como recomendación segura."
+  - id: SIN-01
+    issue: "la Respuesta corta de SIN-01 menciona las 72 horas remitiendo a SIN-03 (⚠️)"
+    handling: "no usar SIN-01 para respaldar el plazo de la denuncia al seguro; SIN-01 solo respalda las obligaciones del art. 65, el 911 y la toma de datos"
+  - id: general
+    issue: "no es asesoramiento legal ni de seguros; no recomendar aseguradoras"
+    handling: "disclaimer corto al inicio; en carta documento/demanda y prescripción, sugerir abogado o productor asesor de seguros"
+
+internalLinks:
+  - slug: papeles-para-circular-amba
+    anchor: "qué tiene que decir el comprobante del seguro"
+
+cta: "Guardá la póliza, la cédula y la licencia en AutoLibre para tenerlas a mano si te toca un choque, y recibí el aviso antes de que venza el seguro. Es gratis."
+
+cover:
+  concept: "Two cropped hands exchanging a blank white paper card beside the rear corner of a parked generic silver car on a calm tree-lined Buenos Aires street, a red warning triangle standing on the asphalt behind the car, no visible damage, no faces"

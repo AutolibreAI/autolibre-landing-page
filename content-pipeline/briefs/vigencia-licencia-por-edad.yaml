@@ -1,0 +1,73 @@
+slug: vigencia-licencia-por-edad
+title: "Cada cuánto se renueva la licencia de conducir según tu edad"
+primaryQuery: "cada cuánto se renueva la licencia según la edad"
+secondaryQueries:
+  - "por cuántos años me dan la licencia"
+  - "tengo 67, cada cuánto renuevo la licencia"
+intent: informacional
+audience: "conductor con licencia nacional que quiere saber cuántos años le dura la licencia y cuándo le toca renovar según su edad"
+jurisdiction: [nacional]
+angle: "Tabla corta de vigencia por edad del régimen nacional (particulares y profesionales), dónde ver la fecha exacta, y la aclaración honesta de que Provincia y CABA publicaron información que no coincide"
+
+outline:
+  - h2: "Cuántos años dura la licencia particular según tu edad"
+    points:
+      - "respuesta directa: 5 años hasta los 65, 3 años entre los 65 y los 70, 1 año desde los 70 (clases A, B y G)"
+      - "tabla edad → vigencia, con frase de intro citada"
+      - "base: régimen nacional, Decreto 196/2025"
+    sourceIds: [LIC-04]
+  - h2: "Licencias profesionales: 5 años desde julio de 2026"
+    points:
+      - "SINALIC, desde julio de 2026: 5 años para conductores de 21 a 65 años"
+      - "antes: máximo 2 años"
+      - "fuera de ese rango no lo relevamos (no afirmar nada)"
+    sourceIds: [LIC-04]
+  - h2: "Dónde ver cuándo te vence la licencia"
+    points:
+      - "la fecha exacta figura en la licencia y en Mi Argentina"
+      - "renovación: certificado de aptitud psicofísica online; link a licencia-vencida-como-renovar para plazos y trámite"
+    sourceIds: [LIC-04]
+  - h2: "Qué puede cambiar al renovar"
+    points:
+      - "5 o más infracciones graves → volver a rendir exámenes"
+      - "principiante con faltas graves en los primeros 2 años → suspensión"
+    sourceIds: [LIC-04]
+  - h2: "¿Rige igual en Provincia y en CABA?"
+    points:
+      - "caveat sin números: la información oficial de PBA y de CABA no coincide del todo con el régimen nacional; lo más seguro es guiarse por la fecha de tu licencia / Mi Argentina y confirmar con tu jurisdicción"
+    sourceIds: []
+  - h2: "Preguntas frecuentes"
+    sourceIds: [LIC-04]
+  - h2: "Fuentes oficiales"
+    points: ["solo las dos URLs de argentina.gob.ar (parte ✅ de LIC-04)"]
+
+faq:
+  - q: "¿Cada cuánto renuevo la licencia si tengo 67 años?"
+    sourceIds: [LIC-04]
+  - q: "¿Desde qué edad la licencia se renueva todos los años?"
+    sourceIds: [LIC-04]
+  - q: "¿Cuánto dura la licencia profesional?"
+    sourceIds: [LIC-04]
+  - q: "¿Dónde veo la fecha de vencimiento de mi licencia?"
+    sourceIds: [LIC-04]
+
+tables:
+  - purpose: "Vigencia de la licencia particular (A, B, G) por edad, régimen nacional"
+    columns: ["Edad", "Vigencia"]
+    sourceIds: [LIC-04]
+
+caveats:
+  - id: LIC-04
+    issue: "✅ mixto: régimen nacional ✅; CABA informó vigencias distintas en 2025 ⚠️; la FAQ de PBA puede estar desactualizada y no coincide con el régimen nacional"
+    handling: "afirmar solo el régimen nacional. Para PBA y CABA decir que la información publicada no coincide y que lo más seguro es mirar la fecha de tu licencia o Mi Argentina y confirmar con tu jurisdicción. Sin números ni normas de PBA/CABA; sin links a esas páginas."
+
+internalLinks:
+  - slug: licencia-vencida-como-renovar
+    anchor: "cómo renovar la licencia vencida"
+  - slug: papeles-para-circular-amba
+    anchor: "qué papeles tenés que llevar para circular"
+
+cta: "Guardá la licencia en AutoLibre junto con la cédula y la póliza para tenerlas siempre a mano, y recibí el aviso antes de que venzan la VTV, el seguro y la patente. Es gratis."
+
+cover:
+  concept: "Close-up of an older person's hands, seen from the side, holding a blank plastic driver's-license-style card over a car steering wheel, with a small green plant on the dashboard softly out of focus."

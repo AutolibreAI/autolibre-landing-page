@@ -1,0 +1,260 @@
+# Plan de contenido del blog: un registro por post y en qué paso del pipeline está.
+# Lo lee scripts/blog/lib/plan.ts (validate.ts, build-payload.ts y el orquestador /blog-post).
+#
+# status:    planned | briefed | drafted | validated | fact-checked | images-ready | hygraph-draft | published
+# blockedBy: null o el motivo; con texto, el pipeline se niega a avanzar con ese post.
+# sourceIds: IDs de la fuente de verdad (BLOG_SOURCE_OF_TRUTH). Solo se citan con [src:ID] los ✅;
+#            los marcados abajo como ⚠️/🔍 NO son citables hasta que la fuente los resuelva
+#            (validate.ts los rechaza igual).
+# batch:     1 = primer batch aprobado (decisión 2026-09-30); 2 = resto P1/P2; 3 = P3.
+# Categorías: slugs existentes en Hygraph. Tags: propuestos en el explore; hoy en Hygraph solo
+#            existe `vencimientos` (los demás hay que crearlos antes de blog-to-hygraph).
+# Fuera del plan: APP-01 (apps de viaje) — 🔍 sin regulación oficial relevada, no publicable.
+version: 1
+posts:
+  # ── Batch 1 (aprobado) ──
+  - slug: papeles-para-circular-amba
+    title: "Qué papeles tenés que llevar para circular en AMBA"
+    category: tramites-y-documentacion
+    tags: [caba, provincia-de-buenos-aires, licencia-de-conducir, cedula, seguro-obligatorio, patente]
+    priority: P1
+    batch: 1
+    sourceIds: [DOC-01, DOC-02, PAT-01, SEG-02, CED-02] # DOC-01 ✅ mixto: matafuego/balizas en CABA 🔍; DOC-02 ✅ mixto: licencia en PBA ⚠️
+    status: published
+    blockedBy: null
+    hygraphId: cmuobf821p4l107n0r1ni1bkj
+
+  - slug: vtv-pba-cuando-vence-por-patente
+    title: "VTV en Provincia de Buenos Aires: cuándo vence según tu patente"
+    category: tramites-y-documentacion
+    tags: [vtv, provincia-de-buenos-aires, vencimientos]
+    priority: P1
+    batch: 1
+    sourceIds: [VTV-01, VTV-02, VTV-03] # VTV-02 ✅ mixto: texto literal oficial 🔍
+    status: published
+    blockedBy: null
+    hygraphId: cmuog0ax71fpv07n0b4c8rhqy
+
+  - slug: licencia-vencida-como-renovar
+    title: "Licencia de conducir vencida: cómo renovarla en PBA y CABA"
+    category: tramites-y-documentacion
+    tags: [licencia-de-conducir, caba, provincia-de-buenos-aires, vencimientos]
+    priority: P1
+    batch: 1
+    sourceIds: [LIC-01, LIC-02, LIC-03, LIC-05, MUL-05]
+    status: published
+    blockedBy: null
+    hygraphId: cmuog7kiq1w8p07n22tsyaulu
+
+  - slug: seguro-obligatorio-auto
+    title: "Seguro obligatorio del auto: qué cubre y qué tenés que llevar"
+    category: seguros
+    tags: [seguro-obligatorio, vencimientos]
+    priority: P1
+    batch: 1
+    sourceIds: [SEG-01, SEG-02, SEG-03, SEG-04]
+    status: published
+    blockedBy: null
+    hygraphId: cmuog3de61ob907n2sd0h0s5c
+
+  - slug: que-hacer-si-chocas
+    title: "Qué hacer si chocás o te chocan: paso a paso"
+    category: seguros
+    tags: [choques, seguro-obligatorio]
+    priority: P1
+    batch: 1
+    sourceIds: [SIN-01, SIN-02, SIN-03, SIN-04, SIN-05] # SIN-03 ⚠️ contradicción menor (corridas vs. hábiles): no citable
+    status: published
+    blockedBy: null
+    hygraphId: cmuogagbl20sj07n0l8vzx5cn
+
+  - slug: consultar-y-pagar-multas
+    title: "Cómo consultar y pagar multas de tránsito (con descuento)"
+    category: tramites-y-documentacion
+    tags: [multas, caba, provincia-de-buenos-aires]
+    priority: P1
+    batch: 1
+    sourceIds: [MUL-01, MUL-02, MUL-05, MUL-06, MUL-07] # MUL-07 ✅ PBA · 🔍 CABA
+    status: published
+    blockedBy: null
+    hygraphId: cmuogfqs22b2807n0q4um1vew
+
+  - slug: denuncia-de-venta
+    title: "Denuncia de venta: qué hacer si vendiste el auto y no lo transfirieron"
+    category: compra-y-venta
+    tags: [multas]
+    priority: P1
+    batch: 1
+    sourceIds: [VEN-01, VEN-02, MUL-04] # VEN-02 🔍 (art. 15 por fuente secundaria): no citable
+    status: published
+    blockedBy: null
+    hygraphId: cmuogd2ox29xk07n2eovnm931
+
+  - slug: cedula-verde-y-cedula-azul
+    title: "Cédula verde y cédula azul: quién puede manejar tu auto"
+    category: tramites-y-documentacion
+    tags: [cedula]
+    priority: P1
+    batch: 1
+    sourceIds: [CED-01, CED-02, VEN-02] # VEN-02 🔍: no citable
+    status: published
+    blockedBy: null
+    hygraphId: cmuogi77f2fif07n0iuo6a66y
+
+  # ── Batch 2 ──
+  - slug: licencia-digital-mi-argentina
+    title: "Licencia digital en Mi Argentina: dónde vale y dónde no"
+    category: tramites-y-documentacion
+    tags: [licencia-de-conducir, caba, provincia-de-buenos-aires]
+    priority: P1
+    batch: 2
+    # DOC-02 ✅ mixto (licencia en PBA ⚠️); DOC-04 ⚠️ contradicción: la parte PBA NO es citable
+    # como hecho; el draft solo puede contar que no hay norma que exija la física, sin afirmar.
+    sourceIds: [DOC-02, DOC-03, DOC-04]
+    status: published
+    blockedBy: null
+    hygraphId: cmuohfmm73z9p07n0xujz3cg7
+
+  - slug: vtv-caba-nueva-ley-6963
+    title: "Nueva VTV en CABA (Ley 6.963): qué cambia desde octubre de 2026"
+    category: tramites-y-documentacion
+    tags: [vtv, caba, vencimientos]
+    priority: P1
+    batch: 2
+    sourceIds: [VTV-07, VTV-08, VTV-09]
+    status: planned
+    blockedBy: "VTV-08 está 🔍: la fecha de aplicación de los plazos de la Ley 6.963 sale de prensa, no de una fuente oficial. Verificar el sitio oficial de CABA después del 1/10/2026 (y VTV-07 deja de ser el régimen vigente ese día)."
+    hygraphId: null
+
+  - slug: vigencia-licencia-por-edad
+    title: "Cada cuánto se renueva la licencia de conducir según tu edad"
+    category: tramites-y-documentacion
+    tags: [licencia-de-conducir, vencimientos]
+    priority: P2
+    batch: 2
+    sourceIds: [LIC-04] # ✅ régimen nacional · ⚠️ CABA informó vigencias distintas en 2025
+    status: published
+    blockedBy: null
+    hygraphId: cmuoh3s4s3kgy07n2nxigewpb
+
+  - slug: prorroga-licencias-pba-disposicion-12-2026
+    title: "Prórroga de licencias en PBA (Disposición 12/2026)"
+    category: tramites-y-documentacion
+    tags: [licencia-de-conducir, provincia-de-buenos-aires, vencimientos]
+    priority: P2
+    batch: 2
+    sourceIds: [LIC-06] # contenido con caducidad: revisar vigencia de la prórroga antes de cada revisión
+    status: planned
+    blockedBy: null
+    hygraphId: null
+
+  - slug: retencion-de-licencia-pba
+    title: "Me retuvieron la licencia en un control en PBA: qué hacer"
+    category: tramites-y-documentacion
+    tags: [licencia-de-conducir, provincia-de-buenos-aires]
+    priority: P2
+    batch: 2
+    sourceIds: [LIC-07]
+    status: published
+    blockedBy: null
+    hygraphId: cmuohdce03y4807n2v7dq4i2o
+
+  - slug: vtv-pba-turno-que-llevar
+    title: "VTV en PBA: turno, qué llevar y qué pasa si da condicional"
+    category: tramites-y-documentacion
+    tags: [vtv, provincia-de-buenos-aires]
+    priority: P2
+    batch: 2
+    sourceIds: [VTV-04, VTV-05] # VTV-04 ✅ mixto: lista ampliada de plantas 🔍
+    status: published
+    blockedBy: null
+    hygraphId: cmuohahp43tbr07n0senjs532
+
+  - slug: vtv-en-talleres-y-concesionarias
+    title: "¿Vale la VTV hecha en un taller o concesionaria?"
+    category: tramites-y-documentacion
+    tags: [vtv, provincia-de-buenos-aires]
+    priority: P2
+    batch: 2
+    sourceIds: [VTV-06] # ✅ estado judicial al 28/09/2026 · 🔍 norma PBA específica
+    status: published
+    blockedBy: null
+    hygraphId: cmuoh0rdq3dfv07n2469v3dw4
+
+  - slug: multa-por-vtv-vencida
+    title: "Cuánto es la multa por circular con la VTV vencida"
+    category: tramites-y-documentacion
+    tags: [vtv, multas, vencimientos]
+    priority: P2
+    batch: 2
+    sourceIds: [VTV-10, MUL-07]
+    status: planned
+    blockedBy: "El monto depende de la escala de UF: VTV-10 la tiene 🔍 (fuente de prensa) y MUL-07 tiene CABA 🔍. Sin escala oficial no se puede dar la cifra, que es la respuesta que busca el post."
+    hygraphId: null
+
+  - slug: descargo-de-multas-pba
+    title: "Descargo de multas en PBA y multas de un auto que vendiste"
+    category: tramites-y-documentacion
+    tags: [multas, provincia-de-buenos-aires]
+    priority: P2
+    batch: 2
+    sourceIds: [MUL-03, MUL-04]
+    status: published
+    blockedBy: null
+    hygraphId: cmuoh6ciu3nt707n24jgq7pl5
+
+  - slug: patente-del-auto-pba-caba
+    title: "Patente del auto en PBA y CABA: a quién se paga y cuándo vence"
+    category: tramites-y-documentacion
+    tags: [patente, caba, provincia-de-buenos-aires, vencimientos]
+    priority: P2
+    batch: 2
+    sourceIds: [PAT-01, PAT-02, PAT-03] # PAT-02 ✅ mixto: exención por antigüedad 🔍
+    status: planned
+    blockedBy: null
+    hygraphId: null
+
+  - slug: gnc-oblea-y-prueba-hidraulica
+    title: "Auto con GNC: oblea y prueba hidráulica al día"
+    category: gnc-y-combustible
+    tags: [gnc, vencimientos]
+    priority: P2
+    batch: 2
+    sourceIds: [GNC-01]
+    status: published
+    blockedBy: null
+    hygraphId: cmuohirua46bw07n2guk9injw
+
+  - slug: telepase-obligatorio
+    title: "¿Es obligatorio el TelePASE? Qué pasa si pasás sin tenerlo"
+    category: manejo-y-seguridad
+    tags: [telepase, caba, provincia-de-buenos-aires]
+    priority: P2
+    batch: 2
+    sourceIds: [TEL-01] # ✅ AUSA y AUBASA · 🔍 plazo de 30 días e infracción en AUSA
+    status: planned
+    blockedBy: null
+    hygraphId: null
+
+  # ── Batch 3 (P3; en alcance por decisión 2026-09-30) ──
+  - slug: estacionamiento-medido-caba
+    title: "Estacionamiento medido en CABA: cómo funciona"
+    category: manejo-y-seguridad
+    tags: [caba]
+    priority: P3
+    batch: 3
+    sourceIds: [EST-01] # ✅ mixto: posible cambio de sistema en 2026 🔍
+    status: planned
+    blockedBy: null
+    hygraphId: null
+
+  - slug: papeles-y-vtv-de-la-moto
+    title: "Si tenés moto: qué papeles y controles cambian"
+    category: tramites-y-documentacion
+    tags: [vtv, vencimientos]
+    priority: P3
+    batch: 3
+    sourceIds: [MOT-01]
+    status: planned
+    blockedBy: null
+    hygraphId: null

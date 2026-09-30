@@ -1,0 +1,91 @@
+slug: licencia-vencida-como-renovar
+title: "Licencia de conducir vencida: cómo renovarla en PBA y CABA"
+primaryQuery: "se me venció el registro, qué hago"
+secondaryQueries:
+  - "puedo manejar con la licencia vencida"
+  - "cuánto tiempo tengo para renovar la licencia"
+  - "cómo renuevo el registro en Provincia"
+  - "tengo licencia de Capital vencida, hasta cuándo puedo renovar"
+  - "las multas impiden renovar el registro"
+  - "me mudé y cambié el DNI, tengo que cambiar la licencia"
+  - "pagué la multa y todavía me figura"
+intent: informacional
+audience: "conductor con licencia emitida en CABA o en Provincia de Buenos Aires que está por vencer o ya venció"
+jurisdiction: [pba, caba, nacional]
+angle: "Respuesta directa (con la licencia vencida no se maneja) + plazos de renovación comparados PBA vs. CABA, qué pasa si te pasás, y los dos bloqueos típicos: multas impagas y cambio de domicilio en el DNI. Sin entrar en vigencias por edad (vigencia-licencia-por-edad) ni en la prórroga de profesionales (prorroga-licencias-pba-disposicion-12-2026)."
+
+outline:
+  - h2: "¿Puedo manejar con la licencia vencida?"
+    points:
+      - "respuesta directa citable sola: no, desde el día del vencimiento, ni en PBA ni en CABA"
+      - "los plazos posteriores al vencimiento son solo para hacer el trámite, no para manejar"
+      - "link interno natural a papeles-para-circular-amba (licencia vigente como requisito)"
+    sourceIds: [LIC-01, LIC-02]
+  - h2: "Cuánto tiempo tenés para renovar en PBA y en CABA"
+    points:
+      - "PBA: desde 30 días antes hasta 90 días corridos después; pasado eso, trámite como original"
+      - "CABA: 1 año de gracia desde el vencimiento; pasado eso, trámite de otorgamiento; 180 días corridos para completar el trámite una vez iniciado"
+      - "tabla comparativa PBA vs. CABA"
+    sourceIds: [LIC-01, LIC-02]
+  - h2: "Cómo renovar la licencia en Provincia de Buenos Aires"
+    points:
+      - "en el municipio del domicilio del DNI"
+      - "libre deuda de infracciones"
+      - "inicio online con Mi Argentina en jurisdicciones adheridas; PBA figura como adherida"
+    sourceIds: [LIC-01, LIC-05]
+  - h2: "Cómo renovar la licencia en CABA"
+    points:
+      - "requisitos: usuario miBA, DNI con domicilio en CABA, sin actas de infracciones vigentes en la Ciudad, CENAT pago (válido 60 días, impreso el día de la sede)"
+      - "plan de pago de multas en la DGAI: licencia con la vigencia del plan"
+    sourceIds: [LIC-02, LIC-05]
+  - h2: "Si tenés multas impagas"
+    points:
+      - "no se renueva con multas: PBA libre deuda; CABA sin actas vigentes o plan de pago"
+      - "PBA: el pago tarda ~72 h en acreditarse y hasta entonces bloquea; si sigue, juzgado con comprobante original o 0800-222-0024"
+      - "consejo: pagar con tiempo antes del turno"
+    sourceIds: [LIC-05, MUL-05]
+  - h2: "Si te mudaste y cambiaste el domicilio del DNI (PBA)"
+    points:
+      - "90 días corridos para pedir el reemplazo en el municipio del nuevo domicilio; si no, caduca y es trámite original"
+      - "cambio de jurisdicción: la nueva autoridad otorga el reemplazo contra entrega de la anterior, por la vigencia restante"
+    sourceIds: [LIC-03]
+  - h2: "Preguntas frecuentes"
+    sourceIds: [LIC-01, LIC-02, LIC-05, MUL-05]
+  - h2: "Fuentes oficiales"
+    points:
+      - "solo https de los campos Fuentes; los municipales de LIC-03 sin esquema van nombrados sin link"
+
+faq:
+  - q: "¿Puedo manejar mientras hago el trámite de renovación con la licencia vencida?"
+    sourceIds: [LIC-01, LIC-02]
+  - q: "¿Qué pasa si se me pasaron los 90 días en Provincia?"
+    sourceIds: [LIC-01]
+  - q: "¿Puedo renovar la licencia si tengo multas impagas?"
+    sourceIds: [LIC-05]
+  - q: "Ya pagué la multa, ¿por qué no puedo renovar?"
+    sourceIds: [MUL-05]
+
+tables:
+  - purpose: "Comparación de plazos y requisitos de renovación en PBA vs. CABA"
+    columns: ["", "Provincia de Buenos Aires", "CABA"]
+    sourceIds: [LIC-01, LIC-02, LIC-05]
+
+caveats:
+  - id: LIC-01
+    issue: "La renovación online de Nación solo consta para jurisdicciones adheridas; la fuente dice que PBA figura como adherida y no dice nada de CABA."
+    handling: "Mencionar la opción online solo para PBA. No afirmar ni negar que exista en CABA."
+  - id: LIC-02
+    issue: "La fuente no indica con cuánta anticipación se puede renovar en CABA."
+    handling: "No dar un plazo anticipado para CABA; en la tabla indicar que no está relevado y remitir al sitio de la Ciudad."
+  - id: LIC-04/LIC-06
+    issue: "Vigencias por edad (⚠️ en CABA) y prórroga de profesionales en PBA tienen posts propios y no están en sourceIds."
+    handling: "No mencionarlos como dato; no citarlos."
+
+internalLinks:
+  - slug: papeles-para-circular-amba
+    anchor: "qué papeles tenés que llevar para circular"
+
+cta: "Guardá la licencia en AutoLibre junto con la cédula y la póliza para tenerlas siempre a mano, y recibí el aviso antes de que venzan la VTV, el seguro y la patente. Es gratis."
+
+cover:
+  concept: "A cropped hand holding a blank plastic card next to a car key on the passenger seat of a parked car, soft daylight through the windshield, a green folder beside it."

@@ -1,0 +1,71 @@
+slug: prorroga-licencias-pba-disposicion-12-2026
+title: "Prórroga de licencias en PBA (Disposición 12/2026)"
+primaryQuery: "prorrogaron las licencias, ¿me toca?"
+secondaryQueries:
+  - "escuché que prorrogaron las licencias"
+  - "prórroga licencia de conducir Provincia de Buenos Aires 2026"
+  - "Disposición 12/2026 licencias"
+intent: informacional
+audience: "conductor con licencia emitida en Provincia de Buenos Aires que escuchó de la prórroga y quiere saber si le corresponde"
+jurisdiction: [pba]
+angle: "Respuesta corta a '¿me toca?': solo licencias profesionales interjurisdiccionales emitidas en PBA que vencen entre el 1/07/2026 y el 31/10/2026; las particulares no. Contenido con caducidad: la ventana va con fechas exactas."
+
+outline:
+  - h2: "A quién alcanza la prórroga"
+    points:
+      - "respuesta directa: 120 días corridos, solo licencias profesionales interjurisdiccionales emitidas en PBA que vencen entre el 1/07/2026 y el 31/10/2026"
+      - "no alcanza a las licencias particulares"
+      - "tabla: situación → ¿entra en la prórroga?"
+    sourceIds: [LIC-06]
+  - h2: "Si tu licencia es particular"
+    points:
+      - "no entra: link al post de renovación de licencia vencida"
+    sourceIds: [LIC-06]
+  - h2: "Por qué se prorrogó"
+    points:
+      - "falta de turnos con prestadores externos de capacitación y examen psicofísico registrados ante la ANSV"
+      - "medida excepcional y transitoria"
+    sourceIds: [LIC-06]
+  - h2: "Vale en todo el país"
+    points:
+      - "como la licencia es interjurisdiccional, la prórroga vale en todo el país"
+    sourceIds: [LIC-06]
+  - h2: "Qué llevar si te corresponde"
+    points:
+      - "copia impresa de la Disposición 12/2026 junto con la licencia (recomendación de la fuente)"
+      - "link a papeles para circular"
+    sourceIds: [LIC-06]
+  - h2: "Preguntas frecuentes"
+    sourceIds: [LIC-06]
+  - h2: "Fuentes oficiales"
+
+faq:
+  - q: "¿La prórroga alcanza a mi licencia particular?"
+    sourceIds: [LIC-06]
+  - q: "¿Cuántos días se prorroga el vencimiento?"
+    sourceIds: [LIC-06]
+  - q: "¿Me sirve la prórroga si manejo fuera de Provincia?"
+    sourceIds: [LIC-06]
+  - q: "¿Qué tengo que llevar para demostrar la prórroga?"
+    sourceIds: [LIC-06]
+
+tables:
+  - purpose: "Qué licencias entran en la prórroga y cuáles no"
+    columns: ["Situación", "¿Entra en la prórroga?"]
+    sourceIds: [LIC-06]
+
+caveats:
+  - id: LIC-06
+    issue: "Contenido con caducidad; la entrada corrige una versión anterior que la extendía a más clases. La fuente no explica cómo saber si una licencia es interjurisdiccional ni cómo se cuentan los 120 días en fechas concretas."
+    handling: "Citar solo lo ✅ (alcance, ventana 1/07/2026–31/10/2026, 120 días corridos, particulares excluidas, validez nacional, copia impresa). No calcular fechas de vencimiento resultantes ni mencionar clases. Decir que el anuncio no detalla cómo verificar si tu licencia es interjurisdiccional y remitir al sitio oficial."
+
+internalLinks:
+  - slug: licencia-vencida-como-renovar
+    anchor: "cómo renovar la licencia vencida"
+  - slug: papeles-para-circular-amba
+    anchor: "qué papeles tenés que llevar para circular"
+
+cta: "Guardá tu licencia, la cédula y la póliza en AutoLibre para tenerlas siempre a mano, y recibí el aviso antes de que venzan la VTV, el seguro, la patente y el service. Es gratis."
+
+cover:
+  concept: "Close-up of a professional truck driver's hands, seen from behind the seat, holding a blank plastic driving licence card and a folded blank printed sheet over the steering wheel of a generic truck cab, soft daylight through the windshield, a green folder on the dashboard"

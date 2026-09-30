@@ -1,0 +1,74 @@
+slug: vtv-pba-turno-que-llevar
+title: "VTV en PBA: turno, qué llevar y qué pasa si da condicional"
+primaryQuery: "qué papeles llevo a la VTV en Provincia"
+secondaryQueries:
+  - "hay descuento en la VTV para jubilados"
+  - "la VTV me dio condicional, qué hago"
+  - "me rechazaron la VTV, tengo que pagar de nuevo"
+intent: informacional
+audience: "dueño de auto radicado en Provincia de Buenos Aires que tiene que ir a la planta de VTV"
+jurisdiction: [pba]
+angle: "Checklist del día de la VTV: el beneficio se pide antes del turno, los 3 papeles oficiales que tienen que coincidir con el turno, y el plazo de 60 días si da condicional o rechazado. El calendario por patente y el 'turno no habilita' se linkean, no se repiten."
+
+outline:
+  - h2: "Antes de sacar el turno: pedí el beneficio si te corresponde"
+    points:
+      - "exención total para personas con discapacidad"
+      - "50% para jubilados y pensionados que cumplan requisitos, vehículos de más de 20 años, taxis, remises y transporte escolar"
+      - "un solo vehículo por año, no acumulables, se pide en el portal antes de sacar el turno"
+      - "link a la nota de vencimientos para el mes y para 'el turno no te habilita'"
+    sourceIds: [VTV-04]
+  - h2: "Qué tenés que llevar a la planta"
+    points:
+      - "DNI, cédula verde y licencia de conducir vigente (lista del sitio oficial)"
+      - "los datos tienen que coincidir con los que cargaste al sacar el turno"
+      - "caveat lista ampliada de plantas (ver caveats)"
+    sourceIds: [VTV-04]
+  - h2: "Qué pasa si la VTV te da condicional o rechazado"
+    points:
+      - "hacés las reparaciones y volvés a la misma planta dentro de los 60 días sin pagar de nuevo"
+      - "pasado el plazo, tarifa completa"
+      - "las plantas no hacen reparaciones"
+      - "tabla dentro / fuera del plazo"
+    sourceIds: [VTV-05]
+  - h2: "El día de la VTV, paso a paso"
+    points: ["resumen ordenado de los pasos anteriores"]
+    sourceIds: [VTV-04, VTV-05]
+  - h2: "Preguntas frecuentes"
+    sourceIds: [VTV-04, VTV-05]
+  - h2: "Fuentes oficiales"
+
+faq:
+  - q: "¿Qué papeles tengo que llevar a la VTV en Provincia?"
+    sourceIds: [VTV-04]
+  - q: "¿Hay descuento en la VTV para jubilados?"
+    sourceIds: [VTV-04]
+  - q: "¿Tengo que pagar de nuevo si me rechazaron la VTV?"
+    sourceIds: [VTV-05]
+  - q: "¿La planta me hace las reparaciones?"
+    sourceIds: [VTV-05]
+
+tables:
+  - purpose: "Beneficios oficiales: quién y cuánto"
+    sourceIds: [VTV-04]
+  - purpose: "Condicional o rechazado: volver dentro o fuera de los 60 días"
+    sourceIds: [VTV-05]
+
+caveats:
+  - id: VTV-04
+    issue: "✅ mixto: la lista ampliada de papeles que publican las plantas es 🔍 (no oficial), igual que lo de la VTV de otra jurisdicción"
+    handling: "decir que algunas plantas publican listas con más papeles, que no encontramos confirmación oficial y que lo más seguro es guiarse por la lista del sitio oficial. No nombrar ningún papel de esa lista."
+  - id: VTV-05
+    issue: "la fuente no dice si se puede circular durante los 60 días de un condicional"
+    handling: "decir que no encontramos confirmación oficial sobre eso y que lo más seguro es reparar y volver cuanto antes. No afirmar nada."
+
+internalLinks:
+  - slug: vtv-pba-cuando-vence-por-patente
+    anchor: "cuándo vence la VTV según tu patente"
+  - slug: papeles-para-circular-amba
+    anchor: "qué papeles tenés que llevar para circular"
+
+cta: "Guardá la cédula y la licencia en AutoLibre, recibí el aviso antes de que venza la VTV y registrá las reparaciones en el historial del auto. Es gratis."
+
+cover:
+  concept: "A generic mid-size car parked in the inspection lane of a vehicle testing station, a technician seen from behind holding a blank clipboard, bright covered hall with a small green plant near the entrance"

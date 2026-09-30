@@ -1,0 +1,91 @@
+slug: seguro-obligatorio-auto
+title: "Seguro obligatorio del auto: qué cubre y qué tenés que llevar"
+primaryQuery: "qué seguro tengo que tener sí o sí"
+secondaryQueries:
+  - "alcanza con terceros"
+  - "es obligatorio el seguro contra terceros"
+  - "me pueden pedir el recibo de pago del seguro"
+  - "me pidieron el seguro en un control, qué muestro"
+  - "me cubre si el seguro está impago"
+  - "no tengo la VTV, me pueden hacer el seguro"
+intent: informacional
+audience: "dueño de auto o moto en AMBA que tiene que contratar, renovar o mostrar el seguro obligatorio"
+jurisdiction: [nacional]
+angle: "Qué seguro es obligatorio (y qué es voluntario), qué mostrar en un control, cuándo la aseguradora puede no cubrir y por qué te piden la VTV para contratarlo. Informativo, sin recomendar aseguradoras ni coberturas."
+
+outline:
+  - h2: "Qué seguro es obligatorio"
+    points:
+      - "respuesta directa: responsabilidad civil hacia terceros transportados y no transportados ('contra terceros')"
+      - "lo tienen que tener autos, motos, acoplados y semiacoplados"
+      - "aseguradora autorizada por la SSN"
+      - "base legal: art. 68 Ley 24.449 y Res. SSN 534/2023 (cobertura básica de toda póliza, vigencia anual)"
+    sourceIds: [SEG-01]
+  - h2: "Qué es obligatorio y qué es voluntario"
+    points:
+      - "tabla: RC obligatoria vs. robo, incendio, daños, todo riesgo voluntarias (se agregan por endoso)"
+      - "AutoLibre no recomienda aseguradoras ni coberturas: consultar a un productor asesor matriculado"
+    sourceIds: [SEG-01]
+  - h2: "Qué tenés que llevar del seguro"
+    points:
+      - "el comprobante del seguro obligatorio (la 'tarjetita'), en papel o digital"
+      - "no el recibo de pago: su falta no puede usarse como incumplimiento (Disp. ANSV 70/2009 citada en Res. SSN 534/2023)"
+      - "formatos digitales: credencial en Mi Argentina o PDF/imagen legible"
+      - "lo que tiene que decir el comprobante: resumen corto + link al post de papeles para circular (no duplicar)"
+    sourceIds: [SEG-02]
+  - h2: "Cuándo la aseguradora puede no cubrirte"
+    points:
+      - "según Derecho Fácil (Ministerio de Justicia): seguro impago o vencido al momento del accidente, dolo o culpa grave"
+      - "tampoco cubre, entre otros: conductor sin licencia, competencias de velocidad, remolque (salvo ayuda ocasional de emergencia)"
+      - "lo que rige en cada caso es tu póliza; para un rechazo puntual, abogado o productor asesor"
+    sourceIds: [SEG-03]
+  - h2: "Por qué te piden la VTV para contratar el seguro"
+    points:
+      - "antes de celebrar el contrato, la aseguradora debe exigir la VTV o que el vehículo esté en condiciones reglamentarias de seguridad si no se hizo en el año previo"
+      - "Res. SSN 534/2023, art. 3"
+    sourceIds: [SEG-04]
+  - h2: "Preguntas frecuentes"
+    sourceIds: [SEG-01, SEG-02, SEG-03, SEG-04]
+  - h2: "Fuentes oficiales"
+    points:
+      - "solo URLs https de los campos Fuentes de SEG-01..04"
+
+faq:
+  - q: "¿Alcanza con un seguro contra terceros?"
+    sourceIds: [SEG-01]
+  - q: "¿Me pueden multar por no llevar el recibo de pago del seguro?"
+    sourceIds: [SEG-02]
+  - q: "¿Me cubre el seguro si la cuota está impaga?"
+    sourceIds: [SEG-03]
+  - q: "¿Puedo contratar el seguro sin tener la VTV?"
+    sourceIds: [SEG-04]
+  - q: "¿La moto también necesita seguro obligatorio?"
+    sourceIds: [SEG-01]
+
+tables:
+  - purpose: "Cobertura obligatoria vs. coberturas voluntarias"
+    columns: ["Cobertura", "¿Obligatoria?", "Nota"]
+    sourceIds: [SEG-01]
+  - purpose: "Qué mostrar en un control y qué no te pueden exigir"
+    columns: ["Qué", "¿Te lo pueden pedir?", "Nota"]
+    sourceIds: [SEG-02]
+
+caveats:
+  - id: SEG-03
+    issue: "✅ confirmado pero atribuido a una fuente de divulgación (Derecho Fácil, Ministerio de Justicia), no a la norma; la entrada aclara que rige la póliza"
+    handling: "atribuir explícitamente ('según el Ministerio de Justicia'), decir 'entre otros casos' y que lo que rige es tu póliza; no dar asesoramiento: ante un rechazo, abogado o productor asesor"
+  - id: SEG-01
+    issue: "la entrada aclara que AutoLibre no recomienda aseguradoras ni coberturas"
+    handling: "disclaimer corto: no es asesoramiento legal ni de seguros; para elegir, productor asesor de seguros matriculado"
+  - id: SEG-02
+    issue: "el detalle del comprobante ya está en el post publicado papeles-para-circular-amba"
+    handling: "mencionar los datos en una línea y linkear, sin repetir la sección"
+
+internalLinks:
+  - slug: papeles-para-circular-amba
+    anchor: "qué papeles tenés que llevar para circular en AMBA"
+
+cta: "Guardá la póliza en AutoLibre para tenerla a mano y recibí el aviso antes de que venza el seguro (y también la VTV y la patente). Es gratis."
+
+cover:
+  concept: "A person's hand, seen from behind the driver's seat, taking a blank folded insurance card out of an open car glovebox inside a generic parked car, soft morning daylight through the windshield, a small green folder on the passenger seat"

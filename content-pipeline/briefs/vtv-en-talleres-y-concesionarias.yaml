@@ -1,0 +1,77 @@
+slug: vtv-en-talleres-y-concesionarias
+title: "¿Vale la VTV hecha en un taller o concesionaria?"
+primaryQuery: "vi que ahora se puede hacer la VTV en un taller, ¿me sirve?"
+secondaryQueries:
+  - "VTV en concesionaria"
+  - "escuché que ahora la VTV es cada dos años, ¿es así?"
+intent: informacional
+audience: "dueño de auto radicado en Provincia de Buenos Aires que escuchó que la VTV ya se puede hacer en talleres o concesionarias"
+jurisdiction: [pba, nacional]
+angle: "Respuesta directa (hoy no, si tu auto es de Provincia) + qué cambió a nivel nacional y por qué hoy está frenado por la Justicia"
+
+outline:
+  - h2: "¿Te sirve la VTV hecha en un taller si tu auto es de Provincia?"
+    points:
+      - "respuesta directa: hoy no, si el auto está radicado en PBA"
+      - "la Provincia no adhirió al régimen nacional y solo reconoce las plantas oficiales listadas en el sitio de la VTV bonaerense"
+      - "caveat: no encontramos la norma provincial específica (🔍)"
+    sourceIds: [VTV-06, VTV-02]
+  - h2: "Qué cambió a nivel nacional"
+    points:
+      - "Decreto 196/2025: primera revisión a 5 años, revisiones cada 2 años hasta los 10 años, apertura a talleres y concesionarias"
+      - "Decreto 139/2026 ratificó la reforma; Resolución 32/2026 (junio 2026) abrió el registro nacional de talleres"
+      - "tabla: norma / qué hizo"
+    sourceIds: [VTV-06]
+  - h2: "Por qué la apertura a talleres está suspendida"
+    points:
+      - "16/07/2026: Sala V de la Cámara Contencioso Administrativo Federal suspendió arts. 12 y 13 del Decreto 196/2025 y sus actos de ejecución, a pedido de CATRAI"
+      - "mientras siga vigente, rige el esquema anterior en las jurisdicciones que dependían de la norma nacional"
+    sourceIds: [VTV-06]
+  - h2: "Y la VTV cada 2 años, ¿aplica en Provincia?"
+    points:
+      - "no: en PBA la renovación es anual; link a la nota de vencimientos por patente en vez de repetir el calendario"
+    sourceIds: [VTV-02]
+  - h2: "Si tu auto está radicado en CABA"
+    points:
+      - "el tema es distinto porque la Ciudad tiene su propia ley; no afirmar nada de VTV-08 (🔍)"
+    sourceIds: [VTV-06]
+  - h2: "Preguntas frecuentes"
+    sourceIds: [VTV-06, VTV-02]
+  - h2: "Fuentes oficiales"
+    points:
+      - "solo las URLs oficiales https de los campos Fuentes de VTV-06 y VTV-02 (sin prensa)"
+
+faq:
+  - q: "¿Puedo hacer la VTV en una concesionaria si mi auto es de Provincia?"
+    sourceIds: [VTV-06]
+  - q: "¿Desde cuándo está suspendida la VTV en talleres?"
+    sourceIds: [VTV-06]
+  - q: "¿La VTV en Provincia pasó a ser cada 2 años?"
+    sourceIds: [VTV-02]
+
+tables:
+  - purpose: "Las normas nacionales y la medida judicial, qué hizo cada una"
+    columns: ["Norma o medida", "Qué hizo"]
+    sourceIds: [VTV-06]
+
+caveats:
+  - id: VTV-06
+    issue: "✅ mixto: el estado judicial y la no adhesión de PBA están confirmados; la norma provincial específica que formaliza la postura es 🔍"
+    handling: "decir que no encontramos una norma provincial publicada sobre el tema, sin nombrar declaraciones ni normas; lo más seguro es hacerla en una planta oficial del listado bonaerense"
+  - id: VTV-08
+    issue: "🔍 régimen propio de CABA"
+    handling: "no citarla ni dar datos; solo decir (con VTV-06) que en CABA el tema es distinto porque la Ciudad tiene su propia ley"
+  - id: VTV-02
+    issue: "✅ en la práctica, texto literal oficial de plazos 🔍"
+    handling: "citar solo renovación anual y no adhesión de PBA"
+
+internalLinks:
+  - slug: vtv-pba-cuando-vence-por-patente
+    anchor: "cuándo te vence la VTV en Provincia según tu patente"
+  - slug: papeles-para-circular-amba
+    anchor: "qué papeles tenés que llevar para circular"
+
+cta: "Cargá tu auto en AutoLibre y recibí el aviso antes de que venza la VTV, además del seguro y la patente. Es gratis."
+
+cover:
+  concept: "A generic car hood open inside a clean private mechanic workshop, a mechanic seen from behind checking the headlight alignment with a handheld tool, while in the soft-focus background a separate large inspection line with a lane and rollers stands empty, green toolbox accent, daylight from a large garage door"

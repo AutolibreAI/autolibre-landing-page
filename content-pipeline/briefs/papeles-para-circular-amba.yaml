@@ -1,0 +1,93 @@
+slug: papeles-para-circular-amba
+title: "Qué papeles tenés que llevar para circular en AMBA"
+primaryQuery: "qué papeles tengo que tener en el auto"
+secondaryQueries:
+  - "qué me pueden pedir en un control"
+  - "hace falta el DNI para manejar"
+  - "me pueden multar por deber patente"
+  - "tengo que llevar matafuego y balizas"
+  - "puedo mostrar el seguro en el celular"
+  - "mi hijo puede manejar mi auto"
+intent: informacional
+audience: "dueño de auto en CABA o Provincia de Buenos Aires que va a manejar, lo paran en un control o le presta el auto a alguien"
+jurisdiction: [nacional, caba, pba]
+angle: "Checklist corto y citable de lo obligatorio, más lo que NO te pueden exigir (recibo del seguro, pago de patente), qué vale en el celular y qué pasa si maneja otra persona"
+
+outline:
+  - h2: "Qué documentos tenés que llevar para manejar"
+    points:
+      - "respuesta directa en el primer párrafo, citable sola"
+      - "lista: licencia vigente de la clase que corresponde, cédula del vehículo (verde, o azul vigente), comprobante del seguro obligatorio, DNI"
+      - "patentes colocadas, legibles y sin aditamentos"
+      - "VTV al día cuando al vehículo ya le corresponde (sin entrar en plazos: eso va en la nota de VTV)"
+      - "base legal: art. 40 de la Ley 24.449 y la lista de la ANSV"
+    sourceIds: [DOC-01]
+  - h2: "Qué no te pueden exigir"
+    points:
+      - "el recibo de pago del seguro: su falta no puede usarse para decir que no cumplís"
+      - "el comprobante de pago de la patente: no está entre los requisitos del art. 40"
+      - "deber patente no te impide circular, pero genera intereses y bloquea trámites como la transferencia"
+    sourceIds: [SEG-02, PAT-01]
+  - h2: "Qué tiene que decir el comprobante del seguro"
+    points:
+      - "datos que debe tener: póliza, endoso, aseguradora, vigencia, datos del vehículo"
+      - "ese comprobante alcanza como prueba de que el seguro está vigente (art. 68)"
+    sourceIds: [SEG-02]
+  - h2: "Qué documentos podés llevar en el celular"
+    points:
+      - "tabla resumen: licencia, cédula, seguro, autorización a terceros, DNI"
+      - "Mi Argentina con la misma validez que los físicos; el seguro también como PDF o imagen legible"
+      - "la credencial del seguro funciona sin conexión"
+      - "caveat de la licencia digital en Provincia (ver caveats)"
+    sourceIds: [DOC-02, SEG-02]
+  - h2: "Matafuego y balizas"
+    points:
+      - "exigidos por la ley nacional (excepto motos) y por la reglamentación de Provincia"
+      - "en CABA falta confirmación oficial (ver caveats): recomendación segura, llevarlos"
+    sourceIds: [DOC-01]
+  - h2: "Si maneja otra persona"
+    points:
+      - "cualquier persona con licencia vigente puede manejar tu auto si lleva la cédula verde"
+      - "la cédula azul ya no es obligatoria (Disposición DNRPA 29/2024); las emitidas siguen vigentes hasta que se revoquen"
+      - "autorización opcional desde Mi Argentina: Vehículos → dominio → Autorizar"
+    sourceIds: [CED-02]
+  - h2: "Preguntas frecuentes"
+    sourceIds: [DOC-01, PAT-01, SEG-02, CED-02, DOC-02]
+  - h2: "Fuentes oficiales"
+    points:
+      - "solo las URLs https de los campos Fuentes; las http (Vialidad PBA) van con el nombre del organismo sin link"
+
+faq:
+  - q: "¿Hace falta llevar el DNI para manejar?"
+    sourceIds: [DOC-01]
+  - q: "¿Me pueden multar por no llevar el comprobante de pago de la patente?"
+    sourceIds: [PAT-01]
+  - q: "¿Tengo que llevar el recibo de pago del seguro?"
+    sourceIds: [SEG-02]
+  - q: "¿Puedo mostrar el seguro en el celular sin señal?"
+    sourceIds: [DOC-02]
+  - q: "¿Mi hijo o mi pareja pueden manejar mi auto sin cédula azul?"
+    sourceIds: [CED-02]
+
+tables:
+  - purpose: "Qué documento vale en el celular, cómo se lleva y con qué norma"
+    columns: ["Documento", "¿Vale en el celular?", "Cómo"]
+    sourceIds: [DOC-02]
+  - purpose: "Checklist: lo obligatorio vs. lo que no te pueden exigir"
+    columns: ["Qué", "¿Obligatorio?", "Nota"]
+    sourceIds: [DOC-01, SEG-02, PAT-01]
+
+caveats:
+  - id: DOC-01
+    issue: "✅ mixto: matafuego y balizas en CABA 🔍 (el Código de Tránsito porteño no los menciona en los incisos relevados)"
+    handling: "decir que la ley nacional los exige y que en CABA falta confirmación oficial; recomendar llevarlos. No afirmar que en CABA son obligatorios ni que no lo son."
+  - id: DOC-02
+    issue: "✅ mixto: validez de la licencia digital en Provincia ⚠️ (DOC-04)"
+    handling: "decir que a nivel nacional vale en todo el país y que en Provincia hay información contradictoria; recomendar llevar también la licencia física. No citar DOC-04."
+
+internalLinks: []   # ningún post publicado todavía en plan.yaml
+
+cta: "Guardá la cédula, la póliza y la licencia en AutoLibre para tenerlas siempre a mano, y recibí el aviso antes de que venzan la VTV, el seguro y la patente. Es gratis."
+
+cover:
+  concept: "An open car glovebox neatly holding blank document cards and a smartphone showing a blank card, flat workshop-manual illustration"

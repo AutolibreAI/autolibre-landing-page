@@ -1,0 +1,83 @@
+slug: cedula-verde-y-cedula-azul
+title: "Cédula verde y cédula azul: quién puede manejar tu auto"
+primaryQuery: "otra persona puede manejar mi auto"
+secondaryQueries:
+  - "sigue existiendo la cédula azul"
+  - "se vence la cédula verde"
+  - "mi cédula dice fecha de vencimiento, tengo que renovarla"
+  - "mi hijo o mi pareja puede manejar mi auto"
+  - "cómo autorizo a alguien a manejar mi auto"
+  - "le puedo prestar el auto a un amigo"
+intent: informacional
+audience: "dueño de auto en CABA o Provincia de Buenos Aires que le presta el auto a un familiar o amigo, o que tiene una cédula con fecha de vencimiento impresa"
+jurisdiction: [nacional, pba]
+angle: "Qué cambió con la Disposición DNRPA 29/2024: la cédula verde no vence y alcanza para que maneje cualquiera con licencia, la azul dejó de ser obligatoria; cuándo la verde sí pierde validez (transferencia) y cómo dejar constancia desde Mi Argentina. Profundiza la sección 'Si maneja otra persona' del post de papeles, sin repetir el checklist."
+
+outline:
+  - h2: "Quién puede manejar tu auto"
+    points:
+      - "respuesta directa citable: cualquier persona con licencia vigente, si lleva la cédula verde"
+      - "base: reglamentación del art. 40 inc. b, legítima tenencia = uso legal por cualquier conductor"
+      - "excepción: cédula obtenida por robo, hurto, engaño o abuso de confianza"
+      - "link al post de papeles para el resto de la documentación"
+    sourceIds: [CED-02]
+  - h2: "La cédula azul ya no es obligatoria"
+    points:
+      - "Disposición DNRPA 29/2024 la dejó sin efecto como documento obligatorio"
+      - "las azules ya emitidas siguen vigentes hasta que las revoque quien las pidió"
+    sourceIds: [CED-02]
+  - h2: "¿Se vence la cédula verde?"
+    points:
+      - "no vence, ni para el titular ni para quien maneja (Disposición 29/2024, fundada en el DNU 70/2023)"
+      - "antes: la fecha impresa solo limitaba el uso por terceros; eso ya no rige"
+      - "contradicción menor: la página 'Renovar la cédula del vehículo' de argentina.gob.ar está desactualizada"
+      - "física o digital en Mi Argentina"
+    sourceIds: [CED-01]
+  - h2: "Antes y ahora: tabla"
+    sourceIds: [CED-01, CED-02]
+  - h2: "Cómo autorizar a alguien desde Mi Argentina"
+    points:
+      - "opcional: Vehículos → dominio → Autorizar"
+    sourceIds: [CED-02]
+  - h2: "Cuándo la cédula verde deja de servir"
+    points:
+      - "pierde validez cuando el auto se transfiere a otro dueño"
+      - "plazo para inscribir la transferencia: pendiente de confirmación oficial (VEN-02 🔍), no afirmarlo"
+    sourceIds: [CED-01]
+  - h2: "Preguntas frecuentes"
+    sourceIds: [CED-01, CED-02]
+  - h2: "Fuentes oficiales"
+    points:
+      - "solo URLs https de los campos Fuentes de CED-01 y CED-02 (no la página desactualizada ni la fuente secundaria de VEN-02)"
+
+faq:
+  - q: "¿Mi hijo o mi pareja pueden manejar mi auto sin cédula azul?"
+    sourceIds: [CED-02]
+  - q: "¿Tengo que renovar la cédula verde si tiene una fecha de vencimiento impresa?"
+    sourceIds: [CED-01]
+  - q: "¿Mi cédula azul vieja todavía sirve?"
+    sourceIds: [CED-02]
+  - q: "¿Puedo llevar la cédula verde en el celular?"
+    sourceIds: [CED-01]
+
+tables:
+  - purpose: "Antes vs. desde la Disposición DNRPA 29/2024"
+    columns: ["Tema", "Antes", "Ahora"]
+    sourceIds: [CED-01, CED-02]
+
+caveats:
+  - id: CED-01
+    issue: "✅ con contradicción menor: la página de trámite 'Renovar la cédula del vehículo' todavía dice vigencia de un año para terceros"
+    handling: "explicar que esa página es anterior a la Disposición 29/2024 y está desactualizada; no linkearla como fuente."
+  - id: VEN-02
+    issue: "🔍 entero: el plazo de 10 días para inscribir la transferencia y la revocación de la autorización por el vendedor salen de una fuente secundaria"
+    handling: "no citar VEN-02; decir que el plazo exacto está pendiente de confirmación oficial y recomendar hacer la transferencia cuanto antes. Solo afirmar (con CED-01) que la cédula pierde validez al transferir."
+
+internalLinks:
+  - slug: papeles-para-circular-amba
+    anchor: "qué papeles tenés que llevar para circular"
+
+cta: "Guardá la cédula y el resto de los papeles del auto en AutoLibre para tenerlos siempre a mano, y si tenés más de un auto, manejalos todos desde una sola cuenta. Es gratis."
+
+cover:
+  concept: "Close-up of one hand passing a set of car keys and a small blank green card to another hand beside the open driver's door of a generic car parked on a leafy residential street in Buenos Aires"

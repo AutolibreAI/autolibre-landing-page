@@ -1,0 +1,73 @@
+slug: gnc-oblea-y-prueba-hidraulica
+title: "Auto con GNC: oblea y prueba hidráulica al día"
+primaryQuery: "cada cuánto se hace la prueba hidráulica del GNC"
+secondaryQueries:
+  - "se me venció la oblea de GNC, puedo cargar"
+intent: informacional
+audience: "dueño de un auto con equipo de GNC en CABA o Provincia que quiere saber qué controles tiene que tener al día y cada cuánto"
+jurisdiction: [nacional]
+angle: "Los dos controles del GNC explicados sin vueltas (revisión anual con oblea y revisión quinquenal con prueba hidráulica), qué te tienen que entregar en cada uno y qué pasa si la oblea no está vigente"
+
+outline:
+  - h2: "Qué controles tiene que tener al día un auto con GNC"
+    points:
+      - "respuesta directa: dos controles, anual y quinquenal (ENARGAS, nacional)"
+      - "tabla resumen: control, cada cuánto, dónde se hace, qué te queda"
+    sourceIds: [GNC-01]
+  - h2: "La revisión anual y la oblea"
+    points:
+      - "revisión del equipo completo en un Taller de Montaje habilitado"
+      - "te entregan la oblea de habilitación para la carga, en el ángulo superior derecho del parabrisas"
+      - "verificá que te la entreguen adherida y, si corresponde, el certificado de revisión técnica del cilindro"
+    sourceIds: [GNC-01]
+  - h2: "La revisión quinquenal y la prueba hidráulica"
+    points:
+      - "cada 5 años, prueba hidráulica del cilindro en un Centro de Revisión Periódica de Cilindros"
+      - "el taller envía el cilindro al centro"
+      - "se firma una carta compromiso (Res. ENARGAS 2603)"
+      - "caveat de la válvula del cilindro (ver caveats)"
+    sourceIds: [GNC-01]
+  - h2: "Qué pasa si se te vence la oblea"
+    points:
+      - "sin oblea vigente no estás habilitado para cargar"
+    sourceIds: [GNC-01]
+  - h2: "El GNC y la VTV en Provincia"
+    points:
+      - "caveat: documentación del GNC en la VTV bonaerense, sin confirmación oficial; link a la nota de VTV"
+    sourceIds: []
+  - h2: "Preguntas frecuentes"
+    sourceIds: [GNC-01]
+  - h2: "Fuentes oficiales"
+    points: ["las dos páginas de trámite de ENARGAS (https)"]
+
+faq:
+  - q: "¿Cada cuánto se hace la prueba hidráulica del GNC?"
+    sourceIds: [GNC-01]
+  - q: "¿Puedo cargar GNC con la oblea vencida?"
+    sourceIds: [GNC-01]
+  - q: "¿Dónde va la oblea de GNC?"
+    sourceIds: [GNC-01]
+  - q: "¿Quién lleva el cilindro a la prueba hidráulica?"
+    sourceIds: [GNC-01]
+
+tables:
+  - purpose: "Los dos controles del GNC: frecuencia, dónde se hace y qué te entregan"
+    columns: ["Control", "Cada cuánto", "Dónde", "Qué te queda"]
+    sourceIds: [GNC-01]
+
+caveats:
+  - id: GNC-01
+    issue: "✅ mixto: el cambio obligatorio de la válvula del cilindro al hacer la prueba hidráulica sale de prensa (🔍)"
+    handling: "no afirmar el cambio, ni el año ni la resolución; decir que no encontramos confirmación oficial sobre cambios en la válvula y que lo más seguro es preguntarle al taller antes de la revisión quinquenal qué tiene que cambiarse y consultarlo en ENARGAS"
+  - id: VTV-04
+    issue: "la documentación del GNC para la VTV en PBA viene de la lista ampliada de plantas (🔍); VTV-04 no se cita"
+    handling: "decir que no encontramos confirmación oficial de que la VTV bonaerense pida documentación del GNC; lo más seguro es consultar la lista oficial antes del turno. Link a la nota de VTV por el calendario."
+
+internalLinks:
+  - slug: vtv-pba-cuando-vence-por-patente
+    anchor: "cuándo te vence la VTV en Provincia"
+
+cta: "Registrá cada revisión del equipo en el historial de AutoLibre, guardá la cédula y la póliza a mano y recibí el aviso antes de que venzan la VTV, el seguro y la patente. Es gratis."
+
+cover:
+  concept: "Close-up of a mechanic's gloved hands inspecting a generic steel natural-gas cylinder mounted in the open trunk of a car inside a clean workshop, soft daylight, no text or labels"

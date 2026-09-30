@@ -1,0 +1,85 @@
+slug: descargo-de-multas-pba
+title: "Descargo de multas en PBA y multas de un auto que vendiste"
+primaryQuery: "cómo apelo una multa en Provincia"
+secondaryQueries:
+  - "qué pasa si no pago una multa"
+  - "me llegó una fotomulta de un auto que ya vendí"
+  - "manejaba otra persona, ¿la multa es mía?"
+intent: informacional
+audience: "titular de un auto radicado o multado en Provincia de Buenos Aires que no está de acuerdo con una multa, la dejó pasar, o recibe multas de un auto que ya vendió o que no estaba bajo su tenencia"
+jurisdiction: [pba]
+angle: "Cómo se presenta un descargo ante el juez en Provincia, qué pasa si no hacés nada (hasta el apremio) y cómo trasladar al comprador o tenedor una multa que no es tuya"
+
+outline:
+  - h2: "Cómo presentar un descargo en Provincia"
+    points:
+      - "respuesta directa: personalmente o por escrito ante el juez competente"
+      - "por correo postal si vivís a más de 60 km"
+      - "tabla: formas de presentarlo y cuándo usarlas"
+    sourceIds: [MUL-03]
+  - h2: "Qué tenés que incluir en el descargo"
+    points:
+      - "la prueba que tengas y tus datos de contacto"
+      - "conviene incluir número de causa, nombre del titular, DNI y dominio"
+    sourceIds: [MUL-03]
+  - h2: "Qué pasa si no hacés nada"
+    points:
+      - "lista ordenada: el juez resuelve → te notifica para pagar → si no pagás, vía de apremio"
+      - "posibles embargos, inhibiciones o secuestros"
+      - "link a consultar-y-pagar-multas para el pago (sin afirmar datos de MUL-02)"
+    sourceIds: [MUL-03]
+  - h2: "Multas de un auto que vendiste o que no estaba bajo tu tenencia"
+    points:
+      - "si no se identificó al conductor, se presume que la cometió el titular"
+      - "vendido o no bajo tu tenencia: denunciar al comprador o tenedor mediante un descargo en el juzgado"
+      - "si no lo hacés, la multa queda a cargo del titular registral"
+      - "caveat del número de ley (ver caveats)"
+      - "link a denuncia-de-venta para el lado del Registro, sin repetirlo"
+      - "tabla situación → qué hacer"
+    sourceIds: [MUL-04, MUL-03]
+  - h2: "Si el auto es de una empresa"
+    points:
+      - "10 días hábiles desde la primera notificación para informar quién manejaba"
+    sourceIds: [MUL-04]
+  - h2: "Preguntas frecuentes"
+    sourceIds: [MUL-03, MUL-04]
+  - h2: "Fuentes oficiales"
+    points:
+      - "https://www.gba.gob.ar/seguridadvial/preguntas_frecuentes_0"
+
+faq:
+  - q: "¿Puedo mandar el descargo por correo?"
+    sourceIds: [MUL-03]
+  - q: "¿Qué pasa si no pago una multa en Provincia?"
+    sourceIds: [MUL-03]
+  - q: "¿Qué hago si me llegó una fotomulta de un auto que ya vendí?"
+    sourceIds: [MUL-04]
+  - q: "¿Cuánto tiempo tiene una empresa para informar quién manejaba?"
+    sourceIds: [MUL-04]
+
+tables:
+  - purpose: "Formas de presentar el descargo en Provincia"
+    columns: ["Forma", "Cuándo", "Qué llevar o mandar"]
+    sourceIds: [MUL-03]
+  - purpose: "Multa de un auto que no manejabas: situación y qué hacer"
+    columns: ["Situación", "Qué hacer", "Si no lo hacés"]
+    sourceIds: [MUL-04]
+
+caveats:
+  - id: MUL-04
+    issue: "✅ mixto: el número de la ley que respalda la presunción del titular es 🔍 (la FAQ oficial cita un número que parece error de tipeo)"
+    handling: "no citar número de ley ni artículo; decir que no encontramos confirmación del número exacto de la norma y que la regla figura en las preguntas frecuentes oficiales de Seguridad Vial de la Provincia"
+  - id: MUL-03
+    issue: "la relación entre presentar descargo y el descuento del pago voluntario es de MUL-02 (fuera de sourceIds)"
+    handling: "no afirmarla; remitir a la nota consultar-y-pagar-multas para el pago voluntario"
+
+internalLinks:
+  - slug: compra-y-venta/denuncia-de-venta
+    anchor: "denuncia de venta"
+  - slug: tramites-y-documentacion/consultar-y-pagar-multas
+    anchor: "cómo consultar y pagar multas"
+
+cta: "Guardá la cédula, el título y la póliza en AutoLibre para tener a mano el dominio y los datos del auto cuando hagas un trámite, y recibí el aviso antes de que venzan la VTV, el seguro y la patente. Es gratis."
+
+cover:
+  concept: "Hands of a person seen from behind, sealing a blank envelope at a wooden table next to a folder of blank papers and a car key, with a small green plant"

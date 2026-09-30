@@ -1,0 +1,67 @@
+slug: retencion-de-licencia-pba
+title: "Me retuvieron la licencia en un control en PBA: qué hacer"
+primaryQuery: "me retuvieron la licencia en un control qué hago"
+secondaryQueries:
+  - "me sacaron el registro puedo seguir manejando"
+  - "cómo recupero la licencia retenida"
+  - "me retuvieron el carnet en un control policial"
+intent: informacional
+audience: "conductor al que le retuvieron la licencia en un control en Provincia de Buenos Aires"
+jurisdiction: [pba]
+angle: "Respuesta directa (sí podés manejar con la Boleta de Citación, 30 días) + los dos plazos que importan (30 y 90 días corridos) + los pasos para recuperarla"
+
+outline:
+  - h2: "¿Puedo seguir manejando si me retuvieron la licencia?"
+    points:
+      - "respuesta directa: sí, con la Boleta de Citación, máximo 30 días corridos desde el acta"
+      - "pasado ese plazo la boleta ya no te habilita"
+    sourceIds: [LIC-07]
+  - h2: "Los dos plazos que tenés que tener en cuenta"
+    points:
+      - "tabla: 30 días corridos (manejar con la boleta y presentarte) y 90 días corridos (si no te presentás, se destruye la licencia y caduca la habilitación)"
+      - "ambos se cuentan desde el acta / son corridos"
+    sourceIds: [LIC-07]
+  - h2: "Cómo recuperar la licencia retenida"
+    points:
+      - "lista ordenada: regularizar lo que motivó la infracción, pedir turno web en el juzgado, presentarte personalmente con DNI en el Juzgado Administrativo de Infracciones de Tránsito que corresponda"
+    sourceIds: [LIC-07]
+  - h2: "Qué pasa si no te presentás"
+    points:
+      - "90 días corridos: licencia destruida y caducidad de la habilitación"
+      - "link a licencia-vencida-como-renovar y consultar-y-pagar-multas sin duplicar su contenido"
+    sourceIds: [LIC-07]
+  - h2: "Preguntas frecuentes"
+    sourceIds: [LIC-07]
+  - h2: "Fuentes oficiales"
+    points:
+      - "solo https://www.gba.gob.ar/seguridadvial/preguntas_frecuentes_0"
+
+faq:
+  - q: "¿Cuántos días puedo manejar con la Boleta de Citación?"
+    sourceIds: [LIC-07]
+  - q: "¿Qué tengo que llevar al juzgado para recuperar la licencia?"
+    sourceIds: [LIC-07]
+  - q: "¿Qué pasa si no voy al juzgado?"
+    sourceIds: [LIC-07]
+  - q: "¿Puede ir otra persona a buscar mi licencia?"
+    sourceIds: [LIC-07]
+
+tables:
+  - purpose: "Los plazos después de la retención: qué podés hacer y qué pasa"
+    columns: ["Plazo desde el acta", "Qué pasa", "Qué tenés que hacer"]
+    sourceIds: [LIC-07]
+
+caveats:
+  - id: LIC-07
+    issue: "La entrada no dice qué pasa entre el día 31 y el 90 más allá de que la boleta habilita un máximo de 30 días, ni cómo saber qué juzgado corresponde, ni qué hacer para volver a tener licencia si caducó."
+    handling: "No inventar: decir solo lo que la fuente dice; no afirmar procedimientos para esos casos."
+
+internalLinks:
+  - { slug: licencia-vencida-como-renovar, anchor: "cómo renovar la licencia" }
+  - { slug: consultar-y-pagar-multas, anchor: "consultar y pagar multas" }
+  - { slug: papeles-para-circular-amba, anchor: "qué papeles tenés que llevar para circular" }
+
+cta: "Guardá tu cédula y tu póliza en AutoLibre para tenerlas a mano, y recibí el aviso antes de que venzan la VTV, el seguro y la patente. Es gratis."
+
+cover:
+  concept: "Close-up of a driver's hand resting on the steering wheel of a parked generic car, holding a small folded blank paper slip, soft daylight through the windshield with a blurred tree-lined suburban street outside, no other people"

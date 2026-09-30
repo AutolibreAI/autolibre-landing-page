@@ -1,0 +1,83 @@
+slug: licencia-digital-mi-argentina
+title: "Licencia digital en Mi Argentina: dónde vale y dónde no"
+primaryQuery: "la licencia de Mi Argentina vale"
+secondaryQueries:
+  - "puedo mostrar una foto del registro"
+  - "vale una captura de la licencia"
+  - "me olvidé el registro en casa"
+  - "la licencia digital vale en Provincia"
+  - "puedo andar sin los papeles físicos"
+intent: informacional
+audience: "conductor de CABA o Provincia de Buenos Aires que quiere manejar solo con el celular o se olvidó el plástico"
+jurisdiction: [nacional, caba, pba]
+angle: "Profundiza la fila 'licencia' de la tabla del post de papeles: qué validez tiene la digital, cómo la controlan (QR + ValidAR), qué pasa sin señal, por qué una foto del plástico no alcanza, y la duda de Provincia como caveat honesto"
+
+outline:
+  - h2: "Qué validez tiene la licencia digital"
+    points:
+      - "respuesta directa: desde el Decreto 196/2025 la licencia se otorga en formato digital; la física es réplica opcional con costo adicional; misma validez"
+      - "la física vale mientras valga la digital"
+      - "según Nación, vale en todo el país (caveat PBA más abajo)"
+      - "requiere identidad validada en Mi Argentina; QR que se actualiza cada 24 h"
+    sourceIds: [DOC-02]
+  - h2: "Cómo la controlan: el código QR"
+    points:
+      - "la validez está en el QR; los agentes lo controlan con la app ValidAR"
+      - "el QR se actualiza cada 24 h y sirve 24 h sin conexión, para llegar a un lugar con señal"
+      - "abrí la app antes de salir"
+    sourceIds: [DOC-03]
+  - h2: "¿Sirve una foto de la licencia?"
+    points:
+      - "ninguna fuente oficial le da validez a una foto de la licencia plástica"
+      - "no afirmar nada sobre capturas de pantalla (la fuente no lo dice)"
+      - "diferencia con el seguro: imagen o PDF legible sí vale; link a seguro-obligatorio-auto"
+    sourceIds: [DOC-03, DOC-02]
+  - h2: "Dónde vale y dónde no: resumen"
+    points:
+      - "tabla situación → qué pasa (solo filas de DOC-02/DOC-03; PBA fuera de la tabla)"
+    sourceIds: [DOC-02, DOC-03]
+  - h2: "¿Y en Provincia de Buenos Aires?"
+    points:
+      - "caveat sin afirmar nada de DOC-04: versiones cruzadas, sin confirmación oficial; lo más seguro es llevar la física si la tenés"
+    sourceIds: []
+  - h2: "Qué conviene hacer antes de salir"
+    points:
+      - "checklist práctico; link al post de papeles para el resto de los documentos"
+    sourceIds: [DOC-02, DOC-03]
+  - h2: "Preguntas frecuentes"
+    sourceIds: [DOC-02, DOC-03]
+  - h2: "Fuentes oficiales"
+
+faq:
+  - q: "¿Tengo que sacar la licencia física?"
+    sourceIds: [DOC-02]
+  - q: "¿Qué pasa si en el control no tengo señal?"
+    sourceIds: [DOC-03]
+  - q: "¿Me olvidé el registro en casa: sirve una foto?"
+    sourceIds: [DOC-03]
+  - q: "¿La licencia digital vale en Provincia de Buenos Aires?"
+    sourceIds: []   # caveat, sin cita
+
+tables:
+  - purpose: "Situación → vale o no, y qué tener en cuenta"
+    columns: ["Situación", "¿Vale?", "Qué tener en cuenta"]
+    sourceIds: [DOC-02, DOC-03]
+
+caveats:
+  - id: DOC-02
+    issue: "✅ mixto: validez de la licencia digital en Provincia ⚠️ (remite a DOC-04)"
+    handling: "citar DOC-02 solo por lo nacional; la parte PBA se trata como caveat sin cita"
+  - id: DOC-04
+    issue: "⚠️ contradicción sobre si en PBA pueden exigir la física"
+    handling: "sacado de sourceIds. Caveat que no afirma nada (sin normas ni fechas de DOC-04): versiones cruzadas, sin confirmación oficial; lo más seguro es llevar también la física si la tenés"
+
+internalLinks:
+  - slug: papeles-para-circular-amba
+    anchor: "qué papeles tenés que llevar para circular"
+  - slug: seguro-obligatorio-auto
+    anchor: "seguro obligatorio"
+
+cta: "Guardá la licencia, la cédula y la póliza en AutoLibre para tenerlas a mano, y recibí el aviso antes de que venzan la VTV, el seguro y la patente. Es gratis."
+
+cover:
+  concept: "A driver's hand holding a smartphone with a blank bright screen inside a parked car, a blank plastic card resting on the seat, soft daylight through the windshield"

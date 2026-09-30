@@ -61,3 +61,7 @@ next-env.d.ts
 .impeccable/hook.cache.json
 .impeccable/questions/
 .impeccable/review/
+
+# content-pipeline del blog: binarios de covers y payloads generados
+/content-pipeline/images/
+/content-pipeline/out/

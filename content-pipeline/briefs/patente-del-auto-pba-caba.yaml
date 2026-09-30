@@ -1,0 +1,84 @@
+slug: patente-del-auto-pba-caba
+title: "Patente del auto en PBA y CABA: a quién se paga y cuándo vence"
+primaryQuery: "cuándo vence la patente en Provincia"
+secondaryQueries:
+  - "la patente de mi auto viejo la pago en el municipio"
+  - "cómo pago la patente en Capital"
+  - "los autos viejos pagan patente en CABA"
+  - "me pueden multar por deber patente"
+intent: informacional
+audience: "dueño de auto radicado en CABA o en Provincia de Buenos Aires que quiere saber quién le cobra la patente, cuándo vence y si tiene descuentos"
+jurisdiction: [pba, caba, nacional]
+angle: "Quién cobra según dónde está radicado el auto (ARBA, municipio o AGIP), el esquema de cuotas 2026, descuentos y exenciones confirmadas, y qué pasa si no pagás (sin repetir la nota de papeles)"
+
+outline:
+  - h2: "Quién cobra la patente en Provincia y en CABA"
+    points:
+      - "respuesta directa: PBA → ARBA los primeros 10 años, después el municipio; CABA → AGIP"
+      - "tabla resumen por jurisdicción"
+    sourceIds: [PAT-02, PAT-03]
+  - h2: "Provincia: ARBA los primeros 10 años, después el municipio"
+    points:
+      - "municipalización: el auto sigue pagando, pero al municipio"
+      - "se puede verificar en ARBA si el dominio ya está municipalizado"
+    sourceIds: [PAT-02]
+  - h2: "Cuándo vence la patente en Provincia en 2026"
+    points:
+      - "10 cuotas mensuales de marzo a diciembre, o pago anual anticipado"
+      - "sin fechas exactas de cuotas (el propio entry pide confirmar en el calendario oficial): remitir al calendario de ARBA"
+    sourceIds: [PAT-02]
+  - h2: "CABA: cómo consultar y pagar la patente en AGIP"
+    points:
+      - "consulta por dominio; solo aparecen las cuotas impagas"
+      - "2026: AGIP suspendió la primera emisión, reliquidó y reordenó vencimientos → mirar la fecha de cada boleta (sin nombrar la resolución)"
+    sourceIds: [PAT-03]
+  - h2: "Descuentos y exenciones"
+    points:
+      - "CABA: más de 25 años dejan de pagar; exención discapacidad; 10% anual anticipado; 10% buen cumplimiento"
+      - "PBA: exención por antigüedad sin confirmación oficial (caveat)"
+    sourceIds: [PAT-03, PAT-02]
+  - h2: "Qué pasa si no pagás la patente"
+    points:
+      - "no te impide circular ni tenés que llevar el comprobante; intereses, juicio de cobro, bloquea transferencia"
+      - "link a la nota de papeles para circular"
+    sourceIds: [PAT-01]
+  - h2: "Preguntas frecuentes"
+    sourceIds: [PAT-01, PAT-02, PAT-03]
+  - h2: "Fuentes oficiales"
+    points:
+      - "https de ARBA y AGIP/Ciudad; PAT-01 es http (Vialidad PBA) → nombre sin link; nada de la fuente no oficial de PAT-02"
+
+faq:
+  - q: "¿La patente de mi auto viejo la pago en el municipio?"
+    sourceIds: [PAT-02]
+  - q: "¿Los autos viejos pagan patente en CABA?"
+    sourceIds: [PAT-03]
+  - q: "¿En cuántas cuotas se paga la patente en Provincia en 2026?"
+    sourceIds: [PAT-02]
+  - q: "¿Me pueden multar en un control por deber la patente?"
+    sourceIds: [PAT-01]
+
+tables:
+  - purpose: "Quién cobra la patente según la jurisdicción y dónde se consulta"
+    columns: ["Dónde está radicado", "Quién cobra", "Qué tener en cuenta"]
+    sourceIds: [PAT-02, PAT-03]
+  - purpose: "Descuentos y exenciones confirmados en CABA"
+    columns: ["Beneficio", "Quién accede"]
+    sourceIds: [PAT-03]
+
+caveats:
+  - id: PAT-02
+    issue: "✅ mixto: exención por antigüedad en PBA 🔍 (solo prensa). Además, los modelos-año municipalizados en 2026 y las fechas exactas de cuotas vienen de prensa / 'confirmar en calendario oficial'."
+    handling: "No afirmar ni dar números: decir que no encontramos confirmación oficial de una exención por antigüedad en Provincia y que lo más seguro es consultar el dominio en ARBA. No dar modelos-año ni fechas de cuota: remitir al calendario oficial de ARBA."
+  - id: PAT-03
+    issue: "Detalle con Res. 52/AGIP/2026 y exención de eléctricos citada por prensa"
+    handling: "No nombrar la resolución ni la exención de eléctricos. Solo decir que en 2026 se reordenaron los vencimientos y que hay que mirar la fecha de cada boleta."
+
+internalLinks:
+  - slug: papeles-para-circular-amba
+    anchor: "qué papeles tenés que llevar para circular"
+
+cta: "Cargá tu auto en AutoLibre y recibí el aviso antes de que venza la patente, además de la VTV y el seguro. Es gratis."
+
+cover:
+  concept: "A person's hands, seen from behind and cropped, holding a blank folded paper bill next to a laptop with a blurred blank screen on a wooden home desk, with a parked generic car softly out of focus through the window and a small green plant nearby"
