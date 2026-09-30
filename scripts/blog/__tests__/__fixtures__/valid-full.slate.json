@@ -1,0 +1,383 @@
+{
+  "children": [
+    {
+      "type": "paragraph",
+      "children": [
+        {
+          "text": "Para manejar en AMBA tenés que llevar "
+        },
+        {
+          "text": "licencia vigente",
+          "bold": true
+        },
+        {
+          "text": ", cédula del vehículo, "
+        },
+        {
+          "text": "comprobante del seguro",
+          "italic": true
+        },
+        {
+          "text": " y DNI."
+        }
+      ]
+    },
+    {
+      "type": "heading-two",
+      "children": [
+        {
+          "text": "Qué documentos te pueden pedir"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "children": [
+        {
+          "text": "Según la "
+        },
+        {
+          "type": "link",
+          "href": "https://www.argentina.gob.ar/normativa",
+          "openInNewTab": true,
+          "children": [
+            {
+              "text": "Ley 24.449"
+            }
+          ]
+        },
+        {
+          "text": " te pueden pedir estos papeles:"
+        }
+      ]
+    },
+    {
+      "type": "bulleted-list",
+      "children": [
+        {
+          "type": "list-item",
+          "children": [
+            {
+              "type": "list-item-child",
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "text": "Licencia de conducir "
+                    },
+                    {
+                      "text": "vigente",
+                      "bold": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "list-item",
+          "children": [
+            {
+              "type": "list-item-child",
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "text": "Cédula verde, o azul si no tenés la verde"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "list-item",
+          "children": [
+            {
+              "type": "list-item-child",
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "text": "Comprobante del seguro obligatorio"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading-three",
+      "children": [
+        {
+          "text": "Si otra persona maneja tu auto"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "children": [
+        {
+          "text": "Alcanza con que lleve la cédula verde. Mirá también "
+        },
+        {
+          "type": "link",
+          "href": "/blog/tramites-y-documentacion/cedula-verde-vencimiento",
+          "children": [
+            {
+              "text": "la nota sobre la cédula"
+            }
+          ]
+        },
+        {
+          "text": "."
+        }
+      ]
+    },
+    {
+      "type": "heading-four",
+      "children": [
+        {
+          "text": "La cédula azul"
+        }
+      ]
+    },
+    {
+      "type": "numbered-list",
+      "children": [
+        {
+          "type": "list-item",
+          "children": [
+            {
+              "type": "list-item-child",
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "text": "Ya no es exigible."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "list-item",
+          "children": [
+            {
+              "type": "list-item-child",
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "text": "Las emitidas siguen vigentes."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "block-quote",
+      "children": [
+        {
+          "text": "Llevá siempre la licencia física si la tenés."
+        }
+      ]
+    },
+    {
+      "type": "heading-two",
+      "children": [
+        {
+          "text": "Qué podés llevar en el celular"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "children": [
+        {
+          "type": "table_head",
+          "children": [
+            {
+              "type": "table_row",
+              "children": [
+                {
+                  "type": "table_header_cell",
+                  "children": [
+                    {
+                      "type": "paragraph",
+                      "children": [
+                        {
+                          "text": "Documento"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "table_header_cell",
+                  "children": [
+                    {
+                      "type": "paragraph",
+                      "children": [
+                        {
+                          "text": "¿Vale digital?"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table_body",
+          "children": [
+            {
+              "type": "table_row",
+              "children": [
+                {
+                  "type": "table_cell",
+                  "children": [
+                    {
+                      "type": "paragraph",
+                      "children": [
+                        {
+                          "text": "Licencia"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "table_cell",
+                  "children": [
+                    {
+                      "type": "paragraph",
+                      "children": [
+                        {
+                          "text": "Sí, en "
+                        },
+                        {
+                          "text": "Mi Argentina",
+                          "bold": true
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "table_row",
+              "children": [
+                {
+                  "type": "table_cell",
+                  "children": [
+                    {
+                      "type": "paragraph",
+                      "children": [
+                        {
+                          "text": "Seguro"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "table_cell",
+                  "children": [
+                    {
+                      "type": "paragraph",
+                      "children": [
+                        {
+                          "text": "Sí, PDF o "
+                        },
+                        {
+                          "type": "link",
+                          "href": "https://www.argentina.gob.ar/miargentina",
+                          "openInNewTab": true,
+                          "children": [
+                            {
+                              "text": "credencial"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "embed",
+      "nodeId": "asset-inline-1",
+      "nodeType": "Asset",
+      "children": [
+        {
+          "text": ""
+        }
+      ]
+    },
+    {
+      "type": "heading-two",
+      "children": [
+        {
+          "text": "Preguntas frecuentes"
+        }
+      ]
+    },
+    {
+      "type": "heading-three",
+      "children": [
+        {
+          "text": "¿Necesito llevar el DNI?"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "children": [
+        {
+          "text": "Sí, el DNI está en la lista de documentos para circular."
+        }
+      ]
+    },
+    {
+      "type": "heading-three",
+      "children": [
+        {
+          "text": "¿Vale la licencia en el celular?"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "children": [
+        {
+          "text": "Sí, la licencia digital de Mi Argentina vale en todo el país."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+version: 1
+posts:
+  - slug: valid-full
+    title: "Papeles para circular en AMBA"
+    category: tramites-y-documentacion
+    tags: [caba, provincia-de-buenos-aires]
+    priority: P1
+    batch: 1
+    sourceIds: [DOC-01, DOC-02, CED-02]
+    status: drafted
+    blockedBy: null
+    hygraphId: null
+  - slug: cedula-verde-vencimiento
+    title: "¿Se vence la cédula verde?"
+    category: tramites-y-documentacion
+    tags: []
+    priority: P2
+    batch: 1
+    sourceIds: [CED-01]
+    status: published
+    blockedBy: null
+    hygraphId: abc123
+  - slug: vtv-caba
+    title: "VTV en CABA"
+    category: vtv
+    tags: [caba]
+    priority: P2
+    batch: 2
+    sourceIds: [VTV-07]
+    status: planned
+    blockedBy: "VTV-07 está en contradicción en la fuente"
+    hygraphId: null

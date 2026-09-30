@@ -6,7 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "blog:validate": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/blog/validate.ts",
+    "blog:payload": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/blog/build-payload.ts",
+    "blog:image": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/blog/generate-image.ts",
+    "blog:roundtrip": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/blog/roundtrip.ts",
+    "test:blog": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"scripts/blog/**/*.test.ts\"",
+    "typecheck:blog": "tsc -p scripts/blog/tsconfig.json"
   },
   "dependencies": {
     "@graphcms/rich-text-react-renderer": "^0.6.2",
@@ -30,6 +36,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "yaml": "^2.9.1"
   }
 }

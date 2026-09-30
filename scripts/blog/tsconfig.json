@@ -1,0 +1,21 @@
+{
+  // Typecheck de los scripts del pipeline del blog. Corren con `node x.ts`
+  // (type stripping de Node 24): solo sintaxis TS borrable y imports
+  // relativos con extensión `.ts`. El tsconfig raíz excluye `scripts/` para
+  // no mezclar estos flags con el typecheck de Next.
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "include": ["./**/*.ts", "../../lib/blog/faq.ts"]
+}
