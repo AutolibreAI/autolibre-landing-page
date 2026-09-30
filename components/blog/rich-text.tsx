@@ -65,12 +65,19 @@ function buildRenderers(nested: boolean): NodeRendererType {
   return {
     ...(nested ? nestedHeadings : articleHeadings),
     p: ({ children }) => <p className={`my-5 ${bodyText}`}>{children}</p>,
+    // Cada ítem de Hygraph trae su texto en un `paragraph` (list-item →
+    // list-item-child → paragraph): sin `[&_p]:my-0` el `my-5` del párrafo
+    // separa los ítems el doble que el `space-y`.
     ul: ({ children }) => (
-      <ul className={`my-6 list-disc space-y-2.5 pl-6 marker:text-brand ${bodyText}`}>{children}</ul>
+      <ul
+        className={`my-6 list-disc space-y-2.5 pl-6 marker:text-brand [&_p]:my-0 ${bodyText}`}
+      >
+        {children}
+      </ul>
     ),
     ol: ({ children }) => (
       <ol
-        className={`my-6 list-decimal space-y-2.5 pl-6 marker:font-semibold marker:text-brand-hover ${bodyText}`}
+        className={`my-6 list-decimal space-y-2.5 pl-6 marker:font-semibold marker:text-brand-hover [&_p]:my-0 ${bodyText}`}
       >
         {children}
       </ol>
@@ -137,11 +144,12 @@ function buildRenderers(nested: boolean): NodeRendererType {
     ),
     Asset: {
       // Cualquier imagen embebida en el cuerpo del post: lazy (no es la LCP).
+      // `alt` = `altText` del Asset; sin él, decorativa (`alt=""`).
       image: ({ url, width, height, altText }) => (
         <figure className="my-10">
           <Image
             src={url}
-            alt={altText ?? ""}
+            alt={altText?.trim() ?? ""}
             width={width ?? 1200}
             height={height ?? 675}
             sizes="(min-width: 768px) 720px, 100vw"

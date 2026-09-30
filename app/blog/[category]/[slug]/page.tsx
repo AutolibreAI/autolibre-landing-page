@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArticleAppCta } from "@/components/blog/article-app-cta";
 import { ArticleTocDesktop, ArticleTocMobile } from "@/components/blog/article-toc";
@@ -14,12 +15,14 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { Container } from "@/components/ui/container";
 import { Icon } from "@/components/ui/icon";
 import { Section } from "@/components/ui/section";
+import { extractFaq } from "@/lib/blog/faq";
 import { categoryPath } from "@/lib/blog/query";
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
 import { blogContent } from "@/lib/content/blog";
 import {
   getPostBySlug,
   getPosts,
+  postModifiedDate,
   postPath,
   relatedPosts,
   type BlogPost,
@@ -30,6 +33,7 @@ import { createMetadata } from "@/lib/seo/metadata";
 import {
   blogPostingSchema,
   breadcrumbSchema,
+  faqPageSchema,
   graph,
   organizationSchema,
   webPageSchema,
@@ -37,6 +41,12 @@ import {
 
 /** Otros posts para "Seguí leyendo" y el bloque "Del mismo tema" del sidebar. */
 const RELATED_COUNT = 3;
+
+/**
+ * La portada ocupa la columna del cuerpo (`max-w-180` = 720px) desde `md`;
+ * debajo, el ancho de la pantalla.
+ */
+const COVER_SIZES = "(min-width: 768px) 720px, 100vw";
 
 type PageProps = {
   readonly params: Promise<{ category: string; slug: string }>;
@@ -78,6 +88,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!post) return { title: "Artículo no encontrado", robots: { index: false } };
 
+  const modifiedTime = postModifiedDate(post);
+
   // El meta title es para Google (~60 caracteres) y puede diferir del
   // título de la nota, que sigue siendo el `h1`.
   return createMetadata({
@@ -85,13 +97,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: postDescription(post),
     path: postPath(post),
     index: BLOG_PUBLIC,
-    article: { publishedTime: post.date, authors: [post.authorName] },
+    article: {
+      publishedTime: post.date,
+      ...(modifiedTime ? { modifiedTime } : {}),
+      authors: [post.authorName],
+    },
     image: post.coverImage
       ? {
           url: post.coverImage.url,
           width: post.coverImage.width ?? 1200,
           height: post.coverImage.height ?? 630,
-          alt: post.title,
+          alt: post.coverAlt || post.title,
         }
       : undefined,
   });
@@ -120,6 +136,11 @@ export default async function PostPage({ params }: PageProps) {
   const dateLabel = shownDate
     ? (post.updatedAt ? copy.updated : copy.published)(formatPostDate(shownDate))
     : "";
+  const reviewedLabel = post.reviewedAt ? copy.reviewed(formatPostDate(post.reviewedAt)) : "";
+
+  // Preguntas frecuentes del cuerpo (un `h2` "Preguntas frecuentes" con sus
+  // `h3`): el JSON-LD sale de lo mismo que se ve, como exige Google.
+  const faq = extractFaq(post.content, copy.faqHeading);
 
   const trail = [
     { name: blogContent.breadcrumb.home, path: "/" },
@@ -129,18 +150,24 @@ export default async function PostPage({ params }: PageProps) {
 
   const schema = graph(
     organizationSchema(),
-    webPageSchema({ name: post.title, description, path }),
+    webPageSchema({
+      name: post.title,
+      description,
+      path,
+      lastReviewed: post.reviewedAt || undefined,
+    }),
     blogPostingSchema({
       title: post.title,
       description,
       path,
       datePublished: post.date,
-      dateModified: post.updatedAt,
+      dateModified: postModifiedDate(post),
       authorName: post.authorName,
       imageUrl: post.coverImage?.url,
       keywords: post.tags.map((tag) => tag.name),
     }),
     breadcrumbSchema([...trail, { name: post.title, path }]),
+    ...(faq.length > 0 ? [faqPageSchema(faq)] : []),
   );
 
   return (
@@ -190,6 +217,11 @@ export default async function PostPage({ params }: PageProps) {
                       <time dateTime={shownDate}>{dateLabel}</time>
                     </p>
                   ) : null}
+                  {reviewedLabel ? (
+                    <p className="text-sm text-ink/60">
+                      <time dateTime={post.reviewedAt}>{reviewedLabel}</time>
+                    </p>
+                  ) : null}
                   <p className="flex items-center gap-1.5 text-sm text-ink/60">
                     <Icon name="clock" size={16} />
                     {copy.readingTime(readingMinutes)}
@@ -202,13 +234,33 @@ export default async function PostPage({ params }: PageProps) {
           <Container size="wide">
             <div className="grid gap-12 pt-10 pb-16 md:pt-14 md:pb-24 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:gap-12 xl:gap-24">
               <div className="flex max-w-180 min-w-0 flex-col">
+                {/* Portada arriba del cuerpo, al ancho de la columna y en
+                    16:9 (el marco reserva el alto: sin CLS). `eager` y no
+                    `preload`: en desktop es la LCP, pero en mobile queda
+                    debajo del pliegue y la LCP es el `h1`, y un `preload`
+                    en el <head> competiría con las fuentes del título. La
+                    doc de `next/image` y AGENTS.md piden `eager` para una
+                    LCP que cambia según el viewport. */}
+                {post.coverImage ? (
+                  <div className="relative mb-8 aspect-video overflow-clip rounded-card bg-surface-muted lg:mb-10">
+                    <Image
+                      src={post.coverImage.url}
+                      alt={post.coverAlt}
+                      fill
+                      sizes={COVER_SIZES}
+                      loading="eager"
+                      className="object-cover"
+                    />
+                  </div>
+                ) : null}
+
                 <div className="lg:hidden">
                   <ArticleTocMobile items={toc} />
                 </div>
 
                 {/* El primer bloque del cuerpo no suma margen arriba: el aire
                     ya lo da el contenedor. */}
-                <div className="[&>:first-child]:mt-0 max-lg:mt-8">
+                <div className=":first:mt-0 max-lg:mt-8">
                   <RichText content={post.content} references={post.references} />
                 </div>
 

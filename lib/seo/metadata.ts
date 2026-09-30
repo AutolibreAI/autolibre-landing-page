@@ -10,8 +10,11 @@ type CreateMetadataInput = {
   index?: boolean;
   /** Override de la imagen OG; por defecto usa la del sitio. */
   image?: { url: string; width: number; height: number; alt: string };
-  /** Para posts del blog: pasa el `og:type` a `article` con su fecha. */
-  article?: { publishedTime: string; authors: string[] };
+  /**
+   * Para posts del blog: pasa el `og:type` a `article` con sus fechas.
+   * `modifiedTime` va solo si hubo edición o revisión posterior.
+   */
+  article?: { publishedTime: string; modifiedTime?: string; authors: string[] };
 };
 
 /**

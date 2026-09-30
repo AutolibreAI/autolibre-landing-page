@@ -193,10 +193,16 @@ export function webPageSchema({
   description,
   path,
   type = "WebPage",
+  lastReviewed,
 }: {
   name: string;
   description: string;
   path: string;
+  /**
+   * ISO `YYYY-MM-DD` de la última revisión del contenido contra sus fuentes
+   * (las notas del blog con `reviewedAt`). Sin dato, no se emite.
+   */
+  lastReviewed?: string;
   /**
    * `CollectionPage` para los listados (blog y categorías). `AboutPage` para
    * "Sobre nosotros": además la ata a la organización con `about`.
@@ -212,6 +218,7 @@ export function webPageSchema({
     inLanguage: siteConfig.lang,
     isPartOf: { "@id": WEBSITE_ID },
     ...(type === "AboutPage" ? { about: { "@id": ORGANIZATION_ID } } : {}),
+    ...(lastReviewed ? { lastReviewed } : {}),
   };
 }
 
@@ -229,8 +236,15 @@ export function blogPostingSchema({
   description: string;
   path: string;
   datePublished: string;
-  /** Última edición; sin ella se usa `datePublished`, que es lo que pide Google. */
+  /**
+   * Última edición o revisión (ver `postModifiedDate`); sin ella se usa
+   * `datePublished`, que es lo que pide Google.
+   */
   dateModified?: string;
+  /**
+   * Firma de la nota. Si es la marca (`siteConfig.name`, el default de los
+   * posts sin autor), el autor es la organización del grafo; si no, `Person`.
+   */
   authorName: string;
   /** URL absoluta de la portada; se omite si el post no tiene. */
   imageUrl?: string;
@@ -251,7 +265,13 @@ export function blogPostingSchema({
     inLanguage: siteConfig.lang,
     ...(imageUrl ? { image: imageUrl } : {}),
     ...(keywords.length > 0 ? { keywords: keywords.join(", ") } : {}),
-    author: { "@type": "Person", name: authorName },
+    // Referencia por `@id` y no un nodo nuevo: así el autor ES el
+    // `Organization` del grafo (con logo, redes y contacto) y no una persona
+    // llamada "AutoLibre".
+    author:
+      authorName === siteConfig.name
+        ? { "@id": ORGANIZATION_ID }
+        : { "@type": "Person", name: authorName },
     publisher: { "@id": ORGANIZATION_ID },
   };
 }

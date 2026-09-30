@@ -73,6 +73,14 @@ export const blogContent = {
     byline: (author: string) => `Por ${author}`,
     published: (date: string) => `Publicado el ${date}`,
     updated: (date: string) => `Actualizado el ${date}`,
+    /** Última revisión de los datos contra la fuente de verdad (`reviewedAt`). */
+    reviewed: (date: string) => `Revisado el ${date}`,
+    /**
+     * Texto del `h2` que abre las preguntas frecuentes de una nota: sus `h3`
+     * salen como `FAQPage` en el JSON-LD (ver `lib/blog/faq.ts`). Tiene que
+     * coincidir con el `FAQ_HEADING` del pipeline (`scripts/blog/lib/rules.ts`).
+     */
+    faqHeading: "Preguntas frecuentes",
     readingTime: (minutes: number) => `${minutes} min de lectura`,
     tocTitle: "En esta nota",
     tocCount: (count: number) => `${count} ${count === 1 ? "sección" : "secciones"}`,

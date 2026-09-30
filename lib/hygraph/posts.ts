@@ -26,6 +26,15 @@ import { hygraphFetch } from "@/lib/hygraph/client";
  *   seo         Component `Seo`    (opcional: `metaTitle` y `metaDescription`
  *                                    para Google; si faltan, se usan `title`
  *                                    y `excerpt`. Solo se pide en la nota)
+ *   reviewedAt  Date               (opcional: último chequeo de los datos
+ *                                    contra la fuente de verdad; se muestra
+ *                                    como "Revisado el" y cuenta para el
+ *                                    `dateModified`. Solo se pide en la nota)
+ *   sourceIds   Single line text[] (IDs de la fuente de verdad que respaldan
+ *                                    el post. Uso interno del pipeline:
+ *                                    se piden pero NUNCA se renderizan)
+ *
+ * Del `coverImage` la nota pide además `altText` (campo del modelo Asset).
  *
  * Si se renombra un campo en Hygraph, se cambia acá y en nada más: las
  * páginas consumen `BlogPost`, no la forma cruda de la API.
@@ -78,6 +87,12 @@ export interface BlogPost extends BlogPostSummary {
   readonly content: RichTextContent;
   readonly references: EmbedReferences;
   readonly seo: BlogSeo;
+  /** ISO `YYYY-MM-DD` de la última revisión de los datos, o `""`. */
+  readonly reviewedAt: string;
+  /** IDs de la fuente de verdad. Interno: no se renderiza en ningún lado. */
+  readonly sourceIds: readonly string[];
+  /** `altText` de la portada, o `""` si no tiene (se trata como decorativa). */
+  readonly coverAlt: string;
 }
 
 const DEFAULT_AUTHOR = "AutoLibre";
@@ -120,6 +135,11 @@ const POST_QUERY = /* GraphQL */ `
   query BlogPost($slug: String!) {
     post(where: { slug: $slug }, stage: PUBLISHED) {
       ${SUMMARY_FIELDS}
+      reviewedAt
+      sourceIds
+      coverImage {
+        altText
+      }
       seo {
         metaTitle
         metaDescription
@@ -133,6 +153,7 @@ const POST_QUERY = /* GraphQL */ `
             mimeType
             width
             height
+            altText
           }
         }
       }
@@ -162,7 +183,12 @@ export type RawSeo = {
   metaDescription?: string | null;
 } | null;
 
-type RawPost = RawSummary & {
+type RawPost = Omit<RawSummary, "coverImage"> & {
+  coverImage?: (NonNullable<RawSummary["coverImage"]> & {
+    altText?: string | null;
+  }) | null;
+  reviewedAt?: string | null;
+  sourceIds?: string[] | null;
   seo?: RawSeo;
   content?: { raw: RichTextContent; references?: EmbedReferences } | null;
 };
@@ -274,9 +300,24 @@ export const getPostBySlug = cache(
       content: raw.content.raw,
       references: raw.content.references ?? [],
       seo: toSeo(raw.seo),
+      reviewedAt: raw.reviewedAt?.slice(0, 10) ?? "",
+      sourceIds: raw.sourceIds ?? [],
+      coverAlt: raw.coverImage?.altText?.trim() ?? "",
     };
   },
 );
+
+/**
+ * `dateModified` de una nota: la más reciente entre la última edición
+ * (`updatedAt`, ya filtrada por `laterDay`) y la última revisión de los datos
+ * (`reviewedAt`). Revisar los hechos contra la fuente ES una modificación
+ * relevante. `""` si no hay ninguna: el schema cae en `datePublished`.
+ */
+export function postModifiedDate(
+  post: Pick<BlogPost, "updatedAt" | "reviewedAt">,
+): string {
+  return post.updatedAt > post.reviewedAt ? post.updatedAt : post.reviewedAt;
+}
 
 /** `/blog/[category]/[slug]` de un post. Único lugar que arma esta URL. */
 export function postPath(post: Pick<BlogPostSummary, "slug" | "category">) {
