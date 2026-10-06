@@ -4,41 +4,62 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { NavCtaLink } from "@/components/layout/nav-cta";
-import { DownloadCta } from "@/components/ui/download-cta";
+import { Icon } from "@/components/ui/icon";
+import { StoreLinks } from "@/components/ui/store-links";
 import { cn } from "@/lib/utils";
-import type { NavCta, NavLink } from "@/lib/content/types";
+import type { NavCta, NavEntry, NavGroupItem } from "@/lib/content/types";
+import { siteContent } from "@/lib/content/site";
 
 type MobileNavProps = {
-  /** Anclas de sección (solo en la home). */
-  readonly links: readonly NavLink[];
-  /** Links a páginas ("Pedir presupuesto" y el secundario). */
-  readonly pageLinks: readonly NavLink[];
+  /** Las mismas entradas del nav de desktop (`siteContent.nav.entries`). */
+  readonly entries: readonly NavEntry[];
+  /** Etiqueta del `<nav>` (la misma que el de desktop). */
+  readonly label: string;
   readonly cta: NavCta;
-  /** Si es el CTA de descarga, apunta a la tienda según la plataforma. */
+  /**
+   * Es el CTA de descarga: el pie del menú muestra sólo las tiendas. Si la
+   * página lo pisa (WhatsApp en `/pedido`, "Sumar mi negocio" en
+   * `/proveedores`), ese CTA va arriba de las tiendas.
+   */
   readonly isDownloadCta?: boolean;
   /** Ruta actual: su link lleva `aria-current="page"`. */
   readonly currentPath?: string;
-  /**
-   * Desde qué breakpoint el header muestra todo y el menú sobra. Con anclas
-   * de sección (home) recién en `xl`; en páginas internas, en `lg`.
-   */
-  readonly hideFrom?: "lg" | "xl";
 };
 
-/** Clases estáticas (Tailwind no ve clases armadas con template strings). */
-const hideClass = { lg: "lg:hidden", xl: "xl:hidden" } as const;
+/** Link del panel; la página actual con color Y subrayado (WCAG 1.4.1). */
+const panelLink =
+  "flex min-h-11 items-center gap-3 py-2 font-display text-lg font-semibold text-ink aria-[current=page]:text-brand-hover aria-[current=page]:underline aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8";
+
+/** Ícono de un item de grupo: mismo trazo que en el desplegable de desktop. */
+function ItemIcon({ item }: { readonly item: NavGroupItem }) {
+  return item.icon ? (
+    <Icon
+      name={item.icon}
+      size={22}
+      strokeWidth={1.8}
+      className={cn("shrink-0", !item.comingSoon && "text-brand-hover")}
+    />
+  ) : null;
+}
 
 /**
- * Menú desplegable para pantallas chicas. Única parte del header que se
- * hidrata: todo lo demás es HTML estático.
+ * Menú para pantallas chicas y tablets (hasta `xl`, donde entran los
+ * desplegables). Muestra las mismas entradas que el nav de desktop, en el
+ * mismo orden: los links sueltos como items y los grupos como listas con
+ * etiqueta, todas abiertas: nada de acordeones, el contenido no se esconde
+ * detrás de otra interacción. Única parte del header que se
+ * hidrata junto con los botones de `NavDropdown`.
+ *
+ * "Pedir presupuesto" NO está acá: queda siempre visible en la barra del
+ * header, al lado de este botón. Al pie, separadas por una línea fina, las
+ * tiendas (la otra conversión del sitio).
  */
 export function MobileNav({
-  links,
-  pageLinks,
+  entries,
+  label,
   cta,
   isDownloadCta = false,
   currentPath,
-  hideFrom = "lg",
 }: MobileNavProps) {
   // El cierre al navegar lo maneja el `onClick` de cada enlace, no un
   // efecto sobre `pathname`: así no hay render en cascada al cambiar de ruta.
@@ -71,8 +92,6 @@ export function MobileNav({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
-  const allLinks: readonly NavLink[] = [...links, ...pageLinks];
-
   return (
     <>
       <button
@@ -84,10 +103,7 @@ export function MobileNav({
         /* 44px es el mínimo táctil de WCAG 2.5.5 y de la HIG de Apple. El
            ícono sigue siendo de 18px: lo que crece es el área de toque, que
            es lo que el dedo necesita. */
-        className={cn(
-          "flex size-11 items-center justify-center rounded-field border border-ink/15 text-ink transition-colors hover:border-brand hover:text-brand",
-          hideClass[hideFrom],
-        )}
+        className="flex size-11 items-center justify-center rounded-field border border-ink/15 text-ink transition-colors hover:border-brand hover:text-brand xl:hidden"
       >
         <svg
           width="18"
@@ -130,48 +146,118 @@ export function MobileNav({
         ? createPortal(
             <div
               id="mobile-nav-panel"
-              className={cn(
-                "fixed inset-x-0 top-18 bottom-0 z-40 flex flex-col gap-2 overflow-y-auto overscroll-contain bg-surface px-[6%] pt-8 pb-[calc(2rem+env(safe-area-inset-bottom))]",
-                hideClass[hideFrom],
-              )}
+              className="fixed inset-x-0 top-18 bottom-0 z-40 flex flex-col gap-2 overflow-y-auto overscroll-contain bg-surface px-[6%] pt-8 pb-[calc(2rem+env(safe-area-inset-bottom))] xl:hidden"
             >
-              <nav aria-label="Menú principal" className="flex flex-col">
-                {allLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setOpen(false)}
-                    aria-current={
-                      link.href === currentPath ? "page" : undefined
-                    }
-                    className="border-b border-line py-4 font-display text-xl font-semibold text-ink aria-[current=page]:text-brand-hover aria-[current=page]:underline aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
+              <nav aria-label={label} className="flex flex-col">
+                {entries.map((entry) => {
+                  if (entry.kind === "link") {
+                    return (
+                      <Link
+                        key={entry.href}
+                        href={entry.href}
+                        onClick={() => setOpen(false)}
+                        aria-current={
+                          entry.href === currentPath ? "page" : undefined
+                        }
+                        className={cn(panelLink, "border-b border-line py-3 last:border-b-0")}
+                      >
+                        {entry.label}
+                      </Link>
+                    );
+                  }
+                  const labelId = `mobile-nav-${entry.id}`;
+                  const { footerLink } = entry;
+                  return (
+                    <div key={entry.id} className="border-b border-line py-3 last:border-b-0">
+                      {/* Etiqueta del grupo: un `<p>`, no un heading (es
+                          navegación, no parte del outline de la página). */}
+                      <p
+                        id={labelId}
+                        className="text-label font-semibold tracking-wider text-ink/60 uppercase"
+                      >
+                        {entry.label}
+                      </p>
+                      <ul aria-labelledby={labelId} className="mt-1">
+                        {entry.items.map((item) => (
+                          <li key={item.label}>
+                            {item.comingSoon ? (
+                              // No operativo: ni link ni foco (ver
+                              // `NavComingSoonItem`). La marca va en el mismo
+                              // elemento para que se lea junto con el label.
+                              <div className={cn(panelLink, "flex-wrap text-ink/60")}>
+                                <ItemIcon item={item} />
+                                {item.label}
+                                <span className="sr-only">:</span>
+                                <span className="rounded-full bg-surface-muted px-2 py-0.5 font-sans text-label text-brand-hover">
+                                  {siteContent.nav.comingSoonLabel}
+                                </span>
+                              </div>
+                            ) : item.external ? (
+                              <a
+                                href={item.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => setOpen(false)}
+                                className={panelLink}
+                              >
+                                <ItemIcon item={item} />
+                                {item.label}
+                                <span className="sr-only">
+                                  {" "}
+                                  {siteContent.nav.externalHint}
+                                </span>
+                              </a>
+                            ) : (
+                              <Link
+                                href={item.href}
+                                onClick={() => setOpen(false)}
+                                aria-current={
+                                  item.href === currentPath
+                                    ? "page"
+                                    : undefined
+                                }
+                                className={panelLink}
+                              >
+                                <ItemIcon item={item} />
+                                {item.label}
+                              </Link>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                      {footerLink ? (
+                        <Link
+                          href={footerLink.href}
+                          onClick={() => setOpen(false)}
+                          aria-current={
+                            footerLink.href === currentPath ? "page" : undefined
+                          }
+                          className="mt-1 flex min-h-11 flex-wrap items-center gap-x-1 text-sm text-ink/70 aria-[current=page]:underline aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-4"
+                        >
+                          {footerLink.lead ? <span>{footerLink.lead}</span> : null}
+                          <span className="font-semibold text-brand-hover">
+                            {footerLink.label}
+                          </span>
+                        </Link>
+                      ) : null}
+                    </div>
+                  );
+                })}
               </nav>
               {/*
-                `mt-auto` ancla el CTA al fondo del panel. Va en un wrapper y
-                no en el botón para no tocarle el padding propio. Si algún día
-                los links llenan el alto, el auto colapsa a 0 y el `pt-6`
-                garantiza que el botón nunca quede pegado al último link.
+                `mt-auto` ancla el pie al fondo del panel. Si los links llenan
+                el alto, el auto colapsa a 0 y el `pt-6` garantiza que nunca
+                quede pegado al último link.
               */}
-              <div className="mt-auto pt-6">
+              <div className="mt-auto flex flex-col gap-6 pt-6">
                 {/*
-                  `text-xl` pisa el `text-base` que trae `size="lg"` (lo
-                  resuelve tailwind-merge dentro de `cn`). Va igualado a los
-                  links de navegación a propósito: el CTA es la conversión de
-                  la landing, no puede pesar visualmente menos que "FAQ".
+                  El CTA propio de la página (WhatsApp en `/pedido`, "Sumar
+                  mi negocio" en `/proveedores`). `text-xl` pisa el
+                  `text-base` de `size="lg"` (tailwind-merge dentro de `cn`):
+                  igualado a los links, la conversión no puede pesar menos
+                  que el menú.
                 */}
-                {isDownloadCta ? (
-                  <DownloadCta
-                    placement="header_menu"
-                    size="lg"
-                    block
-                    onClick={() => setOpen(false)}
-                    linkClassName="text-xl"
-                  />
-                ) : (
+                {isDownloadCta ? null : (
                   <NavCtaLink
                     cta={cta}
                     placement={cta.tracking?.menuPlacement}
@@ -181,6 +267,17 @@ export function MobileNav({
                     className="text-xl"
                   />
                 )}
+                {/*
+                  Las dos tiendas, siempre (no según la plataforma como
+                  `DownloadCta`): en el menú hay lugar, y quien entra desde
+                  una tablet o una PC angosta también puede querer la app.
+                  La línea de arriba es la ÚNICA entre el nav y las tiendas:
+                  la última entrada va con `last:border-b-0` para no sumar
+                  una segunda.
+                */}
+                <div className="border-t border-line pt-6">
+                  <StoreLinks placement="header_menu" />
+                </div>
               </div>
             </div>,
             document.body,

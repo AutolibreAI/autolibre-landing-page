@@ -101,7 +101,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
 
   return (
     <>
-      <PageShell secondary={{ label: "Soy dueño de auto", href: "/" }} currentPath={PATH}>
+      <PageShell currentPath={PATH}>
         <BlogListingHeader
           eyebrow={EYEBROW}
           heading={HEADING}

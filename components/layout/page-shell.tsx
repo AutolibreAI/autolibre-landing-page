@@ -1,32 +1,36 @@
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import type { NavCta, NavLink } from "@/lib/content/types";
+import type { NavCta } from "@/lib/content/types";
 
 type PageShellProps = {
   readonly children: React.ReactNode;
-  /** Los anchors de sección sólo existen en la home. */
-  readonly showSectionLinks?: boolean;
-  readonly secondary?: NavLink;
   readonly cta?: NavCta;
   /** Ruta de la página: marca su link del header con `aria-current`. */
   readonly currentPath?: string;
+  /**
+   * "Pedir presupuesto" en el header. Default `true`; sólo `/proveedores` lo
+   * apaga (ver `SiteHeader`).
+   */
+  readonly showQuoteLink?: boolean;
 };
 
-/** Header + main + footer para las páginas que no son la home. */
+/**
+ * Header + main + footer para las páginas que no son la home. El nav del
+ * header es el mismo en todas; la página sólo ajusta las acciones de la
+ * derecha (`cta`, `showQuoteLink`).
+ */
 export function PageShell({
   children,
-  showSectionLinks = false,
-  secondary,
   cta,
   currentPath,
+  showQuoteLink,
 }: PageShellProps) {
   return (
     <>
       <SiteHeader
-        showSectionLinks={showSectionLinks}
-        secondary={secondary}
         cta={cta}
         currentPath={currentPath}
+        showQuoteLink={showQuoteLink}
       />
       <main>{children}</main>
       <SiteFooter />

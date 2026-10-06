@@ -117,7 +117,8 @@ light, clean surfaces, one green tool hanging where you can reach it. The site
 is bright by default (`#ffffff` ground, `colorScheme: "light"` fixed at the
 root), flat by default, and it earns attention through contrast of tone rather
 than through effects. Nothing glows, nothing floats without a reason, nothing
-is decorative.
+is decorative — save the route motif, an explicit and scoped exception (see
+The Route Motif Exception).
 
 Density is generous but not airy for its own sake: a 6% viewport gutter, a
 three-step vertical rhythm on sections, and headings set in Outfit at 700 with a
@@ -159,17 +160,20 @@ the palette never leaves its own hue.
   4.28:1) and the color of small green text. Primary CTAs lighten to `brand`
   on hover (2026-09-22: states swapped on purpose).
 - **Meadow Green** (`brand-soft`): the lighter green for grounds and marks that
-  sit *on* ink or on the provider band — directional arrows,
-  and the focus ring scoped to the dark `/descarga` route.
+  sit *on* ink or on the provider band — directional arrows, the
+  "Misión"/"Visión" labels on the `/sobre-nosotros` ink band, and the focus
+  ring scoped to dark grounds (`/descarga`, that band).
 
 ### Neutral
 
 - **Green-Black Ink** (`ink`): body text on every light ground, and the dark
   ground itself — the diagnostic band, the footer, the phone frame's bezel, the
-  store badge on white, and the full-page ground of `/descarga`.
+  store badge on white, the full-page ground of `/descarga`, and the "Misión y
+  visión" band of `/sobre-nosotros` (2026-10-02).
 - **Paper** (`surface`): the default page ground. The site is white end to end.
 - **Pale Wash** (`surface-muted`): the alternating section ground that gives the
-  home page its rhythm without introducing a second hue.
+  home page its rhythm without introducing a second hue (also the story band of
+  `/sobre-nosotros`), and the round icon wells.
 - **Whisper** (`surface-subtle`): inputs, soft cards, unselected pills — the
   lightest possible step off white.
 - **Hairline** (`line`): every border and divider. Shares its value with
@@ -335,7 +339,9 @@ playful, and this brand sells trust. Motion is CSS only (`transform` and
 product exception: the rotating words keep changing via an in-place fade, no
 rise or bounce (`motion-exempt`); the phone screens stop. There is
 no pause control by product decision (note: WCAG 2.2.2 asks for one on
-autoplay over 5s). No other section adds autoplay motion or decorative shapes.
+autoplay over 5s). No other section adds autoplay motion or decorative shapes
+(the static route motif of `/sobre-nosotros` is the one scoped exception: see
+The Route Motif Exception).
 The only other motion (2026-09-22, product decision): every home section below
 the hero reveals as you scroll — each element rises 1.5rem and fades in over
 0.7s, once, staggered 90ms by sibling. It is triggered by `revealScript` in
@@ -348,6 +354,25 @@ what is on screen at load, never on unrendered (`display: none`) content.
 Don't nest `reveal-group` with a `reveal` child: it would animate twice.
 (A first, CSS-only version tied to `animation-timeline: view()` was dropped:
 scrubbing with the scroll read as "nothing happens" and Firefox lacks it.)
+
+**The Route Motif Exception (2026-10-02, product decision).** The home hero's
+route — dotted `brand/60`, 2px, `0.5 9` dash, round caps,
+`non-scaling-stroke`, ending in a location pin — is extended to exactly two
+places on `/sobre-nosotros`: (a) a static line-art illustration in the about
+hero, desktop only (`lg` up, `hidden` below so the `h1` stays the LCP): a
+side-view car in 2px ink strokes riding the route to the system `pin` icon
+in `brand` (`components/about/about-route-illustration.tsx`), plus three
+scattered `isotype.png` marks around it (three sizes, slight rotations, all three at
+reduced opacity) in fixed, hand-picked positions — deterministic, no motion, never
+over the car, route or pin, and nowhere outside this hero; (b) the
+timeline thread, solid 2px `brand/60` from the first milestone to the current
+one, which is marked with the `pin` icon (solid, not dotted: each row draws
+its own segment and a dash pattern would restart at every row). The same
+page also adds an ink band ("Misión y visión") and a Pale Wash band ("Nuestra
+historia"). This is an explicit exception to "nothing is decorative / no
+decorative shapes", scoped to these uses: it does not license illustrations,
+routes or pins anywhere else. No motion, no fills, no shading, all colors from
+tokens, all decorative SVG `aria-hidden`.
 
 **The Ink-Tinted Shadow Rule.** Shadows are `rgba(28,43,28,…)` (or the brand
 equivalent for a green chip), with `0` horizontal offset and a blur at least
@@ -362,11 +387,14 @@ Three radii and one pill, all declared as tokens.
   badges, and the invisible focus-target boxes around small links and the logo.
 - **Card** (16px, `--radius-card`): cards, the white QR plate.
 - **Panel** (20px, `--radius-panel`): large panels and the modal shell.
-- **Pill** (`rounded-full`): selectable choice chips and round icon wells only.
+- **Pill** (`rounded-full`): selectable choice chips, round icon wells and
+  status badges (e.g. "Próximamente" in the nav) only.
 
 Borders are always 1px in `line`, or a low-alpha white on dark grounds
 (`border-white/12`). There are no double borders, no dashed strokes and no
-decorative rules; a divider is a hairline or it is nothing. Icons are line
+decorative rules; a divider is a hairline or it is nothing. (The dotted route
+of the home hero and the about hero is not a border: it is the route motif,
+see The Route Motif Exception.) Icons are line
 drawings on a 24px box, inlined as SVG paths with `currentColor`.
 
 ### Named Rules

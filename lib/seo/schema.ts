@@ -276,6 +276,99 @@ export function blogPostingSchema({
   };
 }
 
+/**
+ * `ItemList` de los elementos VISIBLES en un listado (ej. los negocios de
+ * `/aliados`): cada uno con su nombre y la URL de su página. Se ata a la
+ * página que lo muestra con `mainEntity`, vía el `@id` de `webPageSchema`.
+ * `startPosition` es la posición del primero en el listado completo (en la
+ * página 2 de 24, arranca en 25).
+ */
+export function itemListSchema({
+  name,
+  path,
+  items,
+  startPosition = 1,
+  numberOfItems,
+}: {
+  name: string;
+  /** Path de la página que muestra la lista. */
+  path: string;
+  items: readonly { name: string; path: string }[];
+  startPosition?: number;
+  /** Total del listado completo (no solo de esta página). */
+  numberOfItems?: number;
+}) {
+  const pageUrl = `${siteConfig.url}${path === "/" ? "" : path}`;
+
+  return {
+    "@type": "ItemList",
+    "@id": `${pageUrl}#itemlist`,
+    name,
+    mainEntityOfPage: { "@id": `${pageUrl}#webpage` },
+    numberOfItems: numberOfItems ?? items.length,
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: startPosition + index,
+      name: item.name,
+      url: `${siteConfig.url}${item.path}`,
+    })),
+  };
+}
+
+/**
+ * Un negocio de la red (`/aliados/[slug]`) como `LocalBusiness`. Solo campos
+ * reales del backend, cada uno si existe: dirección (`streetAddress`, el
+ * texto tal como está cargado), zona (`areaServed`), redes (`sameAs`), logo y
+ * coordenadas. Sin `aggregateRating` ni `review`: no hay datos reales de eso.
+ * `memberOf` lo ata a la organización: es parte de la red de AutoLibre.
+ */
+export function localBusinessSchema({
+  name,
+  path,
+  description,
+  address,
+  areaServed,
+  sameAs = [],
+  logoUrl,
+  geo,
+}: {
+  name: string;
+  path: string;
+  description?: string;
+  address?: string | null;
+  areaServed?: string;
+  sameAs?: readonly string[];
+  logoUrl?: string | null;
+  geo?: { latitude: number; longitude: number } | null;
+}) {
+  const url = `${siteConfig.url}${path}`;
+
+  return {
+    "@type": "LocalBusiness",
+    "@id": `${url}#business`,
+    name,
+    url,
+    mainEntityOfPage: { "@id": `${url}#webpage` },
+    memberOf: { "@id": ORGANIZATION_ID },
+    ...(description ? { description } : {}),
+    ...(address
+      ? {
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: address,
+            addressCountry: "AR",
+          },
+        }
+      : {}),
+    ...(areaServed ? { areaServed } : {}),
+    ...(sameAs.length > 0 ? { sameAs: [...sameAs] } : {}),
+    ...(logoUrl ? { logo: logoUrl, image: logoUrl } : {}),
+    ...(geo
+      ? { geo: { "@type": "GeoCoordinates", latitude: geo.latitude, longitude: geo.longitude } }
+      : {}),
+  };
+}
+
 /** Envuelve varios nodos en un único `@graph`, que es lo que Google prefiere. */
 export function graph(...nodes: object[]) {
   return {

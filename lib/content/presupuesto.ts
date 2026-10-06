@@ -69,15 +69,6 @@ export const presupuestoContent = {
       label: "Consultanos por WhatsApp",
       href: whatsappUrl(PEDIDO_WHATSAPP_TEXT),
     },
-    /**
-     * Link de texto a `/pedido`, debajo de los botones: la landing de pedido
-     * explica el paso a paso y la FAQ. Texto descriptivo (no "ver más") para
-     * que el ancla diga a dónde lleva.
-     */
-    pageLink: {
-      label: "Ver cómo funciona el pedido de presupuesto",
-      href: "/pedido",
-    },
   },
 
   modal: {

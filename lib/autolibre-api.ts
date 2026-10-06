@@ -268,3 +268,330 @@ export async function submitPartnerApplication(
 
   return { ok: false, kind: "unknown" };
 }
+
+/** Nivel del acuerdo comercial del partner. La landing no lo muestra. */
+export type PartnerTier = "founding" | "standard";
+
+/**
+ * Un negocio del directorio (`GET /partners`), tal como lo devuelve el
+ * backend. La pagina de aliados muestra solo una parte: `whatsapp`,
+ * `address`, `redirectLink` y `tier` viajan pero no se pintan.
+ */
+export interface PartnerSummary {
+  readonly id: string;
+  readonly slug: string;
+  readonly name: string;
+  readonly logoUrl: string | null;
+  readonly whatsapp: string | null;
+  readonly address: string | null;
+  readonly redirectLink: string | null;
+  readonly coverageZone: string;
+  readonly tier: PartnerTier;
+  /** Slugs de rubro. */
+  readonly services: readonly string[];
+  /** Slugs de FAMILIA del catalogo (derivadas de los rubros en el backend). */
+  readonly categories: readonly string[];
+  /** Vacio = trabaja con todas las marcas. */
+  readonly brands: readonly string[];
+}
+
+export interface PartnersPage {
+  readonly data: readonly PartnerSummary[];
+  readonly total: number;
+  readonly page: number;
+  readonly pageSize: number;
+  readonly totalPages: number;
+}
+
+/**
+ * Una hora: el directorio cambia cuando el equipo aprueba o da de baja un
+ * negocio, no minuto a minuto. Con `revalidate` la respuesta queda en el Data
+ * Cache de Next y, si el backend falla al revalidar, se sigue sirviendo la
+ * ultima respuesta buena (stale) hasta que vuelva: la pagina sobrevive a un
+ * corte corto sin mostrar el estado de error.
+ */
+const PARTNERS_REVALIDATE_SECONDS = 3600;
+
+/** Tope del backend para `pageSize`. */
+const PARTNERS_MAX_PAGE_SIZE = 100;
+
+/**
+ * Pagina del directorio publico de partners activos, ya ordenada por el
+ * backend (los `founding` primero, por contrato comercial). NO se reordena.
+ *
+ * A diferencia de `fetchServiceCatalog`, esto SI tira cuando el backend no
+ * contesta: el directorio no tiene una version degradada que tenga sentido
+ * (una grilla vacia diria "no hay negocios", que es falso). Quien renderiza
+ * atrapa el error y muestra el estado de error de la seccion, sin tirar abajo
+ * el resto de la pagina.
+ */
+export async function fetchPartners({
+  category,
+  page = 1,
+  pageSize = 24,
+}: {
+  /** Slug de familia del catalogo. Sin valor: todas. */
+  readonly category?: string;
+  readonly page?: number;
+  readonly pageSize?: number;
+}): Promise<PartnersPage> {
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(Math.min(pageSize, PARTNERS_MAX_PAGE_SIZE)),
+  });
+  // `category` y `service` son excluyentes en el backend; la landing solo
+  // filtra por familia.
+  if (category) params.set("category", category);
+
+  const response = await fetch(`${apiBaseUrl()}/api/v1/partners?${params}`, {
+    next: { revalidate: PARTNERS_REVALIDATE_SECONDS },
+  });
+
+  if (!response.ok) {
+    throw new Error(`[partners] el backend respondio ${response.status}.`);
+  }
+
+  return parsePartnersPage(await response.json());
+}
+
+/** El primer campo obligatorio que le falta a un partner crudo, o `null`. */
+function missingPartnerField(entry: Record<string, unknown>): string | null {
+  if (typeof entry.id !== "string") return "id";
+  if (typeof entry.slug !== "string" || entry.slug === "") return "slug";
+  if (typeof entry.name !== "string" || entry.name.trim() === "") return "name";
+  return null;
+}
+
+/**
+ * Parseo defensivo, mismo criterio que el catalogo: un partner sin `slug` o
+ * sin `name` no puede tener tarjeta (no hay a donde linkear ni que mostrar),
+ * asi que se descarta en vez de romper la grilla.
+ *
+ * Pero si el backend dice que hay partners y NO sobrevive ninguno, no es un
+ * partner suelto mal cargado: es el contrato que cambio (o una respuesta
+ * vieja en cache, de antes de que existiera `slug`). Eso tira, para que la
+ * pagina muestre el estado de error y no una grilla vacia que diga "0 de 41".
+ * Una respuesta con `data` vacio (un rubro sin negocios) no es un error.
+ */
+function parsePartnersPage(value: unknown): PartnersPage {
+  const payload = (typeof value === "object" && value !== null ? value : {}) as Record<
+    string,
+    unknown
+  >;
+  const toNumber = (input: unknown, fallback: number) =>
+    typeof input === "number" && Number.isFinite(input) ? input : fallback;
+  const toStrings = (input: unknown): string[] =>
+    Array.isArray(input) ? input.filter((item): item is string => typeof item === "string") : [];
+  const toNullableString = (input: unknown) =>
+    typeof input === "string" && input.trim() !== "" ? input : null;
+
+  const rawData: unknown[] = Array.isArray(payload.data) ? payload.data : [];
+  let firstMissing: string | null = null;
+
+  const data = rawData
+    .map((raw): PartnerSummary | null => {
+      if (typeof raw !== "object" || raw === null) {
+        firstMissing ??= "(no es un objeto)";
+        return null;
+      }
+      const entry = raw as Record<string, unknown>;
+      const missing = missingPartnerField(entry);
+      if (missing) {
+        firstMissing ??= missing;
+        return null;
+      }
+
+      return {
+        id: entry.id as string,
+        slug: entry.slug as string,
+        name: entry.name as string,
+        logoUrl: toNullableString(entry.logoUrl),
+        whatsapp: toNullableString(entry.whatsapp),
+        address: toNullableString(entry.address),
+        redirectLink: toNullableString(entry.redirectLink),
+        coverageZone: typeof entry.coverageZone === "string" ? entry.coverageZone : "",
+        tier: entry.tier === "founding" ? "founding" : "standard",
+        services: toStrings(entry.services),
+        categories: toStrings(entry.categories),
+        brands: toStrings(entry.brands),
+      };
+    })
+    .filter((partner): partner is PartnerSummary => partner !== null);
+
+  const dropped = rawData.length - data.length;
+  const total = toNumber(payload.total, data.length);
+
+  if (rawData.length > 0 && data.length === 0 && total > 0) {
+    throw new Error(
+      `[partners] se descartaron los ${dropped} partners de la respuesta (primer campo faltante: ${firstMissing}). ¿Cambio el contrato o es una respuesta vieja en cache?`,
+    );
+  }
+  if (dropped > 0) {
+    console.error(
+      `[partners] se descartaron ${dropped} de ${rawData.length} partners (primer campo faltante: ${firstMissing}).`,
+    );
+  }
+
+  return {
+    data,
+    total,
+    page: toNumber(payload.page, 1),
+    pageSize: toNumber(payload.pageSize, data.length),
+    totalPages: toNumber(payload.totalPages, 1),
+  };
+}
+
+/**
+ * El directorio COMPLETO (todas las paginas, `pageSize` maximo, sin filtro).
+ * Una llamada por pagina, cada una cacheada como `fetchPartners`; con el
+ * volumen actual (decenas de negocios) es una sola. Tira si falla: lo usan
+ * el sitemap y el calculo de rubros con negocios, que deciden su fallback.
+ */
+export async function fetchAllPartners(): Promise<PartnerSummary[]> {
+  const partners: PartnerSummary[] = [];
+  let page = 1;
+  let totalPages = 1;
+
+  do {
+    const result = await fetchPartners({ page, pageSize: PARTNERS_MAX_PAGE_SIZE });
+    partners.push(...result.data);
+    totalPages = result.totalPages;
+    page += 1;
+  } while (page <= totalPages);
+
+  return partners;
+}
+
+/**
+ * Slugs de las familias que tienen al menos un partner activo, sacados del
+ * directorio completo (`fetchAllPartners`) y no de una llamada por familia.
+ *
+ * Devuelve `null` —nunca tira— si algo falla: quien lo usa cae en mostrar
+ * todas las familias del catalogo.
+ */
+export async function fetchActivePartnerCategories(): Promise<Set<string> | null> {
+  try {
+    const partners = await fetchAllPartners();
+    return new Set(partners.flatMap((partner) => partner.categories));
+  } catch (error) {
+    console.error("[partners] no se pudieron leer los rubros con negocios:", error);
+    return null;
+  }
+}
+
+export type FuelType = "gasoline" | "diesel" | "cng" | "electric" | "hybrid";
+const FUEL_TYPES: readonly FuelType[] = ["gasoline", "diesel", "cng", "electric", "hybrid"];
+
+export type PartnerLinkKind =
+  | "instagram"
+  | "website"
+  | "facebook"
+  | "mercado_libre"
+  | "x"
+  | "tiktok"
+  | "other";
+const PARTNER_LINK_KINDS: readonly PartnerLinkKind[] = [
+  "instagram",
+  "website",
+  "facebook",
+  "mercado_libre",
+  "x",
+  "tiktok",
+  "other",
+];
+
+export interface PartnerLink {
+  readonly kind: PartnerLinkKind;
+  readonly url: string;
+}
+
+/** Perfil completo de un negocio (`GET /partners/by-slug/:slug`). */
+export interface PartnerDetail extends PartnerSummary {
+  readonly description: string | null;
+  readonly email: string | null;
+  /** Texto libre, tal como lo cargo el equipo (no alcanza para "abierto ahora"). */
+  readonly hours: string | null;
+  /** Texto libre del backend ("en local", "a domicilio"...). */
+  readonly modality: string | null;
+  /** Entra completo o no entra. */
+  readonly geo: { readonly latitude: number; readonly longitude: number } | null;
+  /** Vacio = todos los combustibles. */
+  readonly fuelTypes: readonly FuelType[];
+  readonly links: readonly PartnerLink[];
+}
+
+/**
+ * Perfil de un negocio por su slug publico. `null` cuando el backend dice 404
+ * (no existe, esta inactivo o el slug es invalido): la pagina responde
+ * `notFound()`. Cualquier otro error TIRA: un backend caido no es "este
+ * negocio no existe", y responder 404 haria que Google lo saque del indice.
+ *
+ * Mismo `revalidate` que el directorio; `fetch` ya memoiza la llamada dentro
+ * de un render, y el `cache()` de React que la envuelve en la pagina lo hace
+ * explicito para `generateMetadata` + la pagina.
+ */
+export async function fetchPartnerBySlug(slug: string): Promise<PartnerDetail | null> {
+  const response = await fetch(
+    `${apiBaseUrl()}/api/v1/partners/by-slug/${encodeURIComponent(slug)}`,
+    { next: { revalidate: PARTNERS_REVALIDATE_SECONDS } },
+  );
+
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(`[partner] el backend respondio ${response.status} para "${slug}".`);
+  }
+
+  const detail = parsePartnerDetail(await response.json());
+  if (!detail) {
+    throw new Error(`[partner] la respuesta de "${slug}" no cumple el contrato (falta id, slug o name).`);
+  }
+  return detail;
+}
+
+function parsePartnerDetail(value: unknown): PartnerDetail | null {
+  if (typeof value !== "object" || value === null) return null;
+  const entry = value as Record<string, unknown>;
+  // Reusa el parseo de la tarjeta para los campos compartidos.
+  const [summary] = parsePartnersPage({ data: [entry], total: 0 }).data;
+  if (!summary) return null;
+
+  const text = (input: unknown) =>
+    typeof input === "string" && input.trim() !== "" ? input.trim() : null;
+  const geoRaw = entry.geo as Record<string, unknown> | null | undefined;
+  const geo =
+    geoRaw &&
+    typeof geoRaw.latitude === "number" &&
+    typeof geoRaw.longitude === "number" &&
+    Number.isFinite(geoRaw.latitude) &&
+    Number.isFinite(geoRaw.longitude)
+      ? { latitude: geoRaw.latitude, longitude: geoRaw.longitude }
+      : null;
+
+  const fuelTypes = (Array.isArray(entry.fuelTypes) ? entry.fuelTypes : []).filter(
+    (fuel): fuel is FuelType => FUEL_TYPES.includes(fuel as FuelType),
+  );
+
+  // Solo links http(s): una URL rara en el admin no puede terminar en un
+  // `href` con `javascript:` en la pagina publica.
+  const links = (Array.isArray(entry.links) ? entry.links : [])
+    .map((raw): PartnerLink | null => {
+      if (typeof raw !== "object" || raw === null) return null;
+      const { kind, url } = raw as Record<string, unknown>;
+      if (!PARTNER_LINK_KINDS.includes(kind as PartnerLinkKind) || typeof url !== "string") {
+        return null;
+      }
+      return /^https?:\/\//i.test(url.trim()) ? { kind: kind as PartnerLinkKind, url: url.trim() } : null;
+    })
+    .filter((link): link is PartnerLink => link !== null);
+
+  return {
+    ...summary,
+    description: text(entry.description),
+    email: text(entry.email),
+    hours: text(entry.hours),
+    modality: text(entry.modality),
+    geo,
+    fuelTypes,
+    links,
+  };
+}

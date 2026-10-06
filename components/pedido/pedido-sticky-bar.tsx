@@ -71,6 +71,8 @@ export function PedidoStickyBar({ label, children }: PedidoStickyBarProps) {
     <aside
       aria-label={label}
       inert={!visible}
+      // Oculta el botón flotante de WhatsApp debajo de `lg` (ver `WhatsappFab`).
+      data-bottom-bar
       className={cn(
         // `calc` con `env()`: no hay utility canónica para sumar el área
         // segura del iPhone (la barra del home no puede tapar los botones).

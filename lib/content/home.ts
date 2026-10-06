@@ -1,4 +1,9 @@
-import type { FeatureItem, TimelineEntry } from "@/lib/content/types";
+import type {
+  FeatureItem,
+  TimelineEntry,
+  VerticalItem,
+} from "@/lib/content/types";
+import { siteContent } from "@/lib/content/site";
 import { siteConfig } from "@/lib/seo/config";
 
 /** Copy de la home. Un objeto por sección, en el mismo orden que la página. */
@@ -13,11 +18,15 @@ export const homeContent = {
     subtitle:
       "Documentación, vencimientos, historial, diagnóstico con IA, talleres y servicios cerca tuyo.",
     downloadNote: "Gratis, para iPhone y Android.",
-    /** Salida secundaria hacia `QuotesSection` para quien ya necesita un taller. */
+    /**
+     * Salida secundaria a `/pedido` para quien ya necesita un taller. El
+     * destino es el del link de pedido del header (`siteContent.nav`): una
+     * sola fuente para la URL.
+     */
     quoteLink: {
       lead: "¿Necesitás algún servicio?",
       label: "¡Pedí tu presupuesto!",
-      href: "#presupuesto",
+      href: siteContent.nav.quoteLink.href,
     },
     /**
      * Palabras que suben (con rebote) debajo del eslogan, mismo tamaño y en
@@ -60,6 +69,27 @@ export const homeContent = {
     })),
     phoneLabel:
       "Pantallas de la app AutoLibre: el inicio con tu garage, la ficha del auto con alertas y documentos, los talleres aliados, el pedido de cotización y su seguimiento, y el chat de diagnóstico con IA.",
+  },
+
+  /**
+   * Franja de verticales (`VerticalsBandSection`), entre `QuotesSection` y
+   * `problem`: los nombres de lo que resolvemos, grandes y en mayúsculas,
+   * corriendo como un ticker. Solo informativa: sin links ni descripciones.
+   * El título no se ve (va `sr-only`), pero mantiene el outline válido.
+   */
+  verticals: {
+    title: "Lo que resolvemos para tu auto",
+    /** Misma marca que el item no operativo del nav: una sola fuente. */
+    comingSoonLabel: siteContent.nav.comingSoonLabel,
+    items: [
+      { label: "Reclamá tus multas" },
+      { label: "Mejorá tu seguro" },
+      { label: "Buscá taller para tu auto" },
+      { label: "Conocé tu deuda de patente" },
+      // No operativo todavía: lleva la marca "Próximamente".
+      { label: "Financiá tus arreglos", comingSoon: true },
+      { label: "Sacá turno para la VTV" },
+    ] satisfies readonly VerticalItem[],
   },
 
   problem: {

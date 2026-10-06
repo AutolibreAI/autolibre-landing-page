@@ -111,6 +111,67 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M9 8h6M9 12h6" />
     </>
   ),
+  calendar: (
+    <>
+      <rect x="3.5" y="5" width="17" height="15.5" rx="2" />
+      <path d="M3.5 10h17M8 3v4M16 3v4" />
+    </>
+  ),
+  /** Dos personas: la de adelante entera, la de atrás asomando. */
+  users: (
+    <>
+      <circle cx="9" cy="8.5" r="3.2" />
+      <path d="M3 19.5a6 6 0 0 1 12 0" />
+      <path d="M15.5 5.6a3.2 3.2 0 0 1 0 5.8M17.5 14.2a6 6 0 0 1 3.5 5.3" />
+    </>
+  ),
+  smartphone: (
+    <>
+      <rect x="6.5" y="2.5" width="11" height="19" rx="2.2" />
+      <path d="M10.5 18.5h3" />
+    </>
+  ),
+  wrench: (
+    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z" />
+  ),
+  /** Escudo con tilde: seguros (cobertura), sin logo de ninguna aseguradora. */
+  shield: (
+    <>
+      <path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6z" />
+      <path d="M9 12l2 2 4-4" />
+    </>
+  ),
+  /**
+   * Hoja con la esquina doblada: un acta o una boleta (multas). Distinta de
+   * `document`, que es la hoja lisa de la documentación del auto.
+   */
+  "file-text": (
+    <>
+      <path d="M14 2.5H7A1.5 1.5 0 0 0 5.5 4v16A1.5 1.5 0 0 0 7 21.5h10a1.5 1.5 0 0 0 1.5-1.5V7z" />
+      <path d="M14 2.5V7h4.5M8.5 12.5h7M8.5 16h7" />
+    </>
+  ),
+  /** Engranaje: una pieza mecánica (repuestos). */
+  cog: (
+    <>
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2.5" />
+      <path d="M12 6V3M12 21v-3M6 12H3M21 12h-3M16.2 7.8l2.1-2.1M5.6 18.4l2.1-2.1M7.8 7.8 5.6 5.6M18.4 18.4l-2.1-2.1" />
+    </>
+  ),
+  "credit-card": (
+    <>
+      <rect x="2.5" y="5" width="19" height="14" rx="2" />
+      <path d="M2.5 10h19M6.5 15h4" />
+    </>
+  ),
+  /** Compartir: flecha saliendo de una bandeja (el gesto de iOS, sin logo). */
+  share: (
+    <>
+      <path d="M12 3v12M7.5 7.5 12 3l4.5 4.5" />
+      <path d="M5 11.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-7.5" />
+    </>
+  ),
 };
 
 export function Icon({

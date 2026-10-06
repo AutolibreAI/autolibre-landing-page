@@ -7,20 +7,21 @@ type AboutPhotoProps = {
   readonly photo?: AboutPhotoData;
   /** Cuánto ocupa la foto en cada viewport. */
   readonly sizes: string;
-  /** `true` SOLO en la foto grupal del hero: es la imagen LCP de la página. */
-  readonly preload?: boolean;
   /** Proporción y radio del marco (`aspect-*`, `rounded-*`). */
   readonly className?: string;
 };
 
 /**
- * Foto de la página dentro de un marco de proporción fija. Sin foto todavía,
+ * Retrato del equipo dentro de un marco de proporción fija. Sin foto todavía,
  * el marco queda igual con un recuadro "Foto pendiente": mismo espacio, así
  * que el día que llega la foto el layout no se mueve (CLS 0).
  *
  * El recuadro es decorativo (`aria-hidden`): no hay nada que describir.
+ *
+ * Sin `preload`: ninguna foto de la página es la LCP (lo es el `h1` del hero)
+ * y los retratos están lejos del primer viewport.
  */
-export function AboutPhoto({ photo, sizes, preload = false, className }: AboutPhotoProps) {
+export function AboutPhoto({ photo, sizes, className }: AboutPhotoProps) {
   return (
     <div className={cn("relative overflow-clip bg-surface-muted", className)}>
       {photo ? (
@@ -30,7 +31,6 @@ export function AboutPhoto({ photo, sizes, preload = false, className }: AboutPh
           width={photo.width}
           height={photo.height}
           sizes={sizes}
-          preload={preload}
           className="size-full object-cover"
         />
       ) : (

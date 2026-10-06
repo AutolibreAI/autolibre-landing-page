@@ -18,6 +18,21 @@
   --color-surface-muted: #eaf3ec; /* secciones alternas */
   --color-surface-subtle: #f7faf8; /* inputs y tarjetas suaves */
   --color-line: #eaf3ec; /* bordes */
+  /* Gris verdoso "fantasma": texto GRANDE decorativo-informativo (franja de
+     verticales de la home). Sobre `surface-muted` da 3.02:1, justo arriba
+     del 3:1 de WCAG AA para texto grande. NO usar en texto chico (< 24px o
+     < 18.66px bold): ahí no alcanza el 4.5:1. */
+  --color-ghost: #848d85;
+
+  /* WhatsApp (botón flotante). NO es el #25d366 oficial: con el glifo blanco
+     da 2:1 y no llega al 3:1 de WCAG 1.4.11. #1da851 da 3.1:1 (glifo y
+     contra el fondo blanco); el hover, 4.1:1. */
+  --color-whatsapp: #1da851;
+  --color-whatsapp-hover: #178f45;
+  /* Sombra del botón flotante: dos capas (contacto + difusa) en `ink`, para
+     que el disco se despegue también de fondos claros y verdes. */
+  --shadow-fab: 0 2px 6px rgb(28 43 28 / 0.22), 0 10px 28px rgb(28 43 28 / 0.28);
+  --shadow-fab-hover: 0 3px 8px rgb(28 43 28 / 0.26), 0 14px 34px rgb(28 43 28 / 0.32);
 
   /* Estados */
   --color-alert-bg: #fbe2e2;
@@ -121,6 +136,24 @@
     }
   }
 
+  /* ── Franja de verticales (home) ──
+     Ticker infinito, CSS puro: el track lleva la lista DOS veces y se corre
+     de 0 a -50% (exactamente una copia), así el final empalma con el
+     principio sin salto. Lineal y sin pausa entre vueltas. 85s por copia:
+     ~60px/s con el texto de desktop, ~30px/s en mobile (lento, se lee
+     como textura).
+     Excepción de `prefers-reduced-motion` aprobada por producto (ver
+     `motion-exempt`). */
+  --animate-marquee: marquee 85s linear infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
 
   /* Celulares angostos (< 384px, p. ej. 360px): el titular del hero baja a
      `display-xs` para que "Mantenimientos" no se coma el margen lateral. */
@@ -178,6 +211,7 @@
 @utility reveal-group {
   @apply reveal-stagger;
 }
+
 
 @layer base {
   html {
@@ -257,10 +291,16 @@
       scroll-behavior: auto;
     }
 
-    /* `motion-exempt` = excepción de producto explícita (2026-09-23): solo
-       las palabras del hero. Con esta preferencia NO suben ni rebotan:
-       cambian con un fundido en el lugar (`hero-word-fade`), sin
-       desplazamiento, que es lo que marea. Todo lo demás queda frenado. */
+    /* `motion-exempt` = excepción de producto explícita. Son DOS, y no se
+       suman otras sin decisión de producto:
+       - Palabras del hero (2026-09-23). Con esta preferencia NO suben ni
+         rebotan: cambian con un fundido en el lugar (`hero-word-fade`), sin
+         desplazamiento, que es lo que marea.
+       - Track de la franja de verticales de la home (2026-10-03): sigue
+         corriendo igual (`marquee`). Es texto informativo, sin nada
+         interactivo adentro.
+       La clase va SOLO en el elemento animado: sus hijos no la heredan y
+       quedan frenados como todo lo demás. */
     *:not(.motion-exempt),
     *::before,
     *::after {

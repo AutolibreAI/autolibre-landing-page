@@ -144,9 +144,9 @@ posts:
     priority: P2
     batch: 2
     sourceIds: [LIC-06] # contenido con caducidad: revisar vigencia de la prórroga antes de cada revisión
-    status: planned
+    status: published
     blockedBy: null
-    hygraphId: null
+    hygraphId: cmusgmvexzlw307lh34pfos9g
 
   - slug: retencion-de-licencia-pba
     title: "Me retuvieron la licencia en un control en PBA: qué hacer"
@@ -210,9 +210,9 @@ posts:
     priority: P2
     batch: 2
     sourceIds: [PAT-01, PAT-02, PAT-03] # PAT-02 ✅ mixto: exención por antigüedad 🔍
-    status: planned
+    status: published
     blockedBy: null
-    hygraphId: null
+    hygraphId: cmurb1feoqovy07n36c66b63u
 
   - slug: gnc-oblea-y-prueba-hidraulica
     title: "Auto con GNC: oblea y prueba hidráulica al día"

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/heading";
 import { PhoneFrame } from "@/components/ui/phone-frame";
@@ -137,12 +138,12 @@ export function HeroSection() {
 
             <p className="mt-6 text-base text-ink/70">
               {quoteLink.lead}{" "}
-              <a
+              <Link
                 href={quoteLink.href}
                 className="inline-flex min-h-11 items-center font-semibold text-brand-hover underline decoration-brand-hover/40 underline-offset-4 transition-colors hover:text-ink hover:decoration-ink"
               >
                 {quoteLink.label}
-              </a>
+              </Link>
             </p>
           </div>
 

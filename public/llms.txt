@@ -14,16 +14,22 @@ Datos clave:
 - Diagnóstico: la IA orienta sobre qué le puede pasar al auto a partir de los síntomas que cuenta el usuario; con un escáner OBD-II por Bluetooth suma la lectura de códigos de falla (DTC) del motor. El diagnóstico final siempre lo confirma un mecánico.
 - Compatibilidad OBD-II: autos fabricados desde 1996 con conector de diagnóstico. Escáneres recomendados: Vgate iCar Pro; también compatibles Konnwei KW906 y ELM327 v1.5 (en iPhone, solo versiones BLE / Bluetooth 4.0).
 - Talleres y servicios: el usuario hace un pedido de servicio, recibe respuestas de talleres cercanos con los datos del auto ya cargados y elige con cuál trabajar.
+- Servicios que se pueden pedir: talleres, seguros, multas (pago con descuento o presentación del descargo) y repuestos. Financiamiento: próximamente, todavía no disponible.
+- Patente y VTV: consulta de deuda de patente del auto y turnos para la VTV.
 - Una sola cuenta admite varios autos.
+- Empresa: AutoLibre nació en febrero de 2026 en Buenos Aires como una idea de Nicolás Leunda y Ramiro Sarasola. Cofundadores: Nicolás Leunda (CEO), Matías García Guevara (CFO), Ramiro Sarasola (líder de desarrollo), Mateo Ghidini (desarrollo) y Matías Vidal (legal e inversores).
+- Lanzamiento: la app salió en App Store y Google Play el 8 de agosto de 2026.
 - Contacto: contact@autolibre.ai · WhatsApp +54 9 11 7280-4347
 
 ## Páginas principales
 
-- [Inicio](https://autolibre.ai/): qué es AutoLibre, funciones, cómo funciona, compatibilidad OBD2 y preguntas frecuentes.
+- [Inicio](https://autolibre.ai/): qué es AutoLibre, funciones, servicios que resuelve, cómo funciona, compatibilidad OBD2 y preguntas frecuentes.
 - [Descargar la app](https://autolibre.ai/descarga): enlaces a App Store y Google Play, y código QR para instalarla desde la compu.
 - [Pedir presupuesto](https://autolibre.ai/pedido): pedido de presupuestos gratis a proveedores de la zona del usuario en AMBA, escribiendo por WhatsApp o dejando zona, problema, patente (opcional) y WhatsApp en un formulario. AutoLibre responde por WhatsApp en el día y el usuario elige el proveedor, sin compromiso y sin necesidad de bajar la app.
 - [Proveedores](https://autolibre.ai/proveedores): registro para talleres y servicios que quieren recibir consultas de dueños de auto con marca, modelo, año y el problema ya delimitado.
-- [Sobre nosotros](https://autolibre.ai/sobre-nosotros): quiénes somos en AutoLibre.AI: misión, visión, historia de la empresa y el equipo que hace la app.
+- [Aliados](https://autolibre.ai/aliados): directorio de los talleres, aseguradoras, estudios para multas y casas de repuestos activos en AutoLibre en el AMBA, que reciben pedidos de presupuesto desde la app; se puede filtrar por rubro.
+- Perfiles de aliados (https://autolibre.ai/aliados/{slug}): una página por negocio de la red con sus rubros, marcas y combustibles que atiende, zona de cobertura, horarios, ubicación y redes cuando están cargados, y cómo pedirle presupuesto por AutoLibre.
+- [Sobre nosotros](https://autolibre.ai/sobre-nosotros): misión, visión, historia de AutoLibre desde febrero de 2026, línea de tiempo de hitos y los cinco cofundadores.
 - [Soporte](https://autolibre.ai/support): formulario de contacto para usuarios con problemas en la app.
 
 ## Blog

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 type NavCtaLinkProps = Pick<
   VariantProps<typeof buttonVariants>,
-  "size" | "block"
+  "variant" | "size" | "block"
 > & {
   readonly cta: NavCta;
   /** `placement` del evento en este lugar (header o menú mobile). */
@@ -21,6 +21,9 @@ type NavCtaLinkProps = Pick<
  * (`<a>` nativo con `target="_blank"`, p. ej. WhatsApp en `/pedido`, mismo
  * criterio que `WhatsappLink`).
  *
+ * `variant`: en el header es `outline` (secundario) cuando al lado está
+ * "Pedir presupuesto", y `primary` cuando la página lo apaga (`/proveedores`).
+ *
  * Sin "use client": el evento lo manda el listener delegado de
  * `AnalyticsEvents` leyendo `data-analytics-event`,
  * `data-analytics-placement` y, si el CTA la define,
@@ -30,6 +33,7 @@ type NavCtaLinkProps = Pick<
 export function NavCtaLink({
   cta,
   placement,
+  variant,
   size,
   block,
   className,
@@ -62,7 +66,7 @@ export function NavCtaLink({
         target="_blank"
         rel="noopener noreferrer"
         onClick={onClick}
-        className={cn(buttonVariants({ size, block }), className)}
+        className={cn(buttonVariants({ variant, size, block }), className)}
         {...tracking}
       >
         {content}
@@ -73,6 +77,7 @@ export function NavCtaLink({
   return (
     <ButtonLink
       href={cta.href}
+      variant={variant}
       size={size}
       block={block}
       onClick={onClick}

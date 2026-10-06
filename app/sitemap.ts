@@ -1,4 +1,6 @@
 import type { MetadataRoute } from "next";
+import { fetchAllPartners } from "@/lib/autolibre-api";
+import { partnerPath } from "@/lib/aliados/query";
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
 import { categoryPath } from "@/lib/blog/query";
 import { collectCategories, getPosts, postPath } from "@/lib/hygraph/posts";
@@ -44,8 +46,14 @@ const routes = [
     priority: 0.8,
   },
   {
+    path: "/aliados",
+    lastModified: "2026-10-05",
+    changeFrequency: "weekly",
+    priority: 0.7,
+  },
+  {
     path: "/sobre-nosotros",
-    lastModified: "2026-09-29",
+    lastModified: "2026-10-02",
     changeFrequency: "monthly",
     priority: 0.6,
   },
@@ -125,5 +133,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...pages, ...categories, ...posts];
+  // Perfiles de los negocios de la red (`/aliados/[slug]`), del directorio
+  // completo (cacheado 1 h). SIN `lastModified`: el backend no expone una
+  // fecha de última edición del perfil, y la del build le diría a Google que
+  // todos cambiaron en cada deploy (mismo motivo que las fechas fijas de
+  // arriba). Si el backend falla, el sitemap sale igual sin ellos.
+  const partners = await fetchAllPartners().catch((error: unknown) => {
+    console.error("[sitemap] no se pudieron leer los aliados:", error);
+    return [];
+  });
+  const partnerPages = partners.map((partner) => ({
+    url: `${siteConfig.url}${partnerPath(partner.slug)}`,
+    changeFrequency: "monthly" as const,
+    priority: 0.5,
+  }));
+
+  return [...pages, ...categories, ...posts, ...partnerPages];
 }

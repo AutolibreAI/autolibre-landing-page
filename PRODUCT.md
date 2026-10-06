@@ -15,7 +15,7 @@ La escena que importa para esta superficie: la persona **no** está navegando el
 sitio. Recibe un link suelto — por WhatsApp, por redes, por la bio de un perfil —
 y lo abre sin haber leído nada previo sobre AutoLibre. Llega en frío, con el
 teléfono en la mano o sentada frente a la compu, y tiene que entender qué es esto
-y decidir si lo instala en cuestión de segundos.
+y decidir, en cuestión de segundos, si pide un presupuesto o instala la app.
 
 Trabajo que está haciendo: mantener el auto en regla y en funcionamiento sin
 llevar la cuenta a mano de papeles, vencimientos y arreglos.
@@ -29,8 +29,25 @@ mantenimiento, diagnóstico y contacto con talleres.
 Frase de marca vigente en el sitio: *"Todo tu auto, en un solo lugar."*
 Cierre del home: *"Tu auto siempre supo qué tenía. Ahora vos también."*
 
-Éxito para esta superficie: que una persona que llega desde un link compartido
-instale la app.
+Además resuelve servicios por vertical (estado al 2026-10-03):
+
+- Operativas: Talleres, Seguros, Multas (pago con descuento + presentación del
+  descargo), Repuestos, consulta de deuda de patente y turnos de VTV (estas dos
+  últimas confirmadas por producto el 2026-10-03; todavía sin ruta propia en la
+  web ni opción en `/pedido`).
+- Financiamiento: "próximamente". Se muestra como badge en el nav y con la
+  marca "Próximamente" en la franja de verticales de la home
+  (`VerticalsBandSection`, solo informativa): sin página, no se puede elegir
+  en `/pedido` y sin schema `Service`.
+
+Éxito para el sitio (dos objetivos, al 2026-10-02):
+
+1. Pedidos de presupuesto, por la web y por la app. Es la conversión principal
+   de la web.
+2. Descargas de la app.
+
+El embudo: pedido en la web (`/pedido`) → seguimiento de las respuestas en la
+app.
 
 ## Positioning
 
@@ -58,6 +75,9 @@ Capacidades confirmadas (`homeContent.features`, `lib/content/faq.ts`):
 - Historial — todo lo que se le hizo al auto, registrado.
 - Diagnóstico — qué le pasa al auto, explicado (IA sobre lectura OBD2).
 - Talleres y servicios — a quién llamar, cerca tuyo.
+- Pedidos de presupuesto por vertical: Talleres, Seguros, Multas y Repuestos
+  (Financiamiento todavía no; ver Product Purpose).
+- Consulta de deuda de patente y turnos de VTV (operativas desde 2026-10-03).
 - Varios autos en una sola cuenta.
 - Gratis. Disponible hoy en App Store y Google Play.
 
@@ -105,9 +125,16 @@ Material real disponible, nada que inventar:
 - Copy de producto ya escrito y en producción en `lib/content/`.
 - WhatsApp y email de contacto reales en `siteConfig.contact`.
 
-Ausencias que no se completan con invención: no hay testimonios, no hay cantidad
-de usuarios, no hay rating de tiendas, no hay premios ni prensa. Ninguna de esas
-cosas se escribe en esta superficie.
+Cifras de tracción publicadas (a sep 2026): 200+ vehículos únicos y 50+
+proveedores en el marketplace (fuente: la constante `traction` de
+`lib/content/about.ts`, que alimenta la ficha del hero y el hito "Tracción" de
+`/sobre-nosotros`). Son las únicas cifras publicables: no se redondean para
+arriba ni se reformulan, y se actualizan en los dos lugares (esa constante y
+este archivo) cuando cambien.
+
+Ausencias que no se completan con invención: no hay testimonios, no hay rating
+de tiendas, no hay premios ni prensa. Ninguna de esas cosas se escribe en esta
+superficie.
 
 ## Product Principles
 

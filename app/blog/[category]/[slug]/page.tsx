@@ -172,7 +172,7 @@ export default async function PostPage({ params }: PageProps) {
 
   return (
     <>
-      <PageShell secondary={{ label: "Soy dueño de auto", href: "/" }} currentPath="/blog">
+      <PageShell currentPath="/blog">
         <article>
           {/* Encabezado a todo el ancho del contenedor, cerrado por una
               línea: el título manda y el índice arranca recién con el cuerpo. */}

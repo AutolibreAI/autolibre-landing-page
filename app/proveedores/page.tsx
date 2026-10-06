@@ -52,9 +52,9 @@ export default async function ProveedoresPage() {
   return (
     <>
       <PageShell
-        secondary={{ label: "Soy dueño de auto", href: "/" }}
         cta={{ label: "Sumar mi negocio", href: "#form" }}
         currentPath="/proveedores"
+        showQuoteLink={false}
       >
         <ProvidersHeroSection />
         <ProvidersReasonsSection />
