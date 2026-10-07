@@ -51,6 +51,18 @@ export type FeatureItem = {
   readonly icon: IconName;
 };
 
+/**
+ * Función de la app que destaca el hero de la home. Cada texto tiene que
+ * tener una pantalla o flujo real detrás y no puede prometer ahorro, ni
+ * reducción de multas, ni financiación.
+ */
+export type HeroHighlight = {
+  readonly id: string;
+  /** Clave del ícono en `components/ui/icon.tsx` (decorativo). */
+  readonly icon: IconName;
+  readonly text: string;
+};
+
 export type IconName =
   | "document"
   | "bell"
@@ -69,7 +81,18 @@ export type IconName =
   | "info"
   | "alert"
   | "image"
-  | "linkedin";
+  | "linkedin"
+  | "phone"
+  | "navigation"
+  | "share"
+  | "star"
+  | "instagram"
+  | "globe"
+  | "shield-check"
+  | "calendar"
+  | "chevron-down"
+  | "bolt"
+  | "camera";
 
 /** Tiendas donde está publicada la app. */
 export type StoreId = "appStore" | "playStore";

@@ -1,36 +1,38 @@
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
+import { PROVIDER_PROFILES_PUBLIC } from "@/lib/provider-profile/visibility";
 import { siteConfig } from "@/lib/seo/config";
 import { providersContent } from "@/lib/content/providers";
 import type { NavLink, StoreLink } from "@/lib/content/types";
 
-/** Link a `/pedido`: el mismo en el header, el menú mobile y el footer. */
-const quoteLink = { label: "Pedir presupuesto", href: "/pedido" } as const;
+/**
+ * Link a `/pedido`: ES la etiqueta única de todos los puntos de entrada de
+ * presupuesto (header, menú mobile, hero, banda de la home y footer). Nadie
+ * escribe su propio texto: así no vuelven a divergir.
+ */
+const quoteLink = { label: "Pedí tu presupuesto", href: "/pedido" } as const;
 /** Link a `/blog`: el mismo en el header, el menú mobile y el footer. */
 const blogLink = { label: "Blog", href: "/blog" } as const;
 /** Link a `/sobre-nosotros`: solo en el footer (el header ya está completo). */
 const aboutLink = { label: "Sobre nosotros", href: "/sobre-nosotros" } as const;
 
-/** Contenido del header y del footer, compartido por todas las páginas. */
+/**
+ * Contenido del header y del footer, compartido por todas las páginas.
+ *
+ * El header sale SIEMPRE de acá y es el mismo en todas las páginas: ninguna
+ * página elige sus links (`SiteHeader` no acepta props para eso). Lo único
+ * que una página puede cambiar es el botón de la derecha (`cta`).
+ */
 export const siteContent = {
   nav: {
+    /** Anclas de la home + Blog. Visibles desde `xl`; debajo, en el menú. */
     links: [
       { label: "Producto", href: "/#producto" },
       { label: "Cómo funciona", href: "/#como-funciona" },
-      { label: "Compatibilidad", href: "/#compatibilidad" },
       { label: "FAQ", href: "/#faq" },
       ...(BLOG_PUBLIC ? [blogLink] : []),
     ] satisfies readonly NavLink[],
-    /**
-     * Link fijo a `/pedido` en TODAS las páginas (header y menú mobile): es
-     * lo que saca a la landing de pedido de ser una página huérfana.
-     */
+    /** Presupuesto: visible desde `md`, y en el menú debajo de `xl`. */
     quoteLink,
-    /**
-     * Link al blog en el header de las páginas internas (nav y menú mobile).
-     * En la home ya va entre las anclas de `links`. `null` mientras el blog
-     * no es público.
-     */
-    blogLink: BLOG_PUBLIC ? blogLink : null,
     providerLink: { label: "Soy proveedor", href: "/proveedores" },
     cta: { label: "Descargar la app", href: "/#descargar" },
     /**
@@ -81,6 +83,11 @@ export const siteContent = {
           quoteLink,
           // Mismo texto que el título del form de `/proveedores`.
           { label: providersContent.form.title, href: "/proveedores" },
+          // El índice de perfiles entra al footer recién cuando es público
+          // (`lib/provider-profile/visibility.ts`).
+          ...(PROVIDER_PROFILES_PUBLIC
+            ? [{ label: "Proveedores", href: "/p" }]
+            : []),
         ],
       },
       {

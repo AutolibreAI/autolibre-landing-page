@@ -21,7 +21,7 @@
  * Base del backend. Server-side a proposito (sin `NEXT_PUBLIC_`): esta URL no
  * tiene por que viajar al bundle del cliente.
  */
-function apiBaseUrl(): string {
+export function apiBaseUrl(): string {
   const trimmed = process.env.AUTOLIBRE_API_URL?.trim().replace(/\/+$/, "");
 
   if (!trimmed) {

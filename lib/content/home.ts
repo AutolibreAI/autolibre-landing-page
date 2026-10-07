@@ -1,24 +1,51 @@
-import type { FeatureItem, TimelineEntry } from "@/lib/content/types";
-import { siteConfig } from "@/lib/seo/config";
+import type {
+  FeatureItem,
+  HeroHighlight,
+  TimelineEntry,
+} from "@/lib/content/types";
 
 /** Copy de la home. Un objeto por sección, en el mismo orden que la página. */
 export const homeContent = {
   /**
    * Hero de la home: qué es AutoLibre, en general. Tiene el único `<h1>` de
-   * la página y absorbe la descarga (tiendas + ancla `#descargar`). El pedido
-   * de presupuesto va justo debajo, en `QuotesSection`.
+   * la página y absorbe la descarga (tiendas + ancla `#descargar`). Sin CTA de
+   * presupuesto a propósito: el pedido va en el header y en `QuotesSection`.
    */
   hero: {
     titleLines: ["Todo tu auto,", "en un solo lugar."],
     subtitle:
       "Documentación, vencimientos, historial, diagnóstico con IA, talleres y servicios cerca tuyo.",
+    /**
+     * Las funciones que más conviene mostrar primero, por potencial de
+     * ingresos (decisión de producto, 2026-10-07): presupuestos con talleres,
+     * diagnóstico (y el adaptador), mantenimiento y multas. Texto en el HTML
+     * del servidor. "Financiación" quedó afuera a propósito: no es una
+     * función de la app. Si producto no confirma que las multas están
+     * disponibles para todos, se saca el último ítem.
+     */
+    highlights: [
+      {
+        id: "highlight-presupuestos",
+        icon: "receipt",
+        text: "Pedí presupuestos y compará talleres",
+      },
+      {
+        id: "highlight-diagnostico",
+        icon: "car",
+        text: "Entendé qué le pasa a tu auto",
+      },
+      {
+        id: "highlight-mantenimiento",
+        icon: "clock",
+        text: "Mantené tu auto al día",
+      },
+      {
+        id: "highlight-multas",
+        icon: "alert",
+        text: "Enterate si tenés multas",
+      },
+    ] satisfies readonly HeroHighlight[],
     downloadNote: "Gratis, para iPhone y Android.",
-    /** Salida secundaria hacia `QuotesSection` para quien ya necesita un taller. */
-    quoteLink: {
-      lead: "¿Necesitás algún servicio?",
-      label: "¡Pedí tu presupuesto!",
-      href: "#presupuesto",
-    },
     /**
      * Palabras que suben (con rebote) debajo del eslogan, mismo tamaño y en
      * verde. Son 8 a propósito: el keyframe `hero-word` de `globals.css`
@@ -201,25 +228,6 @@ export const homeContent = {
       "AutoLibre te orienta y traduce. El diagnóstico final siempre lo hace un mecánico.",
     footnote:
       "Desde ahí, pedís presupuesto sin salir de la app: el taller recibe el problema y los datos de tu auto. Y cuando lo resolvés, queda en su historial.",
-  },
-
-  compatibility: {
-    title: "¿Tu auto es compatible?",
-    subtitle:
-      "La mayoría de los autos tiene un conector de diagnóstico. Fijate si el tuyo lo tiene.",
-    detail:
-      "Tenerlo es la primera señal, pero algunos modelos usan un sistema propio y no responden igual. Si nos decís marca, modelo y año, te confirmamos si el tuyo funciona.",
-    cta: {
-      label: "Consultanos por WhatsApp",
-      href: siteConfig.contact.whatsapp,
-    },
-    image: {
-      // Se muestra con un tope de 400px de ancho: 1200px cubre DPR 3.
-      src: "/mockup/obd2-connector.webp",
-      alt: "Ubicación del conector de diagnóstico OBD2 debajo del volante",
-      width: 1200,
-      height: 800,
-    },
   },
 
   providerBand: {

@@ -6,14 +6,21 @@ import {
   APP_STORES,
   CLICKABLE_EVENTS,
   LEAD_SOURCES,
+  PROVIDER_ACTIONS,
+  QUOTE_CTA_PLACEMENTS,
   type AnalyticsEventName,
   type AnalyticsProps,
 } from "@/lib/analytics/events";
 import { META_PIXEL_ID, trackMetaPageView } from "@/lib/analytics/meta-pixel";
+import { parseProviderAction, parseProviderAttr } from "@/lib/analytics/provider-attrs";
 import { trackUnchecked } from "@/lib/analytics/track";
 
 const LEAD_SOURCE_VALUES = new Set<string>(Object.values(LEAD_SOURCES));
 const STORE_VALUES = new Set<string>(Object.values(APP_STORES));
+const PROVIDER_ACTION_VALUES = new Set<string>(Object.values(PROVIDER_ACTIONS));
+const QUOTE_CTA_PLACEMENT_VALUES = new Set<string>(
+  Object.values(QUOTE_CTA_PLACEMENTS),
+);
 
 /**
  * Isla hoja de la medición. No renderiza nada: sólo engancha dos cosas que
@@ -38,8 +45,15 @@ const STORE_VALUES = new Set<string>(Object.values(APP_STORES));
  *   - `data-analytics-lead-source="whatsapp"` → `lead_source` (de qué camino
  *     vino el `Lead`).
  *   - `data-analytics-store="app_store"` → `store`.
- *   `lead_source` y `store` sólo aceptan los valores del catálogo; el resto
- *   se ignora para que un typo no abra una fuente nueva en los reportes.
+ *   - `data-analytics-quote-placement="hero"` → `placement` de
+ *     `quote_cta_clicked` (CTA de presupuesto). Sólo acepta los valores de
+ *     `QUOTE_CTA_PLACEMENTS`.
+ *   - `data-analytics-provider="mecanica-barrancas"` → `provider` (slug del
+ *     perfil; si no tiene formato de slug, se omite).
+ *   - `data-analytics-action="call"` → `action` de `provider_action_clicked`.
+ *   `lead_source`, `store`, `action` y el `placement` de presupuesto sólo aceptan los
+ *   valores del catálogo; el resto se ignora para que un typo no abra una
+ *   fuente nueva en los reportes.
  *   Nunca datos personales.
  */
 export function AnalyticsEvents() {
@@ -62,11 +76,22 @@ export function AnalyticsEvents() {
       const props: AnalyticsProps = {};
       const placement = el.dataset.analyticsPlacement;
       if (placement) props.placement = placement;
+      const quotePlacement = el.dataset.analyticsQuotePlacement;
+      if (quotePlacement && QUOTE_CTA_PLACEMENT_VALUES.has(quotePlacement)) {
+        props.placement = quotePlacement;
+      }
       if (el.dataset.analyticsPedido !== undefined) props.pedido = true;
       const leadSource = el.dataset.analyticsLeadSource;
       if (leadSource && LEAD_SOURCE_VALUES.has(leadSource)) {
         props.lead_source = leadSource;
       }
+      const provider = parseProviderAttr(el.dataset.analyticsProvider);
+      if (provider) props.provider = provider;
+      const action = parseProviderAction(
+        el.dataset.analyticsAction,
+        PROVIDER_ACTION_VALUES,
+      );
+      if (action) props.action = action;
       const store = el.dataset.analyticsStore;
       if (store && STORE_VALUES.has(store)) props.store = store;
 

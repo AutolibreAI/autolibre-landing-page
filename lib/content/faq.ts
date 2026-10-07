@@ -1,4 +1,5 @@
 import type { FaqCategory, FaqItem } from "@/lib/content/types";
+import { siteConfig } from "@/lib/seo/config";
 
 /**
  * FAQ agrupada por categoría. Alimenta dos cosas a la vez: la UI con tabs
@@ -126,8 +127,7 @@ export const faqCategories: readonly FaqCategory[] = [
       {
         id: "faq-autos-compatibles",
         question: "¿Qué autos son compatibles con el adaptador?",
-        answer:
-          "La mayoría de los autos con conector de diagnóstico bajo el volante. Decinos marca, modelo y año y te confirmamos si el tuyo funciona.",
+        answer: `La mayoría de los autos con conector de diagnóstico bajo el volante. Escribinos a ${siteConfig.contact.email} o por WhatsApp con marca, modelo y año y te confirmamos si el tuyo funciona.`,
       },
       {
         id: "faq-cualquier-auto",

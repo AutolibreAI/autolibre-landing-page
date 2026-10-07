@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
 import { categoryPath } from "@/lib/blog/query";
 import { collectCategories, getPosts, postPath } from "@/lib/hygraph/posts";
+import { listAllProviderSummaries } from "@/lib/provider-profile/api";
+import { PROVIDER_PROFILES_PUBLIC } from "@/lib/provider-profile/visibility";
 import { siteConfig } from "@/lib/seo/config";
 
 /**
@@ -15,7 +17,7 @@ import { siteConfig } from "@/lib/seo/config";
 const routes = [
   {
     path: "/",
-    lastModified: "2026-08-21",
+    lastModified: "2026-10-07",
     changeFrequency: "weekly",
     priority: 1,
   },
@@ -125,5 +127,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...pages, ...categories, ...posts];
+  // Perfiles de proveedores: solo con el interruptor encendido, y solo los
+  // INDEXABLES (un perfil pobre lleva `noindex` y no entra al mapa). El listado
+  // lo cambia cada vez que se aprueba o edita un proveedor, así que el
+  // `lastModified` de `/p` es el del perfil más reciente. Si el backend no
+  // responde el listado viene vacío y se omite la sección, sin romper el build.
+  const providers = PROVIDER_PROFILES_PUBLIC
+    ? (await listAllProviderSummaries()).filter((summary) => summary.indexable)
+    : [];
+  const latestProviderDate = providers.reduce(
+    (latest, summary) => (summary.updatedAt > latest ? summary.updatedAt : latest),
+    "",
+  );
+  const providerIndex =
+    providers.length > 0
+      ? [
+          {
+            url: `${siteConfig.url}/p`,
+            lastModified: latestProviderDate || undefined,
+            changeFrequency: "daily" as const,
+            priority: 0.7,
+          },
+        ]
+      : [];
+  const providerPages = providers.map((summary) => ({
+    url: `${siteConfig.url}/p/${summary.slug}`,
+    lastModified: summary.updatedAt,
+    changeFrequency: "weekly" as const,
+    priority: 0.6,
+  }));
+
+  return [...pages, ...categories, ...posts, ...providerIndex, ...providerPages];
 }

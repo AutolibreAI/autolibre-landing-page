@@ -3,7 +3,6 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { JsonLd } from "@/components/seo/json-ld";
 import { ClosingCtaSection } from "@/components/sections/home/closing-cta";
-import { CompatibilitySection } from "@/components/sections/home/compatibility";
 import { DiagnosticsSection } from "@/components/sections/home/diagnostics";
 import { FaqSection } from "@/components/sections/home/faq";
 import { FeaturesSection } from "@/components/sections/home/features";
@@ -58,7 +57,6 @@ export default function HomePage() {
         <HistorySection />
         <HowItWorksSection />
         <DiagnosticsSection />
-        <CompatibilitySection />
         <ProviderBandSection />
         <FaqSection />
         <LatestGuidesSection />

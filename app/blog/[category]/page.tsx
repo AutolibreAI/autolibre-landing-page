@@ -129,7 +129,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
   return (
     <>
-      <PageShell secondary={{ label: "Soy dueño de auto", href: "/" }} currentPath="/blog">
+      <PageShell currentPath="/blog">
         <BlogListingHeader
           heading={heading}
           description={description}
