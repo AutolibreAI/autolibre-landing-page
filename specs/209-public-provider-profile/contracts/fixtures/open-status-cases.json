@@ -1,0 +1,29 @@
+{
+  "_comment": "Fixture dorada de getOpenStatus. La MISMA la debe pasar la app móvil (riesgo R3: web y app no pueden decir cosas distintas). `now` lleva su offset (-03:00 = America/Argentina/Buenos_Aires). Semana de referencia: lunes 2026-10-05 … domingo 2026-10-11. Horario base: lunes a viernes 08:00-12:00 y 14:00-18:00, sábado 09:00-13:00, domingo cerrado.",
+  "baseHours": [
+    { "weekday": 1, "ranges": [{ "opensAt": "08:00", "closesAt": "12:00" }, { "opensAt": "14:00", "closesAt": "18:00" }] },
+    { "weekday": 2, "ranges": [{ "opensAt": "08:00", "closesAt": "12:00" }, { "opensAt": "14:00", "closesAt": "18:00" }] },
+    { "weekday": 3, "ranges": [{ "opensAt": "08:00", "closesAt": "12:00" }, { "opensAt": "14:00", "closesAt": "18:00" }] },
+    { "weekday": 4, "ranges": [{ "opensAt": "08:00", "closesAt": "12:00" }, { "opensAt": "14:00", "closesAt": "18:00" }] },
+    { "weekday": 5, "ranges": [{ "opensAt": "08:00", "closesAt": "12:00" }, { "opensAt": "14:00", "closesAt": "18:00" }] },
+    { "weekday": 6, "ranges": [{ "opensAt": "09:00", "closesAt": "13:00" }] }
+  ],
+  "cases": [
+    { "name": "abierto a la mañana", "now": "2026-10-07T10:30:00-03:00", "expected": { "kind": "open", "closesAt": "12:00" } },
+    { "name": "descanso del mediodía: abre 14:00 hoy", "now": "2026-10-07T13:00:00-03:00", "expected": { "kind": "closed", "nextOpening": { "dayOffset": 0, "weekday": 3, "opensAt": "14:00" } } },
+    { "name": "abierto a la tarde", "now": "2026-10-07T16:00:00-03:00", "expected": { "kind": "open", "closesAt": "18:00" } },
+    { "name": "cerrado antes de abrir: abre hoy 08:00", "now": "2026-10-07T07:00:00-03:00", "expected": { "kind": "closed", "nextOpening": { "dayOffset": 0, "weekday": 3, "opensAt": "08:00" } } },
+    { "name": "cerrado después de hora: abre mañana", "now": "2026-10-07T19:00:00-03:00", "expected": { "kind": "closed", "nextOpening": { "dayOffset": 1, "weekday": 4, "opensAt": "08:00" } } },
+    { "name": "viernes a la noche: abre mañana sábado 09:00", "now": "2026-10-09T19:00:00-03:00", "expected": { "kind": "closed", "nextOpening": { "dayOffset": 1, "weekday": 6, "opensAt": "09:00" } } },
+    { "name": "sábado a la tarde: domingo cerrado, abre el lunes", "now": "2026-10-10T14:00:00-03:00", "expected": { "kind": "closed", "nextOpening": { "dayOffset": 2, "weekday": 1, "opensAt": "08:00" } } },
+    { "name": "domingo: abre mañana lunes", "now": "2026-10-11T11:00:00-03:00", "expected": { "kind": "closed", "nextOpening": { "dayOffset": 1, "weekday": 1, "opensAt": "08:00" } } },
+    { "name": "el borde de cierre ya es cerrado", "now": "2026-10-07T12:00:00-03:00", "expected": { "kind": "closed", "nextOpening": { "dayOffset": 0, "weekday": 3, "opensAt": "14:00" } } },
+    { "name": "el borde de apertura ya es abierto", "now": "2026-10-07T14:00:00-03:00", "expected": { "kind": "open", "closesAt": "18:00" } },
+    { "name": "se lee en la zona horaria de Argentina, no en la del reloj: 13:00 UTC es 10:00 ART", "now": "2026-10-07T13:00:00Z", "expected": { "kind": "open", "closesAt": "12:00" } },
+    { "name": "sin horarios (lista vacía) no muestra nada", "hours": [], "now": "2026-10-07T10:30:00-03:00", "expected": { "kind": "unknown" } },
+    { "name": "sin horarios (null) no muestra nada", "hours": null, "now": "2026-10-07T10:30:00-03:00", "expected": { "kind": "unknown" } },
+    { "name": "días sin ningún tramo equivalen a no tener horarios", "hours": [{ "weekday": 1, "ranges": [] }], "now": "2026-10-07T10:30:00-03:00", "expected": { "kind": "unknown" } },
+    { "name": "cierre a las 24:00 se informa como 00:00", "hours": [{ "weekday": 3, "ranges": [{ "opensAt": "00:00", "closesAt": "24:00" }] }], "now": "2026-10-07T23:30:00-03:00", "expected": { "kind": "open", "closesAt": "00:00" } },
+    { "name": "un solo día abierto en la semana: la próxima apertura es dentro de 7 días", "hours": [{ "weekday": 3, "ranges": [{ "opensAt": "08:00", "closesAt": "12:00" }] }], "now": "2026-10-07T13:00:00-03:00", "expected": { "kind": "closed", "nextOpening": { "dayOffset": 7, "weekday": 3, "opensAt": "08:00" } } }
+  ]
+}

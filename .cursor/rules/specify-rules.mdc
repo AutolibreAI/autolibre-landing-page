@@ -4,5 +4,5 @@ alwaysApply: true
 
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
-shell commands, and other important information, read `specs/004-partner-approval-data/plan.md`
+shell commands, and other important information, read `specs/209-public-provider-profile/plan.md`
 <!-- SPECKIT END -->

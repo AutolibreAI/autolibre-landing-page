@@ -12,6 +12,14 @@ const POSTHOG_HOST = (process.env.POSTHOG_HOST?.trim() || "https://us.i.posthog.
 /** Los assets (`array.js`, extensiones) salen de otro host que la ingesta. */
 const POSTHOG_ASSETS_HOST = "https://us-assets.i.posthog.com";
 
+/**
+ * Host donde el backend aloja las imágenes de los perfiles de proveedor
+ * (portada, logo, trabajos). Solo se declara si la variable existe: sin ella
+ * esas imágenes se renderizan `unoptimized` en vez de romper la página
+ * (ver `isUnoptimizedImage` en `lib/provider-profile/present.ts`).
+ */
+const PROVIDER_IMAGE_HOST = process.env.PROVIDER_IMAGE_HOST?.trim();
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -25,6 +33,9 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "**.graphassets.com",
       },
+      ...(PROVIDER_IMAGE_HOST
+        ? [{ protocol: "https" as const, hostname: PROVIDER_IMAGE_HOST }]
+        : []),
     ],
   },
   /**

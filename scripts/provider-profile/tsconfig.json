@@ -1,0 +1,31 @@
+{
+  // Typecheck de los módulos puros del perfil de proveedor y sus pruebas.
+  // Corren con `node x.ts` (type stripping de Node): solo sintaxis TS borrable
+  // e imports relativos con extensión `.ts`. El tsconfig raíz excluye
+  // `scripts/` para no mezclar estos flags con el typecheck de Next. Los
+  // módulos puros son autocontenidos: sin alias `@/` ni imports de la app.
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "./**/*.ts",
+    "../../lib/provider-profile/slug.ts",
+    "../../lib/provider-profile/indexability.ts",
+    "../../lib/provider-profile/open-status.ts",
+    "../../lib/provider-profile/business-type.ts",
+    "../../lib/provider-profile/faq.ts",
+    "../../lib/provider-profile/metrics.ts",
+    "../../lib/analytics/provider-attrs.ts"
+  ]
+}

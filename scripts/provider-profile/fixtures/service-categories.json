@@ -1,0 +1,21 @@
+{
+  "_comment": "Familias del catálogo de servicios y su slug. PENDIENTE DE CONFIRMAR contra GET /api/v1/service-catalog del backend real (T005): el relevamiento no tuvo acceso a un backend en marcha, así que los slugs salen de slugificar los nombres de research.md D9 (el único slug confirmado en el código de la app es `financiacion`). Si algún slug real difiere, corregirlo acá Y en lib/provider-profile/business-type.ts: la prueba business-type.test.ts falla si una familia de este archivo no está mapeada.",
+  "categories": [
+    { "slug": "motor", "name": "Motor" },
+    { "slug": "electricidad-y-electronica", "name": "Electricidad y electrónica" },
+    { "slug": "tren-rodante-y-frenos", "name": "Tren rodante y frenos" },
+    { "slug": "transmision", "name": "Transmisión" },
+    { "slug": "climatizacion", "name": "Climatización" },
+    { "slug": "neumaticos-y-llantas", "name": "Neumáticos y llantas" },
+    { "slug": "estetica", "name": "Estética" },
+    { "slug": "carroceria-y-cristales", "name": "Carrocería y cristales" },
+    { "slug": "repuestos-e-insumos", "name": "Repuestos e insumos" },
+    { "slug": "accesorios-y-equipamiento", "name": "Accesorios y equipamiento" },
+    { "slug": "tramites-y-documentacion", "name": "Trámites y documentación" },
+    { "slug": "asistencia-y-emergencias", "name": "Asistencia y emergencias" },
+    { "slug": "seguridad-y-rastreo", "name": "Seguridad y rastreo" },
+    { "slug": "seguros-y-siniestros", "name": "Seguros y siniestros" },
+    { "slug": "compra-venta-y-valuacion", "name": "Compra-venta y valuación" },
+    { "slug": "financiacion", "name": "Financiación" }
+  ]
+}

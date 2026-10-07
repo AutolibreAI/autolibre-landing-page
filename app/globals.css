@@ -19,6 +19,21 @@
   --color-surface-subtle: #f7faf8; /* inputs y tarjetas suaves */
   --color-line: #eaf3ec; /* bordes */
 
+  /* ── Perfil público de proveedor: sistema "AutoLibre AI" (spec 209) ──
+     Tokens PROPIOS que no pisan los de la landing: el sistema de la app y el
+     de la landing no coinciden (lienzo, tarjetas y bordes). Los radios usan la
+     escala de Tailwind (`rounded-lg` 8, `rounded-xl` 12, `rounded-2xl` 16,
+     `rounded-full` para las pills). Espejados en `lib/provider-profile/og-tokens.ts`
+     para la imagen de vista previa (Satori no entiende variables CSS). */
+  --color-canvas: #f1f2f0; /* fondo de la página de perfil */
+  --color-card: #fefefd; /* tarjetas */
+  --color-card-line: #e4eae4; /* borde de 1px de las tarjetas, sin sombras */
+  --color-card-muted: #f3f4f6; /* marcadores neutros (portada/logo ausentes) */
+  --color-brand-50: #e8f5e8; /* sello "Aliado de AutoLibre" */
+  --color-status-ok: #1a7a4a; /* estado "Abierto" */
+  --color-status-ok-bg: #e0f5ec;
+  --color-rating: #f59e0b; /* estrellas de la puntuación */
+
   /* Estados */
   --color-alert-bg: #fbe2e2;
   --color-alert-fg: #c24949;

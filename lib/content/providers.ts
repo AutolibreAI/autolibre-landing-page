@@ -115,6 +115,7 @@ export const PROVIDER_VEHICLE_TYPES = [
 export const PROVIDER_FUEL_TYPES = [
   "Nafta",
   "Diesel",
+  "GNC",
   "Híbridos",
   "Eléctricos",
 ] as const;
