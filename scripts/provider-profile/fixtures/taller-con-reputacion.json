@@ -1,0 +1,80 @@
+{
+  "slug": "taller-con-reputacion",
+  "name": "Taller Con Reputación",
+  "isAlly": true,
+  "memberSince": "2026-01",
+  "description": "Mecánica integral con años de trabajo registrado en AutoLibre. Fotos de cada arreglo, reseñas de clientes y respuesta en el día.",
+  "logo": { "url": "/brand/logo-square.png", "width": 512, "height": 512 },
+  "cover": { "url": "/brand/og-image.png", "width": 1200, "height": 630 },
+  "primaryCategory": { "slug": "motor", "name": "Motor" },
+  "secondaryCategories": [],
+  "locality": "Vicente López",
+  "province": "Buenos Aires",
+  "locationMode": "in_person",
+  "address": { "full": "Av. Maipú 2500, Vicente López, Buenos Aires", "latitude": null, "longitude": null },
+  "serviceArea": null,
+  "businessHours": [
+    { "weekday": 1, "ranges": [{ "opensAt": "08:00", "closesAt": "18:00" }] },
+    { "weekday": 2, "ranges": [{ "opensAt": "08:00", "closesAt": "18:00" }] },
+    { "weekday": 3, "ranges": [{ "opensAt": "08:00", "closesAt": "18:00" }] },
+    { "weekday": 4, "ranges": [{ "opensAt": "08:00", "closesAt": "18:00" }] },
+    { "weekday": 5, "ranges": [{ "opensAt": "08:00", "closesAt": "18:00" }] }
+  ],
+  "contact": { "whatsappUrl": "https://wa.me/5491188880000", "phoneE164": "+5491188880000" },
+  "links": [{ "kind": "instagram", "url": "https://instagram.com/tallerconreputacion" }],
+  "people": { "name": "Marta", "role": "Encargada", "photo": null },
+  "foundedYear": 2005,
+  "services": [
+    {
+      "category": { "slug": "motor", "name": "Motor" },
+      "items": [{ "slug": "service-y-lubricentro", "name": "Service y lubricentro" }]
+    }
+  ],
+  "brands": { "mode": "all" },
+  "vehicleTypes": ["car"],
+  "fuelTypes": { "mode": "all" },
+  "equipment": [],
+  "works": {
+    "registeredCount": 2,
+    "totalCount": 4,
+    "items": [
+      {
+        "id": "w1", "origin": "autolibre", "service": "Kit de distribución",
+        "vehicle": { "brand": "Volkswagen", "model": "Vento 2.5", "year": 2012 },
+        "monthYear": "2026-08",
+        "photos": [{ "role": "before", "image": { "url": "/mockup/honda-civic.webp", "width": 800, "height": 600 } }, { "role": "after", "image": { "url": "/mockup/toyota-etios.webp", "width": 800, "height": 600 } }]
+      },
+      {
+        "id": "w2", "origin": "own", "service": "Cambio de frenos",
+        "vehicle": { "brand": "Peugeot", "model": "208", "year": 2019 },
+        "monthYear": "2026-07",
+        "photos": [{ "role": "after", "image": { "url": "/mockup/honda-civic.webp", "width": 800, "height": 600 } }]
+      },
+      {
+        "id": "w3", "origin": "autolibre", "service": "Service completo",
+        "vehicle": { "brand": "Ford", "model": "Fiesta", "year": 2015 },
+        "monthYear": "2026-06",
+        "photos": []
+      },
+      {
+        "id": "w4", "origin": "own", "service": "Alineación y balanceo",
+        "vehicle": { "brand": "Renault", "model": "Sandero", "year": 2018 },
+        "monthYear": "2026-05",
+        "photos": []
+      }
+    ]
+  },
+  "reviews": {
+    "count": 27,
+    "average": 4.8,
+    "items": [
+      { "id": "r1", "displayName": "Lucía M.", "vehicle": "Peugeot 208", "date": "2026-09", "stars": 5, "text": "Me explicaron todo antes de empezar y el presupuesto fue el que me pasaron.", "reply": { "text": "¡Gracias, Lucía! Te esperamos para el próximo service.", "date": "2026-09" } },
+      { "id": "r2", "displayName": "Martín R.", "vehicle": "Ford Fiesta", "date": "2026-08", "stars": 5, "text": "Rápidos y prolijos.", "reply": null },
+      { "id": "r3", "displayName": "Ana P.", "vehicle": "Renault Sandero", "date": "2026-07", "stars": 4, "text": "Muy buena atención, tardaron un día más de lo previsto.", "reply": null },
+      { "id": "r4", "displayName": "Diego T.", "vehicle": "VW Vento", "date": "2026-06", "stars": 5, "text": "Excelente.", "reply": null }
+    ]
+  },
+  "metrics": { "responseTimeMinutes": 45, "responseRate": 0.9, "proposalsSent": 34 },
+  "indexable": true,
+  "updatedAt": "2026-10-06T16:00:00Z"
+}

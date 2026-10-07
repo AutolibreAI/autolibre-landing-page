@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Container } from "@/components/ui/container";
+import { Icon } from "@/components/ui/icon";
 import { SectionHeading } from "@/components/ui/heading";
 import { PhoneFrame } from "@/components/ui/phone-frame";
 import { StoreLinks } from "@/components/ui/store-links";
@@ -43,7 +44,7 @@ export function HeroSection() {
     titleLines,
     subtitle,
     downloadNote,
-    quoteLink,
+    highlights,
     words,
     wordsSrText,
     screens,
@@ -88,7 +89,11 @@ export function HeroSection() {
         />
 
         <div className="grid items-center gap-12 py-16 md:py-20 lg:grid-cols-2 lg:gap-16 lg:py-24">
-          <div>
+          {/* `max-md:flex-col` + `order-last` en la lista: en mobile las
+              funciones van DEBAJO de los botones de descarga (si no, el botón
+              de Google Play queda fuera de la primera pantalla en 375×667);
+              desde `md` van entre el subtítulo y los botones. */}
+          <div className="max-md:flex max-md:flex-col">
             <SectionHeading
               as="h1"
               size="display"
@@ -133,17 +138,28 @@ export function HeroSection() {
               {subtitle}
             </p>
 
+            {/* Funciones destacadas: texto indexable, sin enlaces ni
+                animación (las funciones no tienen página propia). Íconos
+                decorativos. */}
+            <ul className="mt-8 flex max-w-120 flex-col gap-3 max-md:order-last">
+              {highlights.map((item) => (
+                <li
+                  key={item.id}
+                  className="flex items-center gap-3 text-[0.9375rem] font-medium text-ink md:text-base"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface text-brand-hover"
+                  >
+                    <Icon name={item.icon} size={18} />
+                  </span>
+                  {item.text}
+                </li>
+              ))}
+            </ul>
+
             <StoreLinks id="descargar" placement="hero" note={downloadNote} className="mt-10" />
 
-            <p className="mt-6 text-base text-ink/70">
-              {quoteLink.lead}{" "}
-              <a
-                href={quoteLink.href}
-                className="inline-flex min-h-11 items-center font-semibold text-brand-hover underline decoration-brand-hover/40 underline-offset-4 transition-colors hover:text-ink hover:decoration-ink"
-              >
-                {quoteLink.label}
-              </a>
-            </p>
           </div>
 
           <div className="flex justify-center">

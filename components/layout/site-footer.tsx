@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { LAYOUT_IDS } from "@/components/layout/ids";
 import { Container } from "@/components/ui/container";
+import { ANALYTICS_EVENTS, QUOTE_CTA_PLACEMENTS } from "@/lib/analytics/events";
 import { siteContent } from "@/lib/content/site";
 
 /** Es un link externo si sale del sitio (redes, mail, WhatsApp). */
@@ -11,6 +12,7 @@ function isExternal(href: string) {
 
 export function SiteFooter() {
   const { groups, copyright } = siteContent.footer;
+  const { quoteLink } = siteContent.nav;
 
   return (
     <footer id={LAYOUT_IDS.footer} className="bg-ink py-14 text-white">
@@ -43,6 +45,14 @@ export function SiteFooter() {
                         href={link.href}
                         {...(isExternal(link.href)
                           ? { target: "_blank", rel: "noopener noreferrer" }
+                          : {})}
+                        {...(link.href === quoteLink.href
+                          ? {
+                              "data-analytics-event":
+                                ANALYTICS_EVENTS.quoteCtaClicked,
+                              "data-analytics-quote-placement":
+                                QUOTE_CTA_PLACEMENTS.footer,
+                            }
                           : {})}
                         className="text-sm text-white/80 transition-colors hover:text-white"
                       >

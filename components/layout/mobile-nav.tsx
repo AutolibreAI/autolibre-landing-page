@@ -5,40 +5,40 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { NavCtaLink } from "@/components/layout/nav-cta";
 import { DownloadCta } from "@/components/ui/download-cta";
-import { cn } from "@/lib/utils";
+import { ANALYTICS_EVENTS, QUOTE_CTA_PLACEMENTS } from "@/lib/analytics/events";
 import type { NavCta, NavLink } from "@/lib/content/types";
 
 type MobileNavProps = {
-  /** Anclas de sección (solo en la home). */
+  /** Anclas de sección y Blog (las mismas en todas las páginas). */
   readonly links: readonly NavLink[];
-  /** Links a páginas ("Pedir presupuesto" y el secundario). */
+  /** Links a páginas ("Pedí tu presupuesto" y "Soy proveedor"). */
   readonly pageLinks: readonly NavLink[];
+  /**
+   * `href` del link de presupuesto: ese link se mide como CTA de presupuesto
+   * (`quote_cta_clicked`, placement `header_menu`). Llega por prop y no desde
+   * `siteContent` porque esto es una isla de cliente: importar el contenido
+   * del sitio acá lo metería entero en el bundle.
+   */
+  readonly quoteHref: string;
   readonly cta: NavCta;
   /** Si es el CTA de descarga, apunta a la tienda según la plataforma. */
   readonly isDownloadCta?: boolean;
   /** Ruta actual: su link lleva `aria-current="page"`. */
   readonly currentPath?: string;
-  /**
-   * Desde qué breakpoint el header muestra todo y el menú sobra. Con anclas
-   * de sección (home) recién en `xl`; en páginas internas, en `lg`.
-   */
-  readonly hideFrom?: "lg" | "xl";
 };
 
-/** Clases estáticas (Tailwind no ve clases armadas con template strings). */
-const hideClass = { lg: "lg:hidden", xl: "xl:hidden" } as const;
-
 /**
- * Menú desplegable para pantallas chicas. Única parte del header que se
- * hidrata: todo lo demás es HTML estático.
+ * Menú desplegable para pantallas chicas: se muestra por debajo de `xl` en
+ * TODAS las páginas (desde `xl` el header muestra todo a la vista). Única
+ * parte del header que se hidrata: todo lo demás es HTML estático.
  */
 export function MobileNav({
   links,
   pageLinks,
+  quoteHref,
   cta,
   isDownloadCta = false,
   currentPath,
-  hideFrom = "lg",
 }: MobileNavProps) {
   // El cierre al navegar lo maneja el `onClick` de cada enlace, no un
   // efecto sobre `pathname`: así no hay render en cascada al cambiar de ruta.
@@ -84,10 +84,7 @@ export function MobileNav({
         /* 44px es el mínimo táctil de WCAG 2.5.5 y de la HIG de Apple. El
            ícono sigue siendo de 18px: lo que crece es el área de toque, que
            es lo que el dedo necesita. */
-        className={cn(
-          "flex size-11 items-center justify-center rounded-field border border-ink/15 text-ink transition-colors hover:border-brand hover:text-brand",
-          hideClass[hideFrom],
-        )}
+        className="flex size-11 items-center justify-center rounded-field border border-ink/15 text-ink transition-colors hover:border-brand hover:text-brand xl:hidden"
       >
         <svg
           width="18"
@@ -130,10 +127,7 @@ export function MobileNav({
         ? createPortal(
             <div
               id="mobile-nav-panel"
-              className={cn(
-                "fixed inset-x-0 top-18 bottom-0 z-40 flex flex-col gap-2 overflow-y-auto overscroll-contain bg-surface px-[6%] pt-8 pb-[calc(2rem+env(safe-area-inset-bottom))]",
-                hideClass[hideFrom],
-              )}
+              className="fixed inset-x-0 top-18 bottom-0 z-40 flex flex-col gap-2 overflow-y-auto overscroll-contain bg-surface px-[6%] pt-8 pb-[calc(2rem+env(safe-area-inset-bottom))] xl:hidden"
             >
               <nav aria-label="Menú principal" className="flex flex-col">
                 {allLinks.map((link) => (
@@ -144,6 +138,13 @@ export function MobileNav({
                     aria-current={
                       link.href === currentPath ? "page" : undefined
                     }
+                    {...(link.href === quoteHref
+                      ? {
+                          "data-analytics-event": ANALYTICS_EVENTS.quoteCtaClicked,
+                          "data-analytics-quote-placement":
+                            QUOTE_CTA_PLACEMENTS.headerMenu,
+                        }
+                      : {})}
                     className="border-b border-line py-4 font-display text-xl font-semibold text-ink aria-[current=page]:text-brand-hover aria-[current=page]:underline aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8"
                   >
                     {link.label}

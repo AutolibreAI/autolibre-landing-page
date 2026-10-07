@@ -4,18 +4,17 @@ import { DownloadCta } from "@/components/ui/download-cta";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { NavCtaLink } from "@/components/layout/nav-cta";
 import { Container } from "@/components/ui/container";
+import { ANALYTICS_EVENTS, QUOTE_CTA_PLACEMENTS } from "@/lib/analytics/events";
 import { siteContent } from "@/lib/content/site";
-import type { NavCta, NavLink } from "@/lib/content/types";
+import type { NavCta } from "@/lib/content/types";
 
 type SiteHeaderProps = {
   /**
-   * Enlaces de sección de la home. En páginas internas se omiten para no
-   * ofrecer anclas que no existen en esa página.
+   * Botón de la derecha. Default: descarga. Es la ÚNICA variación que una
+   * página puede pedir (`/proveedores` y `/pedido` tienen su propia
+   * conversión): los links del header son los mismos en todo el sitio y por
+   * eso este componente no acepta props para cambiarlos.
    */
-  readonly showSectionLinks?: boolean;
-  /** Link secundario de la derecha (cambia entre home y /proveedores). */
-  readonly secondary?: NavLink;
-  /** CTA de la derecha. Default: descarga; `/pedido` manda WhatsApp. */
   readonly cta?: NavCta;
   /**
    * Ruta de la página que renderiza el header. Marca con
@@ -26,38 +25,35 @@ type SiteHeaderProps = {
 };
 
 /**
- * Clases de los dos links de texto de la derecha ("Pedir presupuesto" y el
- * secundario). `min-h-11`: 44px de área táctil (tablets) sin cambiar el alto
- * del header. La página actual se marca con color Y subrayado: el color solo
- * no alcanza como señal (WCAG 1.4.1).
+ * Clases de los links de texto del header. `min-h-11`: 44px de área táctil
+ * (tablets) sin cambiar el alto del header. La página actual se marca con
+ * color Y subrayado: el color solo no alcanza como señal (WCAG 1.4.1).
  */
-const headerTextLink =
-  "inline-flex min-h-11 items-center text-sm font-medium whitespace-nowrap text-ink/70 transition-colors hover:text-brand aria-[current=page]:text-ink aria-[current=page]:underline aria-[current=page]:decoration-brand aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8";
+const headerLink =
+  "inline-flex min-h-11 items-center font-medium whitespace-nowrap transition-colors hover:text-brand aria-[current=page]:text-ink aria-[current=page]:underline aria-[current=page]:decoration-brand aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8";
+/** Anclas de la home y Blog: el tamaño de siempre. */
+const sectionLink = `${headerLink} text-[0.9375rem] text-ink`;
+/** "Pedí tu presupuesto" y "Soy proveedor": más livianos que las anclas. */
+const pageLink = `${headerLink} text-sm text-ink/70`;
 
 /**
  * Header sticky. Es un Server Component: sólo el menú mobile necesita
  * estado, y ese es el único pedazo que se hidrata en el cliente.
  *
- * Qué se ve en cada ancho (lo que se oculta, está en el menú mobile):
+ * Es IGUAL en todas las páginas (contrato: `specs/210-header-hero-clarity/
+ * contracts/header-nav.md`). Qué se ve en cada ancho (lo que se oculta, está
+ * en el menú mobile):
  * - < sm: logo + botón de menú.
  * - sm: + CTA.
- * - md: + "Pedir presupuesto".
- * - lg: + link secundario ("Soy proveedor") y, en páginas internas, "Blog".
- *   En páginas internas acá ya está todo a la vista y el botón de menú se va.
- * - xl (solo home): + anclas de sección, y recién ahí se va el menú. En `lg`
- *   las cuatro anclas más los dos links y el CTA no entran en 1024px.
+ * - md: + "Pedí tu presupuesto".
+ * - lg: + "Soy proveedor".
+ * - xl: + anclas de sección y Blog, y recién ahí se va el menú.
  */
 export function SiteHeader({
-  showSectionLinks = true,
-  secondary = siteContent.nav.providerLink,
   cta = siteContent.nav.cta,
   currentPath,
 }: SiteHeaderProps) {
-  const links = showSectionLinks ? siteContent.nav.links : [];
-  const { quoteLink } = siteContent.nav;
-  // En la home el blog ya está entre las anclas de sección: solo las páginas
-  // internas lo suman a sus links, así no aparece dos veces en el menú.
-  const blogLink = showSectionLinks ? null : siteContent.nav.blogLink;
+  const { links, quoteLink, providerLink } = siteContent.nav;
   /**
    * Sólo el CTA de descarga cambia de destino según la plataforma. Las
    * páginas que pisan `cta` con otra acción (p. ej. /proveedores, /pedido)
@@ -89,53 +85,43 @@ export function SiteHeader({
           />
         </Link>
 
-        {links.length > 0 ? (
-          <nav
-            aria-label="Secciones"
-            className="hidden items-center gap-7 xl:flex"
-          >
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-[0.9375rem] font-medium text-ink transition-colors hover:text-brand"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-        ) : null}
+        <nav
+          aria-label="Secciones"
+          className="hidden items-center gap-7 xl:flex"
+        >
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              aria-current={current(link.href)}
+              className={sectionLink}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
 
         <div className="flex items-center gap-4 lg:gap-6">
           <nav aria-label="Páginas" className="hidden md:block">
             <ul className="flex items-center gap-6">
-              {blogLink ? (
-                <li className="hidden lg:block">
-                  <Link
-                    href={blogLink.href}
-                    aria-current={current(blogLink.href)}
-                    className={headerTextLink}
-                  >
-                    {blogLink.label}
-                  </Link>
-                </li>
-              ) : null}
               <li>
                 <Link
                   href={quoteLink.href}
                   aria-current={current(quoteLink.href)}
-                  className={headerTextLink}
+                  data-analytics-event={ANALYTICS_EVENTS.quoteCtaClicked}
+                  data-analytics-quote-placement={QUOTE_CTA_PLACEMENTS.header}
+                  className={pageLink}
                 >
                   {quoteLink.label}
                 </Link>
               </li>
               <li className="hidden lg:block">
                 <Link
-                  href={secondary.href}
-                  aria-current={current(secondary.href)}
-                  className={headerTextLink}
+                  href={providerLink.href}
+                  aria-current={current(providerLink.href)}
+                  className={pageLink}
                 >
-                  {secondary.label}
+                  {providerLink.label}
                 </Link>
               </li>
             </ul>
@@ -147,11 +133,11 @@ export function SiteHeader({
           )}
           <MobileNav
             links={links}
-            pageLinks={blogLink ? [blogLink, quoteLink, secondary] : [quoteLink, secondary]}
+            pageLinks={[quoteLink, providerLink]}
+            quoteHref={quoteLink.href}
             cta={cta}
             isDownloadCta={isDownloadCta}
             currentPath={currentPath}
-            hideFrom={links.length > 0 ? "xl" : "lg"}
           />
         </div>
       </Container>

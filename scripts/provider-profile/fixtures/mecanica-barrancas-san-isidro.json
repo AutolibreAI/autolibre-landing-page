@@ -1,0 +1,66 @@
+{
+  "slug": "mecanica-barrancas-san-isidro",
+  "name": "Mecánica Barrancas",
+  "isAlly": true,
+  "memberSince": "2026-03",
+  "description": "Taller familiar de mecánica general en San Isidro. Hacemos service, frenos, tren delantero y diagnóstico con escáner. Trabajamos con presupuesto previo y te explicamos cada arreglo antes de empezar.",
+  "logo": { "url": "/brand/logo-square.png", "width": 512, "height": 512 },
+  "cover": { "url": "/brand/og-image.png", "width": 1200, "height": 630 },
+  "primaryCategory": { "slug": "motor", "name": "Motor" },
+  "secondaryCategories": [
+    { "slug": "tren-rodante-y-frenos", "name": "Tren rodante y frenos" },
+    { "slug": "electricidad-y-electronica", "name": "Electricidad y electrónica" }
+  ],
+  "locality": "San Isidro",
+  "province": "Buenos Aires",
+  "locationMode": "in_person",
+  "address": {
+    "full": "Av. Centenario 1234, San Isidro, Buenos Aires",
+    "latitude": -34.4709,
+    "longitude": -58.5286
+  },
+  "serviceArea": null,
+  "businessHours": [
+    { "weekday": 1, "ranges": [{ "opensAt": "08:00", "closesAt": "12:00" }, { "opensAt": "14:00", "closesAt": "18:00" }] },
+    { "weekday": 2, "ranges": [{ "opensAt": "08:00", "closesAt": "12:00" }, { "opensAt": "14:00", "closesAt": "18:00" }] },
+    { "weekday": 3, "ranges": [{ "opensAt": "08:00", "closesAt": "12:00" }, { "opensAt": "14:00", "closesAt": "18:00" }] },
+    { "weekday": 4, "ranges": [{ "opensAt": "08:00", "closesAt": "12:00" }, { "opensAt": "14:00", "closesAt": "18:00" }] },
+    { "weekday": 5, "ranges": [{ "opensAt": "08:00", "closesAt": "12:00" }, { "opensAt": "14:00", "closesAt": "18:00" }] },
+    { "weekday": 6, "ranges": [{ "opensAt": "09:00", "closesAt": "13:00" }] }
+  ],
+  "contact": {
+    "whatsappUrl": "https://wa.me/5491155550000?text=Hola%2C%20te%20escribo%20desde%20AutoLibre",
+    "phoneE164": "+5491155550000"
+  },
+  "links": [
+    { "kind": "instagram", "url": "https://instagram.com/mecanicabarrancas" },
+    { "kind": "website", "url": "https://mecanicabarrancas.example.com" }
+  ],
+  "people": { "name": "Jorge", "role": "Dueño", "photo": null },
+  "foundedYear": 2011,
+  "services": [
+    {
+      "category": { "slug": "motor", "name": "Motor" },
+      "items": [
+        { "slug": "service-y-lubricentro", "name": "Service y lubricentro" },
+        { "slug": "diagnostico-por-escaner", "name": "Diagnóstico por escáner" }
+      ]
+    },
+    {
+      "category": { "slug": "tren-rodante-y-frenos", "name": "Tren rodante y frenos" },
+      "items": [
+        { "slug": "frenos", "name": "Frenos" },
+        { "slug": "tren-delantero", "name": "Tren delantero" }
+      ]
+    }
+  ],
+  "brands": { "mode": "specific", "items": ["Volkswagen", "Ford", "Peugeot", "Renault", "Fiat", "Chevrolet"] },
+  "vehicleTypes": ["car", "suv", "pickup"],
+  "fuelTypes": { "mode": "specific", "items": ["gasoline", "diesel", "cng"] },
+  "equipment": [{ "slug": "escaner-multimarca", "name": "Escáner multimarca" }],
+  "works": null,
+  "reviews": null,
+  "metrics": null,
+  "indexable": true,
+  "updatedAt": "2026-10-06T14:22:00Z"
+}

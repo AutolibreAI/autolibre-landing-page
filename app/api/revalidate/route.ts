@@ -1,16 +1,7 @@
-import { timingSafeEqual } from "node:crypto";
 import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { HYGRAPH_CACHE_TAG } from "@/lib/hygraph/client";
-
-/** Comparación en tiempo constante: `===` filtra por timing cuántos chars coinciden. */
-function secretMatches(received: string | null, expected: string): boolean {
-  if (!received) return false;
-
-  const a = Buffer.from(received);
-  const b = Buffer.from(expected);
-  return a.length === b.length && timingSafeEqual(a, b);
-}
+import { secretMatches } from "@/lib/revalidation";
 
 /**
  * Webhook de Hygraph (Project settings > Webhooks). Al publicar, despublicar

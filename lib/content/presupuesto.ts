@@ -59,8 +59,10 @@ export const presupuestoContent = {
     titleLines: ["Resolvemos todo", "para tu auto."],
     subtitle:
       "Contanos qué necesita y te responden talleres cerca tuyo. Un minuto, sin vueltas.",
-    ctaLabel: "Pedí tu presupuesto",
     /**
+     * El botón principal de la sección no tiene etiqueta propia: usa
+     * `siteContent.nav.quoteLink` (la misma que el header, el hero y el footer).
+     *
      * Salida secundaria por WhatsApp. Link propio y no
      * `siteConfig.contact.whatsapp`: el genérico trae precargado "Me interesa
      * comprar un escáner!", que acá no tiene sentido.
@@ -68,15 +70,6 @@ export const presupuestoContent = {
     whatsapp: {
       label: "Consultanos por WhatsApp",
       href: whatsappUrl(PEDIDO_WHATSAPP_TEXT),
-    },
-    /**
-     * Link de texto a `/pedido`, debajo de los botones: la landing de pedido
-     * explica el paso a paso y la FAQ. Texto descriptivo (no "ver más") para
-     * que el ancla diga a dónde lleva.
-     */
-    pageLink: {
-      label: "Ver cómo funciona el pedido de presupuesto",
-      href: "/pedido",
     },
   },
 

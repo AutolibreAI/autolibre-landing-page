@@ -25,9 +25,22 @@ export const ANALYTICS_APP = "landing";
 export const ANALYTICS_EVENTS = {
   /** Click en un link de WhatsApp. Meta: `Lead` si trae `lead_source`, si no `Contact`. */
   whatsappClicked: "whatsapp_clicked",
+  /**
+   * Click en una acción del perfil de un proveedor (llamar, cómo llegar,
+   * pedir propuesta, compartir). Sólo PostHog. El WhatsApp del perfil usa
+   * `whatsapp_clicked` con el prop `provider`.
+   */
+  providerActionClicked: "provider_action_clicked",
   /** Click en un botón de tienda (App Store / Google Play). Sólo PostHog. */
   appStoreClicked: "app_store_clicked",
-  /** Empezó un pedido de presupuesto (modal o `/pedido`). Meta: `QuoteStart`. */
+  /**
+   * Click en un CTA de presupuesto (header, menú, banda de la home o
+   * footer): todos van a `/pedido`. Sólo PostHog; es lo que permite saber de
+   * qué botón vino un pedido, ya que el `flow` de `quote_started` es siempre
+   * `page` desde que la home no abre más el modal.
+   */
+  quoteCtaClicked: "quote_cta_clicked",
+  /** Empezó un pedido de presupuesto en `/pedido`. Meta: `QuoteStart`. */
   quoteStarted: "quote_started",
   /** Vio un paso del modal de presupuesto. Meta: `PedidoPaso`. */
   quoteStepViewed: "quote_step_viewed",
@@ -60,7 +73,39 @@ export const LEAD_SOURCES = {
 
 export type LeadSource = (typeof LEAD_SOURCES)[keyof typeof LEAD_SOURCES];
 
-/** Qué flujo de pedido: el modal de la home o el form de `/pedido`. */
+/**
+ * Acciones medibles del perfil de un proveedor. Cerrado a propósito: el
+ * listener de `data-analytics-action` descarta cualquier otro valor.
+ */
+export const PROVIDER_ACTIONS = {
+  call: "call",
+  directions: "directions",
+  proposal: "proposal",
+  share: "share",
+} as const;
+
+export type ProviderAction = (typeof PROVIDER_ACTIONS)[keyof typeof PROVIDER_ACTIONS];
+
+/**
+ * Ubicación del CTA de presupuesto. Viaja como `placement` de
+ * `quote_cta_clicked`; el listener de `data-analytics-quote-placement`
+ * descarta cualquier otro valor.
+ */
+export const QUOTE_CTA_PLACEMENTS = {
+  header: "header",
+  headerMenu: "header_menu",
+  homeQuotes: "home_quotes",
+  footer: "footer",
+} as const;
+
+export type QuoteCtaPlacement =
+  (typeof QUOTE_CTA_PLACEMENTS)[keyof typeof QUOTE_CTA_PLACEMENTS];
+
+/**
+ * Qué flujo de pedido: el form de `/pedido` (`page`) o el modal de la home
+ * (`modal`, que ya no se abre desde ningún lado y queda por compatibilidad
+ * con el tipo que usa el server y con los reportes históricos).
+ */
 export const QUOTE_FLOWS = {
   modal: "modal",
   page: "page",
@@ -88,11 +133,20 @@ export type AnalyticsEventProps = {
     lead_source?: LeadSource;
     /** El click vino después de dejar un pedido. */
     pedido?: true;
+    /** Slug del proveedor cuando el click es de su perfil público. */
+    provider?: string;
+  };
+  provider_action_clicked: {
+    action: ProviderAction;
+    /** Slug del proveedor (identificador de negocio público, no un dato personal). */
+    provider: string;
+    placement?: string;
   };
   app_store_clicked: {
     store: AppStore;
     placement?: string;
   };
+  quote_cta_clicked: { placement: QuoteCtaPlacement };
   quote_started: { flow: QuoteFlow };
   quote_step_viewed: { flow: QuoteFlow; step: number };
   quote_submitted: { flow: QuoteFlow; lead_source?: LeadSource };
@@ -142,13 +196,29 @@ export const ANALYTICS_CATALOG: Record<AnalyticsEventName, CatalogEntry> = {
     // Abrir el chat en `/pedido` es una de las dos conversiones de la campaña
     // (`Lead` con `lead_source: "whatsapp"`); en el resto del sitio, y después
     // de dejar un pedido, es un `Contact` (esa persona ya contó como `Lead`).
-    meta: (props) =>
-      props.lead_source
+    // El WhatsApp del perfil de un proveedor (`provider`) NO va a Meta: es un
+    // contacto con un tercero, no una conversión de la campaña, y más `Contact`
+    // podría diluir las audiencias. Decisión de marketing pendiente (research
+    // D12 de la spec 209): esta es la única línea a cambiar si deciden otra cosa.
+    meta: (props) => {
+      if (props.provider) return null;
+      return props.lead_source
         ? { name: META_EVENTS.lead, params: ["placement", "lead_source"] }
-        : { name: META_EVENTS.contact, params: ["placement", "pedido"] },
+        : { name: META_EVENTS.contact, params: ["placement", "pedido"] };
+    },
+    clickable: true,
+  },
+  provider_action_clicked: {
+    posthog: "client",
+    meta: () => null,
     clickable: true,
   },
   app_store_clicked: {
+    posthog: "client",
+    meta: () => null,
+    clickable: true,
+  },
+  quote_cta_clicked: {
     posthog: "client",
     meta: () => null,
     clickable: true,

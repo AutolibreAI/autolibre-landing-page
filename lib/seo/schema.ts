@@ -1,5 +1,13 @@
 import { siteConfig } from "@/lib/seo/config";
 import { allFaqItems } from "@/lib/content/faq";
+import { businessTypeFor } from "@/lib/provider-profile/business-type";
+import {
+  absoluteUrl,
+  safeExternalUrl,
+  trimDescription,
+  VISIBLE_REVIEWS,
+} from "@/lib/provider-profile/present";
+import type { PartnerProfile, ProfileImage } from "@/lib/provider-profile/types";
 
 /**
  * Builders de structured data. Devuelven objetos planos; el renderizado
@@ -281,5 +289,124 @@ export function graph(...nodes: object[]) {
   return {
     "@context": "https://schema.org",
     "@graph": nodes,
+  };
+}
+
+const SCHEMA_DAY_OF_WEEK = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+] as const;
+
+/**
+ * Negocio local de un perfil de proveedor (`/p/<slug>`). SOLO se emite para
+ * perfiles indexables: no se declara un negocio que la página no muestra
+ * bien (FR-036). Cada dato sale del mismo objeto que lo pinta la página:
+ * `geo` solo con coordenadas, `address` solo con local, `areaServed` para
+ * `mobile`/`both`, `aggregateRating` y `review` solo con reseñas visibles, y
+ * nunca `priceRange` ni `email`.
+ */
+export function localBusinessSchema(profile: PartnerProfile) {
+  const url = `${siteConfig.url}/p/${profile.slug}`;
+  const image = (value: ProfileImage) => ({
+    "@type": "ImageObject",
+    url: absoluteUrl(value.url, siteConfig.url),
+    width: value.width,
+    height: value.height,
+  });
+
+  const hasAddress = profile.locationMode !== "mobile" && profile.address !== null;
+  const hasCoordinates =
+    hasAddress &&
+    profile.address?.latitude !== null &&
+    profile.address?.longitude !== null;
+  const localities = (profile.serviceArea?.localities ?? []).map((l) => l.name);
+  const hasArea =
+    (profile.locationMode === "mobile" || profile.locationMode === "both") &&
+    localities.length > 0;
+
+  const opening = (profile.businessHours ?? []).flatMap((day) =>
+    day.ranges.map((range) => ({
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: SCHEMA_DAY_OF_WEEK[day.weekday - 1],
+      opens: range.opensAt,
+      closes: range.closesAt,
+    })),
+  );
+
+  const reviews = profile.reviews;
+  const showReviews = reviews !== null && reviews.count > 0;
+  const sameAs = profile.links.map((link) => safeExternalUrl(link.url)).filter(Boolean);
+  const images = [profile.cover, profile.logo].filter(
+    (value): value is ProfileImage => value !== null,
+  );
+
+  return {
+    "@type": businessTypeFor(profile.primaryCategory?.slug),
+    "@id": `${url}#business`,
+    name: profile.name,
+    url,
+    ...(profile.description ? { description: trimDescription(profile.description, 500) } : {}),
+    ...(profile.logo ? { logo: image(profile.logo) } : {}),
+    ...(images.length > 0 ? { image: images.map(image) } : {}),
+    ...(profile.contact.phoneE164 ? { telephone: profile.contact.phoneE164 } : {}),
+    ...(hasAddress && profile.address
+      ? {
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: profile.address.full,
+            ...(profile.locality ? { addressLocality: profile.locality } : {}),
+            ...(profile.province ? { addressRegion: profile.province } : {}),
+            addressCountry: "AR",
+          },
+        }
+      : {}),
+    ...(hasCoordinates && profile.address
+      ? {
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: profile.address.latitude,
+            longitude: profile.address.longitude,
+          },
+        }
+      : {}),
+    ...(hasArea
+      ? {
+          areaServed: localities.map((name) => ({
+            "@type": "AdministrativeArea",
+            name,
+          })),
+        }
+      : {}),
+    ...(opening.length > 0 ? { openingHoursSpecification: opening } : {}),
+    ...(showReviews && reviews
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: reviews.average.toFixed(1),
+            reviewCount: reviews.count,
+            bestRating: 5,
+            worstRating: 1,
+          },
+          review: reviews.items.slice(0, VISIBLE_REVIEWS).map((review) => ({
+            "@type": "Review",
+            author: { "@type": "Person", name: review.displayName },
+            datePublished: review.date,
+            reviewBody: review.text,
+            reviewRating: {
+              "@type": "Rating",
+              ratingValue: review.stars,
+              bestRating: 5,
+              worstRating: 1,
+            },
+          })),
+        }
+      : {}),
+    ...(sameAs.length > 0 ? { sameAs } : {}),
+    mainEntityOfPage: { "@id": `${url}#webpage` },
   };
 }

@@ -101,7 +101,7 @@ Material real disponible, nada que inventar:
 - Capturas reales de la app: `/mockup/mockup-garage.webp` (1472×2886, **ya trae
   el marco del teléfono**, no envolver en `PhoneFrame`) y
   `/mockup/mockup-chatai.webp` (1408×3014).
-- Foto real del conector OBD2: `/mockup/obd2-connector.webp`.
+- Foto real del conector OBD2: ya no se usa en el sitio (se eliminó la sección de compatibilidad el 2026-10-07).
 - Copy de producto ya escrito y en producción en `lib/content/`.
 - WhatsApp y email de contacto reales en `siteConfig.contact`.
 

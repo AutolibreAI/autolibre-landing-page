@@ -1,0 +1,54 @@
+{
+  "slug": "gestoria-norte-san-isidro",
+  "name": "Gestoría Norte",
+  "isAlly": false,
+  "memberSince": null,
+  "description": "Gestoría del automotor que trabaja a domicilio y online: transferencias, informes de dominio, patentes y trámites de registro, sin que tengas que hacer fila.",
+  "logo": null,
+  "cover": null,
+  "primaryCategory": { "slug": "tramites-y-documentacion", "name": "Trámites y documentación" },
+  "secondaryCategories": [],
+  "locality": "San Isidro",
+  "province": "Buenos Aires",
+  "locationMode": "mobile",
+  "address": null,
+  "serviceArea": {
+    "localities": [
+      { "name": "San Isidro", "partido": "San Isidro" },
+      { "name": "Vicente López", "partido": "Vicente López" },
+      { "name": "Tigre", "partido": "Tigre" }
+    ]
+  },
+  "businessHours": [
+    { "weekday": 1, "ranges": [{ "opensAt": "09:00", "closesAt": "17:00" }] },
+    { "weekday": 2, "ranges": [{ "opensAt": "09:00", "closesAt": "17:00" }] },
+    { "weekday": 3, "ranges": [{ "opensAt": "09:00", "closesAt": "17:00" }] },
+    { "weekday": 4, "ranges": [{ "opensAt": "09:00", "closesAt": "17:00" }] },
+    { "weekday": 5, "ranges": [{ "opensAt": "09:00", "closesAt": "17:00" }] }
+  ],
+  "contact": {
+    "whatsappUrl": "https://wa.me/5491166660000?text=Hola%2C%20te%20escribo%20desde%20AutoLibre",
+    "phoneE164": null
+  },
+  "links": [],
+  "people": null,
+  "foundedYear": null,
+  "services": [
+    {
+      "category": { "slug": "tramites-y-documentacion", "name": "Trámites y documentación" },
+      "items": [
+        { "slug": "transferencia", "name": "Transferencia" },
+        { "slug": "informe-de-dominio", "name": "Informe de dominio" }
+      ]
+    }
+  ],
+  "brands": { "mode": "all" },
+  "vehicleTypes": [],
+  "fuelTypes": { "mode": "all" },
+  "equipment": [],
+  "works": null,
+  "reviews": null,
+  "metrics": null,
+  "indexable": true,
+  "updatedAt": "2026-10-05T10:00:00Z"
+}

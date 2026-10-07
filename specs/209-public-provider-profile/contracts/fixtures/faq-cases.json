@@ -1,0 +1,152 @@
+{
+  "_comment": "Fixture dorada de buildFaq (riesgo R3: la app móvil debe pasar la misma). Trae sus propias plantillas para que la prueba no dependa de la capa de contenido: lo que se prueba es QUÉ preguntas se generan y con qué datos, no la redacción final (que vive en lib/content/provider-profile.ts).",
+  "templates": {
+    "weekdayNames": ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"],
+    "and": "y",
+    "to": "a",
+    "from": "de",
+    "location": { "question": "¿Dónde están ubicados?", "answer": "Estamos en {address}." },
+    "hoursWeekly": { "question": "¿Cuáles son los horarios de atención?", "answer": "Atienden {hours}." },
+    "hoursSaturdayOpen": { "question": "¿Abren los sábados?", "answer": "Sí, los sábados atienden {ranges}." },
+    "hoursSaturdayClosed": { "question": "¿Abren los sábados?", "answer": "No, los sábados no atienden." },
+    "brandsSpecific": { "question": "¿Atienden autos {brand}?", "answer": "Sí, atienden {brand}. Las marcas con las que trabajan son {brands}." },
+    "brandsAll": { "question": "¿Atienden todas las marcas?", "answer": "Sí, atienden autos de todas las marcas." },
+    "vehicle": { "question": "¿Atienden {vehicle}?", "answer": "Sí, atienden {vehicle}." },
+    "vehicleLabels": { "car": "autos", "suv": "SUVs", "pickup": "pickups", "motorcycle": "motos" },
+    "fuelCng": { "question": "¿Trabajan con autos con GNC?", "answer": "Sí, trabajan con autos con GNC." },
+    "diagnosticScanner": { "question": "¿Hacen diagnóstico con escáner?", "answer": "Sí, hacen diagnóstico con escáner." },
+    "mobileService": { "question": "¿Atienden a domicilio?", "answer": "Sí, atienden a domicilio en {localities}." },
+    "scannerEquipmentSlugs": ["escaner-multimarca"],
+    "diagnosticServiceSlugs": ["diagnostico-por-escaner"]
+  },
+  "cases": [
+    {
+      "name": "completo con 6 marcas: se generan preguntas por 5 y el tope total es 8",
+      "profile": {
+        "locationMode": "in_person",
+        "address": { "full": "Av. Ejemplo 1234, San Isidro" },
+        "serviceArea": null,
+        "businessHours": [
+          { "weekday": 1, "ranges": [{ "opensAt": "08:00", "closesAt": "12:00" }, { "opensAt": "14:00", "closesAt": "18:00" }] },
+          { "weekday": 2, "ranges": [{ "opensAt": "08:00", "closesAt": "12:00" }, { "opensAt": "14:00", "closesAt": "18:00" }] },
+          { "weekday": 3, "ranges": [{ "opensAt": "08:00", "closesAt": "12:00" }, { "opensAt": "14:00", "closesAt": "18:00" }] },
+          { "weekday": 4, "ranges": [{ "opensAt": "08:00", "closesAt": "12:00" }, { "opensAt": "14:00", "closesAt": "18:00" }] },
+          { "weekday": 5, "ranges": [{ "opensAt": "08:00", "closesAt": "12:00" }, { "opensAt": "14:00", "closesAt": "18:00" }] },
+          { "weekday": 6, "ranges": [{ "opensAt": "09:00", "closesAt": "13:00" }] }
+        ],
+        "brands": { "mode": "specific", "items": ["Volkswagen", "Ford", "Peugeot", "Renault", "Fiat", "Chevrolet"] },
+        "vehicleTypes": ["car", "suv"],
+        "fuelTypes": { "mode": "specific", "items": ["gasoline", "cng"] },
+        "equipment": [{ "slug": "escaner-multimarca" }],
+        "services": [{ "items": [{ "slug": "service-y-lubricentro" }] }]
+      },
+      "expected": [
+        { "id": "location", "question": "¿Dónde están ubicados?", "answer": "Estamos en Av. Ejemplo 1234, San Isidro." },
+        { "id": "hours-weekly", "question": "¿Cuáles son los horarios de atención?", "answer": "Atienden lunes a viernes de 8:00 a 12:00 y de 14:00 a 18:00; sábado de 9:00 a 13:00." },
+        { "id": "hours-saturday", "question": "¿Abren los sábados?", "answer": "Sí, los sábados atienden de 9:00 a 13:00." },
+        { "id": "brands-volkswagen", "question": "¿Atienden autos Volkswagen?", "answer": "Sí, atienden Volkswagen. Las marcas con las que trabajan son Volkswagen, Ford, Peugeot, Renault, Fiat y Chevrolet." },
+        { "id": "brands-ford", "question": "¿Atienden autos Ford?", "answer": "Sí, atienden Ford. Las marcas con las que trabajan son Volkswagen, Ford, Peugeot, Renault, Fiat y Chevrolet." },
+        { "id": "brands-peugeot", "question": "¿Atienden autos Peugeot?", "answer": "Sí, atienden Peugeot. Las marcas con las que trabajan son Volkswagen, Ford, Peugeot, Renault, Fiat y Chevrolet." },
+        { "id": "brands-renault", "question": "¿Atienden autos Renault?", "answer": "Sí, atienden Renault. Las marcas con las que trabajan son Volkswagen, Ford, Peugeot, Renault, Fiat y Chevrolet." },
+        { "id": "brands-fiat", "question": "¿Atienden autos Fiat?", "answer": "Sí, atienden Fiat. Las marcas con las que trabajan son Volkswagen, Ford, Peugeot, Renault, Fiat y Chevrolet." }
+      ]
+    },
+    {
+      "name": "todas las marcas, sábado cerrado, GNC declarado y escáner por equipamiento",
+      "profile": {
+        "locationMode": "in_person",
+        "address": null,
+        "serviceArea": null,
+        "businessHours": [
+          { "weekday": 1, "ranges": [{ "opensAt": "09:00", "closesAt": "18:00" }] },
+          { "weekday": 2, "ranges": [{ "opensAt": "09:00", "closesAt": "18:00" }] },
+          { "weekday": 3, "ranges": [{ "opensAt": "09:00", "closesAt": "18:00" }] },
+          { "weekday": 4, "ranges": [{ "opensAt": "09:00", "closesAt": "18:00" }] },
+          { "weekday": 5, "ranges": [{ "opensAt": "09:00", "closesAt": "18:00" }] }
+        ],
+        "brands": { "mode": "all" },
+        "vehicleTypes": ["car"],
+        "fuelTypes": { "mode": "specific", "items": ["cng"] },
+        "equipment": [{ "slug": "escaner-multimarca" }],
+        "services": [{ "items": [{ "slug": "service-y-lubricentro" }] }]
+      },
+      "expected": [
+        { "id": "hours-weekly", "question": "¿Cuáles son los horarios de atención?", "answer": "Atienden lunes a viernes de 9:00 a 18:00." },
+        { "id": "hours-saturday", "question": "¿Abren los sábados?", "answer": "No, los sábados no atienden." },
+        { "id": "brands-all", "question": "¿Atienden todas las marcas?", "answer": "Sí, atienden autos de todas las marcas." },
+        { "id": "vehicle-car", "question": "¿Atienden autos?", "answer": "Sí, atienden autos." },
+        { "id": "fuel-cng", "question": "¿Trabajan con autos con GNC?", "answer": "Sí, trabajan con autos con GNC." },
+        { "id": "diagnostic-scanner", "question": "¿Hacen diagnóstico con escáner?", "answer": "Sí, hacen diagnóstico con escáner." }
+      ]
+    },
+    {
+      "name": "todos los combustibles NO genera la pregunta de GNC; el escáner sale de un servicio de diagnóstico",
+      "profile": {
+        "locationMode": "in_person",
+        "address": null,
+        "serviceArea": null,
+        "businessHours": null,
+        "brands": { "mode": "specific", "items": ["Toyota"] },
+        "vehicleTypes": [],
+        "fuelTypes": { "mode": "all" },
+        "equipment": [],
+        "services": [{ "items": [{ "slug": "diagnostico-por-escaner" }] }]
+      },
+      "expected": [
+        { "id": "brands-toyota", "question": "¿Atienden autos Toyota?", "answer": "Sí, atienden Toyota. Las marcas con las que trabajan son Toyota." },
+        { "id": "diagnostic-scanner", "question": "¿Hacen diagnóstico con escáner?", "answer": "Sí, hacen diagnóstico con escáner." }
+      ]
+    },
+    {
+      "name": "sin local: pregunta de servicio a domicilio con las localidades",
+      "profile": {
+        "locationMode": "mobile",
+        "address": null,
+        "serviceArea": { "localities": [{ "name": "San Isidro" }, { "name": "Vicente López" }, { "name": "Tigre" }] },
+        "businessHours": null,
+        "brands": { "mode": "all" },
+        "vehicleTypes": [],
+        "fuelTypes": { "mode": "all" },
+        "equipment": [],
+        "services": []
+      },
+      "expected": [
+        { "id": "mobile-service", "question": "¿Atienden a domicilio?", "answer": "Sí, atienden a domicilio en San Isidro, Vicente López y Tigre." }
+      ]
+    },
+    {
+      "name": "sin ningún dato no hay ninguna pregunta",
+      "profile": {
+        "locationMode": "in_person",
+        "address": null,
+        "serviceArea": null,
+        "businessHours": null,
+        "brands": { "mode": "all" },
+        "vehicleTypes": [],
+        "fuelTypes": { "mode": "all" },
+        "equipment": [],
+        "services": []
+      },
+      "expected": []
+    },
+    {
+      "name": "un tipo de vehículo sin etiqueta no genera pregunta y el tope de tipos es 3",
+      "profile": {
+        "locationMode": "in_person",
+        "address": null,
+        "serviceArea": null,
+        "businessHours": null,
+        "brands": { "mode": "all" },
+        "vehicleTypes": ["bus", "car", "suv", "pickup", "motorcycle"],
+        "fuelTypes": { "mode": "all" },
+        "equipment": [],
+        "services": []
+      },
+      "expected": [
+        { "id": "vehicle-car", "question": "¿Atienden autos?", "answer": "Sí, atienden autos." },
+        { "id": "vehicle-suv", "question": "¿Atienden SUVs?", "answer": "Sí, atienden SUVs." },
+        { "id": "vehicle-pickup", "question": "¿Atienden pickups?", "answer": "Sí, atienden pickups." }
+      ]
+    }
+  ]
+}

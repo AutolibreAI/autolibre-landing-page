@@ -554,3 +554,22 @@ pays for itself locally.
 - **Don't** put `overflow-hidden` on an ancestor of a sticky element or a
   `reveal`; use `overflow-clip` (it clips without creating a scroll container).
 - **Don't** hardcode a store URL; it comes from `siteConfig.stores`.
+
+## Perfil público de proveedor (`/p/<slug>`)
+
+El perfil de proveedor sigue el sistema **"AutoLibre AI"** de la app y NO la paleta de superficie de la landing (decisión de la spec 209, research D22): por eso el `@theme` de `app/globals.css` tiene tokens propios que no pisan los de arriba.
+
+| Token | Valor | Uso |
+|---|---|---|
+| `canvas` | `#f1f2f0` | fondo de la página de perfil |
+| `card` | `#fefefd` | tarjetas, con borde de 1px y sin sombras |
+| `card-line` | `#e4eae4` | borde de las tarjetas |
+| `card-muted` | `#f3f4f6` | marcadores neutros (portada o logo ausentes), pills |
+| `brand-50` | `#e8f5e8` | sello "Aliado de AutoLibre" |
+| `status-ok` / `status-ok-bg` | `#1a7a4a` / `#e0f5ec` | estado "Abierto" |
+| `rating` | `#f59e0b` | estrellas |
+
+- El CTA principal es oscuro (`bg-ink`, texto blanco); el verde de marca queda como acento.
+- Radios con la escala de Tailwind: `rounded-lg` (8, botones), `rounded-xl` (12), `rounded-2xl` (16, tarjetas) y `rounded-full` (pills).
+- Íconos: los de línea 24×24 de `components/ui/icon.tsx` (no Phosphor: desvío documentado en la spec 209).
+- La imagen de vista previa (`/p/<slug>/og`) repite estos valores en `lib/provider-profile/og-tokens.ts`: Satori no entiende variables CSS. Si cambia un token, cambiarlo también ahí.
