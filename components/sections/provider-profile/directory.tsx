@@ -6,6 +6,7 @@ import {
   providerProfileContent as copy,
 } from "@/lib/content/provider-profile";
 import { isUnoptimizedImage, ratingText } from "@/lib/provider-profile/present";
+import { providerPath } from "@/lib/provider-profile/routes";
 import type { PartnerProfileSummary } from "@/lib/provider-profile/types";
 
 type DirectoryProps = {
@@ -15,8 +16,8 @@ type DirectoryProps = {
 };
 
 /**
- * Listado de proveedores de `/p`: una tarjeta por perfil (logo, nombre,
- * rubro principal, localidad y puntuación) que enlaza a `/p/<slug>`. Sin
+ * Listado de proveedores de `/proveedor`: una tarjeta por perfil (logo, nombre,
+ * rubro principal, localidad y puntuación) que enlaza a `/proveedor/<slug>`. Sin
  * perfiles, un estado vacío (no una página rota).
  */
 export function Directory({ profiles, emptyText }: DirectoryProps) {
@@ -29,7 +30,7 @@ export function Directory({ profiles, emptyText }: DirectoryProps) {
       {profiles.map((profile) => (
         <li key={profile.slug}>
           <Link
-            href={`/p/${profile.slug}`}
+            href={providerPath(profile.slug)}
             className="flex h-full items-center gap-4 rounded-2xl border border-card-line bg-card p-4 transition-colors hover:border-brand"
           >
             <span className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-card-muted">

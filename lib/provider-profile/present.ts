@@ -3,6 +3,7 @@ import {
   fillTemplate,
 } from "@/lib/content/provider-profile";
 import type { OpenStatus } from "@/lib/provider-profile/open-status";
+import { PROVIDER_INDEX_PATH, providerPath } from "@/lib/provider-profile/routes";
 import { slugify } from "@/lib/provider-profile/slug";
 import type {
   BusinessHoursDay,
@@ -264,15 +265,15 @@ export type Crumb = { readonly name: string; readonly path: string };
  * "Inicio" como primer paso.
  */
 export function profileTrail(profile: PartnerProfile): readonly Crumb[] {
-  const trail: Crumb[] = [{ name: copy.breadcrumb.providers, path: "/p" }];
+  const trail: Crumb[] = [{ name: copy.breadcrumb.providers, path: PROVIDER_INDEX_PATH }];
   const locality = profile.locality?.trim();
-  if (locality) trail.push({ name: locality, path: `/p?zona=${slugify(locality)}` });
+  if (locality) trail.push({ name: locality, path: `${PROVIDER_INDEX_PATH}?zona=${slugify(locality)}` });
   if (profile.primaryCategory) {
     trail.push({
       name: profile.primaryCategory.name,
-      path: `/p?rubro=${profile.primaryCategory.slug}`,
+      path: `${PROVIDER_INDEX_PATH}?rubro=${profile.primaryCategory.slug}`,
     });
   }
-  trail.push({ name: profile.name, path: `/p/${profile.slug}` });
+  trail.push({ name: profile.name, path: providerPath(profile.slug) });
   return trail;
 }

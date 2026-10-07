@@ -1,6 +1,6 @@
 /**
  * Interruptor único de la visibilidad pública de los perfiles de proveedor
- * (`/p/<slug>`).
+ * (`/proveedor/<slug>`).
  *
  * Con `false` las páginas siguen deployadas y accesibles por URL directa
  * (para probarlas), pero quedan fuera del alcance de buscadores y de las
@@ -9,7 +9,7 @@
  * señales contradictorias, y sacar solo los links deja una página huérfana
  * que Google indexa igual.
  *
- * NO bloquear `/p/` en `robots.ts`: si Google no puede rastrear la página, no
+ * NO bloquear `/proveedor/` en `robots.ts`: si Google no puede rastrear la página, no
  * llega a leer el `noindex` y la URL puede quedar indexada sin descripción.
  *
  * `public/llms.txt` lista los perfiles a mano: al pasar a `true`, agregar la

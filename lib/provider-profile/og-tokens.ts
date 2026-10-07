@@ -1,5 +1,5 @@
 /**
- * Constantes de la imagen de vista previa (`/p/<slug>/og`). ESPEJAN los tokens
+ * Constantes de la imagen de vista previa (`/proveedor/<slug>/og`). ESPEJAN los tokens
  * de `@theme` de `app/globals.css`: Satori (el motor de `ImageResponse`) no
  * entiende clases de Tailwind ni variables CSS, así que esta imagen es la
  * única excepción documentada a "sin hex sueltos" (Complexity Tracking de la

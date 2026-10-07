@@ -40,7 +40,7 @@ type SiteHeaderProps = {
 | `/pedido` | `cta` = WhatsApp (con seguimiento) | una sola conversión en esa página |
 | `/descarga` | encabezado mínimo: solo el logo (a `/`), sobre fondo oscuro; sin links ni botón | la página existe para evitar fugas (ver `app/descarga/page.tsx`) |
 
-Cualquier otra diferencia es un **defecto** (FR-018). Páginas nuevas (p. ej. `/p/[slug]` de la 209) usan `SiteHeader` sin overrides.
+Cualquier otra diferencia es un **defecto** (FR-018). Páginas nuevas (p. ej. `/proveedor/[slug]` de la 209) usan `SiteHeader` sin overrides.
 
 ## 4. Accesibilidad
 

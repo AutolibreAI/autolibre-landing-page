@@ -1,6 +1,7 @@
 import { siteConfig } from "@/lib/seo/config";
 import { allFaqItems } from "@/lib/content/faq";
 import { businessTypeFor } from "@/lib/provider-profile/business-type";
+import { providerPath } from "@/lib/provider-profile/routes";
 import {
   absoluteUrl,
   safeExternalUrl,
@@ -303,7 +304,7 @@ const SCHEMA_DAY_OF_WEEK = [
 ] as const;
 
 /**
- * Negocio local de un perfil de proveedor (`/p/<slug>`). SOLO se emite para
+ * Negocio local de un perfil de proveedor (`/proveedor/<slug>`). SOLO se emite para
  * perfiles indexables: no se declara un negocio que la página no muestra
  * bien (FR-036). Cada dato sale del mismo objeto que lo pinta la página:
  * `geo` solo con coordenadas, `address` solo con local, `areaServed` para
@@ -311,7 +312,7 @@ const SCHEMA_DAY_OF_WEEK = [
  * nunca `priceRange` ni `email`.
  */
 export function localBusinessSchema(profile: PartnerProfile) {
-  const url = `${siteConfig.url}/p/${profile.slug}`;
+  const url = `${siteConfig.url}${providerPath(profile.slug)}`;
   const image = (value: ProfileImage) => ({
     "@type": "ImageObject",
     url: absoluteUrl(value.url, siteConfig.url),

@@ -34,7 +34,7 @@ Hallazgos: (a) son **tres etiquetas** para una misma acción ("Pedir presupuesto
 | `/proveedores` | `PageShell` + `secondary` + `cta` | — | Blog · Pedir presupuesto · **Soy dueño de auto** | **Sumar mi negocio** |
 | `/pedido` | `PageShell` + `cta` | — | Blog · Pedir presupuesto · Soy proveedor | **WhatsApp** |
 | `/descarga` | encabezado propio | — | — (solo el logo) | — |
-| `/p/[slug]` *(spec 209)* | `SiteHeader` global (decisión del 2026-10-07) | ver arriba | ver arriba | ver arriba |
+| `/proveedor/[slug]` *(spec 209)* | `SiteHeader` global (decisión del 2026-10-07) | ver arriba | ver arriba | ver arriba |
 
 Hallazgos: el header **varía en cuatro ejes** (anclas presentes/ausentes, "Blog" en una fila u otra, link secundario "Soy proveedor"/"Soy dueño de auto", botón de la derecha) y en **dos construcciones** (`SiteHeader` directo y `PageShell`). Todos los desvíos entran por los props `showSectionLinks` y `secondary` de `SiteHeader`/`PageShell`.
 
@@ -171,7 +171,7 @@ La imagen `public/mockup/obd2-connector.webp` solo la usa la sección eliminada.
 
 **Decisión**: es una excepción documentada. La página existe para tapar una fuga (las tiendas abiertas en desktop no instalan nada) y su encabezado es solo el logo sobre fondo oscuro; ponerle el menú completo reintroduce las fugas que la página evita (ver el comentario de `app/descarga/page.tsx`). **Regla de la excepción**: el logo es el mismo y lleva a `/`; no tiene links propios. Está listada en [contracts/header-nav.md](./contracts/header-nav.md).
 
-## D11. `/p/[slug]` (spec 209) ya usa el header global
+## D11. `/proveedor/[slug]` (spec 209) ya usa el header global
 
 Aplicado el 2026-10-07 en la 209 (D21 revisada, T030, T039). Desde el punto de vista de la 210 solo falta que **no use props que dejan de existir**: `SiteHeader` sin `secondary` ni `showSectionLinks`. La 209 debe construirse **después** de esta entrega (R7).
 
@@ -187,7 +187,7 @@ Aplicado el 2026-10-07 en la 209 (D21 revisada, T030, T039). Desde el punto de v
 
 ## D14. Qué NO se toca
 
-Titular y palabras rotativas del hero · pantallas del teléfono · pasos del formulario de presupuesto · `/pedido` (salvo su header por D1) · `softwareApplicationSchema` (no lista funciones) · nombre y estructura del blog · el pie propio de `/p/[slug]` (209).
+Titular y palabras rotativas del hero · pantallas del teléfono · pasos del formulario de presupuesto · `/pedido` (salvo su header por D1) · `softwareApplicationSchema` (no lista funciones) · nombre y estructura del blog · el pie propio de `/proveedor/[slug]` (209).
 
 ---
 

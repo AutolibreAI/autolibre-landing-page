@@ -15,7 +15,7 @@ Tres lectores: el cliente final (decide rápido si confía), el proveedor (la co
 
 URL y render
 
-* URL pública estable: `autolibre.ai/p/<slug>` (ej. `autolibre.ai/p/mecanica-barrancas-san-isidro`). Slug = nombre + localidad. Si cambia el nombre, redirect 301 del slug viejo.
+* URL pública estable: `autolibre.ai/proveedor/<slug>` (ej. `autolibre.ai/proveedor/mecanica-barrancas-san-isidro`). Slug = nombre + localidad. Si cambia el nombre, redirect 301 del slug viejo.
 * Renderizado del lado del servidor (SSR/SSG). El contenido tiene que estar en el HTML inicial; si se arma en el cliente, Google y los LLMs ven poco o nada.
 * Link corto opcional vía el Worker de Cloudflare.
 * La app muestra la misma info en una pantalla nativa (o webview), con dos agregados propios de la app (ver abajo).

@@ -31,10 +31,10 @@ Cualquier otro campo se ignora. El cuerpo se **valida estrictamente** antes de t
 ## Efecto
 
 Por cada slug recibido (`slug` y cada `previousSlugs`):
-- `revalidateTag("provider:<slug>", { expire: 0 })` — expira la página `/p/<slug>`, su imagen `/p/<slug>/og` y las lecturas del backend etiquetadas con ese slug.
+- `revalidateTag("provider:<slug>", { expire: 0 })` — expira la página `/proveedor/<slug>`, su imagen `/proveedor/<slug>/og` y las lecturas del backend etiquetadas con ese slug.
 
 Además, siempre:
-- `revalidateTag("provider-profiles", { expire: 0 })` — expira el **listado** (página índice `/p` y sitemap).
+- `revalidateTag("provider-profiles", { expire: 0 })` — expira el **listado** (página índice `/proveedor` y sitemap).
 
 `{ expire: 0 }` y no `"max"`: con *stale-while-revalidate* la primera visita después del cambio seguiría viendo la versión vieja. Para un webhook la doc de Next recomienda expirar de inmediato.
 

@@ -9,6 +9,7 @@ import {
   providerProfileContent as copy,
 } from "@/lib/content/provider-profile";
 import { listProviderProfiles } from "@/lib/provider-profile/api";
+import { PROVIDER_INDEX_PATH } from "@/lib/provider-profile/routes";
 import { isValidSlug } from "@/lib/provider-profile/slug";
 import { PROVIDER_PROFILES_PUBLIC } from "@/lib/provider-profile/visibility";
 import { createMetadata } from "@/lib/seo/metadata";
@@ -19,7 +20,7 @@ type PageProps = {
   readonly searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-const PATH = "/p";
+const PATH = PROVIDER_INDEX_PATH;
 const PAGE_SIZE = 24;
 
 function first(value: string | string[] | undefined): string | undefined {

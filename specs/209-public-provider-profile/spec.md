@@ -36,7 +36,7 @@ Un proveedor quiere usar su perfil como si fuera su propia web: mandar el link p
 
 **Acceptance Scenarios**:
 
-1. **Given** un proveedor aprobado llamado "Mecánica Barrancas" en San Isidro, **When** su perfil se publica, **Then** queda accesible en `autolibre.ai/p/mecanica-barrancas-san-isidro`.
+1. **Given** un proveedor aprobado llamado "Mecánica Barrancas" en San Isidro, **When** su perfil se publica, **Then** queda accesible en `autolibre.ai/proveedor/mecanica-barrancas-san-isidro`.
 2. **Given** un proveedor que cambia su nombre comercial, **When** alguien abre la URL anterior, **Then** es redirigido de forma permanente a la URL nueva, y la página declara la nueva como su dirección canónica.
 3. **Given** el link del perfil pegado en una conversación de mensajería, **When** la plataforma genera la vista previa, **Then** muestra título, descripción y una imagen de 1200×630 con el logo, el nombre, el rubro y la localidad, la puntuación con su cantidad de reseñas, el sello "Aliado de AutoLibre", el logo de AutoLibre y la foto de portada a la derecha.
 4. **Given** un proveedor sin foto de portada o sin logo, **When** se comparte su link, **Then** la vista previa se genera igual, legible y sin imágenes rotas.
@@ -156,7 +156,7 @@ Una persona que usa la app abre el perfil de un proveedor desde la app y ve la m
 
 **Publicación y URL**
 
-- **FR-001**: Todo proveedor aprobado en AutoLibre MUST tener una página pública accesible sin iniciar sesión en `autolibre.ai/p/<slug>`.
+- **FR-001**: Todo proveedor aprobado en AutoLibre MUST tener una página pública accesible sin iniciar sesión en `autolibre.ai/proveedor/<slug>`.
 - **FR-002**: El slug MUST formarse con el nombre comercial y la localidad, en minúsculas, sin tildes ni caracteres especiales y separado por guiones; los slugs MUST ser únicos, con una regla estable y determinística para resolver colisiones.
 - **FR-003**: Cuando el slug de un proveedor cambie, todos sus slugs anteriores MUST redirigir de forma permanente y directa al slug vigente.
 - **FR-004**: Un proveedor que deje de estar aprobado o activo MUST dejar de mostrar su perfil, no ser indexable y salir del mapa del sitio.

@@ -24,7 +24,7 @@ Devuelve el perfil de un partner por su slug público.
 | Slug inexistente, o de un partner pausado/archivado | `404` | error estándar |
 | Slug con formato inválido | `400` | error estándar |
 
-`moved` va en el cuerpo y no como `3xx` a propósito: la landing llama servidor a servidor y un cuerpo explícito es más simple de probar que un `redirect: "manual"` (research D2). El cliente responde con `permanentRedirect("/p/" + slug)`.
+`moved` va en el cuerpo y no como `3xx` a propósito: la landing llama servidor a servidor y un cuerpo explícito es más simple de probar que un `redirect: "manual"` (research D2). El cliente responde con `permanentRedirect("/proveedor/" + slug)`.
 
 ### `PartnerProfile`
 
@@ -123,7 +123,7 @@ Devuelve el perfil de un partner por su slug público.
 
 ## 2. `GET /partner-profiles`
 
-Listado paginado de perfiles publicados. Alimenta el **sitemap** y la página índice `/p`.
+Listado paginado de perfiles publicados. Alimenta el **sitemap** y la página índice `/proveedor`.
 
 **Query**: `page` (≥1, default 1), `pageSize` (1–100, default 50, **tope duro**: es anónimo), `category` (slug de familia, opcional), `locality` (slug de localidad, opcional). `category` y `locality` pueden combinarse.
 
@@ -174,7 +174,7 @@ El backend responde con `Cache-Control: public, max-age=60, stale-while-revalida
 - Los campos nuevos se agregan siempre como opcionales (`| null`). Un campo existente **no cambia de significado** sin versionar la ruta.
 - El `id` UUID del partner **no** aparece en el perfil: la identidad pública es el `slug`. La app resuelve el UUID que ya conoce contra `GET /partners/:id` para el CTA y el `lead`; el perfil por slug es la fuente de lo que se muestra.
   *(A confirmar con el equipo de la app: si prefieren recibir también `id`, se suma como campo — es información que `GET /partners` ya publica, no abre superficie nueva.)*
-- El `slug` se agrega además al **resumen del listado** `GET /partners` y al **detalle** `GET /partners/:id` como campo opcional, para que la app pueda armar la URL pública (`autolibre.ai/p/<slug>`) y compartirla. Es un campo nuevo no obligatorio: no rompe a ningún cliente existente, pero el test de OpenAPI que fija la lista completa de campos del resumen hay que actualizarlo **deliberadamente** (es justamente la conversación que ese test pide).
+- El `slug` se agrega además al **resumen del listado** `GET /partners` y al **detalle** `GET /partners/:id` como campo opcional, para que la app pueda armar la URL pública (`autolibre.ai/proveedor/<slug>`) y compartirla. Es un campo nuevo no obligatorio: no rompe a ningún cliente existente, pero el test de OpenAPI que fija la lista completa de campos del resumen hay que actualizarlo **deliberadamente** (es justamente la conversación que ese test pide).
 
 ---
 
