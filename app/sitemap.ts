@@ -3,6 +3,7 @@ import { BLOG_PUBLIC } from "@/lib/blog/visibility";
 import { categoryPath } from "@/lib/blog/query";
 import { collectCategories, getPosts, postPath } from "@/lib/hygraph/posts";
 import { listAllProviderSummaries } from "@/lib/provider-profile/api";
+import { PROVIDER_INDEX_PATH, providerPath } from "@/lib/provider-profile/routes";
 import { PROVIDER_PROFILES_PUBLIC } from "@/lib/provider-profile/visibility";
 import { siteConfig } from "@/lib/seo/config";
 
@@ -130,7 +131,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Perfiles de proveedores: solo con el interruptor encendido, y solo los
   // INDEXABLES (un perfil pobre lleva `noindex` y no entra al mapa). El listado
   // lo cambia cada vez que se aprueba o edita un proveedor, así que el
-  // `lastModified` de `/p` es el del perfil más reciente. Si el backend no
+  // `lastModified` de `/proveedor` es el del perfil más reciente. Si el backend no
   // responde el listado viene vacío y se omite la sección, sin romper el build.
   const providers = PROVIDER_PROFILES_PUBLIC
     ? (await listAllProviderSummaries()).filter((summary) => summary.indexable)
@@ -143,7 +144,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     providers.length > 0
       ? [
           {
-            url: `${siteConfig.url}/p`,
+            url: `${siteConfig.url}${PROVIDER_INDEX_PATH}`,
             lastModified: latestProviderDate || undefined,
             changeFrequency: "daily" as const,
             priority: 0.7,
@@ -151,7 +152,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ]
       : [];
   const providerPages = providers.map((summary) => ({
-    url: `${siteConfig.url}/p/${summary.slug}`,
+    url: `${siteConfig.url}${providerPath(summary.slug)}`,
     lastModified: summary.updatedAt,
     changeFrequency: "weekly" as const,
     priority: 0.6,

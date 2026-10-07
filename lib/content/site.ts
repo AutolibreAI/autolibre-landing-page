@@ -1,4 +1,5 @@
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
+import { PROVIDER_INDEX_PATH } from "@/lib/provider-profile/routes";
 import { PROVIDER_PROFILES_PUBLIC } from "@/lib/provider-profile/visibility";
 import { siteConfig } from "@/lib/seo/config";
 import { providersContent } from "@/lib/content/providers";
@@ -86,7 +87,7 @@ export const siteContent = {
           // El índice de perfiles entra al footer recién cuando es público
           // (`lib/provider-profile/visibility.ts`).
           ...(PROVIDER_PROFILES_PUBLIC
-            ? [{ label: "Proveedores", href: "/p" }]
+            ? [{ label: "Proveedores", href: PROVIDER_INDEX_PATH }]
             : []),
         ],
       },

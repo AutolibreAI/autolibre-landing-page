@@ -5,11 +5,11 @@
 
 ## Summary
 
-Una página pública por proveedor en `autolibre.ai/p/<slug>`, renderizada en el servidor y regenerada por tiempo y por evento, que el proveedor pueda usar como su propia web y que Google y los asistentes de IA indexen; la misma información se ve en la app.
+Una página pública por proveedor en `autolibre.ai/proveedor/<slug>`, renderizada en el servidor y regenerada por tiempo y por evento, que el proveedor pueda usar como su propia web y que Google y los asistentes de IA indexen; la misma información se ve en la app.
 
 **Enfoque técnico** (detalle en [research.md](./research.md)):
 
-- **La landing** (este repo) consume un **contrato de datos nuevo** del backend (`GET /partner-profiles/:slug`, [contrato](./contracts/partner-profile-api.md)). Página `app/p/[slug]/page.tsx` con `generateStaticParams` + ISR, sin dependencias nuevas: imagen de vista previa con `next/og`, datos estructurados con builders en `lib/seo/schema.ts`, analítica con el catálogo único existente.
+- **La landing** (este repo) consume un **contrato de datos nuevo** del backend (`GET /partner-profiles/:slug`, [contrato](./contracts/partner-profile-api.md)). Página `app/proveedor/[slug]/page.tsx` con `generateStaticParams` + ISR, sin dependencias nuevas: imagen de vista previa con `next/og`, datos estructurados con builders en `lib/seo/schema.ts`, analítica con el catálogo único existente.
 - **Toda la lógica determinística** (estado "abierto ahora", preguntas frecuentes, métricas visibles, indexabilidad, tipo de negocio, validación de slug) va en **módulos puros** probados con `node --test`, el patrón que ya usa el repo (`test:blog`).
 - **El backend, la app y el panel de operadores** se tocan por **contrato**: este plan define qué tienen que exponer y qué tienen que mostrar, pero su implementación es trabajo de esos repositorios.
 - **Entrega en fases con un interruptor de publicación** (`PROVIDER_PROFILES_PUBLIC`, como `BLOG_PUBLIC`): hoy el backend **no tiene** slug, portada, horarios estructurados, reseñas, trabajos ni métricas, y en producción hay 46 partners con datos ralos. Publicar páginas pobres como indexables es el mayor riesgo de SEO de la feature.
@@ -26,7 +26,7 @@ Una página pública por proveedor en `autolibre.ai/p/<slug>`, renderizada en el
 **Project Type**: aplicación web (landing) **más cambios coordinados en 3 repos** (backend, app, panel).
 **Performance Goals**: LCP < 2,5 s, CLS < 0,1, INP < 200 ms (Constitución IV); imagen de vista previa < 3 s; un cambio visible en ≤ 10 minutos (SC-007).
 **Constraints**: todo el contenido indexable en el HTML inicial; islas cliente solo en la hoja; `ImageResponse` limita el bundle a 500 KB y solo admite flexbox y fuentes `ttf`/`otf`/`woff`; **los endpoints del backend aún no existen** (se desarrolla contra un servidor de prueba del contrato).
-**Scale/Scope**: 46 partners activos hoy (producción); listado paginado de 50; ~12 componentes de sección, 2 islas, 7 módulos puros, 3 rutas (`/p`, `/p/[slug]`, `/p/[slug]/og`) y 1 de revalidación; 3 repos externos con cambios.
+**Scale/Scope**: 46 partners activos hoy (producción); listado paginado de 50; ~12 componentes de sección, 2 islas, 7 módulos puros, 3 rutas (`/proveedor`, `/proveedor/[slug]`, `/proveedor/[slug]/og`) y 1 de revalidación; 3 repos externos con cambios.
 
 **No quedan `NEEDS CLARIFICATION` técnicos**: todos se resolvieron en [research.md](./research.md). Lo que queda abierto es **de producto** (lista abajo).
 
@@ -79,14 +79,14 @@ Marca: **A** núcleo P1 · **B** P2 sin dominios nuevos · **C** necesita backen
 ```text
 app/
 ├── p/
-│   ├── page.tsx                          # B — índice "/p" (listado + filtros ?rubro= ?zona=, con noindex en filtros)
+│   ├── page.tsx                          # B — índice "/proveedor" (listado + filtros ?rubro= ?zona=, con noindex en filtros)
 │   └── [slug]/
 │       ├── page.tsx                      # A — perfil: generateStaticParams, generateMetadata, JSON-LD, permanentRedirect
 │       └── og/route.tsx                  # A — imagen 1200×630 (ImageResponse, Node runtime)
 ├── api/revalidate/
 │   ├── route.ts                          # existente — pasa a usar lib/revalidation.ts
 │   └── provider/route.ts                 # A — aviso de cambio de perfil
-├── sitemap.ts                            # A — suma /p y los perfiles indexables
+├── sitemap.ts                            # A — suma /proveedor y los perfiles indexables
 └── globals.css                           # A — tokens nuevos en @theme
 
 components/
@@ -102,7 +102,7 @@ components/
 │   ├── proposal-card.tsx                 # A — "¿Necesitás una propuesta?" (columna derecha)
 │   ├── footer-band.tsx                   # A — banda de AutoLibre + URL del perfil + Términos/Privacidad
 │   ├── faq.tsx                           # B — acordeón details/summary
-│   ├── directory.tsx                     # B — listado de la página /p
+│   ├── directory.tsx                     # B — listado de la página /proveedor
 │   ├── works.tsx                         # C — grilla 3 + "Ver los M trabajos"
 │   ├── reviews.tsx                       # C — 3 reseñas + respuesta del proveedor
 │   └── metrics.tsx                       # C — "Medido por AutoLibre"
@@ -190,15 +190,15 @@ autolibre-admin/                                   # única vía de carga de dat
 
 **Fase A — núcleo P1** *(detrás del interruptor apagado)*
 - Backend: migraciones, función de slug, backfill, endpoints, ajustes de aprobación (GNC, tipos de vehículo).
-- Landing: página `/p/[slug]` con bloques 1, 2, 3, 7, 8 y 10; SEO completo; imagen OG; sitemap; revalidación; analítica; `GNC` en el formulario.
+- Landing: página `/proveedor/[slug]` con bloques 1, 2, 3, 7, 8 y 10; SEO completo; imagen OG; sitemap; revalidación; analítica; `GNC` en el formulario.
 - Panel: campos nuevos, vista previa de slug, mensaje de bienvenida, webhook.
 - *Bloquea*: nada de la web se puede **verificar con datos reales** hasta que el backend publique el endpoint; hasta entonces, se prueba contra el mock.
 
-**Fase B — P2 sin dominios nuevos**: preguntas frecuentes, variante sin local (zonas de cobertura), página índice `/p` y los filtros de las migas, mejoras de la pantalla de la app.
+**Fase B — P2 sin dominios nuevos**: preguntas frecuentes, variante sin local (zonas de cobertura), página índice `/proveedor` y los filtros de las migas, mejoras de la pantalla de la app.
 
 **Fase C — dominios nuevos de backend** *(fuera de este plan de construcción)*: reseñas, trabajos, métricas. La web y la app ya quedan listas por contrato.
 
-**Fuera de este plan** (research D29): el link corto vía el Worker de Cloudflare (FR-005, opcional; el contrato solo garantiza la URL canónica a la que apuntaría), el editor para que el proveedor complete su perfil con el indicador de "perfil completo al 70%" (sugerencia no vinculante de la spec) y las páginas indexables por zona y por rubro (`/p/zona/…`).
+**Fuera de este plan** (research D29): el link corto vía el Worker de Cloudflare (FR-005, opcional; el contrato solo garantiza la URL canónica a la que apuntaría), el editor para que el proveedor complete su perfil con el indicador de "perfil completo al 70%" (sugerencia no vinculante de la spec) y las páginas indexables por zona y por rubro (`/proveedor/zona/…`).
 
 **Puerta de lanzamiento**: encender `PROVIDER_PROFILES_PUBLIC` solo con la [lista del quickstart §5](./quickstart.md#5-puerta-de-lanzamiento-encender-provider_profiles_public).
 
@@ -225,14 +225,14 @@ autolibre-admin/                                   # única vía de carga de dat
 | 2 | Título `… \| AutoLibre` | `… · AutoLibre` | El layout del repo usa `·`; `AGENTS.md` pide no incluir la marca en el `title` |
 | 3 | Zona de cobertura con **mapa del área** | Solo **lista de localidades** | No existe geometría de cobertura; solo texto |
 | 4 | "Pedir propuesta" **llega a ese proveedor** | **Atribución** en la v1 (`/pedido?proveedor=<slug>`) | El backend no tiene pedidos dirigidos a un partner puntual |
-| 5 | Migas `Proveedores › Localidad › Rubro › Nombre` | Igual, **más una página `/p`** que no estaba en la tarjeta | Un `BreadcrumbList` exige URL en cada nivel y esas páginas no existen |
+| 5 | Migas `Proveedores › Localidad › Rubro › Nombre` | Igual, **más una página `/proveedor`** que no estaba en la tarjeta | Un `BreadcrumbList` exige URL en cada nivel y esas páginas no existen |
 | 6 | Botón "Hacerlo mi taller de cabecera" | **Omitido** hasta que exista la función | No existe en la app ni en el backend |
 | 7 | "Llamar" | Usa el número de **WhatsApp** | `partners` no tiene teléfono aparte |
 | 8 | "Íconos Phosphor" | Íconos de línea 24×24 **del propio diseño** | Phosphor es de 256 px con relleno y `Icon` es 24 px con trazo (research D23) |
 
 ## Decisiones de producto pendientes
 
-Las 9 están en [research.md · lista única](./research.md#lista-única-de-decisiones-de-producto-pendientes): 308 vs 301 · página índice `/p` · `Contact` de Meta · zona sin mapa y costo de mapas · "Pedir propuesta" dirigido o atribución · dos paletas de superficie · WhatsApp que recibe llamadas · umbrales de métricas · perfil gratis vs suscripción.
+Las 9 están en [research.md · lista única](./research.md#lista-única-de-decisiones-de-producto-pendientes): 308 vs 301 · página índice `/proveedor` · `Contact` de Meta · zona sin mapa y costo de mapas · "Pedir propuesta" dirigido o atribución · dos paletas de superficie · WhatsApp que recibe llamadas · umbrales de métricas · perfil gratis vs suscripción.
 
 ## Complexity Tracking
 
@@ -247,4 +247,4 @@ Las 9 están en [research.md · lista única](./research.md#lista-única-de-deci
 | **Fuentes de la imagen OG** como archivos propios (`lib/provider-profile/fonts/`), no `next/font` | `ImageResponse` (Satori) no puede usar `next/font` ni CSS; necesita el binario de la fuente | Cargar las fuentes por `fetch` en cada render suma latencia y un punto de falla externo |
 | **Dos islas cliente** (`OpenStatusBadge`, `ShareButton`) | El estado depende de la hora actual y compartir usa API del navegador | Renderizar el estado en el servidor lo hace falso entre revalidaciones; hacer toda la sección cliente viola I |
 | **Servidor de prueba del contrato** en `scripts/` | El backend no tiene los endpoints todavía | Esperar al backend bloquea toda verificación |
-| **Página `/p`** fuera de la tarjeta | Las migas exigen URLs reales | Migas sin enlaces incumplen FR-034; ver desvío 5 |
+| **Página `/proveedor`** fuera de la tarjeta | Las migas exigen URLs reales | Migas sin enlaces incumplen FR-034; ver desvío 5 |

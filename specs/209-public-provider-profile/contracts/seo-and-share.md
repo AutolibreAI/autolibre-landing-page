@@ -1,6 +1,6 @@
 # Contrato: SEO, datos estructurados, vista previa y estructura de la página
 
-**Ruta**: `app/p/[slug]/page.tsx` · **Imagen de vista previa**: `app/p/[slug]/og/route.tsx` · **Índice**: `app/p/page.tsx`.
+**Ruta**: `app/proveedor/[slug]/page.tsx` · **Imagen de vista previa**: `app/proveedor/[slug]/og/route.tsx` · **Índice**: `app/proveedor/page.tsx`.
 Cumple Constitución VII (metadata con `createMetadata`, JSON-LD con builders de `lib/seo/schema.ts`, sitemap y `llms.txt`) y VI (estructura semántica).
 
 ---
@@ -13,9 +13,9 @@ Cumple Constitución VII (metadata con `createMetadata`, JSON-LD con builders de
 |---|---|
 | `title` | `<Nombre> — <rubro principal> en <localidad>`. El template del layout agrega ` · AutoLibre`. Degrada: sin localidad → `<Nombre> — <rubro>`; sin rubro → `<Nombre> en <localidad>`; sin ninguno → `<Nombre>`. |
 | `description` | La descripción del proveedor **recortada a ~155 caracteres en un límite de palabra**, sin saltos de línea ni marcado. Sin descripción → plantilla de la capa de contenido: `"<Nombre>, <rubro> en <localidad>. Servicios, horarios y contacto en AutoLibre."` (única por perfil porque incluye nombre). |
-| `path` / canonical | `/p/<slug vigente>`. Un slug histórico **no llega a renderizar**: redirige antes. |
+| `path` / canonical | `/proveedor/<slug vigente>`. Un slug histórico **no llega a renderizar**: redirige antes. |
 | `index` | `true` solo si `PROVIDER_PROFILES_PUBLIC` **y** `isIndexable(profile)`; si no, `noindex,nofollow` (la página sigue funcionando). |
-| `image` | `{ url: "/p/<slug>/og", width: 1200, height: 630, alt: "<Nombre> — <rubro> en <localidad>" }`. Se pasa a `createMetadata`: así `openGraph.images` y `twitter.images` apuntan a la imagen dinámica sin ambigüedad con la convención de archivo. |
+| `image` | `{ url: "/proveedor/<slug>/og", width: 1200, height: 630, alt: "<Nombre> — <rubro> en <localidad>" }`. Se pasa a `createMetadata`: así `openGraph.images` y `twitter.images` apuntan a la imagen dinámica sin ambigüedad con la convención de archivo. |
 | `article` | no aplica (es una página de negocio, no un artículo). |
 
 **Desvío menor respecto de la spec**: la spec dice `… | AutoLibre`; el repo usa un template de layout con separador `·` (`%s · AutoLibre`) y la regla de `AGENTS.md` ("title sin la marca"). Se sigue la regla del repo; para el buscador es equivalente.
@@ -53,21 +53,21 @@ Los `items` son **exactamente** los de `buildFaq(profile)`: los mismos que rende
 ### `breadcrumbSchema(trail)`
 
 Trayecto **idéntico al visible** (FR-034): `Proveedores` → `<Localidad>` → `<Rubro>` → `<Nombre>`.
-- `Proveedores` → `/p` · `<Localidad>` → `/p?zona=<slug>` · `<Rubro>` → `/p?rubro=<slug>` (filtros con `noindex` y canonical a `/p`; research D8).
+- `Proveedores` → `/proveedor` · `<Localidad>` → `/proveedor?zona=<slug>` · `<Rubro>` → `/proveedor?rubro=<slug>` (filtros con `noindex` y canonical a `/proveedor`; research D8).
 - Un nivel sin dato (sin localidad, sin rubro) **se omite en los dos lados**, visible y estructurado.
 - La spec **no** incluye "Inicio" como primer paso; se sigue la spec.
 
 ## 3. Sitemap y `llms.txt`
 
 **`app/sitemap.ts`**: agrega, solo con `PROVIDER_PROFILES_PUBLIC = true`:
-- `/p` (`changeFrequency: "daily"`, `priority: 0.7`, `lastModified` = el más reciente de los perfiles);
-- un `/p/<slug>` por cada perfil con `indexable = true` del listado (`GET /partner-profiles`, recorriendo páginas), con `lastModified = updatedAt`, `changeFrequency: "weekly"`, `priority: 0.6`. Los no indexables **no** entran.
+- `/proveedor` (`changeFrequency: "daily"`, `priority: 0.7`, `lastModified` = el más reciente de los perfiles);
+- un `/proveedor/<slug>` por cada perfil con `indexable = true` del listado (`GET /partner-profiles`, recorriendo páginas), con `lastModified = updatedAt`, `changeFrequency: "weekly"`, `priority: 0.6`. Los no indexables **no** entran.
 
-**`public/llms.txt`**: sección nueva "Perfiles de proveedores" (cuando el interruptor esté encendido) que describe qué es una página `/p/<slug>` y lista `/p`. Como pasa con el blog, `llms.txt` es manual: si el interruptor vuelve a `false`, se saca de ahí también.
+**`public/llms.txt`**: sección nueva "Perfiles de proveedores" (cuando el interruptor esté encendido) que describe qué es una página `/proveedor/<slug>` y lista `/proveedor`. Como pasa con el blog, `llms.txt` es manual: si el interruptor vuelve a `false`, se saca de ahí también.
 
-**`app/robots.ts`**: sin cambios (`/p/` ya queda permitido; `noindex` va por metadata, **no** por `robots.txt`, para que Google pueda leerlo).
+**`app/robots.ts`**: sin cambios (`/proveedor/` ya queda permitido; `noindex` va por metadata, **no** por `robots.txt`, para que Google pueda leerlo).
 
-## 4. Imagen de vista previa (`/p/<slug>/og`)
+## 4. Imagen de vista previa (`/proveedor/<slug>/og`)
 
 `ImageResponse` de `next/og`, 1200×630, PNG.
 

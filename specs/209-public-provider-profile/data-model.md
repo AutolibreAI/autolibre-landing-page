@@ -221,7 +221,7 @@ solicitud (partner_application)
         └─ reactivar                ──▶ vuelve el mismo slug vigente
 ```
 
-Estados visibles de una URL `/p/<slug>`:
+Estados visibles de una URL `/proveedor/<slug>`:
 
 | La URL es… | Respuesta |
 |---|---|

@@ -28,6 +28,7 @@ import {
   profileTitle,
   profileTrail,
 } from "@/lib/provider-profile/present";
+import { providerOgPath, providerPath } from "@/lib/provider-profile/routes";
 import { PROVIDER_PROFILES_PUBLIC } from "@/lib/provider-profile/visibility";
 import { siteConfig } from "@/lib/seo/config";
 import { createMetadata } from "@/lib/seo/metadata";
@@ -66,12 +67,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return createMetadata({
     title,
     description: profileDescription(profile),
-    path: `/p/${profile.slug}`,
+    path: providerPath(profile.slug),
     // Indexa solo con el interruptor encendido Y un perfil con contenido
     // suficiente (la web recalcula la regla aunque el backend mande `indexable`).
     index: PROVIDER_PROFILES_PUBLIC && isIndexable(profile),
     image: {
-      url: `/p/${profile.slug}/og`,
+      url: providerOgPath(profile.slug),
       width: 1200,
       height: 630,
       alt: title,
@@ -80,7 +81,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 /**
- * Perfil público de un proveedor: `/p/<slug>`. Server Component; las únicas
+ * Perfil público de un proveedor: `/proveedor/<slug>`. Server Component; las únicas
  * islas de cliente son hojas (`OpenStatusBadge`, `WeeklyHours`, `ShareButton`).
  * Todo el contenido indexable sale en el HTML del servidor.
  *
@@ -96,15 +97,15 @@ export default async function ProviderProfilePage({ params }: PageProps) {
   const result = await getProviderProfile(slug);
 
   if (result.status === "not_found") notFound();
-  if (result.status === "moved") permanentRedirect(`/p/${result.slug}`);
+  if (result.status === "moved") permanentRedirect(providerPath(result.slug));
 
   const { profile } = result;
-  const publicUrl = `${siteConfig.url}/p/${profile.slug}`;
+  const publicUrl = `${siteConfig.url}${providerPath(profile.slug)}`;
   const trail = profileTrail(profile);
   const faqItems = buildFaq(profile, copy.faq);
   const indexable = isIndexable(profile);
 
-  const path = `/p/${profile.slug}`;
+  const path = providerPath(profile.slug);
   const schema = graph(
     organizationSchema(),
     webPageSchema({

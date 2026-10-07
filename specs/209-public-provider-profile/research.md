@@ -40,7 +40,7 @@ Contraste entre lo que la spec necesita y lo que existe hoy:
 **Decisión**: tres fases y un interruptor `PROVIDER_PROFILES_PUBLIC` (constante, mismo patrón que `BLOG_PUBLIC` en `lib/blog/visibility.ts`).
 
 - **Fase A — núcleo P1 (con interruptor apagado hasta que haya datos)**: slug + endpoint de perfil + horarios estructurados + portada + localidad; página web con los bloques 1, 2, 3, 7, 8 y 10; SEO completo; imagen de vista previa; sitemap; revalidación; analítica.
-- **Fase B — P2 sin dependencias de datos nuevos**: preguntas frecuentes, variante sin local, página índice `/p`, pantalla de la app.
+- **Fase B — P2 sin dependencias de datos nuevos**: preguntas frecuentes, variante sin local, página índice `/proveedor`, pantalla de la app.
 - **Fase C — P2 que necesita dominios nuevos del backend**: reseñas, trabajos, métricas. **Fuera de este plan de construcción**; acá solo se fija el contrato para que la web y la app queden listas.
 
 **Por qué**: el interruptor no es cosmética. En producción hay **46 partners activos** con datos ralos; publicar 46 páginas casi vacías y declararlas indexables es el riesgo de SEO más grande de la feature (contenido pobre). El patrón del blog resuelve exactamente esto: el interruptor apaga **a la vez** `noindex`, sitemap y links; apagar solo uno manda señales contradictorias (así lo documenta `lib/blog/visibility.ts`).
@@ -54,7 +54,7 @@ Contraste entre lo que la spec necesita y lo que existe hoy:
 **Decisión**: sumar al contexto `marketplace/partner` del backend (mismo bounded context, mismo patrón de `QueryBus` + read-model) tres lecturas públicas:
 
 - `GET /api/v1/partner-profiles/:slug` → el perfil completo, o `{ status: "moved", slug }` si el slug es histórico, o 404.
-- `GET /api/v1/partner-profiles` → listado paginado (alimenta el sitemap y la página `/p`).
+- `GET /api/v1/partner-profiles` → listado paginado (alimenta el sitemap y la página `/proveedor`).
 - Contrato completo en [contracts/partner-profile-api.md](./contracts/partner-profile-api.md).
 
 **Por qué no extender `GET /partners/:id`**: ese endpoint tiene un comentario explícito sobre por qué el listado y el detalle son proyecciones distintas ("el listado paga por lo que solo usa el detalle"), y un test del documento OpenAPI que asserta la lista completa de campos para forzar la conversación. Mezclar slugs, horarios estructurados y reseñas ahí rompería ese contrato con la app instalada. Un recurso nuevo no cambia nada de lo que la app ya consume. El `id` UUID sigue valiendo para la app; el `slug` es la identidad **pública** (URL).
@@ -96,7 +96,7 @@ Contraste entre lo que la spec necesita y lo que existe hoy:
 ## D5. Renderizado y caché: estático con revalidación por tiempo **y** por evento
 
 **Decisión**:
-- `app/p/[slug]/page.tsx` con `generateStaticParams` (slugs del listado) y `dynamicParams = true` (los nuevos se generan en el primer request), exactamente como `app/blog/[category]/[slug]/page.tsx`.
+- `app/proveedor/[slug]/page.tsx` con `generateStaticParams` (slugs del listado) y `dynamicParams = true` (los nuevos se generan en el primer request), exactamente como `app/blog/[category]/[slug]/page.tsx`.
 - Las llamadas al backend usan `fetch` con `next: { revalidate: 600, tags: ["provider-profiles", "provider:<slug>"] }`. **600 s = el tope de 10 minutos de SC-007** aunque falle el aviso.
 - Aviso por evento: ruta `POST /api/revalidate/provider` (mismo esquema que la ruta existente de Hygraph: secreto en header, comparación en tiempo constante, `revalidateTag(tag, { expire: 0 })`). Contrato en [contracts/revalidation-webhook.md](./contracts/revalidation-webhook.md).
 - **Semántica de error** (copiada de `getPostBySlug`): backend caído → **tira** (Next sigue sirviendo la última página buena y reintenta); slug inexistente → `notFound()`. Devolver `null` ante un error de red convertiría una caída en un 404 cacheado.
@@ -130,9 +130,9 @@ Contraste entre lo que la spec necesita y lo que existe hoy:
 
 **Hallazgo**: la spec pide `Proveedores › Localidad › Rubro › Nombre`, visible y como `BreadcrumbList`. Pero **ninguna** de esas tres páginas intermedias existe: `/proveedores` es la página de **alta** de talleres ("Sumá tu taller a AutoLibre"), no un directorio. Un `BreadcrumbList` exige URL en todos los niveles menos el último.
 
-**Decisión (propuesta)**: crear una página índice mínima `/p` ("Proveedores en AutoLibre") que reutiliza el listado público; "Proveedores" enlaza ahí. Los niveles "Localidad" y "Rubro" enlazan a `/p?zona=<slug>` y `/p?rubro=<slug>`, que son **filtros con `noindex` y canonical a `/p`** (mismo criterio de "una sola URL indexable" que se aplicó al blog). Páginas indexables por zona y por rubro (`/p/zona/…`) quedan como mejora posterior y serían un buen activo de SEO local.
+**Decisión (propuesta)**: crear una página índice mínima `/proveedor` ("Proveedores en AutoLibre") que reutiliza el listado público; "Proveedores" enlaza ahí. Los niveles "Localidad" y "Rubro" enlazan a `/proveedor?zona=<slug>` y `/proveedor?rubro=<slug>`, que son **filtros con `noindex` y canonical a `/proveedor`** (mismo criterio de "una sola URL indexable" que se aplicó al blog). Páginas indexables por zona y por rubro (`/proveedor/zona/…`) quedan como mejora posterior y serían un buen activo de SEO local.
 
-**[DECISIÓN DE PRODUCTO]**: confirmar `/p` como parte de esta feature (es alcance nuevo, no estaba en la tarjeta). Si no se aprueba, la alternativa es mostrar las migas sin enlaces intermedios y declarar el `BreadcrumbList` solo con `Inicio › Nombre`, incumpliendo FR-034 parcialmente.
+**[DECISIÓN DE PRODUCTO]**: confirmar `/proveedor` como parte de esta feature (es alcance nuevo, no estaba en la tarjeta). Si no se aprueba, la alternativa es mostrar las migas sin enlaces intermedios y declarar el `BreadcrumbList` solo con `Inicio › Nombre`, incumpliendo FR-034 parcialmente.
 
 ---
 
@@ -165,7 +165,7 @@ Contraste entre lo que la spec necesita y lo que existe hoy:
 
 ## D11. Imagen de vista previa (OG): Route Handler con `ImageResponse`
 
-**Decisión**: `app/p/[slug]/og/route.tsx` con `ImageResponse` de `next/og` (incluido en Next: **cero dependencias nuevas**). Se referencia desde `createMetadata({ image: … })`.
+**Decisión**: `app/proveedor/[slug]/og/route.tsx` con `ImageResponse` de `next/og` (incluido en Next: **cero dependencias nuevas**). Se referencia desde `createMetadata({ image: … })`.
 
 **Por qué un Route Handler y no el archivo `opengraph-image.tsx`**: `createMetadata()` siempre escribe `openGraph.images` y `twitter.images`; la doc de Next no dice cuál gana si conviven con la convención de archivo. Un Route Handler explícito, enlazado por `createMetadata`, no deja ambigüedad y respeta la regla del repo de no armar `Metadata` a mano.
 
@@ -355,14 +355,14 @@ Ambas son baratas y de bajo riesgo, pero **bloquean datos que la página promete
 - **Link corto vía Worker de Cloudflare** (FR-005, "opcional"): es infraestructura fuera de este repositorio; el contrato solo garantiza la URL canónica a la que apuntaría.
 - **Dominio de reseñas, trabajos y métricas** (Fase C): features de backend con su propia spec.
 - **Editor para el proveedor** y el indicador de "perfil completo al 70%": la spec lo marca como sugerencia no vinculante.
-- **Páginas indexables por zona y por rubro** (`/p/zona/…`): mejora posterior de D8.
+- **Páginas indexables por zona y por rubro** (`/proveedor/zona/…`): mejora posterior de D8.
 
 ---
 
 ## Lista única de decisiones de producto pendientes
 
 1. **D6** — ¿Es aceptable 308 en lugar de 301 para los slugs viejos?
-2. **D8** — ¿Se incluye la página índice `/p` en esta feature (alcance nuevo)?
+2. **D8** — ¿Se incluye la página índice `/proveedor` en esta feature (alcance nuevo)?
 3. **D12** — ¿Un click de WhatsApp del perfil puede viajar a Meta como `Contact`?
 4. **D17** — ¿Se acepta que la zona de cobertura salga sin mapa de área, y el costo de mapas estáticos?
 5. **D19** — ¿Alcanza la atribución para "Pedir propuesta" o "dirigido" es requisito de lanzamiento?

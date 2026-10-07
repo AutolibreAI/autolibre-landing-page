@@ -555,7 +555,7 @@ pays for itself locally.
   `reveal`; use `overflow-clip` (it clips without creating a scroll container).
 - **Don't** hardcode a store URL; it comes from `siteConfig.stores`.
 
-## Perfil público de proveedor (`/p/<slug>`)
+## Perfil público de proveedor (`/proveedor/<slug>`)
 
 El perfil de proveedor sigue el sistema **"AutoLibre AI"** de la app y NO la paleta de superficie de la landing (decisión de la spec 209, research D22): por eso el `@theme` de `app/globals.css` tiene tokens propios que no pisan los de arriba.
 
@@ -572,4 +572,4 @@ El perfil de proveedor sigue el sistema **"AutoLibre AI"** de la app y NO la pal
 - El CTA principal es oscuro (`bg-ink`, texto blanco); el verde de marca queda como acento.
 - Radios con la escala de Tailwind: `rounded-lg` (8, botones), `rounded-xl` (12), `rounded-2xl` (16, tarjetas) y `rounded-full` (pills).
 - Íconos: los de línea 24×24 de `components/ui/icon.tsx` (no Phosphor: desvío documentado en la spec 209).
-- La imagen de vista previa (`/p/<slug>/og`) repite estos valores en `lib/provider-profile/og-tokens.ts`: Satori no entiende variables CSS. Si cambia un token, cambiarlo también ahí.
+- La imagen de vista previa (`/proveedor/<slug>/og`) repite estos valores en `lib/provider-profile/og-tokens.ts`: Satori no entiende variables CSS. Si cambia un token, cambiarlo también ahí.

@@ -1,7 +1,7 @@
 import type { FaqTemplates } from "@/lib/provider-profile/faq";
 
 /**
- * Copy del perfil público de proveedor (`/p/<slug>`). Ningún componente trae
+ * Copy del perfil público de proveedor (`/proveedor/<slug>`). Ningún componente trae
  * strings propios (Constitución II). Las URLs de tienda, contacto y redes
  * salen de `siteConfig`, nunca de acá.
  */
@@ -209,7 +209,7 @@ export const providerProfileContent = {
       "{name}. Servicios, horarios y contacto en AutoLibre.",
   },
 
-  /** Página índice `/p`: listado de proveedores. */
+  /** Página índice `/proveedor`: listado de proveedores. */
   directory: {
     title: "Proveedores en AutoLibre",
     subtitle:

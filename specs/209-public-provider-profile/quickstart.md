@@ -42,7 +42,7 @@ Los mismos datos de prueba se reutilizan como *fixtures* tipadas de las pruebas 
 ## 3. Comandos del día a día
 
 ```bash
-npm run dev                       # http://localhost:3000/p/mecanica-barrancas-san-isidro
+npm run dev                       # http://localhost:3000/proveedor/mecanica-barrancas-san-isidro
 npm run test:provider-profile     # lógica pura: horario, FAQ, métricas, indexabilidad, tipo de negocio, slug
 npm run typecheck:provider-profile
 npx tsc --noEmit                  # typecheck de la app
@@ -56,33 +56,33 @@ npm run build                     # tiene que terminar con 0 errores de TS y de 
 
 ## 4. Lista de verificación
 
-Cada ítem apunta al requisito que prueba. Hacerlo contra `/p/mecanica-barrancas-san-isidro` salvo que se indique otro slug.
+Cada ítem apunta al requisito que prueba. Hacerlo contra `/proveedor/mecanica-barrancas-san-isidro` salvo que se indique otro slug.
 
 ### Contenido en la primera respuesta *(SC-002, FR-030)*
 ```bash
-curl -s http://localhost:3000/p/mecanica-barrancas-san-isidro | grep -c "Servicios"
+curl -s http://localhost:3000/proveedor/mecanica-barrancas-san-isidro | grep -c "Servicios"
 ```
 Con **ver código fuente** (no con las devtools): están el nombre, la descripción, los servicios, el horario semanal, la ubicación y las preguntas frecuentes **como texto**. No debe haber ningún bloque que aparezca recién después de hidratar (salvo el badge de "abierto ahora", que es una isla y se verifica aparte).
 
 ### Redirección y 404 *(FR-003, FR-004)*
 ```bash
-curl -sI http://localhost:3000/p/mecanica-barrancas        # 308, Location: /p/mecanica-barrancas-san-isidro
-curl -sI http://localhost:3000/p/no-existe                 # 404
-curl -sI "http://localhost:3000/p/Slug_Inválido!"          # 404 sin llamar al backend
+curl -sI http://localhost:3000/proveedor/mecanica-barrancas        # 308, Location: /proveedor/mecanica-barrancas-san-isidro
+curl -sI http://localhost:3000/proveedor/no-existe                 # 404
+curl -sI "http://localhost:3000/proveedor/Slug_Inválido!"          # 404 sin llamar al backend
 ```
 El `308` en lugar de `301` es una decisión documentada (research D6).
 
 ### Indexabilidad *(FR-004, FR-035, FR-036)*
-- `/p/taller-incompleto`: tiene `<meta name="robots" content="noindex…">`, **no** declara JSON-LD de negocio y **no** aparece en `/sitemap.xml`.
-- `/sitemap.xml` incluye `/p` y los perfiles **indexables** (con el interruptor en `true`); con `false`, ninguno.
+- `/proveedor/taller-incompleto`: tiene `<meta name="robots" content="noindex…">`, **no** declara JSON-LD de negocio y **no** aparece en `/sitemap.xml`.
+- `/sitemap.xml` incluye `/proveedor` y los perfiles **indexables** (con el interruptor en `true`); con `false`, ninguno.
 
 ### Datos estructurados *(SC-003, FR-032 a FR-034)*
 - Pegar la URL (o el HTML) en el **Rich Results Test** de Google y en `validator.schema.org`: cero errores para `AutoRepair`, `FAQPage` y `BreadcrumbList`.
 - Comprobar **a mano** que lo declarado coincide con lo visible: el horario del JSON-LD es el de la tabla; las preguntas del `FAQPage` son las del acordeón; no hay `aggregateRating` si no se ve la puntuación.
-- `/p/gestoria-norte-san-isidro`: `areaServed` presente, **sin** `address` ni `geo`.
+- `/proveedor/gestoria-norte-san-isidro`: `areaServed` presente, **sin** `address` ni `geo`.
 
 ### Vista previa al compartir *(SC-004, FR-040 a FR-042)*
-- `http://localhost:3000/p/mecanica-barrancas-san-isidro/og` devuelve un **PNG de 1200×630** en menos de 3 s.
+- `http://localhost:3000/proveedor/mecanica-barrancas-san-isidro/og` devuelve un **PNG de 1200×630** en menos de 3 s.
 - Degradación: probar los tres casos del mock más uno con `cover: null` y `logo: null` — nunca una imagen rota.
 - En un entorno **público** (preview deploy): pegar el link en WhatsApp real y en el *Sharing Debugger* de Facebook / `opengraph.xyz`. La tarjeta muestra título, descripción e imagen.
 
