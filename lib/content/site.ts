@@ -1,14 +1,15 @@
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
 import { siteConfig } from "@/lib/seo/config";
 import { providersContent } from "@/lib/content/providers";
+import { PROVEEDORES_PATH, PROVEEDORES_REGISTRO_PATH } from "@/lib/proveedores/query";
 import type { NavEntry, StoreLink } from "@/lib/content/types";
 
 /** Link a `/pedido`: el mismo en el header, el menú mobile y el footer. */
 const quoteLink = { label: "Pedir presupuesto", href: "/pedido" } as const;
 /** Link a `/blog`: el mismo en el header, el menú mobile y el footer. */
 const blogLink = { label: "Blog", href: "/blog" } as const;
-/** Link a `/aliados`: el mismo en el header y el menú mobile. */
-const aliadosLink = { label: "Aliados", href: "/aliados" } as const;
+/** Link a `/proveedores`: el mismo en el header y el menú mobile. */
+const proveedoresLink = { label: "Proveedores", href: PROVEEDORES_PATH } as const;
 /** Link a `/sobre-nosotros`: el mismo en el header y en el footer. */
 const aboutLink = { label: "Sobre nosotros", href: "/sobre-nosotros" } as const;
 
@@ -56,7 +57,7 @@ const supportLink = { label: "Soporte", href: "/support" } as const;
  * - Escáner OBD (`/escaner-obd`): entra como item de "Servicios" o como link
  *   suelto, según cómo se venda.
  *
- * Aliados (`/aliados`, el directorio de los negocios de la red) va como link
+ * Proveedores (`/proveedores`, el directorio de los negocios de la red) va como link
  * suelto propio, al lado de "Para negocios" y NO adentro de un grupo con él:
  * le habla al conductor que busca a quién pedirle ("¿con quién trabajan?"),
  * mientras "Para negocios" le habla al negocio que se quiere sumar.
@@ -101,8 +102,8 @@ const navEntries: readonly NavEntry[] = [
       href: quoteLink.href,
     },
   },
-  { kind: "link", label: "Para negocios", href: "/proveedores" },
-  { kind: "link", ...aliadosLink },
+  { kind: "link", label: "Para negocios", href: PROVEEDORES_REGISTRO_PATH },
+  { kind: "link", ...proveedoresLink },
   ...(BLOG_PUBLIC ? [{ kind: "link", ...blogLink } as const] : []),
   {
     kind: "group",
@@ -140,7 +141,7 @@ export const siteContent = {
     comingSoonLabel: "Próximamente",
     /**
      * Botón principal del header ("Pedir presupuesto") en TODAS las páginas
-     * salvo `/proveedores`: el pedido es la conversión principal de la web.
+     * salvo `/proveedores/registro`: el pedido es la conversión principal de la web.
      * También saca a la landing de pedido de ser una página huérfana.
      */
     quoteLink,
@@ -233,8 +234,8 @@ export const siteContent = {
         title: "Empresa",
         links: [
           aboutLink,
-          // Mismo texto que el título del form de `/proveedores`.
-          { label: providersContent.form.title, href: "/proveedores" },
+          // Mismo texto que el título del form de `/proveedores/registro`.
+          { label: providersContent.form.title, href: PROVEEDORES_REGISTRO_PATH },
           ...(BLOG_PUBLIC ? [blogLink] : []),
           supportLink,
         ],

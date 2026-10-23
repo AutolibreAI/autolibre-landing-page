@@ -1,12 +1,12 @@
 import Image from "next/image";
 import { Breadcrumbs, type Crumb } from "@/components/blog/breadcrumbs";
-import { partnerMonogram, safeHttpUrl } from "@/components/aliados/partner-monogram";
-import { ShareProfileButton } from "@/components/aliados/share-profile-button";
+import { partnerMonogram, safeHttpUrl } from "@/components/proveedores/partner-monogram";
+import { ShareProfileButton } from "@/components/proveedores/share-profile-button";
 import { ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Section } from "@/components/ui/section";
 import type { PartnerDetail } from "@/lib/autolibre-api";
-import { aliadoPerfilContent } from "@/lib/content/aliado-perfil";
+import { providerProfileContent } from "@/lib/content/provider-profile";
 
 type PartnerProfileHeadProps = {
   readonly partner: PartnerDetail;
@@ -25,10 +25,10 @@ type PartnerProfileHeadProps = {
  * Sin `reveal`: es lo que está en pantalla al cargar y el `h1` es la LCP.
  */
 export function PartnerProfileHead({ partner, breadcrumbs, familyNames }: PartnerProfileHeadProps) {
-  const { head } = aliadoPerfilContent;
+  const { head } = providerProfileContent;
   const logoUrl = safeHttpUrl(partner.logoUrl);
   const whatsappHref = safeHttpUrl(partner.redirectLink);
-  const modality = partner.modality ? aliadoPerfilContent.modalityLabel(partner.modality) : null;
+  const modality = partner.modality ? providerProfileContent.modalityLabel(partner.modality) : null;
 
   return (
     <Section tone="muted" spacing="sm" aria-labelledby="perfil-titulo">

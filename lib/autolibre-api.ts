@@ -273,26 +273,30 @@ export async function submitPartnerApplication(
 export type PartnerTier = "founding" | "standard";
 
 /**
- * Un negocio del directorio (`GET /partners`), tal como lo devuelve el
- * backend. La pagina de aliados muestra solo una parte: `whatsapp`,
- * `address`, `redirectLink` y `tier` viajan pero no se pintan.
+ * Un negocio del directorio (`GET /partner-profiles`), ya adaptado a lo que
+ * pinta la landing. El listado del backend es liviano a propósito: trae el
+ * rubro principal y la localidad, pero NO las marcas ni los rubros
+ * secundarios. Por eso `brands` es `null` ("el listado no lo sabe") y no `[]`,
+ * que significaría "todas las marcas": mostrar eso sería inventar un dato.
  */
 export interface PartnerSummary {
+  /** El slug: el backend no expone otro identificador público. */
   readonly id: string;
   readonly slug: string;
   readonly name: string;
   readonly logoUrl: string | null;
-  readonly whatsapp: string | null;
-  readonly address: string | null;
-  readonly redirectLink: string | null;
+  /** Localidad del negocio; vacío si no la cargó. */
   readonly coverageZone: string;
   readonly tier: PartnerTier;
-  /** Slugs de rubro. */
-  readonly services: readonly string[];
-  /** Slugs de FAMILIA del catalogo (derivadas de los rubros en el backend). */
+  /** Slugs de familia del catálogo. En el listado, solo la principal. */
   readonly categories: readonly string[];
-  /** Vacio = trabaja con todas las marcas. */
-  readonly brands: readonly string[];
+  /** `null` = el listado no trae marcas; `[]` = todas las marcas. */
+  readonly brands: readonly string[] | null;
+  /**
+   * El backend marca como indexables solo los perfiles con horarios
+   * estructurados. Los demás van con `noindex` y fuera del sitemap.
+   */
+  readonly indexable: boolean;
 }
 
 export interface PartnersPage {
@@ -315,9 +319,36 @@ const PARTNERS_REVALIDATE_SECONDS = 3600;
 /** Tope del backend para `pageSize`. */
 const PARTNERS_MAX_PAGE_SIZE = 100;
 
+/** Mismo patrón que valida el backend para un slug público. */
+const PROFILE_SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+type JsonRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is JsonRecord {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function text(value: unknown): string | null {
+  return typeof value === "string" && value.trim() !== "" ? value.trim() : null;
+}
+
+function textList(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+}
+
+function records(value: unknown): JsonRecord[] {
+  return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+function finiteNumber(value: unknown, fallback: number): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
 /**
  * Pagina del directorio publico de partners activos, ya ordenada por el
- * backend (los `founding` primero, por contrato comercial). NO se reordena.
+ * backend (los aliados primero, despues nombre y slug). NO se reordena.
  *
  * A diferencia de `fetchServiceCatalog`, esto SI tira cuando el backend no
  * contesta: el directorio no tiene una version degradada que tenga sentido
@@ -339,11 +370,9 @@ export async function fetchPartners({
     page: String(page),
     pageSize: String(Math.min(pageSize, PARTNERS_MAX_PAGE_SIZE)),
   });
-  // `category` y `service` son excluyentes en el backend; la landing solo
-  // filtra por familia.
   if (category) params.set("category", category);
 
-  const response = await fetch(`${apiBaseUrl()}/api/v1/partners?${params}`, {
+  const response = await fetch(`${apiBaseUrl()}/api/v1/partner-profiles?${params}`, {
     next: { revalidate: PARTNERS_REVALIDATE_SECONDS },
   });
 
@@ -354,97 +383,76 @@ export async function fetchPartners({
   return parsePartnersPage(await response.json());
 }
 
-/** El primer campo obligatorio que le falta a un partner crudo, o `null`. */
-function missingPartnerField(entry: Record<string, unknown>): string | null {
-  if (typeof entry.id !== "string") return "id";
-  if (typeof entry.slug !== "string" || entry.slug === "") return "slug";
-  if (typeof entry.name !== "string" || entry.name.trim() === "") return "name";
-  return null;
-}
-
 /**
- * Parseo defensivo, mismo criterio que el catalogo: un partner sin `slug` o
- * sin `name` no puede tener tarjeta (no hay a donde linkear ni que mostrar),
- * asi que se descarta en vez de romper la grilla.
+ * Parseo defensivo: un negocio sin `slug` o sin `name` no puede tener tarjeta
+ * (no hay a donde linkear ni que mostrar), asi que se descarta en vez de
+ * romper la grilla.
  *
- * Pero si el backend dice que hay partners y NO sobrevive ninguno, no es un
- * partner suelto mal cargado: es el contrato que cambio (o una respuesta
- * vieja en cache, de antes de que existiera `slug`). Eso tira, para que la
+ * Pero si el backend dice que hay negocios y NO sobrevive ninguno, no es un
+ * negocio suelto mal cargado: es el contrato que cambio. Eso tira, para que la
  * pagina muestre el estado de error y no una grilla vacia que diga "0 de 41".
  * Una respuesta con `data` vacio (un rubro sin negocios) no es un error.
  */
 function parsePartnersPage(value: unknown): PartnersPage {
-  const payload = (typeof value === "object" && value !== null ? value : {}) as Record<
-    string,
-    unknown
-  >;
-  const toNumber = (input: unknown, fallback: number) =>
-    typeof input === "number" && Number.isFinite(input) ? input : fallback;
-  const toStrings = (input: unknown): string[] =>
-    Array.isArray(input) ? input.filter((item): item is string => typeof item === "string") : [];
-  const toNullableString = (input: unknown) =>
-    typeof input === "string" && input.trim() !== "" ? input : null;
-
-  const rawData: unknown[] = Array.isArray(payload.data) ? payload.data : [];
+  const payload = isRecord(value) ? value : {};
+  const rawData = Array.isArray(payload.data) ? payload.data : [];
   let firstMissing: string | null = null;
 
   const data = rawData
     .map((raw): PartnerSummary | null => {
-      if (typeof raw !== "object" || raw === null) {
+      if (!isRecord(raw)) {
         firstMissing ??= "(no es un objeto)";
         return null;
       }
-      const entry = raw as Record<string, unknown>;
-      const missing = missingPartnerField(entry);
-      if (missing) {
-        firstMissing ??= missing;
+      const slug = text(raw.slug);
+      const name = text(raw.name);
+      if (!slug || !name) {
+        firstMissing ??= slug ? "name" : "slug";
         return null;
       }
 
+      const primary = isRecord(raw.primaryCategory) ? text(raw.primaryCategory.slug) : null;
       return {
-        id: entry.id as string,
-        slug: entry.slug as string,
-        name: entry.name as string,
-        logoUrl: toNullableString(entry.logoUrl),
-        whatsapp: toNullableString(entry.whatsapp),
-        address: toNullableString(entry.address),
-        redirectLink: toNullableString(entry.redirectLink),
-        coverageZone: typeof entry.coverageZone === "string" ? entry.coverageZone : "",
-        tier: entry.tier === "founding" ? "founding" : "standard",
-        services: toStrings(entry.services),
-        categories: toStrings(entry.categories),
-        brands: toStrings(entry.brands),
+        id: slug,
+        slug,
+        name,
+        logoUrl: isRecord(raw.logo) ? text(raw.logo.url) : null,
+        coverageZone: text(raw.locality) ?? "",
+        tier: raw.isAlly === true ? "founding" : "standard",
+        categories: primary ? [primary] : [],
+        brands: null,
+        indexable: raw.indexable === true,
       };
     })
     .filter((partner): partner is PartnerSummary => partner !== null);
 
   const dropped = rawData.length - data.length;
-  const total = toNumber(payload.total, data.length);
+  const total = finiteNumber(payload.total, data.length);
 
   if (rawData.length > 0 && data.length === 0 && total > 0) {
     throw new Error(
-      `[partners] se descartaron los ${dropped} partners de la respuesta (primer campo faltante: ${firstMissing}). ¿Cambio el contrato o es una respuesta vieja en cache?`,
+      `[partners] se descartaron los ${dropped} negocios de la respuesta (primer campo faltante: ${firstMissing}). ¿Cambio el contrato o es una respuesta vieja en cache?`,
     );
   }
   if (dropped > 0) {
     console.error(
-      `[partners] se descartaron ${dropped} de ${rawData.length} partners (primer campo faltante: ${firstMissing}).`,
+      `[partners] se descartaron ${dropped} de ${rawData.length} negocios (primer campo faltante: ${firstMissing}).`,
     );
   }
 
   return {
     data,
     total,
-    page: toNumber(payload.page, 1),
-    pageSize: toNumber(payload.pageSize, data.length),
-    totalPages: toNumber(payload.totalPages, 1),
+    page: finiteNumber(payload.page, 1),
+    pageSize: finiteNumber(payload.pageSize, data.length),
+    totalPages: finiteNumber(payload.totalPages, 1),
   };
 }
 
 /**
  * El directorio COMPLETO (todas las paginas, `pageSize` maximo, sin filtro).
  * Una llamada por pagina, cada una cacheada como `fetchPartners`; con el
- * volumen actual (decenas de negocios) es una sola. Tira si falla: lo usan
+ * volumen actual (decenas de negocios) son un par. Tira si falla: lo usan
  * el sitemap y el calculo de rubros con negocios, que deciden su fallback.
  */
 export async function fetchAllPartners(): Promise<PartnerSummary[]> {
@@ -463,8 +471,10 @@ export async function fetchAllPartners(): Promise<PartnerSummary[]> {
 }
 
 /**
- * Slugs de las familias que tienen al menos un partner activo, sacados del
+ * Slugs de las familias que tienen al menos un negocio activo, sacados del
  * directorio completo (`fetchAllPartners`) y no de una llamada por familia.
+ * El listado solo trae el rubro PRINCIPAL de cada negocio: una familia que
+ * aparece solo como rubro secundario no cuenta acá.
  *
  * Devuelve `null` —nunca tira— si algo falla: quien lo usa cae en mostrar
  * todas las familias del catalogo.
@@ -505,13 +515,20 @@ export interface PartnerLink {
   readonly url: string;
 }
 
-/** Perfil completo de un negocio (`GET /partners/by-slug/:slug`). */
+/** Perfil completo de un negocio (`GET /partner-profiles/:slug`). */
 export interface PartnerDetail extends PartnerSummary {
+  /** En el perfil el backend sí conoce las marcas: `[]` = todas. */
+  readonly brands: readonly string[];
   readonly description: string | null;
-  readonly email: string | null;
-  /** Texto libre, tal como lo cargo el equipo (no alcanza para "abierto ahora"). */
+  /** Dirección completa, tal como la cargó el negocio. */
+  readonly address: string | null;
+  /** Link de WhatsApp del negocio (`https://wa.me/...`), si tiene. */
+  readonly redirectLink: string | null;
+  /** Slugs de rubro. */
+  readonly services: readonly string[];
+  /** Horarios ya armados como texto, uno por renglón; `null` si no hay. */
   readonly hours: string | null;
-  /** Texto libre del backend ("en local", "a domicilio"...). */
+  /** Clave de `modalityLabel`: `en_local`, `a_domicilio` o `ambas`. */
   readonly modality: string | null;
   /** Entra completo o no entra. */
   readonly geo: { readonly latitude: number; readonly longitude: number } | null;
@@ -521,77 +538,171 @@ export interface PartnerDetail extends PartnerSummary {
 }
 
 /**
+ * Resultado de pedir un perfil por slug. `moved`: el slug es histórico y el
+ * backend informa el vigente; la página responde un redirect permanente.
+ */
+export type PartnerLookup =
+  | { readonly status: "found"; readonly partner: PartnerDetail }
+  | { readonly status: "moved"; readonly slug: string };
+
+/**
  * Perfil de un negocio por su slug publico. `null` cuando el backend dice 404
- * (no existe, esta inactivo o el slug es invalido): la pagina responde
- * `notFound()`. Cualquier otro error TIRA: un backend caido no es "este
- * negocio no existe", y responder 404 haria que Google lo saque del indice.
+ * (no existe, esta pausado o archivado) o el slug no tiene el formato valido
+ * (el backend lo rechazaria con 400): la pagina responde `notFound()`.
+ * Cualquier otro error TIRA: un backend caido no es "este negocio no existe",
+ * y responder 404 haria que Google lo saque del indice.
  *
  * Mismo `revalidate` que el directorio; `fetch` ya memoiza la llamada dentro
  * de un render, y el `cache()` de React que la envuelve en la pagina lo hace
  * explicito para `generateMetadata` + la pagina.
  */
-export async function fetchPartnerBySlug(slug: string): Promise<PartnerDetail | null> {
-  const response = await fetch(
-    `${apiBaseUrl()}/api/v1/partners/by-slug/${encodeURIComponent(slug)}`,
-    { next: { revalidate: PARTNERS_REVALIDATE_SECONDS } },
-  );
+export async function fetchPartnerBySlug(slug: string): Promise<PartnerLookup | null> {
+  if (!PROFILE_SLUG_PATTERN.test(slug) || slug.length > 120) return null;
+
+  const response = await fetch(`${apiBaseUrl()}/api/v1/partner-profiles/${slug}`, {
+    next: { revalidate: PARTNERS_REVALIDATE_SECONDS },
+  });
 
   if (response.status === 404) return null;
   if (!response.ok) {
     throw new Error(`[partner] el backend respondio ${response.status} para "${slug}".`);
   }
 
-  const detail = parsePartnerDetail(await response.json());
-  if (!detail) {
-    throw new Error(`[partner] la respuesta de "${slug}" no cumple el contrato (falta id, slug o name).`);
+  const payload: unknown = await response.json();
+  if (isRecord(payload) && payload.status === "moved") {
+    const current = text(payload.slug);
+    if (current && PROFILE_SLUG_PATTERN.test(current)) return { status: "moved", slug: current };
   }
-  return detail;
+  if (isRecord(payload) && payload.status === "ok") {
+    const partner = parsePartnerProfile(payload.profile);
+    if (partner) return { status: "found", partner };
+  }
+
+  throw new Error(`[partner] la respuesta de "${slug}" no cumple el contrato (status, slug o name).`);
 }
 
-function parsePartnerDetail(value: unknown): PartnerDetail | null {
-  if (typeof value !== "object" || value === null) return null;
-  const entry = value as Record<string, unknown>;
-  // Reusa el parseo de la tarjeta para los campos compartidos.
-  const [summary] = parsePartnersPage({ data: [entry], total: 0 }).data;
-  if (!summary) return null;
+/** `locationMode` del backend → clave que entiende `modalityLabel`. */
+const MODALITY_BY_LOCATION_MODE: Readonly<Record<string, string>> = {
+  in_person: "en_local",
+  mobile: "a_domicilio",
+  both: "ambas",
+};
 
-  const text = (input: unknown) =>
-    typeof input === "string" && input.trim() !== "" ? input.trim() : null;
-  const geoRaw = entry.geo as Record<string, unknown> | null | undefined;
-  const geo =
-    geoRaw &&
-    typeof geoRaw.latitude === "number" &&
-    typeof geoRaw.longitude === "number" &&
-    Number.isFinite(geoRaw.latitude) &&
-    Number.isFinite(geoRaw.longitude)
-      ? { latitude: geoRaw.latitude, longitude: geoRaw.longitude }
-      : null;
+const WEEKDAY_NAMES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 
-  const fuelTypes = (Array.isArray(entry.fuelTypes) ? entry.fuelTypes : []).filter(
-    (fuel): fuel is FuelType => FUEL_TYPES.includes(fuel as FuelType),
+/**
+ * `businessHours` estructurado → un renglón por día ("Lunes: 09:00–13:00,
+ * 15:00–19:00"), en orden de lunes a domingo. El backend no documenta la
+ * numeración de `weekday`: se asume la que comparten ISO y `Date#getDay` para
+ * lo que importa, 1 a 6 = lunes a sábado y 0 o 7 = domingo. Un valor fuera de
+ * 0–7 descarta ese día en vez de mostrar uno equivocado.
+ */
+function formatBusinessHours(value: unknown): string | null {
+  const byDay = new Map<number, string>();
+
+  for (const entry of records(value)) {
+    const weekday = finiteNumber(entry.weekday, -1);
+    if (!Number.isInteger(weekday) || weekday < 0 || weekday > 7) continue;
+    const index = weekday === 0 || weekday === 7 ? 6 : weekday - 1;
+
+    const ranges = records(entry.ranges)
+      .map((range) => {
+        const opensAt = text(range.opensAt);
+        const closesAt = text(range.closesAt);
+        return opensAt && closesAt ? `${opensAt}–${closesAt}` : null;
+      })
+      .filter((range): range is string => range !== null);
+    if (ranges.length > 0) byDay.set(index, ranges.join(", "));
+  }
+
+  if (byDay.size === 0) return null;
+  return [...byDay.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([index, ranges]) => `${WEEKDAY_NAMES[index]}: ${ranges}`)
+    .join("\n");
+}
+
+/** `{ mode: "all" }` → `[]` (todas); `{ mode: "specific", items }` → los items. */
+function selectionItems(value: unknown): string[] {
+  return isRecord(value) && value.mode === "specific" ? textList(value.items) : [];
+}
+
+function parsePartnerProfile(value: unknown): PartnerDetail | null {
+  if (!isRecord(value)) return null;
+  const slug = text(value.slug);
+  const name = text(value.name);
+  if (!slug || !name) return null;
+
+  const categorySlug = (entry: unknown) => (isRecord(entry) ? text(entry.slug) : null);
+  const serviceGroups = records(value.services);
+  const categories = [
+    ...new Set(
+      [
+        categorySlug(value.primaryCategory),
+        ...records(value.secondaryCategories).map(categorySlug),
+        ...serviceGroups.map((group) => categorySlug(group.category)),
+      ].filter((slugValue): slugValue is string => slugValue !== null),
+    ),
+  ];
+  const services = serviceGroups.flatMap((group) =>
+    records(group.items)
+      .map(categorySlug)
+      .filter((item): item is string => item !== null),
   );
 
+  const address = isRecord(value.address) ? value.address : null;
+  const latitude = address?.latitude;
+  const longitude = address?.longitude;
+  const geo =
+    typeof latitude === "number" &&
+    typeof longitude === "number" &&
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude)
+      ? { latitude, longitude }
+      : null;
+
+  const localities = isRecord(value.serviceArea)
+    ? records(value.serviceArea.localities)
+        .map((locality) => text(locality.name))
+        .filter((locality): locality is string => locality !== null)
+    : [];
+  const coverageZone =
+    localities.length > 0
+      ? localities.join(", ")
+      : [text(value.locality), text(value.province)].filter(Boolean).join(", ");
+
   // Solo links http(s): una URL rara en el admin no puede terminar en un
-  // `href` con `javascript:` en la pagina publica.
-  const links = (Array.isArray(entry.links) ? entry.links : [])
+  // `href` con `javascript:` en la pagina publica. Un tipo que la landing no
+  // conoce se muestra como "otro enlace" en vez de perderse.
+  const links = records(value.links)
     .map((raw): PartnerLink | null => {
-      if (typeof raw !== "object" || raw === null) return null;
-      const { kind, url } = raw as Record<string, unknown>;
-      if (!PARTNER_LINK_KINDS.includes(kind as PartnerLinkKind) || typeof url !== "string") {
-        return null;
-      }
-      return /^https?:\/\//i.test(url.trim()) ? { kind: kind as PartnerLinkKind, url: url.trim() } : null;
+      const url = text(raw.url);
+      if (!url || !/^https?:\/\//i.test(url)) return null;
+      const kind = PARTNER_LINK_KINDS.find((known) => known === raw.kind) ?? "other";
+      return { kind, url };
     })
     .filter((link): link is PartnerLink => link !== null);
 
   return {
-    ...summary,
-    description: text(entry.description),
-    email: text(entry.email),
-    hours: text(entry.hours),
-    modality: text(entry.modality),
+    id: slug,
+    slug,
+    name,
+    logoUrl: isRecord(value.logo) ? text(value.logo.url) : null,
+    coverageZone,
+    tier: value.isAlly === true ? "founding" : "standard",
+    categories,
+    brands: selectionItems(value.brands),
+    indexable: value.indexable === true,
+    description: text(value.description),
+    address: address ? text(address.full) : null,
+    redirectLink: isRecord(value.contact) ? text(value.contact.whatsappUrl) : null,
+    services,
+    hours: formatBusinessHours(value.businessHours),
+    modality: MODALITY_BY_LOCATION_MODE[text(value.locationMode) ?? ""] ?? null,
     geo,
-    fuelTypes,
+    fuelTypes: selectionItems(value.fuelTypes).filter((fuel): fuel is FuelType =>
+      FUEL_TYPES.some((known) => known === fuel),
+    ),
     links,
   };
 }

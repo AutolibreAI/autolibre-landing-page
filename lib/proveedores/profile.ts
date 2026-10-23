@@ -1,5 +1,5 @@
 import type { PartnerDetail, ServiceCatalogCategory } from "@/lib/autolibre-api";
-import { aliadoPerfilContent } from "@/lib/content/aliado-perfil";
+import { providerProfileContent } from "@/lib/content/provider-profile";
 
 /**
  * Armado del perfil a partir de los datos crudos: qué familias y rubros se
@@ -45,7 +45,7 @@ export function partnerServiceGroups(
  * sección (ni `FAQPage`): una sola pregunta genérica no es una FAQ.
  */
 export function partnerFaqs(partner: PartnerDetail): { question: string; answer: string }[] {
-  const { faq } = aliadoPerfilContent;
+  const { faq } = providerProfileContent;
   const items: { question: string; answer: string }[] = [];
 
   if (partner.brands.length > 0) {

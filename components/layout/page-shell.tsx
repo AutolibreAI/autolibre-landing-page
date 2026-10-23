@@ -8,7 +8,7 @@ type PageShellProps = {
   /** Ruta de la página: marca su link del header con `aria-current`. */
   readonly currentPath?: string;
   /**
-   * "Pedir presupuesto" en el header. Default `true`; sólo `/proveedores` lo
+   * "Pedir presupuesto" en el header. Default `true`; sólo `/proveedores/registro` lo
    * apaga (ver `SiteHeader`).
    */
   readonly showQuoteLink?: boolean;

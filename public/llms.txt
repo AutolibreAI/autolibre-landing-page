@@ -26,9 +26,9 @@ Datos clave:
 - [Inicio](https://autolibre.ai/): qué es AutoLibre, funciones, servicios que resuelve, cómo funciona, compatibilidad OBD2 y preguntas frecuentes.
 - [Descargar la app](https://autolibre.ai/descarga): enlaces a App Store y Google Play, y código QR para instalarla desde la compu.
 - [Pedir presupuesto](https://autolibre.ai/pedido): pedido de presupuestos gratis a proveedores de la zona del usuario en AMBA, escribiendo por WhatsApp o dejando zona, problema, patente (opcional) y WhatsApp en un formulario. AutoLibre responde por WhatsApp en el día y el usuario elige el proveedor, sin compromiso y sin necesidad de bajar la app.
-- [Proveedores](https://autolibre.ai/proveedores): registro para talleres y servicios que quieren recibir consultas de dueños de auto con marca, modelo, año y el problema ya delimitado.
-- [Aliados](https://autolibre.ai/aliados): directorio de los talleres, aseguradoras, estudios para multas y casas de repuestos activos en AutoLibre en el AMBA, que reciben pedidos de presupuesto desde la app; se puede filtrar por rubro.
-- Perfiles de aliados (https://autolibre.ai/aliados/{slug}): una página por negocio de la red con sus rubros, marcas y combustibles que atiende, zona de cobertura, horarios, ubicación y redes cuando están cargados, y cómo pedirle presupuesto por AutoLibre.
+- [Proveedores](https://autolibre.ai/proveedores): directorio de los talleres, aseguradoras, estudios para multas y casas de repuestos activos en AutoLibre en el AMBA, que reciben pedidos de presupuesto desde la app; se puede filtrar por rubro.
+- [Registro de proveedores](https://autolibre.ai/proveedores/registro): registro para talleres y servicios que quieren recibir consultas de dueños de auto con marca, modelo, año y el problema ya delimitado.
+- Perfiles de proveedores (https://autolibre.ai/proveedores/{slug}): una página por negocio de la red con sus rubros, marcas y combustibles que atiende, zona de cobertura, horarios, ubicación y redes cuando están cargados, y cómo pedirle presupuesto por AutoLibre.
 - [Sobre nosotros](https://autolibre.ai/sobre-nosotros): misión, visión, historia de AutoLibre desde febrero de 2026, línea de tiempo de hitos y los cinco cofundadores.
 - [Soporte](https://autolibre.ai/support): formulario de contacto para usuarios con problemas en la app.
 

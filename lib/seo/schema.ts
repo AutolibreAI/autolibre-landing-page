@@ -278,7 +278,7 @@ export function blogPostingSchema({
 
 /**
  * `ItemList` de los elementos VISIBLES en un listado (ej. los negocios de
- * `/aliados`): cada uno con su nombre y la URL de su página. Se ata a la
+ * `/proveedores`): cada uno con su nombre y la URL de su página. Se ata a la
  * página que lo muestra con `mainEntity`, vía el `@id` de `webPageSchema`.
  * `startPosition` es la posición del primero en el listado completo (en la
  * página 2 de 24, arranca en 25).
@@ -316,7 +316,7 @@ export function itemListSchema({
 }
 
 /**
- * Un negocio de la red (`/aliados/[slug]`) como `LocalBusiness`. Solo campos
+ * Un negocio de la red (`/proveedores/[slug]`) como `LocalBusiness`. Solo campos
  * reales del backend, cada uno si existe: dirección (`streetAddress`, el
  * texto tal como está cargado), zona (`areaServed`), redes (`sameAs`), logo y
  * coordenadas. Sin `aggregateRating` ni `review`: no hay datos reales de eso.

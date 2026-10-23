@@ -1,8 +1,8 @@
 import { ButtonLink } from "@/components/ui/button";
 import { Section } from "@/components/ui/section";
-import { aliadosContent } from "@/lib/content/aliados";
+import { providersDirectoryContent } from "@/lib/content/providers-directory";
 
-type AliadosHeroProps = {
+type ProveedoresHeroProps = {
   /**
    * Familias del catálogo con al menos un negocio activo. `null` si no se
    * pudo calcular: el dato "Rubros" no se muestra.
@@ -11,7 +11,7 @@ type AliadosHeroProps = {
 };
 
 /**
- * Apertura de `/aliados`: eyebrow, el único `h1`, la bajada, los dos CTA y
+ * Apertura de `/proveedores`: eyebrow, el único `h1`, la bajada, los dos CTA y
  * una ficha de datos. Una sola columna alineada a la izquierda.
  *
  * La ficha reusa el lenguaje de "registro" del hero de `/sobre-nosotros`
@@ -20,8 +20,8 @@ type AliadosHeroProps = {
  *
  * Sin `reveal`: es lo que está en pantalla al cargar y el `h1` es la LCP.
  */
-export function AliadosHero({ activeCategoryCount }: AliadosHeroProps) {
-  const { eyebrow, title, lead, primaryCta, secondaryCta, facts } = aliadosContent.hero;
+export function ProveedoresHero({ activeCategoryCount }: ProveedoresHeroProps) {
+  const { eyebrow, title, lead, primaryCta, secondaryCta, facts } = providersDirectoryContent.hero;
 
   const items = [
     { id: "negocios", label: facts.partners.label, value: facts.partners.value },
@@ -38,13 +38,13 @@ export function AliadosHero({ activeCategoryCount }: AliadosHeroProps) {
   ];
 
   return (
-    <Section tone="muted" spacing="sm" className="md:pt-20" aria-labelledby="aliados-titulo">
+    <Section tone="muted" spacing="sm" className="md:pt-20" aria-labelledby="proveedores-titulo">
       <div className="flex max-w-190 flex-col gap-4">
         <p className="text-label font-semibold tracking-wider text-brand-hover uppercase">
           {eyebrow}
         </p>
         <h1
-          id="aliados-titulo"
+          id="proveedores-titulo"
           className="font-display text-display-xs font-bold text-balance text-ink sm:text-display-sm md:text-display-md"
         >
           {title}

@@ -1,6 +1,6 @@
 import { ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import { aliadoPerfilContent } from "@/lib/content/aliado-perfil";
+import { providerProfileContent } from "@/lib/content/provider-profile";
 
 type PartnerStickyBarProps = {
   /** wa.me del negocio (`redirectLink`), ya validado como http(s). */
@@ -14,7 +14,7 @@ type PartnerStickyBarProps = {
  * al llegar al final de la página.
  */
 export function PartnerStickyBar({ whatsappHref }: PartnerStickyBarProps) {
-  const { head, stickyBar } = aliadoPerfilContent;
+  const { head, stickyBar } = providerProfileContent;
 
   return (
     <>

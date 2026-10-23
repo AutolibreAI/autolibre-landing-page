@@ -256,7 +256,7 @@ export const homeContent = {
     title: "¿Tenés un taller o prestás un servicio?",
     subtitle:
       "Recibí pedidos de servicio de gente que ya sabe qué necesita, con los datos del vehículo incluidos.",
-    cta: { label: "Sumate a AutoLibre", href: "/proveedores" },
+    cta: { label: "Sumate a AutoLibre", href: "/proveedores/registro" },
   },
 
   faq: {

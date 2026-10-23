@@ -7,7 +7,7 @@ import { siteConfig } from "@/lib/seo/config";
 type CreateMetadataInput = {
   title: string;
   description: string;
-  /** Path absoluto desde la raíz, ej. "/proveedores". Genera el canonical. */
+  /** Path absoluto desde la raíz, ej. "/proveedores/registro". Genera el canonical. */
   path: string;
   /** `false` en páginas que no deben indexarse (ej. utilitarias). */
   index?: boolean;

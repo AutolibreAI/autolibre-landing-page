@@ -1,28 +1,29 @@
 import { traction } from "@/lib/content/about";
+import { PROVEEDORES_PATH, PROVEEDORES_REGISTRO_PATH } from "@/lib/proveedores/query";
 
 /**
- * Copy de `/aliados`: el directorio de los negocios que forman parte de la
+ * Copy de `/proveedores`: el directorio de los negocios que forman parte de la
  * red de AutoLibre. Los datos de cada negocio (nombre, zona, rubros, marcas)
  * salen del backend; acá vive solo el texto fijo de la página.
  *
  * Nada de métricas propias: la única cifra es `traction.providers`, la misma
  * que publica `/sobre-nosotros` (ver `PRODUCT.md`).
  */
-export const aliadosContent = {
+export const providersDirectoryContent = {
   meta: {
-    title: "Aliados",
+    title: "Proveedores",
     description:
       "Directorio de los talleres, aseguradoras, estudios para multas y casas de repuestos que forman parte de AutoLibre en el AMBA y reciben pedidos de presupuesto desde la app.",
   },
 
-  breadcrumb: { home: "Inicio", aliados: "Aliados" },
+  breadcrumb: { home: "Inicio", proveedores: "Proveedores" },
 
   hero: {
-    eyebrow: "Aliados",
+    eyebrow: "Proveedores",
     title: "Los negocios que ya forman parte de AutoLibre",
     lead: "Talleres, aseguradoras, estudios para multas y casas de repuestos que reciben los pedidos de presupuesto de los conductores de AutoLibre en el AMBA.",
     primaryCta: { label: "Ver la red", href: "#red" },
-    secondaryCta: { label: "Sumar mi negocio", href: "/proveedores" },
+    secondaryCta: { label: "Sumar mi negocio", href: PROVEEDORES_REGISTRO_PATH },
     facts: {
       partners: { label: "Negocios en la red", value: traction.providers },
       /** El valor es cuántas familias del catálogo tienen al menos un negocio. */
@@ -66,7 +67,7 @@ export const aliadosContent = {
       title: (category: string) => `Todavía no hay negocios de ${category} en la red`,
       body: "Igual podés pedir tu presupuesto: lo derivamos a quien pueda ayudarte.",
       primaryCta: { label: "Pedir presupuesto", href: "/pedido" },
-      secondaryCta: { label: "Ver todos los rubros", href: "/aliados" },
+      secondaryCta: { label: "Ver todos los rubros", href: PROVEEDORES_PATH },
     },
     error: {
       title: "No pudimos cargar la red en este momento",

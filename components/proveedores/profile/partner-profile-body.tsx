@@ -2,7 +2,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Section } from "@/components/ui/section";
 import type { PartnerDetail } from "@/lib/autolibre-api";
-import { aliadoPerfilContent } from "@/lib/content/aliado-perfil";
+import { providerProfileContent } from "@/lib/content/provider-profile";
 
 export type ServiceGroup = {
   readonly familySlug: string;
@@ -20,7 +20,7 @@ type PartnerProfileBodyProps = {
   readonly faqs: readonly ProfileFaq[];
 };
 
-const { about, services, faq, aside } = aliadoPerfilContent;
+const { about, services, faq, aside } = providerProfileContent;
 
 const cardClass = "flex flex-col gap-3 rounded-card border border-line bg-surface p-6";
 const cardTitleClass = "font-display text-lg font-bold text-ink";
@@ -49,9 +49,9 @@ function mapsHref(partner: PartnerDetail): string | null {
  * bloque vacío no le sirve a nadie y un LLM lo citaría como dato.
  */
 export function PartnerProfileBody({ partner, serviceGroups, faqs }: PartnerProfileBodyProps) {
-  const modality = partner.modality ? aliadoPerfilContent.modalityLabel(partner.modality) : null;
+  const modality = partner.modality ? providerProfileContent.modalityLabel(partner.modality) : null;
   const directions = mapsHref(partner);
-  const hasContact = partner.links.length > 0 || partner.email !== null;
+  const hasContact = partner.links.length > 0;
 
   const facts = [
     {
@@ -59,7 +59,7 @@ export function PartnerProfileBody({ partner, serviceGroups, faqs }: PartnerProf
       label: services.facts.brands,
       value:
         partner.brands.length > 0
-          ? aliadoPerfilContent.joinList(partner.brands)
+          ? providerProfileContent.joinList(partner.brands)
           : services.facts.allBrands,
     },
     {
@@ -67,7 +67,7 @@ export function PartnerProfileBody({ partner, serviceGroups, faqs }: PartnerProf
       label: services.facts.fuel,
       value:
         partner.fuelTypes.length > 0
-          ? aliadoPerfilContent.joinList(partner.fuelTypes.map(aliadoPerfilContent.fuelLabel))
+          ? providerProfileContent.joinList(partner.fuelTypes.map(providerProfileContent.fuelLabel))
           : services.facts.allFuels,
     },
     ...(modality ? [{ id: "modalidad", label: services.facts.modality, value: modality }] : []),
@@ -176,7 +176,7 @@ export function PartnerProfileBody({ partner, serviceGroups, faqs }: PartnerProf
                 >
                   {aside.directions}
                   <Icon name="arrow-right" size={16} strokeWidth={2} />
-                  <span className="sr-only"> {aliadoPerfilContent.head.externalHint}</span>
+                  <span className="sr-only"> {providerProfileContent.head.externalHint}</span>
                 </a>
               ) : null}
             </div>
@@ -196,23 +196,12 @@ export function PartnerProfileBody({ partner, serviceGroups, faqs }: PartnerProf
                       rel="noopener noreferrer"
                       className="flex min-h-11 items-center justify-between gap-3 font-medium text-ink underline-offset-4 hover:text-brand-hover hover:underline"
                     >
-                      {aliadoPerfilContent.linkLabel(link.kind)}
+                      {providerProfileContent.linkLabel(link.kind)}
                       <Icon name="arrow-right" size={16} strokeWidth={2} className="shrink-0" />
-                      <span className="sr-only"> {aliadoPerfilContent.head.externalHint}</span>
+                      <span className="sr-only"> {providerProfileContent.head.externalHint}</span>
                     </a>
                   </li>
                 ))}
-                {partner.email ? (
-                  <li>
-                    <a
-                      href={`mailto:${partner.email}`}
-                      className="flex min-h-11 flex-col justify-center font-medium text-ink underline-offset-4 hover:text-brand-hover hover:underline"
-                    >
-                      <span className="text-sm text-ink/60">{aside.email}</span>
-                      <span className="break-all">{partner.email}</span>
-                    </a>
-                  </li>
-                ) : null}
               </ul>
             </div>
           ) : null}

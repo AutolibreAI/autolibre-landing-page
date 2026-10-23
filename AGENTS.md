@@ -57,7 +57,7 @@ La estructura del HTML es lo primero que leen buscadores y LLMs. Es una regla pr
 ### 6. GEO (Generative Engine Optimization)
 
 - Al agregar o cambiar una ruta, o al cambiar el producto, mantené sincronizados `app/sitemap.ts`, `app/robots.ts` y `public/llms.txt`.
-- Rutas claras, en español, descriptivas y planas (`/descarga`, `/proveedores`), sin anidamiento innecesario.
+- Rutas claras, en español, descriptivas y planas (`/descarga`, `/proveedores`), sin anidamiento innecesario. Excepción deliberada: el alta de negocios vive en `/proveedores/registro`, anidada bajo el directorio (AUT-137, clarify del 2026-10-23).
 - Contenido factual y citable: respuestas directas, FAQs, datos concretos. La primera oración de cada sección tiene que poder citarse sola.
 - Nunca inventes métricas, testimonios ni claims (ver `PRODUCT.md`). Un LLM cita lo que escribimos: tiene que ser verdad.
 - Entidades consistentes: el nombre (`AutoLibre`), la razón social (`AutoLibre.AI`), el dominio y las redes salen de `siteConfig` (`lib/seo/config.ts`) y tienen que coincidir con el schema `Organization`.

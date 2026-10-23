@@ -27,7 +27,7 @@ type CurrentCandidate = NavLink & { readonly external?: boolean };
 type SiteHeaderProps = {
   /**
    * Acción secundaria de la derecha. Default: descarga; `/pedido` manda
-   * WhatsApp y `/proveedores` "Sumar mi negocio".
+   * WhatsApp y `/proveedores/registro` "Sumar mi negocio".
    */
   readonly cta?: NavCta;
   /**
@@ -39,7 +39,7 @@ type SiteHeaderProps = {
   readonly currentPath?: string;
   /**
    * Muestra el botón "Pedir presupuesto" (el principal). Default `true`;
-   * `/proveedores` lo apaga porque esa página le habla a negocios, no a
+   * `/proveedores/registro` lo apaga porque esa página le habla a negocios, no a
    * dueños de auto: ahí su `cta` pasa a ser el botón principal. El footer
    * sigue linkeando `/pedido` en todas las páginas.
    */
@@ -183,7 +183,7 @@ function NavGroupPanel({
  * Header sticky. Las entradas del nav principal son IDÉNTICAS en todas las
  * páginas; sólo cambia, por página, la zona de acciones de la derecha: la
  * acción secundaria (`cta`) y si se muestra el botón principal "Pedir
- * presupuesto" (`showQuoteLink`, apagado en `/proveedores`). Es un Server
+ * presupuesto" (`showQuoteLink`, apagado en `/proveedores/registro`). Es un Server
  * Component: los links de los desplegables están en el HTML del server
  * (ocultos, no montados al abrir). Lo único que se hidrata son los botones de
  * cada desplegable (`NavDropdown`) y el menú mobile.
@@ -196,7 +196,7 @@ function NavGroupPanel({
  * - < sm: logo + "Pedir presupuesto" (con el texto corto
  *   `quoteShortLabel`) + botón de menú. A 360px: 123 + 16 + 117 + 8 + 44 =
  *   308px sobre 317 de contenido. Con el texto largo serían ~347 y no entra.
- * - sm: el primario pasa al texto largo. En `/proveedores` (sin primario)
+ * - sm: el primario pasa al texto largo. En `/proveedores/registro` (sin primario)
  *   aparece su `cta`, ahora como principal.
  * - md: + la acción secundaria al lado del primario. OJO: `DownloadCta` sólo
  *   se ve en iOS y Android (en una PC no hay app que instalar), así que en
@@ -204,7 +204,7 @@ function NavGroupPanel({
  * - xl: + las entradas del nav principal (desplegables "Servicios" y
  *   "Empresa", y los links sueltos), y recién ahí se va el botón de menú.
  *   En `lg` no entran: medido con las métricas de DM Sans, logo (123) +
- *   `ml-6` (24) + entradas con el blog público y Aliados (~438) + el peor par de la
+ *   `ml-6` (24) + entradas con el blog público y Proveedores (~438) + el peor par de la
  *   derecha (`/pedido`: "Escribinos por WhatsApp" con ícono, 232, +
  *   "Pedir presupuesto", 156, + gap 12) + gaps (32) suman ~1017px, y a
  *   1024px el 6% de gutter deja ~901px de contenido. En `xl` (1280) el
@@ -218,7 +218,7 @@ export function SiteHeader({
   const { entries, quoteLink, quoteShortLabel, label } = siteContent.nav;
   /**
    * Sólo el CTA de descarga cambia de destino según la plataforma. Las
-   * páginas que pisan `cta` con otra acción (p. ej. /proveedores, /pedido)
+   * páginas que pisan `cta` con otra acción (p. ej. /proveedores/registro, /pedido)
    * quedan con su link tal cual.
    */
   const isDownloadCta = cta.href === siteContent.nav.cta.href;
@@ -226,7 +226,7 @@ export function SiteHeader({
     !link.external && link.href === currentPath;
   /**
    * Con "Pedir presupuesto" al lado, la acción de la página es secundaria
-   * (`outline`). Sin él (`/proveedores`), pasa a ser la principal.
+   * (`outline`). Sin él (`/proveedores/registro`), pasa a ser la principal.
    */
   const ctaVariant = showQuoteLink ? "outline" : "primary";
 
@@ -290,7 +290,7 @@ export function SiteHeader({
           {/*
             Secundario desde `md` (con el primario al lado): en `/pedido` el
             CTA de WhatsApp (232) + el primario (156) + menú no entran a
-            640px. Sin primario (`/proveedores`), el `cta` ES el principal y
+            640px. Sin primario (`/proveedores/registro`), el `cta` ES el principal y
             aparece desde `sm`, como antes.
           */}
           {isDownloadCta ? (

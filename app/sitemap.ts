@@ -1,6 +1,11 @@
 import type { MetadataRoute } from "next";
 import { fetchAllPartners } from "@/lib/autolibre-api";
-import { partnerPath } from "@/lib/aliados/query";
+import {
+  PROVEEDORES_PATH,
+  PROVEEDORES_REGISTRO_PATH,
+  RESERVED_PROFILE_SLUGS,
+  partnerPath,
+} from "@/lib/proveedores/query";
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
 import { categoryPath } from "@/lib/blog/query";
 import { collectCategories, getPosts, postPath } from "@/lib/hygraph/posts";
@@ -40,14 +45,14 @@ const routes = [
     priority: 0.7,
   },
   {
-    path: "/proveedores",
-    lastModified: "2026-08-14",
+    path: PROVEEDORES_REGISTRO_PATH,
+    lastModified: "2026-10-23",
     changeFrequency: "monthly",
     priority: 0.8,
   },
   {
-    path: "/aliados",
-    lastModified: "2026-10-05",
+    path: PROVEEDORES_PATH,
+    lastModified: "2026-10-23",
     changeFrequency: "weekly",
     priority: 0.7,
   },
@@ -133,20 +138,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  // Perfiles de los negocios de la red (`/aliados/[slug]`), del directorio
+  // Perfiles de los negocios de la red (`/proveedores/[slug]`), del directorio
   // completo (cacheado 1 h). SIN `lastModified`: el backend no expone una
   // fecha de última edición del perfil, y la del build le diría a Google que
   // todos cambiaron en cada deploy (mismo motivo que las fechas fijas de
-  // arriba). Si el backend falla, el sitemap sale igual sin ellos.
+  // arriba). Si el backend falla, el sitemap sale igual sin ellos. Los slugs
+  // reservados (ej. `registro`) no son perfiles: esa URL es otra página. Los perfiles
+  // que el backend no marca como indexables van con `noindex` y tampoco entran.
   const partners = await fetchAllPartners().catch((error: unknown) => {
-    console.error("[sitemap] no se pudieron leer los aliados:", error);
+    console.error("[sitemap] no se pudieron leer los proveedores:", error);
     return [];
   });
-  const partnerPages = partners.map((partner) => ({
-    url: `${siteConfig.url}${partnerPath(partner.slug)}`,
-    changeFrequency: "monthly" as const,
-    priority: 0.5,
-  }));
+  const partnerPages = partners
+    .filter((partner) => partner.indexable && !RESERVED_PROFILE_SLUGS.includes(partner.slug))
+    .map((partner) => ({
+      url: `${siteConfig.url}${partnerPath(partner.slug)}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    }));
 
   return [...pages, ...categories, ...posts, ...partnerPages];
 }

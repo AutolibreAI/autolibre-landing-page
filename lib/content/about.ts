@@ -78,7 +78,7 @@ const FOUNDING_DATE = "2026-02";
 
 /**
  * Cifras de tracción: la ÚNICA fuente para el hero y el hito "Tracción" (y
- * para la ficha de `/aliados`, que la importa).
+ * para la ficha de `/proveedores`, que la importa).
  * Actualizarlas acá y en `PRODUCT.md` cuando cambien (`asOf` es la fecha de
  * corte que se lee en pantalla).
  */

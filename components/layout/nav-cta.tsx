@@ -17,12 +17,12 @@ type NavCtaLinkProps = Pick<
 
 /**
  * CTA del header que no es el de descarga: un link interno (`ButtonLink`,
- * p. ej. "Sumar mi negocio" en `/proveedores`) o uno que sale del sitio
+ * p. ej. "Sumar mi negocio" en `/proveedores/registro`) o uno que sale del sitio
  * (`<a>` nativo con `target="_blank"`, p. ej. WhatsApp en `/pedido`, mismo
  * criterio que `WhatsappLink`).
  *
  * `variant`: en el header es `outline` (secundario) cuando al lado está
- * "Pedir presupuesto", y `primary` cuando la página lo apaga (`/proveedores`).
+ * "Pedir presupuesto", y `primary` cuando la página lo apaga (`/proveedores/registro`).
  *
  * Sin "use client": el evento lo manda el listener delegado de
  * `AnalyticsEvents` leyendo `data-analytics-event`,

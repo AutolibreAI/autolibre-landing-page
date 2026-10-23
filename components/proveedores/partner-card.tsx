@@ -1,10 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { partnerMonogram, safeHttpUrl } from "@/components/aliados/partner-monogram";
+import { partnerMonogram, safeHttpUrl } from "@/components/proveedores/partner-monogram";
 import { Icon } from "@/components/ui/icon";
 import type { PartnerSummary } from "@/lib/autolibre-api";
-import { partnerPath } from "@/lib/aliados/query";
-import { aliadosContent } from "@/lib/content/aliados";
+import { partnerPath } from "@/lib/proveedores/query";
+import { providersDirectoryContent } from "@/lib/content/providers-directory";
 
 type PartnerCardProps = {
   readonly partner: PartnerSummary;
@@ -27,7 +27,7 @@ type PartnerCardProps = {
  * tarjeta presenta al negocio; el contacto pasa por AutoLibre.
  */
 export function PartnerCard({ partner, categoryNames }: PartnerCardProps) {
-  const { card } = aliadosContent.directory;
+  const { card } = providersDirectoryContent.directory;
   const logoUrl = safeHttpUrl(partner.logoUrl);
 
   return (
@@ -86,7 +86,8 @@ export function PartnerCard({ partner, categoryNames }: PartnerCardProps) {
       ) : null}
 
       <div className="mt-auto flex items-center justify-between gap-4 border-t border-line pt-4 text-sm">
-        <p className="text-ink/70">{card.brands(partner.brands)}</p>
+        {/* El listado no trae marcas: sin el dato no se muestra la línea. */}
+        {partner.brands ? <p className="text-ink/70">{card.brands(partner.brands)}</p> : <span />}
         <span aria-hidden="true" className="flex shrink-0 items-center gap-1 font-semibold text-brand-hover">
           {card.viewProfile}
           <Icon name="arrow-right" size={16} strokeWidth={2} />

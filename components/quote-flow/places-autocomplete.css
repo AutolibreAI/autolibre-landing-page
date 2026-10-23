@@ -29,7 +29,7 @@
      `scrollY = 0` y el dropdown quedaba corrido hacia arriba exactamente lo
      scrolleado (se veía flotando lejos del campo). El modal escribe ese
      scroll en `--scroll-lock-offset`; fuera del modal vale 0 y no mueve
-     nada (p. ej. /pedido y /proveedores). */
+     nada (p. ej. /pedido y /proveedores/registro). */
   translate: 0 var(--scroll-lock-offset, 0px);
 
   margin-top: 0.25rem;

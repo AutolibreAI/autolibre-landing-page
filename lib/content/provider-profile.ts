@@ -1,7 +1,8 @@
 import type { FuelType, PartnerLinkKind } from "@/lib/autolibre-api";
+import { PROVEEDORES_PATH } from "@/lib/proveedores/query";
 
 /**
- * Copy del perfil público de un negocio (`/aliados/[slug]`). Los datos del
+ * Copy del perfil público de un negocio (`/proveedores/[slug]`). Los datos del
  * negocio salen del backend; acá vive el texto fijo y las plantillas que lo
  * envuelven. Todo lo que se dice de un negocio sale de un campo real: nada de
  * ratings, reseñas, métricas ni "abierto ahora" (ver `PRODUCT.md`).
@@ -46,8 +47,8 @@ function joinList(items: readonly string[]): string {
   return `${items.slice(0, -1).join(", ")} y ${items[items.length - 1]}`;
 }
 
-export const aliadoPerfilContent = {
-  breadcrumb: { home: "Inicio", aliados: "Aliados" },
+export const providerProfileContent = {
+  breadcrumb: { home: "Inicio", proveedores: "Proveedores" },
 
   /** Meta description: solo con campos reales, distinta en cada negocio. */
   metaDescription: ({
@@ -128,17 +129,17 @@ export const aliadoPerfilContent = {
   },
 
   related: {
-    title: (family: string) => `Más aliados de ${family}`,
+    title: (family: string) => `Más proveedores de ${family}`,
     seeAll: "Ver toda la red",
   },
 
   stickyBar: { label: "Acciones del perfil" },
 
   notFound: {
-    eyebrow: "Aliados",
+    eyebrow: "Proveedores",
     title: "Este negocio ya no está en la red",
     body: "Puede que el link sea viejo o que el negocio haya dejado AutoLibre. En la red hay otros que pueden ayudarte.",
-    primaryCta: { label: "Ver todos los aliados", href: "/aliados" },
+    primaryCta: { label: "Ver todos los proveedores", href: PROVEEDORES_PATH },
     secondaryCta: { label: "Pedir presupuesto", href: "/pedido" },
     meta: { title: "Negocio no encontrado" },
   },

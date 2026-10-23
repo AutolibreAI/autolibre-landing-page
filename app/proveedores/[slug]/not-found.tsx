@@ -1,7 +1,7 @@
 import { PageShell } from "@/components/layout/page-shell";
 import { ButtonLink } from "@/components/ui/button";
 import { Section } from "@/components/ui/section";
-import { aliadoPerfilContent } from "@/lib/content/aliado-perfil";
+import { providerProfileContent } from "@/lib/content/provider-profile";
 
 /**
  * 404 de un perfil: el slug no existe, el negocio está inactivo o el link es
@@ -10,15 +10,15 @@ import { aliadoPerfilContent } from "@/lib/content/aliado-perfil";
  * red completa o pedir presupuesto igual.
  */
 export default function PartnerNotFound() {
-  const { eyebrow, title, body, primaryCta, secondaryCta } = aliadoPerfilContent.notFound;
+  const { eyebrow, title, body, primaryCta, secondaryCta } = providerProfileContent.notFound;
 
   return (
     <PageShell>
-      <Section tone="muted" spacing="lg" aria-labelledby="aliado-no-encontrado">
+      <Section tone="muted" spacing="lg" aria-labelledby="proveedor-no-encontrado">
         <div className="flex max-w-190 flex-col gap-4">
           <p className="text-label font-semibold tracking-wider text-brand-hover uppercase">{eyebrow}</p>
           <h1
-            id="aliado-no-encontrado"
+            id="proveedor-no-encontrado"
             className="font-display text-3xl leading-tight font-bold text-balance text-ink md:text-5xl"
           >
             {title}

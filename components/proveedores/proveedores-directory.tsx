@@ -1,25 +1,25 @@
 import Link from "next/link";
-import { PartnerCard } from "@/components/aliados/partner-card";
+import { PartnerCard } from "@/components/proveedores/partner-card";
 import { ButtonLink } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/heading";
 import { Icon } from "@/components/ui/icon";
 import { Section } from "@/components/ui/section";
 import type { PartnersPage } from "@/lib/autolibre-api";
-import { ALIADOS_PAGE_SIZE, aliadosHref, type AliadosFilters } from "@/lib/aliados/query";
-import { aliadosContent } from "@/lib/content/aliados";
+import { PROVEEDORES_PAGE_SIZE, proveedoresHref, type ProveedoresFilters } from "@/lib/proveedores/query";
+import { providersDirectoryContent } from "@/lib/content/providers-directory";
 import { cn } from "@/lib/utils";
 
 type CategoryOption = { readonly slug: string; readonly name: string };
 
-type AliadosDirectoryProps = {
-  readonly filters: AliadosFilters;
+type ProveedoresDirectoryProps = {
+  readonly filters: ProveedoresFilters;
   /** Familias del catálogo, en su orden. Vacío si el catálogo no cargó. */
   readonly categories: readonly CategoryOption[];
   /** `null`: el backend falló y no había nada en caché. */
   readonly result: PartnersPage | null;
 };
 
-const { directory } = aliadosContent;
+const { directory } = providersDirectoryContent;
 const HEADING_ID = "red-titulo";
 
 // 15px (`text-[0.9375rem]`): el mismo tamaño que los chips del blog y el
@@ -46,7 +46,7 @@ function CategoryFilter({
       <ul className="flex w-max gap-2.5 lg:w-auto lg:flex-wrap">
         <li>
           <Link
-            href={aliadosHref({})}
+            href={proveedoresHref({})}
             aria-current={active === "" ? "page" : undefined}
             className={cn(pill, active === "" ? pillOn : pillOff)}
           >
@@ -56,7 +56,7 @@ function CategoryFilter({
         {categories.map((category) => (
           <li key={category.slug}>
             <Link
-              href={aliadosHref({ rubro: category.slug }, directory.id)}
+              href={proveedoresHref({ rubro: category.slug }, directory.id)}
               aria-current={active === category.slug ? "page" : undefined}
               className={cn(pill, active === category.slug ? pillOn : pillOff)}
             >
@@ -109,7 +109,7 @@ function Pagination({
       </span>
     ) : (
       <Link
-        href={aliadosHref({ rubro, pagina: target }, directory.id)}
+        href={proveedoresHref({ rubro, pagina: target }, directory.id)}
         rel={icon === "arrow-left" ? "prev" : "next"}
         className={cn(pageLink, "border-line px-4 text-ink hover:border-brand-soft")}
       >
@@ -125,7 +125,7 @@ function Pagination({
         {Array.from({ length: totalPages }, (_, index) => index + 1).map((n) => (
           <li key={n}>
             <Link
-              href={aliadosHref({ rubro, pagina: n }, directory.id)}
+              href={proveedoresHref({ rubro, pagina: n }, directory.id)}
               aria-current={n === page ? "page" : undefined}
               aria-label={pagination.page(n)}
               className={cn(
@@ -197,12 +197,12 @@ function ErrorState({ retryHref }: { readonly retryHref: string }) {
  * "Toda la red": filtro por rubro, grilla de negocios y paginación. Server
  * Component: todo el directorio va en el HTML inicial.
  */
-export function AliadosDirectory({ filters, categories, result }: AliadosDirectoryProps) {
+export function ProveedoresDirectory({ filters, categories, result }: ProveedoresDirectoryProps) {
   const activeCategory = categories.find((category) => category.slug === filters.rubro);
   const partners = result?.data ?? [];
   const categoryNames = new Map(categories.map((category) => [category.slug, category.name]));
 
-  const from = (filters.pagina - 1) * (result?.pageSize || ALIADOS_PAGE_SIZE) + 1;
+  const from = (filters.pagina - 1) * (result?.pageSize || PROVEEDORES_PAGE_SIZE) + 1;
   const count =
     result && result.total > 0
       ? directory.count({ from, to: from + partners.length - 1, total: result.total })
@@ -229,7 +229,7 @@ export function AliadosDirectory({ filters, categories, result }: AliadosDirecto
 
       <div className="mt-10">
         {result === null ? (
-          <ErrorState retryHref={aliadosHref(filters, directory.id)} />
+          <ErrorState retryHref={proveedoresHref(filters, directory.id)} />
         ) : partners.length === 0 && activeCategory ? (
           <EmptyState category={activeCategory} />
         ) : (

@@ -28,6 +28,30 @@ const nextConfig: NextConfig = {
     ],
   },
   /**
+   * Rutas viejas de la sección de proveedores, indexadas en producción:
+   * `/proveedor` era el directorio y `/proveedor/<slug>` el perfil de cada
+   * negocio. Sin estos redirects se pierde el posicionamiento y se rompen los
+   * links que los negocios compartieron de su perfil.
+   *
+   * `statusCode: 301` y no `permanent: true`: este último emite 308. La query
+   * (`?rubro=`, `?pagina=`) pasa sola al destino. `/proveedores` NO está
+   * acá: sigue existiendo, ahora con el directorio.
+   */
+  async redirects() {
+    return [
+      {
+        source: "/proveedor",
+        destination: "/proveedores",
+        statusCode: 301,
+      },
+      {
+        source: "/proveedor/:slug",
+        destination: "/proveedores/:slug",
+        statusCode: 301,
+      },
+    ];
+  },
+  /**
    * Reverse proxy de PostHog: `/ingest/*` del mismo origen en lugar de
    * `*.posthog.com`, que muchos bloqueadores filtran. Orden importa: los de
    * assets van antes que el comodín de ingesta. `/ingest` no es una página:

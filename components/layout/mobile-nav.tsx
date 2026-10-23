@@ -19,7 +19,7 @@ type MobileNavProps = {
   /**
    * Es el CTA de descarga: el pie del menú muestra sólo las tiendas. Si la
    * página lo pisa (WhatsApp en `/pedido`, "Sumar mi negocio" en
-   * `/proveedores`), ese CTA va arriba de las tiendas.
+   * `/proveedores/registro`), ese CTA va arriba de las tiendas.
    */
   readonly isDownloadCta?: boolean;
   /** Ruta actual: su link lleva `aria-current="page"`. */
@@ -252,7 +252,7 @@ export function MobileNav({
               <div className="mt-auto flex flex-col gap-6 pt-6">
                 {/*
                   El CTA propio de la página (WhatsApp en `/pedido`, "Sumar
-                  mi negocio" en `/proveedores`). `text-xl` pisa el
+                  mi negocio" en `/proveedores/registro`). `text-xl` pisa el
                   `text-base` de `size="lg"` (tailwind-merge dentro de `cn`):
                   igualado a los links, la conversión no puede pesar menos
                   que el menú.
