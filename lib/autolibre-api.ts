@@ -268,3 +268,441 @@ export async function submitPartnerApplication(
 
   return { ok: false, kind: "unknown" };
 }
+
+/** Nivel del acuerdo comercial del partner. La landing no lo muestra. */
+export type PartnerTier = "founding" | "standard";
+
+/**
+ * Un negocio del directorio (`GET /partner-profiles`), ya adaptado a lo que
+ * pinta la landing. El listado del backend es liviano a propósito: trae el
+ * rubro principal y la localidad, pero NO las marcas ni los rubros
+ * secundarios. Por eso `brands` es `null` ("el listado no lo sabe") y no `[]`,
+ * que significaría "todas las marcas": mostrar eso sería inventar un dato.
+ */
+export interface PartnerSummary {
+  /** El slug: el backend no expone otro identificador público. */
+  readonly id: string;
+  readonly slug: string;
+  readonly name: string;
+  readonly logoUrl: string | null;
+  /** Localidad del negocio; vacío si no la cargó. */
+  readonly coverageZone: string;
+  readonly tier: PartnerTier;
+  /** Slugs de familia del catálogo. En el listado, solo la principal. */
+  readonly categories: readonly string[];
+  /** `null` = el listado no trae marcas; `[]` = todas las marcas. */
+  readonly brands: readonly string[] | null;
+  /**
+   * El backend marca como indexables solo los perfiles con horarios
+   * estructurados. Los demás van con `noindex` y fuera del sitemap.
+   */
+  readonly indexable: boolean;
+}
+
+export interface PartnersPage {
+  readonly data: readonly PartnerSummary[];
+  readonly total: number;
+  readonly page: number;
+  readonly pageSize: number;
+  readonly totalPages: number;
+}
+
+/**
+ * Una hora: el directorio cambia cuando el equipo aprueba o da de baja un
+ * negocio, no minuto a minuto. Con `revalidate` la respuesta queda en el Data
+ * Cache de Next y, si el backend falla al revalidar, se sigue sirviendo la
+ * ultima respuesta buena (stale) hasta que vuelva: la pagina sobrevive a un
+ * corte corto sin mostrar el estado de error.
+ */
+const PARTNERS_REVALIDATE_SECONDS = 3600;
+
+/** Tope del backend para `pageSize`. */
+const PARTNERS_MAX_PAGE_SIZE = 100;
+
+/** Mismo patrón que valida el backend para un slug público. */
+const PROFILE_SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+type JsonRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is JsonRecord {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function text(value: unknown): string | null {
+  return typeof value === "string" && value.trim() !== "" ? value.trim() : null;
+}
+
+function textList(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+}
+
+function records(value: unknown): JsonRecord[] {
+  return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+function finiteNumber(value: unknown, fallback: number): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+/**
+ * Pagina del directorio publico de partners activos, ya ordenada por el
+ * backend (los aliados primero, despues nombre y slug). NO se reordena.
+ *
+ * A diferencia de `fetchServiceCatalog`, esto SI tira cuando el backend no
+ * contesta: el directorio no tiene una version degradada que tenga sentido
+ * (una grilla vacia diria "no hay negocios", que es falso). Quien renderiza
+ * atrapa el error y muestra el estado de error de la seccion, sin tirar abajo
+ * el resto de la pagina.
+ */
+export async function fetchPartners({
+  category,
+  page = 1,
+  pageSize = 24,
+}: {
+  /** Slug de familia del catalogo. Sin valor: todas. */
+  readonly category?: string;
+  readonly page?: number;
+  readonly pageSize?: number;
+}): Promise<PartnersPage> {
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(Math.min(pageSize, PARTNERS_MAX_PAGE_SIZE)),
+  });
+  if (category) params.set("category", category);
+
+  const response = await fetch(`${apiBaseUrl()}/api/v1/partner-profiles?${params}`, {
+    next: { revalidate: PARTNERS_REVALIDATE_SECONDS },
+  });
+
+  if (!response.ok) {
+    throw new Error(`[partners] el backend respondio ${response.status}.`);
+  }
+
+  return parsePartnersPage(await response.json());
+}
+
+/**
+ * Parseo defensivo: un negocio sin `slug` o sin `name` no puede tener tarjeta
+ * (no hay a donde linkear ni que mostrar), asi que se descarta en vez de
+ * romper la grilla.
+ *
+ * Pero si el backend dice que hay negocios y NO sobrevive ninguno, no es un
+ * negocio suelto mal cargado: es el contrato que cambio. Eso tira, para que la
+ * pagina muestre el estado de error y no una grilla vacia que diga "0 de 41".
+ * Una respuesta con `data` vacio (un rubro sin negocios) no es un error.
+ */
+function parsePartnersPage(value: unknown): PartnersPage {
+  const payload = isRecord(value) ? value : {};
+  const rawData = Array.isArray(payload.data) ? payload.data : [];
+  let firstMissing: string | null = null;
+
+  const data = rawData
+    .map((raw): PartnerSummary | null => {
+      if (!isRecord(raw)) {
+        firstMissing ??= "(no es un objeto)";
+        return null;
+      }
+      const slug = text(raw.slug);
+      const name = text(raw.name);
+      if (!slug || !name) {
+        firstMissing ??= slug ? "name" : "slug";
+        return null;
+      }
+
+      const primary = isRecord(raw.primaryCategory) ? text(raw.primaryCategory.slug) : null;
+      return {
+        id: slug,
+        slug,
+        name,
+        logoUrl: isRecord(raw.logo) ? text(raw.logo.url) : null,
+        coverageZone: text(raw.locality) ?? "",
+        tier: raw.isAlly === true ? "founding" : "standard",
+        categories: primary ? [primary] : [],
+        brands: null,
+        indexable: raw.indexable === true,
+      };
+    })
+    .filter((partner): partner is PartnerSummary => partner !== null);
+
+  const dropped = rawData.length - data.length;
+  const total = finiteNumber(payload.total, data.length);
+
+  if (rawData.length > 0 && data.length === 0 && total > 0) {
+    throw new Error(
+      `[partners] se descartaron los ${dropped} negocios de la respuesta (primer campo faltante: ${firstMissing}). ¿Cambio el contrato o es una respuesta vieja en cache?`,
+    );
+  }
+  if (dropped > 0) {
+    console.error(
+      `[partners] se descartaron ${dropped} de ${rawData.length} negocios (primer campo faltante: ${firstMissing}).`,
+    );
+  }
+
+  return {
+    data,
+    total,
+    page: finiteNumber(payload.page, 1),
+    pageSize: finiteNumber(payload.pageSize, data.length),
+    totalPages: finiteNumber(payload.totalPages, 1),
+  };
+}
+
+/**
+ * El directorio COMPLETO (todas las paginas, `pageSize` maximo, sin filtro).
+ * Una llamada por pagina, cada una cacheada como `fetchPartners`; con el
+ * volumen actual (decenas de negocios) son un par. Tira si falla: lo usan
+ * el sitemap y el calculo de rubros con negocios, que deciden su fallback.
+ */
+export async function fetchAllPartners(): Promise<PartnerSummary[]> {
+  const partners: PartnerSummary[] = [];
+  let page = 1;
+  let totalPages = 1;
+
+  do {
+    const result = await fetchPartners({ page, pageSize: PARTNERS_MAX_PAGE_SIZE });
+    partners.push(...result.data);
+    totalPages = result.totalPages;
+    page += 1;
+  } while (page <= totalPages);
+
+  return partners;
+}
+
+/**
+ * Slugs de las familias que tienen al menos un negocio activo, sacados del
+ * directorio completo (`fetchAllPartners`) y no de una llamada por familia.
+ * El listado solo trae el rubro PRINCIPAL de cada negocio: una familia que
+ * aparece solo como rubro secundario no cuenta acá.
+ *
+ * Devuelve `null` —nunca tira— si algo falla: quien lo usa cae en mostrar
+ * todas las familias del catalogo.
+ */
+export async function fetchActivePartnerCategories(): Promise<Set<string> | null> {
+  try {
+    const partners = await fetchAllPartners();
+    return new Set(partners.flatMap((partner) => partner.categories));
+  } catch (error) {
+    console.error("[partners] no se pudieron leer los rubros con negocios:", error);
+    return null;
+  }
+}
+
+export type FuelType = "gasoline" | "diesel" | "cng" | "electric" | "hybrid";
+const FUEL_TYPES: readonly FuelType[] = ["gasoline", "diesel", "cng", "electric", "hybrid"];
+
+export type PartnerLinkKind =
+  | "instagram"
+  | "website"
+  | "facebook"
+  | "mercado_libre"
+  | "x"
+  | "tiktok"
+  | "other";
+const PARTNER_LINK_KINDS: readonly PartnerLinkKind[] = [
+  "instagram",
+  "website",
+  "facebook",
+  "mercado_libre",
+  "x",
+  "tiktok",
+  "other",
+];
+
+export interface PartnerLink {
+  readonly kind: PartnerLinkKind;
+  readonly url: string;
+}
+
+/** Perfil completo de un negocio (`GET /partner-profiles/:slug`). */
+export interface PartnerDetail extends PartnerSummary {
+  /** En el perfil el backend sí conoce las marcas: `[]` = todas. */
+  readonly brands: readonly string[];
+  readonly description: string | null;
+  /** Dirección completa, tal como la cargó el negocio. */
+  readonly address: string | null;
+  /** Link de WhatsApp del negocio (`https://wa.me/...`), si tiene. */
+  readonly redirectLink: string | null;
+  /** Slugs de rubro. */
+  readonly services: readonly string[];
+  /** Horarios ya armados como texto, uno por renglón; `null` si no hay. */
+  readonly hours: string | null;
+  /** Clave de `modalityLabel`: `en_local`, `a_domicilio` o `ambas`. */
+  readonly modality: string | null;
+  /** Entra completo o no entra. */
+  readonly geo: { readonly latitude: number; readonly longitude: number } | null;
+  /** Vacio = todos los combustibles. */
+  readonly fuelTypes: readonly FuelType[];
+  readonly links: readonly PartnerLink[];
+}
+
+/**
+ * Resultado de pedir un perfil por slug. `moved`: el slug es histórico y el
+ * backend informa el vigente; la página responde un redirect permanente.
+ */
+export type PartnerLookup =
+  | { readonly status: "found"; readonly partner: PartnerDetail }
+  | { readonly status: "moved"; readonly slug: string };
+
+/**
+ * Perfil de un negocio por su slug publico. `null` cuando el backend dice 404
+ * (no existe, esta pausado o archivado) o el slug no tiene el formato valido
+ * (el backend lo rechazaria con 400): la pagina responde `notFound()`.
+ * Cualquier otro error TIRA: un backend caido no es "este negocio no existe",
+ * y responder 404 haria que Google lo saque del indice.
+ *
+ * Mismo `revalidate` que el directorio; `fetch` ya memoiza la llamada dentro
+ * de un render, y el `cache()` de React que la envuelve en la pagina lo hace
+ * explicito para `generateMetadata` + la pagina.
+ */
+export async function fetchPartnerBySlug(slug: string): Promise<PartnerLookup | null> {
+  if (!PROFILE_SLUG_PATTERN.test(slug) || slug.length > 120) return null;
+
+  const response = await fetch(`${apiBaseUrl()}/api/v1/partner-profiles/${slug}`, {
+    next: { revalidate: PARTNERS_REVALIDATE_SECONDS },
+  });
+
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(`[partner] el backend respondio ${response.status} para "${slug}".`);
+  }
+
+  const payload: unknown = await response.json();
+  if (isRecord(payload) && payload.status === "moved") {
+    const current = text(payload.slug);
+    if (current && PROFILE_SLUG_PATTERN.test(current)) return { status: "moved", slug: current };
+  }
+  if (isRecord(payload) && payload.status === "ok") {
+    const partner = parsePartnerProfile(payload.profile);
+    if (partner) return { status: "found", partner };
+  }
+
+  throw new Error(`[partner] la respuesta de "${slug}" no cumple el contrato (status, slug o name).`);
+}
+
+/** `locationMode` del backend → clave que entiende `modalityLabel`. */
+const MODALITY_BY_LOCATION_MODE: Readonly<Record<string, string>> = {
+  in_person: "en_local",
+  mobile: "a_domicilio",
+  both: "ambas",
+};
+
+const WEEKDAY_NAMES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+
+/**
+ * `businessHours` estructurado → un renglón por día ("Lunes: 09:00–13:00,
+ * 15:00–19:00"), en orden de lunes a domingo. El backend no documenta la
+ * numeración de `weekday`: se asume la que comparten ISO y `Date#getDay` para
+ * lo que importa, 1 a 6 = lunes a sábado y 0 o 7 = domingo. Un valor fuera de
+ * 0–7 descarta ese día en vez de mostrar uno equivocado.
+ */
+function formatBusinessHours(value: unknown): string | null {
+  const byDay = new Map<number, string>();
+
+  for (const entry of records(value)) {
+    const weekday = finiteNumber(entry.weekday, -1);
+    if (!Number.isInteger(weekday) || weekday < 0 || weekday > 7) continue;
+    const index = weekday === 0 || weekday === 7 ? 6 : weekday - 1;
+
+    const ranges = records(entry.ranges)
+      .map((range) => {
+        const opensAt = text(range.opensAt);
+        const closesAt = text(range.closesAt);
+        return opensAt && closesAt ? `${opensAt}–${closesAt}` : null;
+      })
+      .filter((range): range is string => range !== null);
+    if (ranges.length > 0) byDay.set(index, ranges.join(", "));
+  }
+
+  if (byDay.size === 0) return null;
+  return [...byDay.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([index, ranges]) => `${WEEKDAY_NAMES[index]}: ${ranges}`)
+    .join("\n");
+}
+
+/** `{ mode: "all" }` → `[]` (todas); `{ mode: "specific", items }` → los items. */
+function selectionItems(value: unknown): string[] {
+  return isRecord(value) && value.mode === "specific" ? textList(value.items) : [];
+}
+
+function parsePartnerProfile(value: unknown): PartnerDetail | null {
+  if (!isRecord(value)) return null;
+  const slug = text(value.slug);
+  const name = text(value.name);
+  if (!slug || !name) return null;
+
+  const categorySlug = (entry: unknown) => (isRecord(entry) ? text(entry.slug) : null);
+  const serviceGroups = records(value.services);
+  const categories = [
+    ...new Set(
+      [
+        categorySlug(value.primaryCategory),
+        ...records(value.secondaryCategories).map(categorySlug),
+        ...serviceGroups.map((group) => categorySlug(group.category)),
+      ].filter((slugValue): slugValue is string => slugValue !== null),
+    ),
+  ];
+  const services = serviceGroups.flatMap((group) =>
+    records(group.items)
+      .map(categorySlug)
+      .filter((item): item is string => item !== null),
+  );
+
+  const address = isRecord(value.address) ? value.address : null;
+  const latitude = address?.latitude;
+  const longitude = address?.longitude;
+  const geo =
+    typeof latitude === "number" &&
+    typeof longitude === "number" &&
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude)
+      ? { latitude, longitude }
+      : null;
+
+  const localities = isRecord(value.serviceArea)
+    ? records(value.serviceArea.localities)
+        .map((locality) => text(locality.name))
+        .filter((locality): locality is string => locality !== null)
+    : [];
+  const coverageZone =
+    localities.length > 0
+      ? localities.join(", ")
+      : [text(value.locality), text(value.province)].filter(Boolean).join(", ");
+
+  // Solo links http(s): una URL rara en el admin no puede terminar en un
+  // `href` con `javascript:` en la pagina publica. Un tipo que la landing no
+  // conoce se muestra como "otro enlace" en vez de perderse.
+  const links = records(value.links)
+    .map((raw): PartnerLink | null => {
+      const url = text(raw.url);
+      if (!url || !/^https?:\/\//i.test(url)) return null;
+      const kind = PARTNER_LINK_KINDS.find((known) => known === raw.kind) ?? "other";
+      return { kind, url };
+    })
+    .filter((link): link is PartnerLink => link !== null);
+
+  return {
+    id: slug,
+    slug,
+    name,
+    logoUrl: isRecord(value.logo) ? text(value.logo.url) : null,
+    coverageZone,
+    tier: value.isAlly === true ? "founding" : "standard",
+    categories,
+    brands: selectionItems(value.brands),
+    indexable: value.indexable === true,
+    description: text(value.description),
+    address: address ? text(address.full) : null,
+    redirectLink: isRecord(value.contact) ? text(value.contact.whatsappUrl) : null,
+    services,
+    hours: formatBusinessHours(value.businessHours),
+    modality: MODALITY_BY_LOCATION_MODE[text(value.locationMode) ?? ""] ?? null,
+    geo,
+    fuelTypes: selectionItems(value.fuelTypes).filter((fuel): fuel is FuelType =>
+      FUEL_TYPES.some((known) => known === fuel),
+    ),
+    links,
+  };
+}

@@ -9,7 +9,10 @@ import { blogContent } from "@/lib/content/blog";
  */
 export function MobileDownloadBar() {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 px-[6%] py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md lg:hidden">
+    // `data-bottom-bar`: oculta el botón flotante de WhatsApp (ver `WhatsappFab`).
+    <div
+      data-bottom-bar
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 px-[6%] py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md lg:hidden">
       <ButtonLink href="/#descargar" block size="lg">
         {blogContent.mobileBar.cta}
       </ButtonLink>

@@ -1,10 +1,14 @@
 import type { MetadataRoute } from "next";
+import { fetchAllPartners } from "@/lib/autolibre-api";
+import {
+  PROVEEDORES_PATH,
+  PROVEEDORES_REGISTRO_PATH,
+  RESERVED_PROFILE_SLUGS,
+  partnerPath,
+} from "@/lib/proveedores/query";
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
 import { categoryPath } from "@/lib/blog/query";
 import { collectCategories, getPosts, postPath } from "@/lib/hygraph/posts";
-import { listAllProviderSummaries } from "@/lib/provider-profile/api";
-import { PROVIDER_INDEX_PATH, providerPath } from "@/lib/provider-profile/routes";
-import { PROVIDER_PROFILES_PUBLIC } from "@/lib/provider-profile/visibility";
 import { siteConfig } from "@/lib/seo/config";
 
 /**
@@ -18,7 +22,7 @@ import { siteConfig } from "@/lib/seo/config";
 const routes = [
   {
     path: "/",
-    lastModified: "2026-10-07",
+    lastModified: "2026-08-21",
     changeFrequency: "weekly",
     priority: 1,
   },
@@ -41,14 +45,20 @@ const routes = [
     priority: 0.7,
   },
   {
-    path: "/proveedores",
-    lastModified: "2026-08-14",
+    path: PROVEEDORES_REGISTRO_PATH,
+    lastModified: "2026-10-23",
     changeFrequency: "monthly",
     priority: 0.8,
   },
   {
+    path: PROVEEDORES_PATH,
+    lastModified: "2026-10-23",
+    changeFrequency: "weekly",
+    priority: 0.7,
+  },
+  {
     path: "/sobre-nosotros",
-    lastModified: "2026-09-29",
+    lastModified: "2026-10-02",
     changeFrequency: "monthly",
     priority: 0.6,
   },
@@ -128,35 +138,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  // Perfiles de proveedores: solo con el interruptor encendido, y solo los
-  // INDEXABLES (un perfil pobre lleva `noindex` y no entra al mapa). El listado
-  // lo cambia cada vez que se aprueba o edita un proveedor, así que el
-  // `lastModified` de `/proveedor` es el del perfil más reciente. Si el backend no
-  // responde el listado viene vacío y se omite la sección, sin romper el build.
-  const providers = PROVIDER_PROFILES_PUBLIC
-    ? (await listAllProviderSummaries()).filter((summary) => summary.indexable)
-    : [];
-  const latestProviderDate = providers.reduce(
-    (latest, summary) => (summary.updatedAt > latest ? summary.updatedAt : latest),
-    "",
-  );
-  const providerIndex =
-    providers.length > 0
-      ? [
-          {
-            url: `${siteConfig.url}${PROVIDER_INDEX_PATH}`,
-            lastModified: latestProviderDate || undefined,
-            changeFrequency: "daily" as const,
-            priority: 0.7,
-          },
-        ]
-      : [];
-  const providerPages = providers.map((summary) => ({
-    url: `${siteConfig.url}${providerPath(summary.slug)}`,
-    lastModified: summary.updatedAt,
-    changeFrequency: "weekly" as const,
-    priority: 0.6,
-  }));
+  // Perfiles de los negocios de la red (`/proveedores/[slug]`), del directorio
+  // completo (cacheado 1 h). SIN `lastModified`: el backend no expone una
+  // fecha de última edición del perfil, y la del build le diría a Google que
+  // todos cambiaron en cada deploy (mismo motivo que las fechas fijas de
+  // arriba). Si el backend falla, el sitemap sale igual sin ellos. Los slugs
+  // reservados (ej. `registro`) no son perfiles: esa URL es otra página. Los perfiles
+  // que el backend no marca como indexables van con `noindex` y tampoco entran.
+  const partners = await fetchAllPartners().catch((error: unknown) => {
+    console.error("[sitemap] no se pudieron leer los proveedores:", error);
+    return [];
+  });
+  const partnerPages = partners
+    .filter((partner) => partner.indexable && !RESERVED_PROFILE_SLUGS.includes(partner.slug))
+    .map((partner) => ({
+      url: `${siteConfig.url}${partnerPath(partner.slug)}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    }));
 
-  return [...pages, ...categories, ...posts, ...providerIndex, ...providerPages];
+  return [...pages, ...categories, ...posts, ...partnerPages];
 }

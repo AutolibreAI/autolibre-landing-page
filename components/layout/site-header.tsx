@@ -53,10 +53,10 @@ export function SiteHeader({
   cta = siteContent.nav.cta,
   currentPath,
 }: SiteHeaderProps) {
-  const { links, quoteLink, providerLink } = siteContent.nav;
+  const { links, quoteLink, directoryLink, providerLink } = siteContent.nav;
   /**
    * Sólo el CTA de descarga cambia de destino según la plataforma. Las
-   * páginas que pisan `cta` con otra acción (p. ej. /proveedores, /pedido)
+   * páginas que pisan `cta` con otra acción (p. ej. /proveedores/registro, /pedido)
    * quedan con su link tal cual.
    */
   const isDownloadCta = cta.href === siteContent.nav.cta.href;
@@ -117,6 +117,15 @@ export function SiteHeader({
               </li>
               <li className="hidden lg:block">
                 <Link
+                  href={directoryLink.href}
+                  aria-current={current(directoryLink.href)}
+                  className={pageLink}
+                >
+                  {directoryLink.label}
+                </Link>
+              </li>
+              <li className="hidden lg:block">
+                <Link
                   href={providerLink.href}
                   aria-current={current(providerLink.href)}
                   className={pageLink}
@@ -133,7 +142,7 @@ export function SiteHeader({
           )}
           <MobileNav
             links={links}
-            pageLinks={[quoteLink, providerLink]}
+            pageLinks={[quoteLink, directoryLink, providerLink]}
             quoteHref={quoteLink.href}
             cta={cta}
             isDownloadCta={isDownloadCta}

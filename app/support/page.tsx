@@ -36,7 +36,7 @@ const schema = graph(
 export default function SupportPage() {
   return (
     <>
-      <PageShell>
+      <PageShell currentPath={PATH}>
         <Section tone="muted" spacing="md" container="content">
           <div className="mx-auto grid max-w-250 items-start gap-12 lg:grid-cols-2">
             <div>

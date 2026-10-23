@@ -1,4 +1,5 @@
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
+import { PROVEEDORES_PATH, PROVEEDORES_REGISTRO_PATH } from "@/lib/proveedores/query";
 import { PROVIDER_INDEX_PATH } from "@/lib/provider-profile/routes";
 import { PROVIDER_PROFILES_PUBLIC } from "@/lib/provider-profile/visibility";
 import { siteConfig } from "@/lib/seo/config";
@@ -34,7 +35,15 @@ export const siteContent = {
     ] satisfies readonly NavLink[],
     /** Presupuesto: visible desde `md`, y en el menú debajo de `xl`. */
     quoteLink,
-    providerLink: { label: "Soy proveedor", href: "/proveedores" },
+    /** Directorio de los negocios de la red: le habla al dueño de auto. */
+    directoryLink: { label: "Proveedores", href: PROVEEDORES_PATH },
+    /** Alta de negocios: le habla al taller que se quiere sumar. */
+    providerLink: { label: "Soy proveedor", href: PROVEEDORES_REGISTRO_PATH },
+    /**
+     * Aviso para lectores de pantalla en los links que abren otra pestaña
+     * (va en un `sr-only` después del label).
+     */
+    externalHint: "(se abre en otra pestaña)",
     cta: { label: "Descargar la app", href: "/#descargar" },
     /**
      * Destino del CTA de descarga según la plataforma (ver `DownloadCta`).
@@ -71,6 +80,17 @@ export const siteContent = {
       href: siteConfig.stores.playStore,
     },
   ] satisfies readonly StoreLink[],
+  /**
+   * Botón flotante de WhatsApp (abajo a la derecha, en todas las páginas).
+   * Solo ícono: `label` es su nombre accesible y va en un `sr-only`, seguido
+   * de `nav.externalHint` porque abre otra pestaña. Abre el chat sin mensaje
+   * precargado (`whatsappChat`): la persona escribe lo que necesita.
+   */
+  whatsappFab: {
+    label: "Escribinos por WhatsApp",
+    href: siteConfig.contact.whatsappChat,
+  },
+
   footer: {
     groups: [
       /**

@@ -46,7 +46,7 @@ const schema = graph(
 export default function HomePage() {
   return (
     <>
-      <SiteHeader />
+      <SiteHeader currentPath="/" />
 
       <main>
         <HeroSection />

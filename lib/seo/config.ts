@@ -62,6 +62,8 @@ export const siteConfig = {
     /** wa.me sólo acepta dígitos: sin +, sin espacios y sin guiones. */
     whatsapp:
       "https://wa.me/5491172804347?text=Hola!%20Me%20interesa%20comprar%20un%20escáner!",
+    /** El mismo chat sin mensaje precargado: lo usa el botón flotante. */
+    whatsappChat: "https://wa.me/5491172804347",
   },
   social: [
     "https://www.tiktok.com/@autolibreai",

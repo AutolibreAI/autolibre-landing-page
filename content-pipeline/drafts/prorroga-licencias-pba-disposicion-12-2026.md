@@ -6,11 +6,13 @@ metaDescription: "La Disposición 12/2026 prorroga 120 días las licencias profe
 excerpt: "Quién entra en la prórroga de 120 días de la Disposición 12/2026 en Provincia de Buenos Aires, quién queda afuera y qué conviene llevar si te corresponde."
 category: tramites-y-documentacion
 tags: [licencia-de-conducir, provincia-de-buenos-aires, vencimientos]
+date: 2026-10-03
 reviewedAt: 2026-09-30
 sourceIds: [LIC-06]
 cover:
   file: images/prorroga-licencias-pba-disposicion-12-2026-cover.webp
   alt: "Conductor de espaldas en la cabina de un camión estacionado sostiene una tarjeta celeste y una hoja doblada"
+  assetId: cmusgjnspzj5j07lhdb78tbo0
 images: []
 ---
 
@@ -33,7 +35,7 @@ Así queda cada caso según el anuncio oficial [src:LIC-06]:
 | Licencia particular | No |
 | Licencia emitida fuera de Provincia de Buenos Aires | No por esta medida, que es para las emitidas en Provincia |
 
-El anuncio oficial no explica cómo comprobar si tu licencia profesional es interjurisdiccional. Si tenés dudas, confirmalo en el sitio oficial de la Provincia antes de contar con la prórroga.
+Si tenés dudas sobre si tu licencia profesional es interjurisdiccional, confirmalo en el sitio oficial de la Provincia antes de contar con la prórroga.
 
 ## Si tu licencia es particular
 

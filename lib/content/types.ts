@@ -92,7 +92,10 @@ export type IconName =
   | "calendar"
   | "chevron-down"
   | "bolt"
-  | "camera";
+  | "camera"
+  | "users"
+  | "smartphone"
+  | "wrench";
 
 /** Tiendas donde está publicada la app. */
 export type StoreId = "appStore" | "playStore";

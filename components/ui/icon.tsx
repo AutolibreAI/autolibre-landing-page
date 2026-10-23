@@ -161,6 +161,23 @@ const paths: Record<IconName, React.ReactNode> = {
       <circle cx="12" cy="13" r="3.5" />
     </>
   ),
+  /** Dos personas: la de adelante entera, la de atrás asomando. */
+  users: (
+    <>
+      <circle cx="9" cy="8.5" r="3.2" />
+      <path d="M3 19.5a6 6 0 0 1 12 0" />
+      <path d="M15.5 5.6a3.2 3.2 0 0 1 0 5.8M17.5 14.2a6 6 0 0 1 3.5 5.3" />
+    </>
+  ),
+  smartphone: (
+    <>
+      <rect x="6.5" y="2.5" width="11" height="19" rx="2.2" />
+      <path d="M10.5 18.5h3" />
+    </>
+  ),
+  wrench: (
+    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z" />
+  ),
 };
 
 export function Icon({

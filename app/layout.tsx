@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { DM_Sans, Outfit } from "next/font/google";
 import Script from "next/script";
 import { AnalyticsEvents } from "@/components/analytics/analytics-events";
+import { WhatsappFab } from "@/components/layout/whatsapp-fab";
 import { META_PIXEL_ID } from "@/lib/analytics/meta-pixel";
 import { siteConfig } from "@/lib/seo/config";
 import "./globals.css";
@@ -152,6 +153,8 @@ export default function RootLayout({
       </head>
       <body className="min-h-dvh bg-surface text-ink">
         {children}
+        {/* Una sola vez acá: queda en todas las páginas (home incluida). */}
+        <WhatsappFab />
         <script dangerouslySetInnerHTML={{ __html: revealScript }} />
         {metaPixelScript && (
           <Script src="https://connect.facebook.net/en_US/fbevents.js" strategy="lazyOnload" />

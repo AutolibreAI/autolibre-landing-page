@@ -126,6 +126,6 @@ La Conversions API de Meta sale en paralelo con el mismo `eventID` que el Pixel,
 ## 5. Lo que no se mide hoy
 
 - **Abrir el modal** no tiene evento propio: se aproxima con `quote_step_viewed step: 1`.
-- **Formulario de proveedores (`/proveedores`):** no tiene eventos, solo `$pageview` y la grabación.
+- **Formulario de proveedores (`/proveedores/registro`):** no tiene eventos, solo `$pageview` y la grabación. Hasta el release de AUT-137 el formulario vivía en `/proveedores`: los `$pageview` de esa ruta anteriores a la fecha de salida (completar al deployar: ____) son del formulario y los posteriores son del directorio; la serie nueva arranca en `/proveedores/registro`.
 - **Links de navegación** (el menú y el link de texto "Pedir presupuesto" a `/pedido`): solo se ve el `$pageview` de destino.
 - **UTMs dentro del pedido:** hay un TODO porque el DTO del backend rechaza campos desconocidos. Igual, PostHog guarda los UTMs de la sesión, así que el funnel sí se puede cortar por campaña.
