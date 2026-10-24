@@ -355,14 +355,24 @@ function finiteNumber(value: unknown, fallback: number): number {
  * (una grilla vacia diria "no hay negocios", que es falso). Quien renderiza
  * atrapa el error y muestra el estado de error de la seccion, sin tirar abajo
  * el resto de la pagina.
+ *
+ * Con `q` (busqueda por nombre) la peticion NO pasa por el Data Cache de Next:
+ * el texto es libre, y cada busqueda distinta crearia una entrada de cache
+ * que nadie va a volver a pedir. El backend ya responde con su propio
+ * `Cache-Control`, y el volumen no pide mas. El costo: sin cache, un corte del
+ * backend no se tapa con una respuesta vieja y la busqueda muestra el estado
+ * de error (que es lo correcto: un error no es "sin resultados").
  */
 export async function fetchPartners({
   category,
+  q,
   page = 1,
   pageSize = 24,
 }: {
   /** Slug de familia del catalogo. Sin valor: todas. */
   readonly category?: string;
+  /** Texto a buscar en el nombre del negocio. Vacio o sin valor: no busca. */
+  readonly q?: string;
   readonly page?: number;
   readonly pageSize?: number;
 }): Promise<PartnersPage> {
@@ -371,10 +381,12 @@ export async function fetchPartners({
     pageSize: String(Math.min(pageSize, PARTNERS_MAX_PAGE_SIZE)),
   });
   if (category) params.set("category", category);
+  if (q) params.set("q", q);
 
-  const response = await fetch(`${apiBaseUrl()}/api/v1/partner-profiles?${params}`, {
-    next: { revalidate: PARTNERS_REVALIDATE_SECONDS },
-  });
+  const response = await fetch(
+    `${apiBaseUrl()}/api/v1/partner-profiles?${params}`,
+    q ? { cache: "no-store" } : { next: { revalidate: PARTNERS_REVALIDATE_SECONDS } },
+  );
 
   if (!response.ok) {
     throw new Error(`[partners] el backend respondio ${response.status}.`);

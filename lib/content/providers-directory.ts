@@ -46,6 +46,27 @@ export const providersDirectoryContent = {
       label: "Filtrar por rubro",
       all: "Todos",
     },
+    /** Búsqueda por nombre: un formulario GET, el texto viaja en `?q=`. */
+    search: {
+      label: "Buscar por nombre",
+      placeholder: "Nombre del negocio",
+      submit: "Buscar",
+    },
+    /** Recorte por zona: `?zona=<slug>`, con las zonas que devuelve el backend. */
+    zone: {
+      label: "Zona",
+      all: "Todas las zonas",
+      option: (name: string, count: number) => `${name} (${count})`,
+    },
+    /** Filtros puestos, cada uno con su link para quitarlo. */
+    activeFilters: {
+      label: "Filtros aplicados",
+      removeAll: "Quitar todos los filtros",
+      category: (name: string) => `Rubro: ${name}`,
+      zone: (name: string) => `Zona: ${name}`,
+      query: (text: string) => `Nombre: “${text}”`,
+      remove: (filter: string) => `Quitar filtro ${filter}`,
+    },
     card: {
       categoriesLabel: "Rubros",
       zoneLabel: "Zona de cobertura:",
@@ -65,9 +86,20 @@ export const providersDirectoryContent = {
     },
     empty: {
       title: (category: string) => `Todavía no hay negocios de ${category} en la red`,
+      /** Sin resultados con cualquier combinación de filtros: nombra lo buscado. */
+      titleFor: ({ q, category, zone }: { q: string; category: string; zone: string }) =>
+        [
+          "No encontramos negocios",
+          q ? `con “${q}” en el nombre` : "",
+          category ? `de ${category}` : "",
+          zone ? `en ${zone}` : "",
+        ]
+          .filter(Boolean)
+          .join(" "),
       body: "Igual podés pedir tu presupuesto: lo derivamos a quien pueda ayudarte.",
       primaryCta: { label: "Pedir presupuesto", href: "/pedido" },
       secondaryCta: { label: "Ver todos los rubros", href: PROVEEDORES_PATH },
+      clearFilters: { label: "Quitar filtros", href: PROVEEDORES_PATH },
     },
     error: {
       title: "No pudimos cargar la red en este momento",

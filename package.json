@@ -12,7 +12,8 @@
     "blog:image": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/blog/generate-image.ts",
     "blog:roundtrip": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/blog/roundtrip.ts",
     "test:blog": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"scripts/blog/**/*.test.ts\"",
-    "typecheck:blog": "tsc -p scripts/blog/tsconfig.json"
+    "typecheck:blog": "tsc -p scripts/blog/tsconfig.json",
+    "test:proveedores": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"scripts/proveedores/**/*.test.ts\""
   },
   "dependencies": {
     "@graphcms/rich-text-react-renderer": "^0.6.2",

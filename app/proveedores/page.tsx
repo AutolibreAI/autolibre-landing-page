@@ -58,6 +58,7 @@ async function loadPartners(filters: ProveedoresFilters): Promise<PartnersPage |
   try {
     return await fetchPartners({
       category: filters.rubro || undefined,
+      q: filters.q || undefined,
       page: filters.pagina,
       pageSize: PROVEEDORES_PAGE_SIZE,
     });
