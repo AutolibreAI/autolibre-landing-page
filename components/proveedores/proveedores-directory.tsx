@@ -1,11 +1,17 @@
 import Link from "next/link";
 import { PartnerCard } from "@/components/proveedores/partner-card";
+import { ProveedoresSearch } from "@/components/proveedores/proveedores-search";
 import { ButtonLink } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/heading";
 import { Icon } from "@/components/ui/icon";
 import { Section } from "@/components/ui/section";
-import type { PartnersPage } from "@/lib/autolibre-api";
-import { PROVEEDORES_PAGE_SIZE, proveedoresHref, type ProveedoresFilters } from "@/lib/proveedores/query";
+import type { PartnerZone, PartnersPage } from "@/lib/autolibre-api";
+import {
+  hasActiveFilters,
+  PROVEEDORES_PAGE_SIZE,
+  proveedoresHref,
+  type ProveedoresFilters,
+} from "@/lib/proveedores/query";
 import { providersDirectoryContent } from "@/lib/content/providers-directory";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +21,8 @@ type ProveedoresDirectoryProps = {
   readonly filters: ProveedoresFilters;
   /** Familias del catálogo, en su orden. Vacío si el catálogo no cargó. */
   readonly categories: readonly CategoryOption[];
+  /** Zonas con negocios. Vacío si no se pudieron leer: no se ofrece el filtro. */
+  readonly zones: readonly PartnerZone[];
   /** `null`: el backend falló y no había nada en caché. */
   readonly result: PartnersPage | null;
 };
@@ -31,22 +39,25 @@ const pillOff = "border-line bg-surface-subtle hover:border-brand-soft";
 
 /**
  * Rubros como links (`?rubro=`), no como estado de cliente: cada filtro es
- * una URL que funciona sin JS y se comparte. En mobile la fila scrollea de
- * costado dentro del gutter; desde `lg` hace wrap.
+ * una URL que funciona sin JS y se comparte. Cambiar de rubro conserva los
+ * demás filtros (búsqueda, zona) y vuelve a la página 1. En mobile la fila
+ * scrollea de costado dentro del gutter; desde `lg` hace wrap.
  */
 function CategoryFilter({
   categories,
-  active,
+  filters,
 }: {
   readonly categories: readonly CategoryOption[];
-  readonly active: string;
+  readonly filters: ProveedoresFilters;
 }) {
+  const active = filters.rubro;
+
   return (
     <nav aria-label={directory.filter.label} className="overflow-x-auto pb-1 lg:overflow-visible">
       <ul className="flex w-max gap-2.5 lg:w-auto lg:flex-wrap">
         <li>
           <Link
-            href={proveedoresHref({})}
+            href={proveedoresHref({ ...filters, rubro: "", pagina: 1 }, directory.id)}
             aria-current={active === "" ? "page" : undefined}
             className={cn(pill, active === "" ? pillOn : pillOff)}
           >
@@ -56,7 +67,7 @@ function CategoryFilter({
         {categories.map((category) => (
           <li key={category.slug}>
             <Link
-              href={proveedoresHref({ rubro: category.slug }, directory.id)}
+              href={proveedoresHref({ ...filters, rubro: category.slug, pagina: 1 }, directory.id)}
               aria-current={active === category.slug ? "page" : undefined}
               className={cn(pill, active === category.slug ? pillOn : pillOff)}
             >
@@ -73,18 +84,18 @@ const pageLink =
   "inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-field border px-3 text-[0.9375rem] font-semibold transition-colors";
 
 /**
- * Links numerados (`?pagina=n`, conservando el rubro) y no "cargar más": un
- * crawler sigue un `<a href>`, no aprieta un botón. Anterior/Siguiente quedan
- * a la vista pero apagados en los bordes (no son links: no hay a dónde ir).
+ * Links numerados (`?pagina=n`, conservando todos los filtros) y no "cargar
+ * más": un crawler sigue un `<a href>`, no aprieta un botón. Anterior/Siguiente
+ * quedan a la vista pero apagados en los bordes (no son links: no hay a dónde ir).
  */
 function Pagination({
   page,
   totalPages,
-  rubro,
+  filters,
 }: {
   readonly page: number;
   readonly totalPages: number;
-  readonly rubro: string;
+  readonly filters: ProveedoresFilters;
 }) {
   if (totalPages <= 1) return null;
 
@@ -109,7 +120,7 @@ function Pagination({
       </span>
     ) : (
       <Link
-        href={proveedoresHref({ rubro, pagina: target }, directory.id)}
+        href={proveedoresHref({ ...filters, pagina: target }, directory.id)}
         rel={icon === "arrow-left" ? "prev" : "next"}
         className={cn(pageLink, "border-line px-4 text-ink hover:border-brand-soft")}
       >
@@ -125,7 +136,7 @@ function Pagination({
         {Array.from({ length: totalPages }, (_, index) => index + 1).map((n) => (
           <li key={n}>
             <Link
-              href={proveedoresHref({ rubro, pagina: n }, directory.id)}
+              href={proveedoresHref({ ...filters, pagina: n }, directory.id)}
               aria-current={n === page ? "page" : undefined}
               aria-label={pagination.page(n)}
               className={cn(
@@ -145,24 +156,51 @@ function Pagination({
   );
 }
 
-/** Rubro sin negocios: la salida es pedir igual, o volver a todos. */
-function EmptyState({ category }: { readonly category: CategoryOption }) {
+/**
+ * Filtros sin negocios: la salida es pedir igual, o quitar los filtros. Un
+ * rubro solo (sin búsqueda) conserva su mensaje de siempre, que habla de la
+ * red; con una búsqueda se nombra lo buscado. Es el "no hay resultados" de
+ * verdad: una falla del servicio es `ErrorState`, nunca esto.
+ */
+function EmptyState({
+  filters,
+  categoryName,
+  zoneName,
+}: {
+  readonly filters: ProveedoresFilters;
+  /** Nombre del rubro activo; `undefined` si el catálogo no lo trajo. */
+  readonly categoryName: string | undefined;
+  /** Nombre de la zona activa; `undefined` sin zona. */
+  readonly zoneName: string | undefined;
+}) {
   const { empty } = directory;
+  const onlyCategory = categoryName !== undefined && filters.q === "" && filters.zona === "";
+  const title = onlyCategory
+    ? empty.title(categoryName)
+    : empty.titleFor({ q: filters.q, category: categoryName ?? "", zone: zoneName ?? "" });
+  const secondaryCta = onlyCategory ? empty.secondaryCta : empty.clearFilters;
 
   return (
     <div className="flex flex-col items-center gap-4 rounded-card border border-dashed border-ink/20 px-6 py-12 text-center">
-      <h3 className="font-display text-xl font-bold text-balance text-ink">
-        {empty.title(category.name)}
-      </h3>
+      <h3 className="font-display text-xl font-bold text-balance text-ink">{title}</h3>
       <p className="max-w-120 text-ink/70">{empty.body}</p>
       <div className="mt-2 flex flex-wrap justify-center gap-3">
         {/* `/pedido` pelado: sus valores de `?servicio=` son verticales
             (talleres, seguros…), no familias del catálogo. */}
-        <ButtonLink href={empty.primaryCta.href} className="min-h-11">
+        {/* La medición dice QUÉ filtros había (presencia), nunca su valor: ni
+            el texto buscado ni la zona (ver `lib/analytics/events.ts`). */}
+        <ButtonLink
+          href={empty.primaryCta.href}
+          className="min-h-11"
+          data-analytics-event="directory_empty_quote_clicked"
+          data-analytics-has-query={filters.q ? "" : undefined}
+          data-analytics-has-zone={filters.zona ? "" : undefined}
+          data-analytics-has-category={filters.rubro ? "" : undefined}
+        >
           {empty.primaryCta.label}
         </ButtonLink>
-        <ButtonLink href={empty.secondaryCta.href} variant="outline" className="min-h-11">
-          {empty.secondaryCta.label}
+        <ButtonLink href={`${secondaryCta.href}#${directory.id}`} variant="outline" className="min-h-11">
+          {secondaryCta.label}
         </ButtonLink>
       </div>
     </div>
@@ -197,8 +235,14 @@ function ErrorState({ retryHref }: { readonly retryHref: string }) {
  * "Toda la red": filtro por rubro, grilla de negocios y paginación. Server
  * Component: todo el directorio va en el HTML inicial.
  */
-export function ProveedoresDirectory({ filters, categories, result }: ProveedoresDirectoryProps) {
+export function ProveedoresDirectory({
+  filters,
+  categories,
+  zones,
+  result,
+}: ProveedoresDirectoryProps) {
   const activeCategory = categories.find((category) => category.slug === filters.rubro);
+  const activeZone = zones.find((zone) => zone.slug === filters.zona);
   const partners = result?.data ?? [];
   const categoryNames = new Map(categories.map((category) => [category.slug, category.name]));
 
@@ -221,17 +265,25 @@ export function ProveedoresDirectory({ filters, categories, result }: Proveedore
         {count ? <p className="shrink-0 text-sm font-medium text-ink/70 tabular-nums">{count}</p> : null}
       </div>
 
+      <div className="mt-8 max-w-160">
+        <ProveedoresSearch filters={filters} zones={zones} categoryName={activeCategory?.name} />
+      </div>
+
       {categories.length > 0 ? (
-        <div className="mt-8">
-          <CategoryFilter categories={categories} active={filters.rubro} />
+        <div className="mt-6">
+          <CategoryFilter categories={categories} filters={filters} />
         </div>
       ) : null}
 
       <div className="mt-10">
         {result === null ? (
           <ErrorState retryHref={proveedoresHref(filters, directory.id)} />
-        ) : partners.length === 0 && activeCategory ? (
-          <EmptyState category={activeCategory} />
+        ) : partners.length === 0 && hasActiveFilters(filters) ? (
+          <EmptyState
+            filters={filters}
+            categoryName={activeCategory?.name}
+            zoneName={activeZone?.name}
+          />
         ) : (
           <>
             {partners.length > 0 ? (
@@ -241,7 +293,7 @@ export function ProveedoresDirectory({ filters, categories, result }: Proveedore
                 ))}
               </ul>
             ) : null}
-            <Pagination page={filters.pagina} totalPages={result.totalPages} rubro={filters.rubro} />
+            <Pagination page={filters.pagina} totalPages={result.totalPages} filters={filters} />
           </>
         )}
       </div>

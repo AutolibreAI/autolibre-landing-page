@@ -98,6 +98,12 @@ Todos los eventos de PostHog llevan `app: "landing"`, y los de la sesión incluy
 | ----------------- | ------------------- | -------------------------------- | ---- | ------ |
 | Botones de tienda | `app_store_clicked` | `store`, `placement: "descarga"` | —    | Click  |
 
+### 🏪 `/proveedores`
+
+| Botón / zona                                                                            | Evento PostHog                  | Props                                               | Meta | Cuándo                                                                                                                                                             |
+| --------------------------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| "Pedir presupuesto" del estado vacío (búsqueda, zona o rubro sin negocios, no un error) | `directory_empty_quote_clicked` | `has_query?`, `has_zone?`, `has_category?` (`true`) | —    | Click. Dice qué filtros había, nunca su valor: ni el texto buscado ni la zona. Sirve para medir cuántas búsquedas sin resultados se rescatan pidiendo presupuesto |
+
 ---
 
 ## 4. `quote_submitted` en el server

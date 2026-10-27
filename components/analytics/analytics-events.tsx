@@ -51,6 +51,9 @@ const QUOTE_CTA_PLACEMENT_VALUES = new Set<string>(
  *   - `data-analytics-provider="mecanica-barrancas"` → `provider` (slug del
  *     perfil; si no tiene formato de slug, se omite).
  *   - `data-analytics-action="call"` → `action` de `provider_action_clicked`.
+ *   - `data-analytics-has-query` / `-has-zone` / `-has-category` →
+ *     `has_query` / `has_zone` / `has_category: true` (qué filtros tenía el
+ *     directorio de proveedores al quedar sin resultados; sólo presencia).
  *   `lead_source`, `store`, `action` y el `placement` de presupuesto sólo aceptan los
  *   valores del catálogo; el resto se ignora para que un typo no abra una
  *   fuente nueva en los reportes.
@@ -81,6 +84,9 @@ export function AnalyticsEvents() {
         props.placement = quotePlacement;
       }
       if (el.dataset.analyticsPedido !== undefined) props.pedido = true;
+      if (el.dataset.analyticsHasQuery !== undefined) props.has_query = true;
+      if (el.dataset.analyticsHasZone !== undefined) props.has_zone = true;
+      if (el.dataset.analyticsHasCategory !== undefined) props.has_category = true;
       const leadSource = el.dataset.analyticsLeadSource;
       if (leadSource && LEAD_SOURCE_VALUES.has(leadSource)) {
         props.lead_source = leadSource;

@@ -52,6 +52,13 @@ export const ANALYTICS_EVENTS = {
   quoteSubmitted: "quote_submitted",
   /** El envío del pedido falló (red o respuesta de error). Sólo PostHog. */
   quoteFailed: "quote_failed",
+  /**
+   * Click en "Pedir presupuesto" del estado vacío del directorio de
+   * proveedores (una búsqueda o un filtro sin negocios). Mide cuántas
+   * búsquedas sin resultados se rescatan. Sólo PostHog. Los props dicen QUÉ
+   * filtros había, nunca su valor: ni el texto buscado ni la zona.
+   */
+  directoryEmptyQuoteClicked: "directory_empty_quote_clicked",
 } as const;
 
 export type AnalyticsEventName =
@@ -156,6 +163,14 @@ export type AnalyticsEventProps = {
     reason: "network" | "server";
     status?: number;
   };
+  directory_empty_quote_clicked: {
+    /** Había una búsqueda por nombre. Sólo la presencia, nunca el texto. */
+    has_query?: true;
+    /** Había una zona elegida. Sólo la presencia, nunca cuál. */
+    has_zone?: true;
+    /** Había un rubro elegido. */
+    has_category?: true;
+  };
 };
 
 export type AnalyticsProps = Record<string, string | number | boolean>;
@@ -244,6 +259,11 @@ export const ANALYTICS_CATALOG: Record<AnalyticsEventName, CatalogEntry> = {
     posthog: "client",
     meta: () => null,
     clickable: false,
+  },
+  directory_empty_quote_clicked: {
+    posthog: "client",
+    meta: () => null,
+    clickable: true,
   },
 };
 

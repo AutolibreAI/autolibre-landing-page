@@ -355,14 +355,27 @@ function finiteNumber(value: unknown, fallback: number): number {
  * (una grilla vacia diria "no hay negocios", que es falso). Quien renderiza
  * atrapa el error y muestra el estado de error de la seccion, sin tirar abajo
  * el resto de la pagina.
+ *
+ * Con `q` (busqueda por nombre) la peticion NO pasa por el Data Cache de Next:
+ * el texto es libre, y cada busqueda distinta crearia una entrada de cache
+ * que nadie va a volver a pedir. El backend ya responde con su propio
+ * `Cache-Control`, y el volumen no pide mas. El costo: sin cache, un corte del
+ * backend no se tapa con una respuesta vieja y la busqueda muestra el estado
+ * de error (que es lo correcto: un error no es "sin resultados").
  */
 export async function fetchPartners({
   category,
+  q,
+  zone,
   page = 1,
   pageSize = 24,
 }: {
   /** Slug de familia del catalogo. Sin valor: todas. */
   readonly category?: string;
+  /** Texto a buscar en el nombre del negocio. Vacio o sin valor: no busca. */
+  readonly q?: string;
+  /** Slug de zona (de `fetchPartnerZones`). Sin valor: todas. */
+  readonly zone?: string;
   readonly page?: number;
   readonly pageSize?: number;
 }): Promise<PartnersPage> {
@@ -371,16 +384,65 @@ export async function fetchPartners({
     pageSize: String(Math.min(pageSize, PARTNERS_MAX_PAGE_SIZE)),
   });
   if (category) params.set("category", category);
+  if (q) params.set("q", q);
+  if (zone) params.set("zone", zone);
 
-  const response = await fetch(`${apiBaseUrl()}/api/v1/partner-profiles?${params}`, {
-    next: { revalidate: PARTNERS_REVALIDATE_SECONDS },
-  });
+  const response = await fetch(
+    `${apiBaseUrl()}/api/v1/partner-profiles?${params}`,
+    q ? { cache: "no-store" } : { next: { revalidate: PARTNERS_REVALIDATE_SECONDS } },
+  );
 
   if (!response.ok) {
     throw new Error(`[partners] el backend respondio ${response.status}.`);
   }
 
   return parsePartnersPage(await response.json());
+}
+
+/**
+ * Una zona del desplegable. `count` es la cantidad de negocios que muestra
+ * filtrar por ella, y ya incluye a los que cubren todo el pais.
+ */
+export interface PartnerZone {
+  readonly slug: string;
+  readonly name: string;
+  readonly count: number;
+}
+
+/**
+ * Las zonas con negocios, para el desplegable de `/proveedores` (el backend las
+ * deriva de la zona de cobertura de cada negocio, partida en trozos).
+ *
+ * Tira si el backend no contesta, igual que `fetchPartners`: quien renderiza lo
+ * atrapa y, sin la lista, NO ofrece el filtro por zona (el resto del
+ * directorio sigue andando). Es una lista chica y estable, asi que va al Data
+ * Cache una hora como el resto del directorio.
+ */
+export async function fetchPartnerZones(): Promise<PartnerZone[]> {
+  const response = await fetch(`${apiBaseUrl()}/api/v1/partner-profiles/facets/zones`, {
+    next: { revalidate: PARTNERS_REVALIDATE_SECONDS },
+  });
+
+  if (!response.ok) {
+    throw new Error(`[partners] las zonas respondieron ${response.status}.`);
+  }
+
+  return parsePartnerZones(await response.json());
+}
+
+/** Descarta las zonas sin `slug` o sin `name` (no se pueden elegir ni mostrar). */
+function parsePartnerZones(value: unknown): PartnerZone[] {
+  const rawData = isRecord(value) && Array.isArray(value.data) ? value.data : [];
+
+  return rawData
+    .map((raw): PartnerZone | null => {
+      if (!isRecord(raw)) return null;
+      const slug = text(raw.slug);
+      const name = text(raw.name);
+
+      return slug && name ? { slug, name, count: finiteNumber(raw.count, 0) } : null;
+    })
+    .filter((zone): zone is PartnerZone => zone !== null);
 }
 
 /**

@@ -7,8 +7,10 @@ import { ProviderBandSection } from "@/components/sections/home/provider-band";
 import { JsonLd } from "@/components/seo/json-ld";
 import {
   fetchActivePartnerCategories,
+  fetchPartnerZones,
   fetchPartners,
   fetchServiceCatalog,
+  type PartnerZone,
   type PartnersPage,
 } from "@/lib/autolibre-api";
 import {
@@ -31,9 +33,9 @@ import {
 const { title: TITLE, description: DESCRIPTION } = providersDirectoryContent.meta;
 
 /**
- * Metadata estática: TODAS las variantes (`?rubro=`, `?pagina=`) llevan
- * canonical `/proveedores`. Son recortes del mismo directorio, no páginas con
- * tema propio. Se quedan indexables (`index: true`) a propósito: un
+ * Metadata estática: TODAS las variantes (`?rubro=`, `?zona=`, `?q=`,
+ * `?pagina=`) llevan canonical `/proveedores`. Son recortes del mismo
+ * directorio, no páginas con tema propio. Se quedan indexables (`index: true`) a propósito: un
  * `noindex` con canonical a otra URL son dos señales que se contradicen, y
  * `createMetadata` ata `follow` a `index`, así que un `noindex` también
  * cortaría el seguimiento de los links a los perfiles de los negocios.
@@ -58,11 +60,27 @@ async function loadPartners(filters: ProveedoresFilters): Promise<PartnersPage |
   try {
     return await fetchPartners({
       category: filters.rubro || undefined,
+      q: filters.q || undefined,
+      zone: filters.zona || undefined,
       page: filters.pagina,
       pageSize: PROVEEDORES_PAGE_SIZE,
     });
   } catch (error) {
     console.error("[proveedores] no se pudo leer el directorio:", error);
+    return null;
+  }
+}
+
+/**
+ * Las zonas para el desplegable, sin tirar: si no se pueden leer (`null`) la
+ * página no ofrece el filtro por zona y un `?zona=` se ignora (no hay con qué
+ * validarlo), pero el directorio, la búsqueda y el rubro siguen andando.
+ */
+async function loadZones(): Promise<PartnerZone[] | null> {
+  try {
+    return await fetchPartnerZones();
+  } catch (error) {
+    console.error("[proveedores] no se pudieron leer las zonas:", error);
     return null;
   }
 }
@@ -78,9 +96,10 @@ async function loadPartners(filters: ProveedoresFilters): Promise<PartnersPage |
  * (1 h), esperar no cuesta: no hay skeleton porque no hay espera que tapar.
  */
 export default async function ProveedoresPage({ searchParams }: PageProps) {
-  const [catalog, activeSlugs] = await Promise.all([
+  const [catalog, activeSlugs, zones] = await Promise.all([
     fetchServiceCatalog(),
     fetchActivePartnerCategories(),
+    loadZones(),
   ]);
   const allCategories = (catalog ?? []).map(({ slug, name }) => ({ slug, name }));
   // Solo las familias con al menos un negocio, en el orden del catálogo. Sin
@@ -95,6 +114,7 @@ export default async function ProveedoresPage({ searchParams }: PageProps) {
   const filters = parseProveedoresFilters(
     await searchParams,
     new Set(allCategories.map((category) => category.slug)),
+    zones ? new Set(zones.map((zone) => zone.slug)) : null,
   );
   const directoryCategories = categories.some((category) => category.slug === filters.rubro)
     ? categories
@@ -134,7 +154,12 @@ export default async function ProveedoresPage({ searchParams }: PageProps) {
     <>
       <PageShell currentPath={PROVEEDORES_PATH}>
         <ProveedoresHero activeCategoryCount={activeCategoryCount} />
-        <ProveedoresDirectory filters={filters} categories={directoryCategories} result={result} />
+        <ProveedoresDirectory
+          filters={filters}
+          categories={directoryCategories}
+          zones={zones ?? []}
+          result={result}
+        />
         <ProviderBandSection />
       </PageShell>
 
