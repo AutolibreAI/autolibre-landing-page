@@ -5,7 +5,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/heading";
 import { Icon } from "@/components/ui/icon";
 import { Section } from "@/components/ui/section";
-import type { PartnersPage } from "@/lib/autolibre-api";
+import type { PartnerZone, PartnersPage } from "@/lib/autolibre-api";
 import {
   hasActiveFilters,
   PROVEEDORES_PAGE_SIZE,
@@ -21,6 +21,8 @@ type ProveedoresDirectoryProps = {
   readonly filters: ProveedoresFilters;
   /** Familias del catálogo, en su orden. Vacío si el catálogo no cargó. */
   readonly categories: readonly CategoryOption[];
+  /** Zonas con negocios. Vacío si no se pudieron leer: no se ofrece el filtro. */
+  readonly zones: readonly PartnerZone[];
   /** `null`: el backend falló y no había nada en caché. */
   readonly result: PartnersPage | null;
 };
@@ -163,16 +165,19 @@ function Pagination({
 function EmptyState({
   filters,
   categoryName,
+  zoneName,
 }: {
   readonly filters: ProveedoresFilters;
   /** Nombre del rubro activo; `undefined` si el catálogo no lo trajo. */
   readonly categoryName: string | undefined;
+  /** Nombre de la zona activa; `undefined` sin zona. */
+  readonly zoneName: string | undefined;
 }) {
   const { empty } = directory;
   const onlyCategory = categoryName !== undefined && filters.q === "" && filters.zona === "";
   const title = onlyCategory
     ? empty.title(categoryName)
-    : empty.titleFor({ q: filters.q, category: categoryName ?? "", zone: "" });
+    : empty.titleFor({ q: filters.q, category: categoryName ?? "", zone: zoneName ?? "" });
   const secondaryCta = onlyCategory ? empty.secondaryCta : empty.clearFilters;
 
   return (
@@ -182,7 +187,16 @@ function EmptyState({
       <div className="mt-2 flex flex-wrap justify-center gap-3">
         {/* `/pedido` pelado: sus valores de `?servicio=` son verticales
             (talleres, seguros…), no familias del catálogo. */}
-        <ButtonLink href={empty.primaryCta.href} className="min-h-11">
+        {/* La medición dice QUÉ filtros había (presencia), nunca su valor: ni
+            el texto buscado ni la zona (ver `lib/analytics/events.ts`). */}
+        <ButtonLink
+          href={empty.primaryCta.href}
+          className="min-h-11"
+          data-analytics-event="directory_empty_quote_clicked"
+          data-analytics-has-query={filters.q ? "" : undefined}
+          data-analytics-has-zone={filters.zona ? "" : undefined}
+          data-analytics-has-category={filters.rubro ? "" : undefined}
+        >
           {empty.primaryCta.label}
         </ButtonLink>
         <ButtonLink href={`${secondaryCta.href}#${directory.id}`} variant="outline" className="min-h-11">
@@ -221,8 +235,14 @@ function ErrorState({ retryHref }: { readonly retryHref: string }) {
  * "Toda la red": filtro por rubro, grilla de negocios y paginación. Server
  * Component: todo el directorio va en el HTML inicial.
  */
-export function ProveedoresDirectory({ filters, categories, result }: ProveedoresDirectoryProps) {
+export function ProveedoresDirectory({
+  filters,
+  categories,
+  zones,
+  result,
+}: ProveedoresDirectoryProps) {
   const activeCategory = categories.find((category) => category.slug === filters.rubro);
+  const activeZone = zones.find((zone) => zone.slug === filters.zona);
   const partners = result?.data ?? [];
   const categoryNames = new Map(categories.map((category) => [category.slug, category.name]));
 
@@ -246,7 +266,7 @@ export function ProveedoresDirectory({ filters, categories, result }: Proveedore
       </div>
 
       <div className="mt-8 max-w-160">
-        <ProveedoresSearch filters={filters} />
+        <ProveedoresSearch filters={filters} zones={zones} categoryName={activeCategory?.name} />
       </div>
 
       {categories.length > 0 ? (
@@ -259,7 +279,11 @@ export function ProveedoresDirectory({ filters, categories, result }: Proveedore
         {result === null ? (
           <ErrorState retryHref={proveedoresHref(filters, directory.id)} />
         ) : partners.length === 0 && hasActiveFilters(filters) ? (
-          <EmptyState filters={filters} categoryName={activeCategory?.name} />
+          <EmptyState
+            filters={filters}
+            categoryName={activeCategory?.name}
+            zoneName={activeZone?.name}
+          />
         ) : (
           <>
             {partners.length > 0 ? (

@@ -33,7 +33,9 @@ No quedan `NEEDS CLARIFICATION` en el Technical Context. Este documento registra
 
 ### D3 — La zona es una faceta derivada de `coverage_zone`, con parámetro propio (`zone`) y **no** reutiliza `locality`
 
-- **Decision**: la clave de zona es `coverage_zone` normalizado (D2) con todo lo no alfanumérico convertido en `-` (ej. `"Zona Norte "` → `zona-norte`). El endpoint de faceta devuelve `{ slug, name, count }` agrupando por esa clave; `name` es la variante cruda más frecuente (desempate alfabético). `zone=<slug>` filtra por igualdad. Quedan fuera las zonas vacías.
+> **Revisada tras el Gate G1 (2026-10-27):** la auditoría mostró que usar la celda entera no sirve (ver _Resultado de la auditoría_). La decisión vigente, aprobada por el usuario, es **separar cada celda en zonas sueltas**: coma, barra, punto y coma o " y " (sin importar mayúsculas), cada trozo normalizado como clave. Un negocio aparece en cada zona que declara; "Nacional" y "Todo el país" lo hacen aparecer en TODAS las zonas (y suman a todos los conteos, para que el número del desplegable sea el del listado) y no son una opción por sí mismos; "A confirmar" no es zona y no matchea nunca. No se infiere jerarquía ("Tigre" y "Zona Norte" son opciones distintas). Implementación: `normalize-zone.ts` (TypeScript, oráculo de tests) y `drizzle-partner-profile.reader.ts` (SQL, `regexp_split_to_table`). La redacción original de abajo queda como historia.
+
+- **Decision (original)**: la clave de zona es `coverage_zone` normalizado (D2) con todo lo no alfanumérico convertido en `-` (ej. `"Zona Norte "` → `zona-norte`). El endpoint de faceta devuelve `{ slug, name, count }` agrupando por esa clave; `name` es la variante cruda más frecuente (desempate alfabético). `zone=<slug>` filtra por igualdad. Quedan fuera las zonas vacías.
 - **Rationale**: respeta H2 — el parámetro `locality` y el campo `locality: null` del perfil **no se tocan** (siguen significando "localidad estructurada, todavía inexistente"). La zona de cobertura es otra cosa (a dónde llega el negocio) y se expone como faceta explícita de lo que es: texto normalizado. Colapsa las variantes triviales (mayúsculas, tildes, espacios) sin inventar una taxonomía.
 - **Alternatives**: (a) reusar `locality` — rechazado por H2, contradice una decisión escrita del equipo de backend. (b) tabla/enum de zonas con backfill — es la normalización "real", pero es trabajo de datos y de producto fuera de este ticket; queda como camino de escape (ver Gate G1). (c) matching por distancia con latitud/longitud — descartado por la clarificación (sin "cerca de mí").
 
@@ -72,9 +74,28 @@ No quedan `NEEDS CLARIFICATION` en el Technical Context. Este documento registra
 
 ### D10 — Medición (SC-007)
 
-- **Decision**: reutilizar el listener delegado de `lib/analytics` con atributos `data-*` en el CTA "Pedir presupuesto" del estado vacío (evento nuevo en el catálogo, con `source: directory_empty` y la existencia de `q`/`zona`, sin el texto buscado). Confirmar en `events.ts` el contrato exacto antes de implementar (tarea T-analytics).
+- **Decision (implementada, T031)**: evento nuevo `directory_empty_quote_clicked` en el catálogo (`lib/analytics/events.ts`, `clickable`, sólo PostHog) y atributos `data-analytics-has-query` / `-has-zone` / `-has-category` en el CTA del estado vacío; el listener delegado los convierte en props booleanas `true`. El catálogo prohíbe datos personales en los props ("ni zona, ni lo que la persona escribe"), así que viaja sólo la presencia de cada filtro, nunca su valor. Documentado en `analytics.md`. PostHog no está configurado en local: se verificaron los atributos del DOM y el tipado, no el envío real.
 - **Rationale**: sin texto de búsqueda en eventos (privacidad) alcanza para "cuántas búsquedas fallidas se rescatan".
 
 ## Resultado de la auditoría (Gate G1)
 
-_Pendiente. Ejecutar la consulta de `quickstart.md` § Auditoría sobre producción (sólo lectura) y pegar acá: cantidad de valores crudos, de zonas normalizadas, celdas con varias zonas y las 10 zonas con más negocios._
+Ejecutada el 2026-10-27, **sólo lectura, contra la base de desarrollo** del `.env` del backend (no producción; conviene repetirla en producción antes de publicar la zona):
+
+| Medida | Valor |
+|--------|-------|
+| Negocios activos | 37 |
+| Valores crudos distintos | 28 |
+| Zonas normalizadas distintas (celda entera) | **28** (normalizar mayúsculas/tildes no colapsó ninguna) |
+| Sin zona útil | 0 |
+| Celdas con varias zonas (`,` `/` ` y `) | **12 de 37** |
+| Zonas con 2+ negocios | 5 (Tigre 5, "A confirmar" 2, "Boulogne / Villa Adelina" 2, "CABA, Zona Norte" 2, "GBA NORTE" 2, "Nacional" 2) |
+
+Hallazgos: el mismo conjunto aparece con distinto orden ("Zona Oeste / Zona Norte" y "Zona Norte, Zona Oeste"); hay valores que no son una zona ("A confirmar", 2 negocios) y alcances nacionales ("Nacional" 2, "Todo el país" 1); y mezclas de localidad + provincia ("General Rodríguez, Buenos Aires").
+
+**El gate (≤ 25 zonas, sin celdas multizona) no pasó.** Decisión del usuario (2026-10-27): separar en zonas sueltas (D3 revisada). Resultado con esa regla sobre los mismos datos: **22 zonas** (AMBA, Benavidez, Boulogne, Buenos Aires, CABA, GBA NORTE, General Pacheco, General Rodríguez, Hurlingham, Mar del Plata, Munro, Olivos, Pilar, Quilmes, San Isidro, Tigre, Troncos del Talar, Villa Adelina, Villa Ballester, Zona Norte, Zona Oeste, Zona Sur).
+
+Consecuencias a tener presentes:
+- Los 3 negocios nacionales suman a **todos** los conteos: ninguna zona muestra menos de 4 aunque tenga un solo negocio local. Es coherente con el listado, pero el número del desplegable no es "negocios de la zona" a secas.
+- "Buenos Aires" (provincia) queda como una zona más, mezclada con localidades.
+- "Tigre" y "Zona Norte" son opciones separadas: quien elige "Zona Norte" no ve a quien declaró sólo "Tigre". Resolverlo pide una tabla de zonas estructurada (otro ticket).
+- Repetir la auditoría en producción antes de publicar: los datos de desarrollo pueden diferir.

@@ -141,3 +141,25 @@ describe("hasActiveFilters", () => {
     assert.equal(hasActiveFilters({ rubro: "", zona: "", q: "perez", pagina: 1 }), true);
   });
 });
+
+describe("combinación de rubro, zona y texto", () => {
+  const all = { rubro: "frenos", zona: "zona-norte", q: "perez", pagina: 3 };
+
+  it("los tres filtros y la página hacen round-trip por la URL", () => {
+    const url = new URL(proveedoresHref(all), "https://autolibre.test");
+
+    assert.deepEqual(parseProveedoresFilters(Object.fromEntries(url.searchParams), RUBROS, ZONAS), all);
+  });
+
+  it("quitar cada filtro conserva los otros dos y vuelve a la página 1", () => {
+    assert.equal(proveedoresHref({ ...all, rubro: "", pagina: 1 }), "/proveedores?zona=zona-norte&q=perez");
+    assert.equal(proveedoresHref({ ...all, zona: "", pagina: 1 }), "/proveedores?rubro=frenos&q=perez");
+    assert.equal(proveedoresHref({ ...all, q: "", pagina: 1 }), "/proveedores?rubro=frenos&zona=zona-norte");
+  });
+
+  it("una zona que el backend ya no devuelve se lee como todas, sin tocar los otros filtros", () => {
+    const filters = parseProveedoresFilters({ rubro: "frenos", zona: "ya-no-existe", q: "perez" }, RUBROS, ZONAS);
+
+    assert.deepEqual(filters, { rubro: "frenos", zona: "", q: "perez", pagina: 1 });
+  });
+});

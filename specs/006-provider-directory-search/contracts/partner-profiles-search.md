@@ -9,7 +9,7 @@ Parámetros nuevos (los existentes `page`, `pageSize`, `category`, `locality` no
 | Parámetro | Tipo | Validación | Semántica |
 |-----------|------|------------|-----------|
 | `q` | string | opcional, `trim`, ≤ 80 caracteres; vacío = ausente | Negocios cuyo **nombre** contiene el texto, sin distinguir mayúsculas ni tildes. Literal: `%`, `_` y `\` no son comodines. |
-| `zone` | string | opcional, `^[a-z0-9]+(-[a-z0-9]+)*$`, ≤ 120 | Negocios cuya zona normalizada (slug) es exactamente `zone`. Un slug desconocido devuelve lista vacía, no error. |
+| `zone` | string | opcional, `^[a-z0-9]+(-[a-z0-9]+)*$`, ≤ 120 | Negocios que declaran esa zona en alguno de los trozos de su zona de cobertura (igualdad de slug, nunca prefijo), **más los que cubren todo el país** ("Nacional", "Todo el país"). Un slug que nadie declara devuelve sólo a los nacionales (no es un error); `a-confirmar` no devuelve nada. |
 
 Combinación: `category`, `q` y `zone` son un `AND`. Orden sin cambios (`tier`, `name`, `slug`). `total` y `totalPages` son los del resultado filtrado.
 
@@ -25,7 +25,7 @@ GET /api/v1/partner-profiles?q=100%25     # busca el texto literal "100%"
 
 ## `GET /api/v1/partner-profiles/facets/zones` (nuevo)
 
-Sin parámetros. Zonas con al menos un negocio activo, ordenadas por `name` (ascendente, sin distinguir tildes).
+Sin parámetros. Zonas con al menos un negocio activo, ordenadas por `name` (ascendente, sin tildes ni mayúsculas, por código de carácter). Cada zona sale de partir la zona de cobertura de los negocios (coma, barra, `;`, " y "). `count` es igual al `total` de `GET /partner-profiles?zone=<slug>`: incluye a los negocios que cubren todo el país, que no son una zona por sí mismos; los valores "a confirmar" se ignoran.
 
 ```json
 {

@@ -38,6 +38,9 @@ const STORE_VALUES = new Set<string>(Object.values(APP_STORES));
  *   - `data-analytics-lead-source="whatsapp"` → `lead_source` (de qué camino
  *     vino el `Lead`).
  *   - `data-analytics-store="app_store"` → `store`.
+ *   - `data-analytics-has-query` / `-has-zone` / `-has-category` →
+ *     `has_query` / `has_zone` / `has_category: true` (qué filtros tenía el
+ *     directorio de proveedores al quedar sin resultados; sólo presencia).
  *   `lead_source` y `store` sólo aceptan los valores del catálogo; el resto
  *   se ignora para que un typo no abra una fuente nueva en los reportes.
  *   Nunca datos personales.
@@ -63,6 +66,9 @@ export function AnalyticsEvents() {
       const placement = el.dataset.analyticsPlacement;
       if (placement) props.placement = placement;
       if (el.dataset.analyticsPedido !== undefined) props.pedido = true;
+      if (el.dataset.analyticsHasQuery !== undefined) props.has_query = true;
+      if (el.dataset.analyticsHasZone !== undefined) props.has_zone = true;
+      if (el.dataset.analyticsHasCategory !== undefined) props.has_category = true;
       const leadSource = el.dataset.analyticsLeadSource;
       if (leadSource && LEAD_SOURCE_VALUES.has(leadSource)) {
         props.lead_source = leadSource;

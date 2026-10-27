@@ -31,10 +31,16 @@ export interface PartnerZone {
 
 ## Zona (backend, derivada)
 
-- **Clave (`zoneKey`)**: `btrim(regexp_replace(translate(lower(coverage_zone), <acentos>, <base>), '[^a-z0-9]+', '-', 'g'), '-')`.
-- **Slug de la faceta** = `zoneKey`. Vacío (`''`) ⇒ el negocio no tiene zona utilizable: no entra a la faceta y no matchea ningún `zone=`.
-- **Etiqueta** = variante cruda (`btrim(coverage_zone)`) más frecuente dentro del grupo; empate ⇒ orden alfabético.
-- **Cuenta** = `count(*)` de negocios `active` (con slug vigente, igual que el listado).
+Revisado tras el Gate G1 (ver `research.md` D3): la celda de `coverage_zone` se **parte en zonas sueltas**.
+
+- **Partición**: por coma, barra, punto y coma o " y " (sin importar mayúsculas) — `ZONE_SEPARATOR_SQL` en `normalize-zone.ts`. Cada trozo, recortado, es una zona candidata; los vacíos se descartan y una clave se cuenta una vez por negocio.
+- **Clave (`zoneKey`)** de cada trozo: sin tildes (tabla única de `normalize-search-text.ts`, mayúsculas incluidas), en minúsculas, todo lo que no es letra o número a un guion, sin guiones en los bordes. `"General Rodríguez"` → `general-rodriguez`.
+- **Slug de la faceta** = `zoneKey`.
+- **Nacionales** (`nacional`, `todo-el-pais`): el negocio matchea CUALQUIER `zone=` y suma a todos los conteos; no son una opción del desplegable.
+- **Placeholders** (`a-confirmar`): no son zona, no entran a la faceta y `zone=a-confirmar` no devuelve nada.
+- **Etiqueta** = variante cruda del trozo más frecuente dentro del grupo (`mode()`); empate ⇒ la primera por orden.
+- **Cuenta** = negocios `active` (con slug vigente, igual que el listado) que declaran la zona, más los nacionales (sin duplicar): es igual al `total` de `GET /partner-profiles?zone=<slug>`.
+- **Orden** de la faceta: nombre sin tildes en minúsculas, por código de carácter (`collate "C"`), desempate por slug.
 
 Relación con el modelo existente: no se agrega nada a `PartnerProfileSummary` (su `locality` sigue `null`, ver `research.md` H2).
 
