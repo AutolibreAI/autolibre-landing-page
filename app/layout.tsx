@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { DM_Sans, Outfit } from "next/font/google";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import { AnalyticsEvents } from "@/components/analytics/analytics-events";
 import { WhatsappFab } from "@/components/layout/whatsapp-fab";
 import { META_PIXEL_ID } from "@/lib/analytics/meta-pixel";
@@ -160,6 +161,7 @@ export default function RootLayout({
           <Script src="https://connect.facebook.net/en_US/fbevents.js" strategy="lazyOnload" />
         )}
         {(metaPixelScript || POSTHOG_ENABLED) && <AnalyticsEvents />}
+        <Analytics />
       </body>
     </html>
   );
