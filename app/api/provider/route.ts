@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { submitPartnerApplication } from "@/lib/autolibre-api";
+import { providersContent } from "@/lib/content/providers";
+import {
+  PROVIDER_LOGO_MAX_BYTES,
+  validBrandSelection,
+} from "@/lib/proveedores/registration";
 
 /**
  * Alta de un taller que quiere ser partner.
@@ -83,7 +88,15 @@ const asOptionalModality = (value: unknown): Modality | undefined =>
     : undefined;
 
 export async function POST(req: NextRequest) {
-  const body = (await req.json()) as Record<string, unknown>;
+  let body: Record<string, unknown>;
+  try {
+    const parsed: unknown = await req.json();
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
+      throw new Error();
+    body = parsed as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ error: MESSAGES.invalid }, { status: 400 });
+  }
 
   const businessName = asOptionalString(body.taller);
   const whatsapp = asOptionalString(body.whatsapp);
@@ -94,12 +107,36 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: MESSAGES.missing }, { status: 400 });
   }
 
-  // `brand_specialized` NO se reenvia: el backend lo DERIVA de si vinieron
-  // marcas o no. En el legacy eran tres campos diciendo lo mismo (`brands`,
-  // `brand_specialized`, `specialized_brands`) y podian contradecirse entre si.
-  // Acá se traduce a lo unico que importa: si el taller dijo que trabaja todas
-  // las marcas, no se manda ninguna.
-  const worksAllBrands = body.brand_specialized === "no";
+  // Conserva compatibilidad con formularios abiertos antes de este deploy.
+  const hasBrandCoverage = typeof body.works_all_brands === "boolean";
+  const worksAllBrands = hasBrandCoverage
+    ? body.works_all_brands === true
+    : body.brand_specialized === "no";
+  const declaredBrands = worksAllBrands ? [] : asStringArray(body.brands);
+  const specializedBrands = asStringArray(body.specialized_brands);
+  if (
+    hasBrandCoverage &&
+    !validBrandSelection(worksAllBrands, declaredBrands, specializedBrands)
+  ) {
+    return NextResponse.json(
+      { error: providersContent.form.brands.invalid },
+      { status: 400 },
+    );
+  }
+  const logoDataUrl = asOptionalString(body.logo_data_url);
+  if (
+    logoDataUrl &&
+    (!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(
+      logoDataUrl,
+    ) ||
+      Buffer.byteLength(logoDataUrl.split(",")[1], "base64") >
+        PROVIDER_LOGO_MAX_BYTES)
+  ) {
+    return NextResponse.json(
+      { error: providersContent.form.logo.invalid },
+      { status: 400 },
+    );
+  }
 
   // Geocode de `address`, capturado en el cliente al elegir una sugerencia de
   // Google Places. Los cuatro viajan juntos o ninguno (el formulario ya lo
@@ -121,7 +158,9 @@ export async function POST(req: NextRequest) {
     email,
     address,
     declaredServices: asStringArray(body.services),
-    declaredBrands: worksAllBrands ? [] : asStringArray(body.brands),
+    declaredBrands,
+    ...(hasBrandCoverage ? { worksAllBrands, specializedBrands } : {}),
+    ...(logoDataUrl ? { logoDataUrl } : {}),
     declaredFuelTypes: asStringArray(body.fuel_types),
     // Estos tres se perdian dentro de la celda "Notas". Ahora tienen columna.
     vehicleTypes: asStringArray(body.vehicle_types),

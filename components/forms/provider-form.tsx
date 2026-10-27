@@ -16,6 +16,11 @@ import { FormError, FormSuccess } from "@/components/ui/form-feedback";
 import { ButtonLink } from "@/components/ui/button";
 import type { ServiceFamilyOption } from "@/lib/autolibre-api";
 import {
+  PROVIDER_LOGO_TYPES,
+  validBrandSelection,
+  validProviderLogo,
+} from "@/lib/proveedores/registration";
+import {
   EMPTY_GEO,
   findAddressComponent,
   GOOGLE_MAPS_API_KEY,
@@ -47,7 +52,8 @@ const GENERIC_ERROR = "Algo salió mal. Por favor intentá de nuevo.";
  * Alta de proveedores.
  *
  * Contrato con la API (no cambiar sin migrar `/api/provider`): POST { taller,
- * whatsapp, email, direccion, brand_specialized, brands[], services[],
+ * whatsapp, email, direccion, works_all_brands, brands[], specialized_brands[],
+ * logo_data_url (opcional), services[],
  * service_other, vehicle_types[], fuel_types[], how_found, how_found_other }.
  *
  * El destino de esos datos ya NO es la Google Sheet: `/api/provider` los manda
@@ -109,10 +115,13 @@ export function ProviderForm({
   const [alreadyRegistered, setAlreadyRegistered] = useState<string | null>(
     null,
   );
-  const [brandSpecialized, setBrandSpecialized] = useState<"yes" | "no" | null>(
-    null,
-  );
+  const [worksAllBrands, setWorksAllBrands] = useState(true);
   const [brands, setBrands] = useState<string[]>([]);
+  const [specializedBrands, setSpecializedBrands] = useState<string[]>([]);
+  const [logo, setLogo] = useState<File | null>(null);
+  const [logoError, setLogoError] = useState<string | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const brandsRef = useRef<HTMLFieldSetElement>(null);
   /**
    * Slugs de RUBRO del catalogo (`frenos`, `gomeria`, `patentamiento`).
    * Nunca labels, nunca familias, nunca el "Otro" — ese ultimo va aparte.
@@ -244,8 +253,7 @@ export function ProviderForm({
    * "Otro" con texto cuenta como declarar: si el taller hace algo que el
    * catalogo no cubre, la respuesta correcta es dejarlo pasar, no trabarlo.
    */
-  const hasDeclaredServices =
-    services.length > 0 || otherService.trim() !== "";
+  const hasDeclaredServices = services.length > 0 || otherService.trim() !== "";
   /**
    * Derivado, no un `useState` que haya que limpiar a mano en cada uno de los
    * tres lugares donde se puede declarar un servicio. Apenas la persona marca
@@ -306,7 +314,18 @@ export function ProviderForm({
     // Ojo: el <form> va con `noValidate`, asi que los `required` de los inputs
     // son semantica para lectores de pantalla y no cortan nada. Lo unico que
     // frena el envio es este return.
-    if (addressInvalid || !hasDeclaredServices) return;
+    const brandsInvalid = !validBrandSelection(
+      worksAllBrands,
+      brands,
+      specializedBrands,
+    );
+    if (addressInvalid || !hasDeclaredServices || brandsInvalid || logoError) {
+      if (!addressInvalid && hasDeclaredServices) {
+        if (logoError) logoInputRef.current?.focus();
+        else if (brandsInvalid) brandsRef.current?.focus();
+      }
+      return;
+    }
 
     setSubmitState("loading");
     setErrorMessage(GENERIC_ERROR);
@@ -325,6 +344,25 @@ export function ProviderForm({
     ).value.trim();
 
     try {
+      let logoDataUrl: string | undefined;
+      if (logo) {
+        try {
+          logoDataUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () =>
+              typeof reader.result === "string"
+                ? resolve(reader.result)
+                : reject();
+            reader.onerror = () => reject();
+            reader.onabort = () => reject();
+            reader.readAsDataURL(logo);
+          });
+        } catch {
+          setErrorMessage(providersContent.form.logo.readError);
+          setSubmitState("error");
+          return;
+        }
+      }
       const response = await fetch("/api/provider", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -333,8 +371,10 @@ export function ProviderForm({
           whatsapp,
           email,
           direccion,
-          brand_specialized: brandSpecialized,
-          brands,
+          works_all_brands: worksAllBrands,
+          brands: worksAllBrands ? [] : brands,
+          specialized_brands: specializedBrands,
+          ...(logoDataUrl ? { logo_data_url: logoDataUrl } : {}),
           services,
           service_other: otherService || null,
           vehicle_types: vehicleTypes,
@@ -423,6 +463,54 @@ export function ProviderForm({
             />
           </Field>
 
+          <Field
+            label={providersContent.form.logo.label}
+            htmlFor="prov-logo"
+            hint={providersContent.form.logo.hint}
+            hintId="prov-logo-hint"
+            error={logoError}
+            errorId="prov-logo-error"
+          >
+            <Input
+              id="prov-logo"
+              name="logo"
+              type="file"
+              ref={logoInputRef}
+              accept={PROVIDER_LOGO_TYPES.join(",")}
+              disabled={submitState === "loading"}
+              className="min-h-11 text-base"
+              aria-invalid={logoError !== null}
+              aria-describedby={
+                logoError
+                  ? "prov-logo-hint prov-logo-error"
+                  : "prov-logo-hint"
+              }
+              onChange={(event) => {
+                const file = event.target.files?.[0] ?? null;
+                setLogo(file && validProviderLogo(file) ? file : null);
+                setLogoError(
+                  file && !validProviderLogo(file)
+                    ? providersContent.form.logo.invalid
+                    : null,
+                );
+              }}
+            />
+            {logo || logoError ? (
+              <button
+                type="button"
+                className="min-h-11 self-start text-sm font-semibold text-brand underline underline-offset-4"
+                disabled={submitState === "loading"}
+                onClick={() => {
+                  setLogo(null);
+                  setLogoError(null);
+                  if (logoInputRef.current) logoInputRef.current.value = "";
+                }}
+              >
+                {providersContent.form.logo.remove}
+              </button>
+            ) : null}
+          </Field>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="WhatsApp de contacto" htmlFor="prov-phone" required>
               <Input
@@ -481,7 +569,10 @@ export function ProviderForm({
             ) : null}
           </Field>
 
-          <Field label={providersContent.form.hoursLabel} htmlFor="prov-hours">
+          <Field
+            label={providersContent.form.hoursLabel}
+            htmlFor="prov-hours"
+          >
             <Input
               id="prov-hours"
               name="hours"
@@ -505,34 +596,52 @@ export function ProviderForm({
             </div>
           </FieldGroup>
 
-          <FieldGroup title="Trabajan con marcas específicas?">
+          <fieldset
+            ref={brandsRef}
+            tabIndex={-1}
+            className="border-t border-line pt-5"
+          >
+            <legend className="font-display text-base font-bold text-ink">
+              {providersContent.form.brands.title}
+            </legend>
             <div className="flex flex-col gap-2">
               <ChoiceRow
                 type="radio"
-                name="brand_specialized"
-                label="No, trabajamos todas las marcas"
-                checked={brandSpecialized === "no"}
-                onChange={() => {
-                  setBrandSpecialized("no");
-                  setBrands([]);
-                }}
+                name="works_all_brands"
+                label={providersContent.form.brands.all}
+                checked={worksAllBrands}
+                onChange={() => setWorksAllBrands(true)}
               />
               <ChoiceRow
                 type="radio"
-                name="brand_specialized"
-                label="Sí, me especializo en marcas específicas"
-                checked={brandSpecialized === "yes"}
-                onChange={() => setBrandSpecialized("yes")}
+                name="works_all_brands"
+                label={providersContent.form.brands.specific}
+                checked={!worksAllBrands}
+                onChange={() => {
+                  setWorksAllBrands(false);
+                  setSpecializedBrands(
+                    specializedBrands.filter((brand) =>
+                      brands.includes(brand),
+                    ),
+                  );
+                }}
               />
             </div>
 
-            {brandSpecialized === "yes" ? (
+            {!worksAllBrands ? (
               <div className="mt-3 flex flex-col gap-2">
                 <label htmlFor="prov-brand-picker" className="sr-only">
-                  Agregar una marca
+                  {providersContent.form.brands.picker}
                 </label>
                 <Select
                   id="prov-brand-picker"
+                  className="min-h-11 text-base"
+                  aria-invalid={submitAttempted && brands.length === 0}
+                  aria-describedby={
+                    submitAttempted && brands.length === 0
+                      ? "prov-brands-error"
+                      : undefined
+                  }
                   value=""
                   onChange={(event) => {
                     const value = event.target.value;
@@ -542,7 +651,7 @@ export function ProviderForm({
                   }}
                 >
                   <option value="" disabled>
-                    Seleccioná una marca para agregar
+                    {providersContent.form.brands.placeholder}
                   </option>
                   {PROVIDER_BRANDS.filter(
                     (brand) => !brands.includes(brand),
@@ -563,11 +672,20 @@ export function ProviderForm({
                         {brand}
                         <button
                           type="button"
-                          aria-label={`Quitar ${brand}`}
-                          onClick={() =>
-                            setBrands(brands.filter((item) => item !== brand))
-                          }
-                          className="flex size-4 items-center justify-center rounded-full bg-ink/10 text-ink/60 transition-colors hover:bg-alert-bg hover:text-alert-fg"
+                          aria-label={providersContent.form.brands.remove(
+                            brand,
+                          )}
+                          onClick={() => {
+                            setBrands(
+                              brands.filter((item) => item !== brand),
+                            );
+                            setSpecializedBrands(
+                              specializedBrands.filter(
+                                (item) => item !== brand,
+                              ),
+                            );
+                          }}
+                          className="flex size-11 items-center justify-center rounded-full bg-ink/10 text-ink/60 transition-colors hover:bg-alert-bg hover:text-alert-fg"
                         >
                           <svg
                             width="9"
@@ -587,19 +705,53 @@ export function ProviderForm({
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-xs text-ink/65 italic">
-                    Agregá al menos una marca para continuar.
+                  <p
+                    id="prov-brands-error"
+                    role={submitAttempted ? "alert" : undefined}
+                    className={
+                      submitAttempted
+                        ? "text-sm text-danger"
+                        : "text-sm text-ink/65"
+                    }
+                  >
+                    {providersContent.form.brands.missing}
                   </p>
                 )}
               </div>
             ) : null}
+          </fieldset>
 
-            {brandSpecialized === "no" ? (
-              <p className="mt-2 text-[0.8125rem] font-semibold text-brand">
-                Se registrará que el taller trabaja con todas las marcas.
-              </p>
-            ) : null}
-          </FieldGroup>
+          <fieldset
+            className="border-t border-line pt-5"
+            aria-describedby="prov-specialties-hint"
+          >
+            <legend className="font-display text-base font-bold text-ink">
+              {providersContent.form.brands.specialtiesTitle}
+            </legend>
+            <p
+              id="prov-specialties-hint"
+              className="mb-3 text-sm text-ink/70"
+            >
+              {worksAllBrands
+                ? providersContent.form.brands.specialtiesHint
+                : providersContent.form.brands.specialtiesSpecificHint}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {(worksAllBrands ? PROVIDER_BRANDS : brands).map((brand) => (
+                <ChoicePill
+                  key={brand}
+                  type="checkbox"
+                  name="specialized_brands"
+                  className="min-h-11"
+                  label={brand}
+                  checked={specializedBrands.includes(brand)}
+                  onChange={() =>
+                    toggle(specializedBrands, setSpecializedBrands, brand)
+                  }
+                />
+              ))}
+            </div>
+          </fieldset>
 
           <FieldGroup title="Servicios que ofrecen">
             {serviceFamilies.length > 0 ? (
@@ -616,10 +768,10 @@ export function ProviderForm({
                 />
 
                 {/* "Otro" va DEBAJO del acordeon y suelto, no como una fila
-                    mas de la lista: puesto adentro se lee como una categoria
-                    del catalogo, y es justamente lo contrario — es el unico
-                    valor de esta seccion que no sale del catalogo, y el unico
-                    que viaja como texto libre (`service_other`). */}
+                  mas de la lista: puesto adentro se lee como una categoria
+                  del catalogo, y es justamente lo contrario — es el unico
+                  valor de esta seccion que no sale del catalogo, y el unico
+                  que viaja como texto libre (`service_other`). */}
                 <div className="mt-2.5">
                   <ChoicePill
                     type="checkbox"
@@ -656,8 +808,8 @@ export function ProviderForm({
                   No pudimos cargar el listado de servicios.
                 </p>
                 <p className="mt-1 text-[0.8125rem] text-ink/65">
-                  Es un problema nuestro, no tuyo, y no te frena: escribinos acá
-                  abajo qué servicios ofrecés y los cargamos nosotros al
+                  Es un problema nuestro, no tuyo, y no te frena: escribinos
+                  acá abajo qué servicios ofrecés y los cargamos nosotros al
                   activarte el perfil.
                 </p>
               </div>
@@ -733,7 +885,8 @@ export function ProviderForm({
                 value={howFound}
                 onChange={(event) => {
                   setHowFound(event.target.value);
-                  if (event.target.value !== OTHER_OPTION) setOtherHowFound("");
+                  if (event.target.value !== OTHER_OPTION)
+                    setOtherHowFound("");
                 }}
                 required
               >
@@ -771,21 +924,21 @@ export function ProviderForm({
         </div>
       </Card>
 
-      <Button
-        type="submit"
-        size="lg"
-        block
-        className="mt-7"
-        disabled={submitState === "loading"}
-      >
-        {submitState === "loading"
-          ? providersContent.form.submitLoadingLabel
-          : providersContent.form.submitLabel}
-      </Button>
+        <Button
+          type="submit"
+          size="lg"
+          block
+          className="mt-7"
+          disabled={submitState === "loading"}
+        >
+          {submitState === "loading"
+            ? providersContent.form.submitLoadingLabel
+            : providersContent.form.submitLabel}
+        </Button>
 
-      <p className="mt-3.5 text-center text-[0.8125rem] text-ink/65">
-        {providersContent.form.note}
-      </p>
+        <p className="mt-3.5 text-center text-[0.8125rem] text-ink/65">
+          {providersContent.form.note}
+        </p>
       </form>
     </>
   );

@@ -1,4 +1,3 @@
-import { traction } from "@/lib/content/about";
 import { PROVEEDORES_PATH, PROVEEDORES_REGISTRO_PATH } from "@/lib/proveedores/query";
 
 /**
@@ -6,14 +5,13 @@ import { PROVEEDORES_PATH, PROVEEDORES_REGISTRO_PATH } from "@/lib/proveedores/q
  * red de AutoLibre. Los datos de cada negocio (nombre, zona, rubros, marcas)
  * salen del backend; acá vive solo el texto fijo de la página.
  *
- * Nada de métricas propias: la única cifra es `traction.providers`, la misma
- * que publica `/sobre-nosotros` (ver `PRODUCT.md`).
+ * Cifra y cobertura actualizadas por producto el 2026-10-27 (ver `PRODUCT.md`).
  */
 export const providersDirectoryContent = {
   meta: {
     title: "Proveedores",
     description:
-      "Directorio de los talleres, aseguradoras, estudios para multas y casas de repuestos que forman parte de AutoLibre en el AMBA y reciben pedidos de presupuesto desde la app.",
+      "Directorio de los talleres, aseguradoras, estudios para multas y casas de repuestos que forman parte de AutoLibre en todo el país y reciben pedidos de presupuesto desde la app.",
   },
 
   breadcrumb: { home: "Inicio", proveedores: "Proveedores" },
@@ -21,14 +19,14 @@ export const providersDirectoryContent = {
   hero: {
     eyebrow: "Proveedores",
     title: "Los negocios que ya forman parte de AutoLibre",
-    lead: "Talleres, aseguradoras, estudios para multas y casas de repuestos que reciben los pedidos de presupuesto de los conductores de AutoLibre en el AMBA.",
+    lead: "Talleres, aseguradoras, estudios para multas y casas de repuestos que reciben los pedidos de presupuesto de los conductores de AutoLibre en todo el país.",
     primaryCta: { label: "Ver la red", href: "#red" },
     secondaryCta: { label: "Sumar mi negocio", href: PROVEEDORES_REGISTRO_PATH },
     facts: {
-      partners: { label: "Negocios en la red", value: traction.providers },
+      partners: { label: "Negocios en la red", value: "100+" },
       /** El valor es cuántas familias del catálogo tienen al menos un negocio. */
       categories: { label: "Rubros", value: (count: number) => String(count) },
-      zone: { label: "Zona", value: "AMBA" },
+      zone: { label: "Zona", value: "Todo el país" },
     },
   },
 

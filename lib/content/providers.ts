@@ -9,13 +9,18 @@
  * backend. Ver el comentario más abajo, donde estaban.
  */
 export const providersContent = {
+  meta: {
+    title: "Sumá tu taller a AutoLibre",
+    description:
+      "Recibí consultas con la información del vehículo y el servicio solicitado. Registrá tu taller o servicio en AutoLibre y armá tu perfil en la app.",
+  },
   hero: {
     titleLines: [
-      "Las consultas llegan con nuestro análisis previo",
-      "y la información del auto.",
+      "Las consultas llegan con la información",
+      "del vehículo.",
     ],
     subtitle:
-      "Antes de que te llegue, preguntamos lo necesario para entender el problema. Recibís la consulta con la información (marca, el modelo, año) y un pre-diagnóstico. Sin pérdida de tiempo por WhatsApp para saber qué necesita.",
+      "Recibís la consulta con la información del vehículo (marca, modelo y año) y el servicio que necesita la persona. Sin pérdida de tiempo por WhatsApp para saber qué necesita.",
   },
 
   reasons: [
@@ -23,7 +28,7 @@ export const providersContent = {
       id: "reason-consultas",
       title: "Consultas acotadas",
       description:
-        "Marca, modelo, año y el problema ya delimitado. En algunos casos, con los datos de la ECU del auto.",
+        "Marca, modelo, año y el servicio solicitado, para que puedas evaluar la consulta.",
     },
     {
       id: "reason-zona",
@@ -55,6 +60,26 @@ export const providersContent = {
     hoursLabel: "Horarios de atención",
     hoursPlaceholder: "Ej: Lun a Vie 9 a 18hs, Sáb 9 a 13hs",
     modalityTitle: "¿Cómo atendés?",
+    logo: {
+      label: "Logo del negocio (opcional)",
+      hint: "PNG, JPG o WebP, hasta 512 KB. Podés registrarte sin cargar un logo.",
+      invalid: "Elegí una imagen PNG, JPG o WebP de hasta 512 KB.",
+      remove: "Quitar logo",
+      readError: "No pudimos leer el logo. Volvé a elegirlo o quitalo para continuar.",
+    },
+    brands: {
+      title: "¿Qué marcas atienden?",
+      all: "Todas las marcas",
+      specific: "Solo algunas marcas",
+      picker: "Agregar una marca que atienden",
+      placeholder: "Seleccioná una marca para agregar",
+      missing: "Agregá al menos una marca que atiendan.",
+      specialtiesTitle: "Marcas de especialidad (opcional)",
+      specialtiesHint: "Podés especializarte en algunas marcas aunque trabajes con todas. Marcá las que conocen en profundidad o dejá este campo vacío.",
+      specialtiesSpecificHint: "Marcá sus especialidades entre las marcas que atienden. Podés dejar este campo vacío.",
+      remove: (brand: string) => `Quitar ${brand}`,
+      invalid: "Elegí las marcas que atienden y revisá que las especialidades estén entre ellas.",
+    },
   },
 } as const;
 

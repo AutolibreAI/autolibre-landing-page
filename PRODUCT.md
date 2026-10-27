@@ -132,6 +132,16 @@ proveedores en el marketplace (fuente: la constante `traction` de
 arriba ni se reformulan, y se actualizan en los dos lugares (esa constante y
 este archivo) cuando cambien.
 
+Actualización de producto para `/proveedores` (2026-10-27): la ficha publica
+100+ negocios en la red y cobertura en todo el país. Estos datos viven en
+`lib/content/providers-directory.ts`; las cifras de septiembre de
+`/sobre-nosotros` conservan su fecha de corte histórica.
+
+Registro de proveedores (decisión de producto, 2026-10-27): se permite adjuntar
+un logo opcional. Las marcas atendidas (todas o una selección) se separan de las
+marcas de especialidad, que son opcionales incluso al atender todas. Esto
+reemplaza la postergación del logo indicada en la spec 004, FR-010.
+
 Ausencias que no se completan con invención: no hay testimonios, no hay rating
 de tiendas, no hay premios ni prensa. Ninguna de esas cosas se escribe en esta
 superficie.

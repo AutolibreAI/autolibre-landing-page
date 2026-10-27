@@ -167,6 +167,9 @@ export interface PartnerApplicationSubmission {
    */
   readonly declaredServices: string[];
   readonly declaredBrands: string[];
+  readonly worksAllBrands?: boolean;
+  readonly specializedBrands?: string[];
+  readonly logoDataUrl?: string;
   readonly declaredFuelTypes: string[];
   readonly vehicleTypes: string[];
   readonly serviceOther?: string;

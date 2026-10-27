@@ -46,13 +46,13 @@ const routes = [
   },
   {
     path: PROVEEDORES_REGISTRO_PATH,
-    lastModified: "2026-10-23",
+    lastModified: "2026-10-27",
     changeFrequency: "monthly",
     priority: 0.8,
   },
   {
     path: PROVEEDORES_PATH,
-    lastModified: "2026-10-23",
+    lastModified: "2026-10-27",
     changeFrequency: "weekly",
     priority: 0.7,
   },

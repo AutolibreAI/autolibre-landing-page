@@ -16,9 +16,7 @@ import {
   webPageSchema,
 } from "@/lib/seo/schema";
 
-const TITLE = "Sumá tu taller a AutoLibre";
-const DESCRIPTION =
-  "Recibí consultas de dueños de auto con marca, modelo, año y el problema ya delimitado. Registrá tu taller o servicio en AutoLibre y armá tu perfil en la app.";
+const { title: TITLE, description: DESCRIPTION } = providersContent.meta;
 const PATH = PROVEEDORES_REGISTRO_PATH;
 
 export const metadata: Metadata = createMetadata({
@@ -60,8 +58,8 @@ export default async function ProveedoresRegistroPage() {
         <ProvidersHeroSection />
         <ProvidersReasonsSection />
 
-        <Section id="form" tone="muted" spacing="md" container="narrow">
-          <h2 className="text-center font-display text-2xl font-bold text-ink">
+        <Section id="form" tone="muted" spacing="md" container="narrow" aria-labelledby="registro-titulo">
+          <h2 id="registro-titulo" className="text-center font-display text-2xl font-bold text-ink">
             {providersContent.form.title}
           </h2>
           <p className="mt-3 mb-10 text-center text-[0.9375rem] text-ink/65">
