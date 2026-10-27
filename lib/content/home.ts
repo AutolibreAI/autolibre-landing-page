@@ -27,7 +27,7 @@ export const homeContent = {
       {
         id: "highlight-presupuestos",
         icon: "receipt",
-        text: "Pedí presupuestos y compará talleres",
+        text: "Hace tu pedido y compara soluciones",
       },
       {
         id: "highlight-diagnostico",
