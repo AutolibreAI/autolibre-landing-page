@@ -9,9 +9,9 @@ import { ANALYTICS_EVENTS, QUOTE_CTA_PLACEMENTS } from "@/lib/analytics/events";
 import type { NavCta, NavLink } from "@/lib/content/types";
 
 type MobileNavProps = {
-  /** Anclas de sección y Blog (las mismas en todas las páginas). */
+  /** Anclas de sección, Blog, Proveedores y Sobre nosotros (las mismas en todas las páginas). */
   readonly links: readonly NavLink[];
-  /** Links a páginas ("Pedí tu presupuesto" y "Soy proveedor"). */
+  /** Links a páginas ("Hacé tu pedido" y "Soy proveedor"). */
   readonly pageLinks: readonly NavLink[];
   /**
    * `href` del link de presupuesto: ese link se mide como CTA de presupuesto

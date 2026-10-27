@@ -23,8 +23,10 @@ type SiteHeaderProps = {
 | 2 | Cómo funciona | `/#como-funciona` | ancla | `xl` | sí |
 | 3 | FAQ | `/#faq` | ancla | `xl` | sí |
 | 4 | Blog *(solo si `BLOG_PUBLIC`)* | `/blog` | página | `xl` | sí |
-| 5 | Pedí tu presupuesto | `/pedido` | página | `md` | sí |
-| 6 | Soy proveedor | `/proveedores` | página | `lg` | sí |
+| 5 | Proveedores | directorio (`PROVEEDORES_PATH`) | página | `xl` | sí |
+| 6 | Sobre nosotros | `/sobre-nosotros` | página | `xl` | sí |
+| 7 | Hacé tu pedido | `/pedido` | página | `md` | sí |
+| 8 | Soy proveedor | `/proveedores` | página | `lg` | sí |
 | — | `cta` (por defecto "Descargar la app") | `/#descargar` | botón | `sm` | sí, al pie del menú |
 
 - **No hay** link "Compatibilidad" (FR-012). Los links 1 a 4 forman la navegación "Secciones"; el 5 y el 6, la navegación "Páginas".

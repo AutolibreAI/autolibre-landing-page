@@ -11,11 +11,13 @@ import type { NavLink, StoreLink } from "@/lib/content/types";
  * presupuesto (header, menú mobile, hero, banda de la home y footer). Nadie
  * escribe su propio texto: así no vuelven a divergir.
  */
-const quoteLink = { label: "Pedí tu presupuesto", href: "/pedido" } as const;
+const quoteLink = { label: "Hacé tu pedido", href: "/pedido" } as const;
 /** Link a `/blog`: el mismo en el header, el menú mobile y el footer. */
 const blogLink = { label: "Blog", href: "/blog" } as const;
-/** Link a `/sobre-nosotros`: solo en el footer (el header ya está completo). */
+/** Link a `/sobre-nosotros`: en el header, el menú mobile y el footer. */
 const aboutLink = { label: "Sobre nosotros", href: "/sobre-nosotros" } as const;
+/** Directorio de los negocios de la red: le habla al dueño de auto. */
+const directoryLink = { label: "Proveedores", href: PROVEEDORES_PATH } as const;
 
 /**
  * Contenido del header y del footer, compartido por todas las páginas.
@@ -26,17 +28,20 @@ const aboutLink = { label: "Sobre nosotros", href: "/sobre-nosotros" } as const;
  */
 export const siteContent = {
   nav: {
-    /** Anclas de la home + Blog. Visibles desde `xl`; debajo, en el menú. */
+    /**
+     * Anclas de la home + Blog + Proveedores + Sobre nosotros. Visibles desde
+     * `xl`; debajo, en el menú.
+     */
     links: [
       { label: "Producto", href: "/#producto" },
       { label: "Cómo funciona", href: "/#como-funciona" },
       { label: "FAQ", href: "/#faq" },
       ...(BLOG_PUBLIC ? [blogLink] : []),
+      directoryLink,
+      aboutLink,
     ] satisfies readonly NavLink[],
     /** Presupuesto: visible desde `md`, y en el menú debajo de `xl`. */
     quoteLink,
-    /** Directorio de los negocios de la red: le habla al dueño de auto. */
-    directoryLink: { label: "Proveedores", href: PROVEEDORES_PATH },
     /** Alta de negocios: le habla al taller que se quiere sumar. */
     providerLink: { label: "Soy proveedor", href: PROVEEDORES_REGISTRO_PATH },
     /**

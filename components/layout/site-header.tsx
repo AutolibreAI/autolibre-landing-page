@@ -31,9 +31,9 @@ type SiteHeaderProps = {
  */
 const headerLink =
   "inline-flex min-h-11 items-center font-medium whitespace-nowrap transition-colors hover:text-brand aria-[current=page]:text-ink aria-[current=page]:underline aria-[current=page]:decoration-brand aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8";
-/** Anclas de la home y Blog: el tamaño de siempre. */
+/** Anclas de la home, Blog, Proveedores y Sobre nosotros: el tamaño de siempre. */
 const sectionLink = `${headerLink} text-[0.9375rem] text-ink`;
-/** "Pedí tu presupuesto" y "Soy proveedor": más livianos que las anclas. */
+/** "Hacé tu pedido" y "Soy proveedor": más livianos que las anclas. */
 const pageLink = `${headerLink} text-sm text-ink/70`;
 
 /**
@@ -45,15 +45,16 @@ const pageLink = `${headerLink} text-sm text-ink/70`;
  * en el menú mobile):
  * - < sm: logo + botón de menú.
  * - sm: + CTA.
- * - md: + "Pedí tu presupuesto".
+ * - md: + "Hacé tu pedido".
  * - lg: + "Soy proveedor".
- * - xl: + anclas de sección y Blog, y recién ahí se va el menú.
+ * - xl: + anclas de sección, Blog, Proveedores y Sobre nosotros, y recién ahí
+ *   se va el menú.
  */
 export function SiteHeader({
   cta = siteContent.nav.cta,
   currentPath,
 }: SiteHeaderProps) {
-  const { links, quoteLink, directoryLink, providerLink } = siteContent.nav;
+  const { links, quoteLink, providerLink } = siteContent.nav;
   /**
    * Sólo el CTA de descarga cambia de destino según la plataforma. Las
    * páginas que pisan `cta` con otra acción (p. ej. /proveedores/registro, /pedido)
@@ -117,15 +118,6 @@ export function SiteHeader({
               </li>
               <li className="hidden lg:block">
                 <Link
-                  href={directoryLink.href}
-                  aria-current={current(directoryLink.href)}
-                  className={pageLink}
-                >
-                  {directoryLink.label}
-                </Link>
-              </li>
-              <li className="hidden lg:block">
-                <Link
                   href={providerLink.href}
                   aria-current={current(providerLink.href)}
                   className={pageLink}
@@ -142,7 +134,7 @@ export function SiteHeader({
           )}
           <MobileNav
             links={links}
-            pageLinks={[quoteLink, directoryLink, providerLink]}
+            pageLinks={[quoteLink, providerLink]}
             quoteHref={quoteLink.href}
             cta={cta}
             isDownloadCta={isDownloadCta}
