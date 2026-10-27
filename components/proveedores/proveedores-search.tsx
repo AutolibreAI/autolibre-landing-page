@@ -77,7 +77,7 @@ export function ProveedoresSearch({ filters, zones, categoryName }: ProveedoresS
               <option value="">{directory.zone.all}</option>
               {zones.map((zone) => (
                 <option key={zone.slug} value={zone.slug}>
-                  {directory.zone.option(zone.name, zone.count)}
+                  {zone.name}
                 </option>
               ))}
             </Select>
