@@ -56,7 +56,6 @@ export const providersDirectoryContent = {
     zone: {
       label: "Zona",
       all: "Todas las zonas",
-      option: (name: string, count: number) => `${name} (${count})`,
     },
     /** Filtros puestos, cada uno con su link para quitarlo. */
     activeFilters: {
