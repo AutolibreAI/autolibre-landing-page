@@ -11,12 +11,20 @@ import {
   FieldGroup,
   Input,
   Select,
+  Textarea,
 } from "@/components/ui/form-controls";
 import { FormError, FormSuccess } from "@/components/ui/form-feedback";
 import { ButtonLink } from "@/components/ui/button";
 import type { ServiceFamilyOption } from "@/lib/autolibre-api";
 import {
   PROVIDER_LOGO_TYPES,
+  PROVIDER_DESCRIPTION_MAX_LENGTH,
+  PROVIDER_SOCIAL_KEYS,
+  parseProviderProfileFields,
+  type ProviderSocialKey,
+  appendProviderBrand,
+  PROVIDER_BRAND_MAX_LENGTH,
+  PROVIDER_BRAND_MAX_COUNT,
   validBrandSelection,
   validProviderLogo,
 } from "@/lib/proveedores/registration";
@@ -118,8 +126,11 @@ export function ProviderForm({
   const [worksAllBrands, setWorksAllBrands] = useState(true);
   const [brands, setBrands] = useState<string[]>([]);
   const [specializedBrands, setSpecializedBrands] = useState<string[]>([]);
+  const [otherSpecialty, setOtherSpecialty] = useState("");
   const [logo, setLogo] = useState<File | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
+  const [description, setDescription] = useState("");
+  const [invalidSocial, setInvalidSocial] = useState<ProviderSocialKey | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const brandsRef = useRef<HTMLFieldSetElement>(null);
   /**
@@ -287,6 +298,15 @@ export function ProviderForm({
     );
   }
 
+  function addSpecialty(value: string) {
+    if (specializedBrands.length >= PROVIDER_BRAND_MAX_COUNT) return;
+    const trimmed = value.trim().replace(/\s+/g, " ");
+    const brand = PROVIDER_BRANDS.find((item) => item.toLocaleLowerCase("es-AR") === trimmed.toLocaleLowerCase("es-AR")) ?? trimmed;
+    setSpecializedBrands((current) => appendProviderBrand(current, brand));
+    if (!worksAllBrands) setBrands((current) => appendProviderBrand(current, brand, Infinity));
+    setOtherSpecialty("");
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitAttempted(true);
@@ -314,10 +334,14 @@ export function ProviderForm({
     // Ojo: el <form> va con `noValidate`, asi que los `required` de los inputs
     // son semantica para lectores de pantalla y no cortan nada. Lo unico que
     // frena el envio es este return.
+    const pendingText = otherSpecialty.trim().replace(/\s+/g, " ");
+    const pendingSpecialty = PROVIDER_BRANDS.find((item) => item.toLocaleLowerCase("es-AR") === pendingText.toLocaleLowerCase("es-AR")) ?? pendingText;
+    const submittedSpecialties = appendProviderBrand(specializedBrands, pendingSpecialty);
+    const submittedBrands = worksAllBrands ? brands : appendProviderBrand(brands, pendingSpecialty, Infinity);
     const brandsInvalid = !validBrandSelection(
       worksAllBrands,
-      brands,
-      specializedBrands,
+      submittedBrands,
+      submittedSpecialties,
     );
     if (addressInvalid || !hasDeclaredServices || brandsInvalid || logoError) {
       if (!addressInvalid && hasDeclaredServices) {
@@ -327,11 +351,25 @@ export function ProviderForm({
       return;
     }
 
+    const form = event.currentTarget;
+    const profile = parseProviderProfileFields(description, Object.fromEntries(
+      PROVIDER_SOCIAL_KEYS.map((key) => [key, (form.elements.namedItem(`social_${key}`) as HTMLInputElement).value]),
+    ));
+    setInvalidSocial(null);
+    if (!profile.ok) {
+      setSubmitState("error");
+      setErrorMessage(profile.kind === "description" ? providersContent.form.description.invalid : providersContent.form.social.invalid);
+      if (profile.network) {
+        setInvalidSocial(profile.network);
+        (form.elements.namedItem(`social_${profile.network}`) as HTMLInputElement).focus();
+      }
+      return;
+    }
+
     setSubmitState("loading");
     setErrorMessage(GENERIC_ERROR);
     setAlreadyRegistered(null);
 
-    const form = event.currentTarget;
     const taller = (form.elements.namedItem("taller") as HTMLInputElement)
       .value;
     const whatsapp = (form.elements.namedItem("whatsapp") as HTMLInputElement)
@@ -371,9 +409,11 @@ export function ProviderForm({
           whatsapp,
           email,
           direccion,
+          ...(profile.description ? { description: profile.description } : {}),
+          ...(profile.socialLinks ? { social_links: profile.socialLinks } : {}),
           works_all_brands: worksAllBrands,
-          brands: worksAllBrands ? [] : brands,
-          specialized_brands: specializedBrands,
+          brands: worksAllBrands ? [] : submittedBrands,
+          specialized_brands: submittedSpecialties,
           ...(logoDataUrl ? { logo_data_url: logoDataUrl } : {}),
           services,
           service_other: otherService || null,
@@ -511,6 +551,37 @@ export function ProviderForm({
             ) : null}
           </Field>
 
+          <Field label={providersContent.form.description.label} htmlFor="prov-description"
+            hint={providersContent.form.description.hint} hintId="prov-description-hint">
+            <Textarea id="prov-description" name="description" rows={3}
+              className="text-base" maxLength={PROVIDER_DESCRIPTION_MAX_LENGTH}
+              placeholder={providersContent.form.description.placeholder}
+              value={description} onChange={(event) => setDescription(event.target.value)}
+              aria-describedby="prov-description-hint prov-description-count" />
+            <p id="prov-description-count" className="text-right text-xs text-ink/70">
+              {providersContent.form.description.count(description.length)}
+            </p>
+          </Field>
+
+          <fieldset className="border-t border-line pt-5" aria-describedby="prov-social-hint">
+            <legend className="font-display text-base font-bold text-ink">{providersContent.form.social.title}</legend>
+            <p id="prov-social-hint" className="mb-4 text-sm text-ink/70">{providersContent.form.social.hint}</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {providersContent.form.social.networks.map(({ key, label }) => (
+                <Field key={key} label={label} htmlFor={`prov-social-${key}`}
+                  error={invalidSocial === key ? providersContent.form.social.invalid : undefined}
+                  errorId={`prov-social-${key}-error`}>
+                  <Input id={`prov-social-${key}`} name={`social_${key}`} type="url"
+                    className="min-h-11 text-base" maxLength={2048} autoCapitalize="none" autoCorrect="off" spellCheck={false}
+                    placeholder={providersContent.form.social.placeholder}
+                    aria-invalid={invalidSocial === key}
+                    aria-describedby={invalidSocial === key ? `prov-social-hint prov-social-${key}-error` : "prov-social-hint"}
+                    onChange={() => { if (invalidSocial === key) setInvalidSocial(null); }} />
+                </Field>
+              ))}
+            </div>
+          </fieldset>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="WhatsApp de contacto" htmlFor="prov-phone" required>
               <Input
@@ -619,11 +690,7 @@ export function ProviderForm({
                 checked={!worksAllBrands}
                 onChange={() => {
                   setWorksAllBrands(false);
-                  setSpecializedBrands(
-                    specializedBrands.filter((brand) =>
-                      brands.includes(brand),
-                    ),
-                  );
+                  setBrands((current) => specializedBrands.reduce((all, brand) => appendProviderBrand(all, brand, Infinity), current));
                 }}
               />
             </div>
@@ -736,20 +803,39 @@ export function ProviderForm({
                 ? providersContent.form.brands.specialtiesHint
                 : providersContent.form.brands.specialtiesSpecificHint}
             </p>
-            <div className="flex flex-wrap gap-2">
-              {(worksAllBrands ? PROVIDER_BRANDS : brands).map((brand) => (
-                <ChoicePill
-                  key={brand}
-                  type="checkbox"
-                  name="specialized_brands"
-                  className="min-h-11"
-                  label={brand}
-                  checked={specializedBrands.includes(brand)}
-                  onChange={() =>
-                    toggle(specializedBrands, setSpecializedBrands, brand)
-                  }
-                />
-              ))}
+            <div className="flex flex-col gap-3">
+              <label htmlFor="prov-specialty-picker" className="sr-only">{providersContent.form.brands.specialtiesPicker}</label>
+              <Select id="prov-specialty-picker" className="min-h-11 text-base" value=""
+                disabled={submitState === "loading" || specializedBrands.length >= PROVIDER_BRAND_MAX_COUNT}
+                onChange={(event) => addSpecialty(event.target.value)}>
+                <option value="" disabled>{providersContent.form.brands.placeholder}</option>
+                {PROVIDER_BRANDS.filter((brand) => !specializedBrands.includes(brand)).map((brand) => <option key={brand} value={brand}>{brand}</option>)}
+              </Select>
+              {specializedBrands.length ? (
+                <ul className="flex flex-wrap gap-1.5">
+                  {specializedBrands.map((brand) => <li key={brand} className="inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand/8 py-1 pr-1.5 pl-3 text-sm font-semibold text-ink">
+                    {brand}
+                    <button type="button" aria-label={providersContent.form.brands.remove(brand)}
+                      className="flex size-11 items-center justify-center rounded-full bg-ink/10 text-ink/60 transition-colors hover:bg-alert-bg hover:text-alert-fg"
+                      onClick={() => setSpecializedBrands((current) => current.filter((item) => item !== brand))}>
+                      <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><line x1="2" y1="2" x2="10" y2="10" /><line x1="10" y1="2" x2="2" y2="10" /></svg>
+                    </button>
+                  </li>)}
+                </ul>
+              ) : null}
+              <Field label={providersContent.form.brands.otherLabel} htmlFor="prov-specialty-other">
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Input id="prov-specialty-other" className="min-h-11 text-base placeholder:text-ink/70" value={otherSpecialty}
+                    maxLength={PROVIDER_BRAND_MAX_LENGTH} placeholder={providersContent.form.brands.otherPlaceholder}
+                    disabled={submitState === "loading" || specializedBrands.length >= PROVIDER_BRAND_MAX_COUNT}
+                    onChange={(event) => setOtherSpecialty(event.target.value)}
+                    onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addSpecialty(otherSpecialty); } }} />
+                  <Button type="button" variant="outline" className="min-h-11 shrink-0"
+                    disabled={submitState === "loading" || !otherSpecialty.trim() || specializedBrands.length >= PROVIDER_BRAND_MAX_COUNT}
+                    onClick={() => addSpecialty(otherSpecialty)}>{providersContent.form.brands.add}</Button>
+                </div>
+              </Field>
+              {specializedBrands.length >= PROVIDER_BRAND_MAX_COUNT ? <p className="text-sm text-ink/70">{providersContent.form.brands.maximum}</p> : null}
             </div>
           </fieldset>
 

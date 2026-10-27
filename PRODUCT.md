@@ -141,6 +141,11 @@ Registro de proveedores (decisión de producto, 2026-10-27): se permite adjuntar
 un logo opcional. Las marcas atendidas (todas o una selección) se separan de las
 marcas de especialidad, que son opcionales incluso al atender todas. Esto
 reemplaza la postergación del logo indicada en la spec 004, FR-010.
+El registro también permite una descripción opcional de hasta 90 caracteres y
+links opcionales de Instagram, Facebook, TikTok, LinkedIn y YouTube.
+Las especialidades se eligen con un desplegable y admiten marcas en texto libre.
+El logo adjunto se muestra al revisar la solicitud en el admin y puede aparecer
+en la red pública cuando el proveedor está aprobado y activo.
 
 Ausencias que no se completan con invención: no hay testimonios, no hay rating
 de tiendas, no hay premios ni prensa. Ninguna de esas cosas se escribe en esta

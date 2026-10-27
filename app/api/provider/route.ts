@@ -4,6 +4,7 @@ import { providersContent } from "@/lib/content/providers";
 import {
   PROVIDER_LOGO_MAX_BYTES,
   validBrandSelection,
+  parseProviderProfileFields,
 } from "@/lib/proveedores/registration";
 
 /**
@@ -107,6 +108,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: MESSAGES.missing }, { status: 400 });
   }
 
+  const profile = parseProviderProfileFields(body.description, body.social_links);
+  if (!profile.ok) {
+    return NextResponse.json({ error: profile.kind === "description" ? providersContent.form.description.invalid : providersContent.form.social.invalid }, { status: 400 });
+  }
+
   // Conserva compatibilidad con formularios abiertos antes de este deploy.
   const hasBrandCoverage = typeof body.works_all_brands === "boolean";
   const worksAllBrands = hasBrandCoverage
@@ -157,6 +163,8 @@ export async function POST(req: NextRequest) {
     whatsapp,
     email,
     address,
+    ...(profile.description ? { description: profile.description } : {}),
+    ...(profile.socialLinks ? { socialLinks: profile.socialLinks } : {}),
     declaredServices: asStringArray(body.services),
     declaredBrands,
     ...(hasBrandCoverage ? { worksAllBrands, specializedBrands } : {}),

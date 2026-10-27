@@ -170,6 +170,8 @@ export interface PartnerApplicationSubmission {
   readonly worksAllBrands?: boolean;
   readonly specializedBrands?: string[];
   readonly logoDataUrl?: string;
+  readonly description?: string;
+  readonly socialLinks?: Partial<Record<"instagram" | "facebook" | "tiktok" | "linkedin" | "youtube", string>>;
   readonly declaredFuelTypes: string[];
   readonly vehicleTypes: string[];
   readonly serviceOther?: string;

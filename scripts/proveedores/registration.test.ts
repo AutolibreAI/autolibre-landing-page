@@ -4,9 +4,68 @@ import {
   PROVIDER_LOGO_MAX_BYTES,
   validBrandSelection,
   validProviderLogo,
+  parseProviderProfileFields,
+  appendProviderBrand,
 } from "../../lib/proveedores/registration.ts";
 
 describe("registro de proveedores", () => {
+  it("permite marcas libres sin repetirlas por mayusculas o espacios", () => {
+    assert.deepEqual(appendProviderBrand(["Ford"], "  ford  "), ["Ford"]);
+    assert.deepEqual(appendProviderBrand(["Ford"], "  Nueva   Marca "), ["Ford", "Nueva Marca"]);
+    assert.deepEqual(appendProviderBrand([], " "), []);
+    assert.deepEqual(appendProviderBrand([], "a".repeat(101)), []);
+  });
+  it("la descripcion acepta 90 caracteres y rechaza 91", () => {
+    assert.deepEqual(
+      parseProviderProfileFields("  " + "a".repeat(90) + "  ", undefined),
+      { ok: true, description: "a".repeat(90) },
+    );
+    assert.deepEqual(parseProviderProfileFields("a".repeat(91), undefined), {
+      ok: false,
+      kind: "description",
+    });
+    assert.equal(parseProviderProfileFields(123, undefined).ok, false);
+  });
+  it("descripcion y redes pueden quedar vacias", () => {
+    assert.deepEqual(parseProviderProfileFields("  ", { instagram: "" }), {
+      ok: true,
+    });
+    assert.deepEqual(parseProviderProfileFields(undefined, undefined), {
+      ok: true,
+    });
+  });
+  it("normaliza los links y admite solo protocolos navegables", () => {
+    assert.deepEqual(
+      parseProviderProfileFields(undefined, {
+        instagram: " https://instagram.com/negocio ",
+        facebook: "",
+      }),
+      { ok: true, socialLinks: { instagram: "https://instagram.com/negocio" } },
+    );
+    for (const instagram of [
+      "javascript:alert(1)",
+      "ftp://example.com",
+      "@negocio",
+      "https://user:pass@example.com",
+    ]) {
+      assert.deepEqual(parseProviderProfileFields(undefined, { instagram }), {
+        ok: false,
+        kind: "socialLinks",
+        network: "instagram",
+      });
+    }
+  });
+  it("rechaza redes desconocidas y valores mal formados", () => {
+    for (const links of [
+      [],
+      null,
+      "https://example.com",
+      { other: "https://example.com" },
+      { instagram: 1 },
+    ]) {
+      assert.equal(parseProviderProfileFields(undefined, links).ok, false);
+    }
+  });
   it("permite todas las marcas con especialidades o sin ellas", () => {
     assert.equal(validBrandSelection(true, [], ["Toyota"]), true);
     assert.equal(validBrandSelection(true, [], []), true);
