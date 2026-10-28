@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { submitPartnerApplication } from "@/lib/autolibre-api";
+import { whatsappErrorMessage } from "@/lib/content/presupuesto";
 import { providersContent } from "@/lib/content/providers";
+import { parseArWhatsapp } from "@/lib/phone";
 import {
   PROVIDER_LOGO_MAX_BYTES,
   validBrandSelection,
@@ -43,11 +45,13 @@ const MESSAGES = {
    * algun campo, y no sabemos de cual. Por eso sugiere en vez de afirmar — la
    * version anterior daba por hecho que el problema era el telefono, y cuando
    * no lo era mandaba a la persona a corregir un campo que estaba bien.
+   *
+   * Ya no menciona el 15: el WhatsApp se valida y normaliza en esta ruta
+   * antes de llegar al backend (ver `POST`), con su propio mensaje. Si este
+   * cartel aparece, el problema es otro campo.
    */
   invalid:
-    "Revisá los datos: hay un campo con un formato que no podemos aceptar. " +
-    "Si escribiste el WhatsApp con el 15 adelante, probá sin él (por ejemplo " +
-    "11 2512-0472).",
+    "Revisá los datos: hay un campo con un formato que no podemos aceptar.",
   /**
    * El catalogo se cachea hasta cinco minutos, asi que alguien puede estar
    * completando el formulario con una lista que dejo de estar vigente. No es
@@ -100,13 +104,30 @@ export async function POST(req: NextRequest) {
   }
 
   const businessName = asOptionalString(body.taller);
-  const whatsapp = asOptionalString(body.whatsapp);
+  const rawWhatsapp = asOptionalString(body.whatsapp);
   const email = asOptionalString(body.email);
   const address = asOptionalString(body.direccion);
 
-  if (!businessName || !whatsapp || !email || !address) {
+  if (!businessName || !rawWhatsapp || !email || !address) {
     return NextResponse.json({ error: MESSAGES.missing }, { status: 400 });
   }
+
+  // El WhatsApp se normaliza ACÁ y al backend viaja la forma canonica
+  // (`549` + 10 digitos, la que acepta `WhatsappNumber`). Antes viajaba tal
+  // cual lo escribia la persona y el VO rechazaba, con razon, un
+  // `0381 15 456-7890`: un numero valido escrito a la argentina terminaba en
+  // el cartel generico de "formato que no podemos aceptar", sin decir cual.
+  // `parseArWhatsapp` sabe sacar el 0 y el 15 (es la misma regla de `/pedido`
+  // y `/api/presupuesto`) y, cuando de verdad no se puede, dice que falta.
+  // El formulario ya valida lo mismo; esto cubre a quien llega sin pasar por el.
+  const phone = parseArWhatsapp(rawWhatsapp);
+  if (!phone.ok) {
+    return NextResponse.json(
+      { error: whatsappErrorMessage(phone.error, phone.diff) },
+      { status: 400 },
+    );
+  }
+  const whatsapp = phone.canonical;
 
   const profile = parseProviderProfileFields(body.description, body.social_links);
   if (!profile.ok) {

@@ -1,7 +1,8 @@
 /**
  * Celulares argentinos para WhatsApp. Pura e isomórfica: la usan el form de
- * `/pedido`, el modal de la home, `/api/presupuesto` y la Conversions API
- * (`lib/analytics/meta-user-data.ts`). Una sola regla en los cuatro lados.
+ * `/pedido`, el modal de la home, `/api/presupuesto`, el alta de proveedores
+ * (`components/forms/provider-form.tsx` y `/api/provider`) y la Conversions
+ * API (`lib/analytics/meta-user-data.ts`). Una sola regla en todos lados.
  *
  * Plan de numeración argentino: el número nacional es SIEMPRE de 10 dígitos,
  * característica (código de área) + abonado:

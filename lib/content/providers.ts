@@ -57,6 +57,20 @@ export const providersContent = {
     /** Se eligió una sugerencia, pero Google no devolvió localidad o provincia. */
     addressImpreciseError:
       "Esa dirección no es lo bastante precisa. Probá con calle y número y elegila de la lista.",
+    /**
+     * WhatsApp del negocio. El campo ya saca solo el `+54`, el `0` y el `15`
+     * (ver `formatArWhatsappInput` en `lib/phone.ts`); la ayuda igual lo dice,
+     * porque es la forma en que la gente aprende a escribirlo bien la próxima.
+     * Los errores son los de `/pedido` (`whatsappErrorMessage`).
+     */
+    whatsapp: {
+      label: "WhatsApp de contacto",
+      prefix: "+54",
+      /** Lo que lee un lector de pantalla en lugar de "+54". */
+      prefixLabel: "Código de país +54.",
+      placeholder: "11 2345-6789",
+      hint: "Con código de área, sin el 0 ni el 15. Ej: 381 456-7890",
+    },
     hoursLabel: "Horarios de atención",
     hoursPlaceholder: "Ej: Lun a Vie 9 a 18hs, Sáb 9 a 13hs",
     modalityTitle: "¿Cómo atendés?",

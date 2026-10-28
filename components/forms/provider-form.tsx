@@ -14,7 +14,11 @@ import {
   Textarea,
 } from "@/components/ui/form-controls";
 import { FormError, FormSuccess } from "@/components/ui/form-feedback";
+import { WhatsappInput } from "@/components/ui/whatsapp-input";
 import { ButtonLink } from "@/components/ui/button";
+import { whatsappErrorMessage } from "@/lib/content/presupuesto";
+import { parseArWhatsapp } from "@/lib/phone";
+import { cn } from "@/lib/utils";
 import type { ServiceFamilyOption } from "@/lib/autolibre-api";
 import {
   PROVIDER_LOGO_TYPES,
@@ -105,8 +109,19 @@ const GENERIC_ERROR = "Algo salió mal. Por favor intentá de nuevo.";
  *
  * Lo que tambien cambio en su momento: ahora hay errores que la persona puede
  * corregir, y por eso el cartel dejo de ser uno solo y generico — el backend
- * valida el WhatsApp de verdad (un numero con el 15 adelante se rechaza en vez
- * de guardarse roto) y avisa cuando ese email ya tiene una solicitud abierta.
+ * valida el WhatsApp de verdad y avisa cuando ese email ya tiene una solicitud
+ * abierta.
+ *
+ * ── El WhatsApp se arregla acá, no se rebota ────────────────────────────────
+ *
+ * El backend (`WhatsappNumber`) rechaza con razon un numero con el 15 local,
+ * pero este campo era un input pelado que mandaba lo que se tipeaba: un taller
+ * de Tucuman que escribio `0381 15 456-7890` —un numero perfectamente bueno—
+ * se comio el cartel generico de "formato que no podemos aceptar", sin saber
+ * que campo era. Ahora es el mismo `WhatsappInput` de `/pedido`: saca el +54,
+ * el 0 y el 15 mientras se escribe, valida con `parseArWhatsapp` al salir del
+ * campo y al enviar, y si algo falta lo dice en el campo. `/api/provider`
+ * vuelve a validar y manda la forma canonica (`549…`) al backend.
  */
 export function ProviderForm({
   serviceFamilies,
@@ -174,9 +189,22 @@ export function ProviderForm({
    * se reta mientras tipea, se reta cuando intenta mandar.
    */
   const [addressError, setAddressError] = useState<string | null>(null);
+  /**
+   * Lo que se ve en el campo, ya formateado (`381 456-7890`). Controlado porque
+   * `WhatsappInput` reescribe el valor mientras se tipea.
+   */
+  const [whatsapp, setWhatsapp] = useState("");
+  /**
+   * Mismo criterio que `/pedido`: el error aparece recien al salir del campo
+   * (o al intentar enviar) y desde ahi se corrige en vivo. Retar a mitad del
+   * numero, cuando todavia faltan digitos porque la persona no termino, no
+   * informa nada.
+   */
+  const [whatsappTouched, setWhatsappTouched] = useState(false);
 
   const servicesErrorRef = useRef<HTMLParagraphElement>(null);
   const addressInputRef = useRef<HTMLInputElement>(null);
+  const whatsappInputRef = useRef<HTMLInputElement>(null);
   /**
    * Refs y no state porque solo se leen en el submit y en el listener de
    * Google — no cambian nada de lo que se pinta.
@@ -189,10 +217,18 @@ export function ProviderForm({
   const autocompleteRef = useRef<unknown>(null);
   const pickedImpreciseRef = useRef(false);
   /**
-   * Si el submit ya mandó el foco a la dirección, el scroll al error de
-   * servicios (más abajo) no tiene que llevarse la pantalla a otro lado.
+   * Si el submit ya mandó el foco a un campo (WhatsApp o dirección), el scroll
+   * al error de servicios (más abajo) no tiene que llevarse la pantalla a otro
+   * lado.
    */
-  const addressFocusedOnSubmitRef = useRef(false);
+  const fieldFocusedOnSubmitRef = useRef(false);
+
+  const whatsappResult = parseArWhatsapp(whatsapp);
+  /** Derivado, como `missingServices`: se borra solo apenas el número sirve. */
+  const whatsappError =
+    !whatsappResult.ok && (whatsappTouched || submitAttempted)
+      ? whatsappErrorMessage(whatsappResult.error, whatsappResult.diff)
+      : null;
 
   // El Autocomplete pide direcciones puntuales ("address"), no zonas: acá
   // importa la puerta del local, porque de eso depende que el orden por
@@ -278,7 +314,7 @@ export function ProviderForm({
    * formulario esta roto.
    */
   useEffect(() => {
-    if (missingServices && !addressFocusedOnSubmitRef.current) {
+    if (missingServices && !fieldFocusedOnSubmitRef.current) {
       servicesErrorRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "center",
@@ -321,14 +357,18 @@ export function ProviderForm({
     // no cargó no hay lista de donde elegir, y trabar el alta por eso seria
     // perder al taller por un problema nuestro — ahí sigue el texto libre.
     const addressInvalid = autocompleteRef.current !== null && !hasGeo;
-    addressFocusedOnSubmitRef.current = addressInvalid;
+    // El WhatsApp va arriba de la dirección: si los dos fallan, el foco va al
+    // primero que se ve. El error de cada uno se muestra igual.
+    const whatsappInvalid = !whatsappResult.ok;
+    fieldFocusedOnSubmitRef.current = whatsappInvalid || addressInvalid;
+    if (whatsappInvalid) whatsappInputRef.current?.focus();
     if (addressInvalid) {
       setAddressError(
         pickedImpreciseRef.current
           ? providersContent.form.addressImpreciseError
           : providersContent.form.addressNotPickedError,
       );
-      addressInputRef.current?.focus();
+      if (!whatsappInvalid) addressInputRef.current?.focus();
     }
 
     // Ojo: el <form> va con `noValidate`, asi que los `required` de los inputs
@@ -343,8 +383,14 @@ export function ProviderForm({
       submittedBrands,
       submittedSpecialties,
     );
-    if (addressInvalid || !hasDeclaredServices || brandsInvalid || logoError) {
-      if (!addressInvalid && hasDeclaredServices) {
+    if (
+      whatsappInvalid ||
+      addressInvalid ||
+      !hasDeclaredServices ||
+      brandsInvalid ||
+      logoError
+    ) {
+      if (!whatsappInvalid && !addressInvalid && hasDeclaredServices) {
         if (logoError) logoInputRef.current?.focus();
         else if (brandsInvalid) brandsRef.current?.focus();
       }
@@ -371,8 +417,6 @@ export function ProviderForm({
     setAlreadyRegistered(null);
 
     const taller = (form.elements.namedItem("taller") as HTMLInputElement)
-      .value;
-    const whatsapp = (form.elements.namedItem("whatsapp") as HTMLInputElement)
       .value;
     const email = (form.elements.namedItem("email") as HTMLInputElement).value;
     const direccion = (form.elements.namedItem("direccion") as HTMLInputElement)
@@ -582,16 +626,58 @@ export function ProviderForm({
             </div>
           </fieldset>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="WhatsApp de contacto" htmlFor="prov-phone" required>
-              <Input
-                id="prov-phone"
-                name="whatsapp"
-                type="tel"
-                placeholder="11 2345 6789"
-                autoComplete="tel"
-                required
-              />
+          <div className="grid gap-4 sm:grid-cols-2 sm:items-start">
+            <Field
+              label={providersContent.form.whatsapp.label}
+              htmlFor="prov-phone"
+              required
+              hint={providersContent.form.whatsapp.hint}
+              hintId="prov-phone-hint"
+              error={whatsappError}
+              errorId="prov-phone-error"
+            >
+              {/* Mismo control que /pedido: el `+54` es parte del campo, así
+                  que se escribe el número nacional y nada más. Borde, fondo,
+                  radio y foco son los de `Input` (form-controls). */}
+              <div
+                className={cn(
+                  "flex overflow-clip rounded-field border bg-surface-subtle transition-colors focus-within:border-brand",
+                  whatsappError ? "border-danger" : "border-line",
+                )}
+              >
+                <span
+                  id="prov-phone-prefix"
+                  className="flex shrink-0 items-center border-r border-line bg-surface-muted px-3.5 text-base text-ink/70"
+                >
+                  <span aria-hidden="true">
+                    {providersContent.form.whatsapp.prefix}
+                  </span>
+                  <span className="sr-only">
+                    {providersContent.form.whatsapp.prefixLabel}
+                  </span>
+                </span>
+                <WhatsappInput
+                  id="prov-phone"
+                  name="whatsapp"
+                  ref={whatsappInputRef}
+                  autoComplete="tel-national"
+                  required
+                  value={whatsapp}
+                  onValueChange={setWhatsapp}
+                  onBlur={() => setWhatsappTouched(true)}
+                  placeholder={providersContent.form.whatsapp.placeholder}
+                  disabled={submitState === "loading"}
+                  aria-invalid={whatsappError ? true : undefined}
+                  aria-describedby={
+                    whatsappError
+                      ? "prov-phone-prefix prov-phone-hint prov-phone-error"
+                      : "prov-phone-prefix prov-phone-hint"
+                  }
+                  // `text-base` (16px) y no los 15px de `Input`: con menos,
+                  // iOS hace zoom al enfocar.
+                  className="min-h-11 min-w-0 flex-1 rounded-none border-0 text-base placeholder:text-ink/65"
+                />
+              </div>
             </Field>
             <Field label="Email" htmlFor="prov-email" required>
               <Input
