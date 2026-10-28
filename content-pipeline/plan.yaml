@@ -232,9 +232,9 @@ posts:
     priority: P2
     batch: 2
     sourceIds: [TEL-01] # ✅ AUSA y AUBASA · 🔍 plazo de 30 días e infracción en AUSA
-    status: planned
+    status: published
     blockedBy: null
-    hygraphId: null
+    hygraphId: cmvsqlreul3zq07myk2uy05rh
 
   # ── Batch 3 (P3; en alcance por decisión 2026-09-30) ──
   - slug: estacionamiento-medido-caba

@@ -6,10 +6,11 @@ metaDescription: "En las autopistas de la Ciudad sin TelePASE pagás el doble de
 excerpt: "Qué pasa si pasás sin TelePASE por las autopistas de la Ciudad o por la Buenos Aires–La Plata, dónde se paga la deuda y cómo adherirte gratis."
 category: manejo-y-seguridad
 tags: [telepase, caba, provincia-de-buenos-aires]
-reviewedAt: 2026-09-30
+reviewedAt: 2026-09-28
 sourceIds: [TEL-01]
 cover:
   file: images/telepase-obligatorio-cover.webp
+  assetId: cmvsqj2u8l1y007my2s6sbfoa
   alt: "Manos al volante de un auto que se acerca a un peaje de autopista, con un dispositivo blanco pegado en el parabrisas"
 images: []
 ---
@@ -20,7 +21,7 @@ En las autopistas de la Ciudad de Buenos Aires el TelePASE es obligatorio desde 
 
 ## ¿Es obligatorio el TelePASE?
 
-Depende de la autopista: en las autopistas de la Ciudad (AUSA) el TelePASE es obligatorio, y en la Autopista Buenos Aires–La Plata (AUBASA) pasar sin TelePASE te deja una deuda por la tarifa normal [src:TEL-01]. En el resto de las autopistas, lo que pasa depende de cada concesionaria [src:TEL-01]. Esta nota cubre solo esos dos casos, que son los que pudimos confirmar en fuentes oficiales.
+Depende de la autopista: en las autopistas de la Ciudad (AUSA) el TelePASE es obligatorio, y en la Autopista Buenos Aires–La Plata (AUBASA) pasar sin TelePASE te deja una deuda por la tarifa normal [src:TEL-01]. Esta nota cubre solo esos dos casos, que son los que pudimos confirmar en fuentes oficiales: no dice nada sobre otras autopistas.
 
 Así se comparan las dos situaciones [src:TEL-01]:
 
