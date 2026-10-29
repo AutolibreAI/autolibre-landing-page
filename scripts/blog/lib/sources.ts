@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -109,7 +109,10 @@ export const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url
 export function defaultSourcesPath(): string {
   const fromEnv = process.env.BLOG_SOURCE_OF_TRUTH?.trim();
   if (fromEnv) return path.resolve(REPO_ROOT, fromEnv);
-  return path.resolve(REPO_ROOT, "../autolibre-fuente-verdad-documental-amba.md");
+  const sibling = path.resolve(REPO_ROOT, "../autolibre-fuente-verdad-documental-amba.md");
+  // La fuente también vive versionada en el repo hermano autolibre-dev-docs.
+  const devDocs = path.resolve(REPO_ROOT, "../autolibre-dev-docs/autolibre-fuente-verdad-documental-amba.md");
+  return existsSync(sibling) || !existsSync(devDocs) ? sibling : devDocs;
 }
 
 export function loadSources(file: string = defaultSourcesPath()): Map<string, SourceEntry> {
