@@ -30,7 +30,8 @@ type PedidoFaqItem = {
 
 /**
  * Errores del WhatsApp (ver `parseArWhatsapp` en `lib/phone.ts`). Los usan el
- * form de `/pedido` y el modal de la home. `{n}` = cantidad de dígitos.
+ * form de `/pedido`, el modal de la home y el alta de proveedores (form y
+ * `/api/provider`). `{n}` = cantidad de dígitos.
  */
 const WHATSAPP_ERRORS = {
   empty: "Ingresá tu WhatsApp con código de área. Ej: 11 2345-6789",

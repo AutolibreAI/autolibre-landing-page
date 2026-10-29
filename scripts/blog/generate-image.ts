@@ -26,7 +26,8 @@ for (const file of [".env.local", ".env"]) {
 
 /** El bloque ```text``` que sigue a "## Prompt base", sin la línea `Scene:`. */
 export function promptBase(styleMd: string): string {
-  const section = styleMd.split(/^## Prompt base\s*$/m)[1];
+  // Normaliza CRLF: con autocrlf en Windows el checkout trae \r\n y el regex del bloque no matchea.
+  const section = styleMd.replace(/\r\n/g, "\n").split(/^## Prompt base\s*$/m)[1];
   const block = section?.match(/```text\n([\s\S]*?)```/)?.[1];
   if (!block) throw new Error("style.md: no encontré el bloque de texto de '## Prompt base'");
   return block.replace(/^Scene:.*$/m, "").trim();

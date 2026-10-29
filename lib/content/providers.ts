@@ -57,6 +57,39 @@ export const providersContent = {
     /** Se eligió una sugerencia, pero Google no devolvió localidad o provincia. */
     addressImpreciseError:
       "Esa dirección no es lo bastante precisa. Probá con calle y número y elegila de la lista.",
+    /**
+     * WhatsApp del negocio. El campo ya saca solo el `+54`, el `0` y el `15`
+     * (ver `formatArWhatsappInput` en `lib/phone.ts`); la ayuda igual lo dice,
+     * porque es la forma en que la gente aprende a escribirlo bien la próxima.
+     * Los errores son los de `/pedido` (`whatsappErrorMessage`).
+     */
+    whatsapp: {
+      label: "WhatsApp de contacto",
+      prefix: "+54",
+      /** Lo que lee un lector de pantalla en lugar de "+54". */
+      prefixLabel: "Código de país +54.",
+      placeholder: "11 2345-6789",
+      hint: "Con código de área, sin el 0 ni el 15. Ej: 381 456-7890",
+    },
+    /** La regla está en `isValidProviderEmail` (lib/proveedores/registration.ts). */
+    email: {
+      invalid:
+        "Revisá el email: tiene que ser como nombre@negocio.com, sin espacios ni tildes.",
+    },
+    /**
+     * Un mensaje por campo de texto, con el máximo de
+     * `PROVIDER_TEXT_MAX_LENGTH` (lib/proveedores/registration.ts). Si cambia
+     * el número allá, cambia acá.
+     */
+    textTooLong: {
+      taller: "El nombre del taller no puede superar los 120 caracteres.",
+      direccion: "La dirección no puede superar los 250 caracteres.",
+      hours: "Los horarios no pueden superar los 500 caracteres.",
+      service_other: "El otro servicio no puede superar los 500 caracteres.",
+      how_found: "Elegí una opción de la lista en \"¿Cómo se enteraron?\".",
+      how_found_other:
+        "Cómo te enteraste no puede superar los 500 caracteres.",
+    },
     hoursLabel: "Horarios de atención",
     hoursPlaceholder: "Ej: Lun a Vie 9 a 18hs, Sáb 9 a 13hs",
     modalityTitle: "¿Cómo atendés?",
@@ -69,15 +102,46 @@ export const providersContent = {
     },
     social: {
       title: "Redes sociales (opcional)",
-      hint: "Pegá los links completos, empezando por https://. Completá solo las redes que uses.",
-      placeholder: "https://…",
-      invalid: "Revisá el link de la red social: usá una dirección completa que empiece con https:// o http://.",
+      /**
+       * Se acepta el usuario o el link (ver `normalizeProviderSocialLink` en
+       * lib/proveedores/registration.ts): la gente sabe su usuario, no el link
+       * de su perfil. Al salir del campo se muestra el link que vamos a
+       * guardar.
+       */
+      hint: "Escribí tu usuario (ej: @tutaller) o pegá el link de tu perfil. En LinkedIn, pegá el link. Completá solo las redes que uses.",
+      /** Lo usa `/api/provider`, que no sabe qué campo marcar. */
+      invalid: "Revisá tus redes sociales: escribí tu usuario (ej: @tutaller) o pegá el link de tu perfil.",
       networks: [
-        { key: "instagram", label: "Instagram" },
-        { key: "facebook", label: "Facebook" },
-        { key: "tiktok", label: "TikTok" },
-        { key: "linkedin", label: "LinkedIn" },
-        { key: "youtube", label: "YouTube" },
+        {
+          key: "instagram",
+          label: "Instagram",
+          placeholder: "@tutaller",
+          invalid: "Escribí tu usuario de Instagram (ej: @tutaller) o pegá el link de tu perfil de instagram.com.",
+        },
+        {
+          key: "facebook",
+          label: "Facebook",
+          placeholder: "@tutaller o link de tu página",
+          invalid: "Escribí tu usuario de Facebook o pegá el link de tu página de facebook.com.",
+        },
+        {
+          key: "tiktok",
+          label: "TikTok",
+          placeholder: "@tutaller",
+          invalid: "Escribí tu usuario de TikTok (ej: @tutaller) o pegá el link de tu perfil de tiktok.com.",
+        },
+        {
+          key: "linkedin",
+          label: "LinkedIn",
+          placeholder: "https://linkedin.com/company/…",
+          invalid: "Pegá el link de tu perfil de LinkedIn, por ejemplo linkedin.com/company/tutaller.",
+        },
+        {
+          key: "youtube",
+          label: "YouTube",
+          placeholder: "@tucanal",
+          invalid: "Escribí tu canal de YouTube (ej: @tucanal) o pegá el link de youtube.com.",
+        },
       ],
     },
     logo: {

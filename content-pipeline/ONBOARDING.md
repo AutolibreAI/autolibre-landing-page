@@ -78,7 +78,8 @@ El pipeline lee `autolibre-fuente-verdad-documental-amba.md` desde la carpeta **
 └── autolibre-landing-page/                       ← el repo
 ```
 
-Copiá el archivo ahí. Si cambia la fuente, hay que volver a pasarle la versión nueva (ver "Riesgos" al final).
+Copiá el archivo ahí. Si no está en la carpeta padre, el pipeline la busca en el repo hermano
+`autolibre-dev-docs/autolibre-fuente-verdad-documental-amba.md`. Si cambia la fuente, hay que volver a pasarle la versión nueva (ver "Riesgos" al final).
 
 > `BLOG_SOURCE_OF_TRUTH` existe como alternativa, pero `blog:validate` **no** la lee del `.env`: solo funciona exportada
 > en la terminal. Con el archivo en la carpeta padre no hace falta.

@@ -14,12 +14,21 @@ import {
   Textarea,
 } from "@/components/ui/form-controls";
 import { FormError, FormSuccess } from "@/components/ui/form-feedback";
+import { WhatsappInput } from "@/components/ui/whatsapp-input";
 import { ButtonLink } from "@/components/ui/button";
+import { whatsappErrorMessage } from "@/lib/content/presupuesto";
+import { parseArWhatsapp } from "@/lib/phone";
+import { cn } from "@/lib/utils";
 import type { ServiceFamilyOption } from "@/lib/autolibre-api";
 import {
   PROVIDER_LOGO_TYPES,
   PROVIDER_DESCRIPTION_MAX_LENGTH,
+  PROVIDER_EMAIL_MAX_LENGTH,
   PROVIDER_SOCIAL_KEYS,
+  PROVIDER_TEXT_MAX_LENGTH,
+  findTooLongProviderText,
+  isValidProviderEmail,
+  normalizeProviderSocialLink,
   parseProviderProfileFields,
   type ProviderSocialKey,
   appendProviderBrand,
@@ -105,8 +114,19 @@ const GENERIC_ERROR = "Algo salió mal. Por favor intentá de nuevo.";
  *
  * Lo que tambien cambio en su momento: ahora hay errores que la persona puede
  * corregir, y por eso el cartel dejo de ser uno solo y generico — el backend
- * valida el WhatsApp de verdad (un numero con el 15 adelante se rechaza en vez
- * de guardarse roto) y avisa cuando ese email ya tiene una solicitud abierta.
+ * valida el WhatsApp de verdad y avisa cuando ese email ya tiene una solicitud
+ * abierta.
+ *
+ * ── El WhatsApp se arregla acá, no se rebota ────────────────────────────────
+ *
+ * El backend (`WhatsappNumber`) rechaza con razon un numero con el 15 local,
+ * pero este campo era un input pelado que mandaba lo que se tipeaba: un taller
+ * de Tucuman que escribio `0381 15 456-7890` —un numero perfectamente bueno—
+ * se comio el cartel generico de "formato que no podemos aceptar", sin saber
+ * que campo era. Ahora es el mismo `WhatsappInput` de `/pedido`: saca el +54,
+ * el 0 y el 15 mientras se escribe, valida con `parseArWhatsapp` al salir del
+ * campo y al enviar, y si algo falta lo dice en el campo. `/api/provider`
+ * vuelve a validar y manda la forma canonica (`549…`) al backend.
  */
 export function ProviderForm({
   serviceFamilies,
@@ -130,7 +150,28 @@ export function ProviderForm({
   const [logo, setLogo] = useState<File | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
   const [description, setDescription] = useState("");
-  const [invalidSocial, setInvalidSocial] = useState<ProviderSocialKey | null>(null);
+  /**
+   * Redes con un link que el backend rechazaria. Se marca al salir del campo
+   * (no mientras se tipea) y, una vez marcado, se re-chequea en vivo para que
+   * el error se vaya apenas el link sirve. Es un Set porque pueden fallar
+   * varias a la vez y se marcan todas.
+   */
+  const [invalidSocial, setInvalidSocial] = useState<
+    ReadonlySet<ProviderSocialKey>
+  >(new Set());
+
+  function checkSocialLink(key: ProviderSocialKey, value: string): boolean {
+    const invalid =
+      value.trim() !== "" && normalizeProviderSocialLink(key, value) === null;
+    setInvalidSocial((current) => {
+      if (current.has(key) === invalid) return current;
+      const next = new Set(current);
+      if (invalid) next.add(key);
+      else next.delete(key);
+      return next;
+    });
+    return invalid;
+  }
   const logoInputRef = useRef<HTMLInputElement>(null);
   const brandsRef = useRef<HTMLFieldSetElement>(null);
   /**
@@ -174,9 +215,29 @@ export function ProviderForm({
    * se reta mientras tipea, se reta cuando intenta mandar.
    */
   const [addressError, setAddressError] = useState<string | null>(null);
+  /**
+   * Mismo criterio que `addressError`. Hace falta porque el `<form>` va con
+   * `noValidate`: el `type="email"` del input no frena nada, y antes un email
+   * sin `.com` llegaba al backend y volvia como el cartel generico.
+   */
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  /**
+   * Lo que se ve en el campo, ya formateado (`381 456-7890`). Controlado porque
+   * `WhatsappInput` reescribe el valor mientras se tipea.
+   */
+  const [whatsapp, setWhatsapp] = useState("");
+  /**
+   * Mismo criterio que `/pedido`: el error aparece recien al salir del campo
+   * (o al intentar enviar) y desde ahi se corrige en vivo. Retar a mitad del
+   * numero, cuando todavia faltan digitos porque la persona no termino, no
+   * informa nada.
+   */
+  const [whatsappTouched, setWhatsappTouched] = useState(false);
 
   const servicesErrorRef = useRef<HTMLParagraphElement>(null);
   const addressInputRef = useRef<HTMLInputElement>(null);
+  const whatsappInputRef = useRef<HTMLInputElement>(null);
   /**
    * Refs y no state porque solo se leen en el submit y en el listener de
    * Google — no cambian nada de lo que se pinta.
@@ -189,10 +250,18 @@ export function ProviderForm({
   const autocompleteRef = useRef<unknown>(null);
   const pickedImpreciseRef = useRef(false);
   /**
-   * Si el submit ya mandó el foco a la dirección, el scroll al error de
-   * servicios (más abajo) no tiene que llevarse la pantalla a otro lado.
+   * Si el submit ya mandó el foco a un campo (WhatsApp o dirección), el scroll
+   * al error de servicios (más abajo) no tiene que llevarse la pantalla a otro
+   * lado.
    */
-  const addressFocusedOnSubmitRef = useRef(false);
+  const fieldFocusedOnSubmitRef = useRef(false);
+
+  const whatsappResult = parseArWhatsapp(whatsapp);
+  /** Derivado, como `missingServices`: se borra solo apenas el número sirve. */
+  const whatsappError =
+    !whatsappResult.ok && (whatsappTouched || submitAttempted)
+      ? whatsappErrorMessage(whatsappResult.error, whatsappResult.diff)
+      : null;
 
   // El Autocomplete pide direcciones puntuales ("address"), no zonas: acá
   // importa la puerta del local, porque de eso depende que el orden por
@@ -278,7 +347,7 @@ export function ProviderForm({
    * formulario esta roto.
    */
   useEffect(() => {
-    if (missingServices && !addressFocusedOnSubmitRef.current) {
+    if (missingServices && !fieldFocusedOnSubmitRef.current) {
       servicesErrorRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "center",
@@ -310,6 +379,7 @@ export function ProviderForm({
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitAttempted(true);
+    const form = event.currentTarget;
 
     // Los cuatro campos de geocode viajan juntos o ninguno — `geo` ya
     // garantiza eso (ver el efecto de arriba), así que alcanza con chequear
@@ -321,15 +391,43 @@ export function ProviderForm({
     // no cargó no hay lista de donde elegir, y trabar el alta por eso seria
     // perder al taller por un problema nuestro — ahí sigue el texto libre.
     const addressInvalid = autocompleteRef.current !== null && !hasGeo;
-    addressFocusedOnSubmitRef.current = addressInvalid;
+    const whatsappInvalid = !whatsappResult.ok;
+    const emailInvalid = !isValidProviderEmail(
+      (form.elements.namedItem("email") as HTMLInputElement).value,
+    );
+    // Las redes se chequean ACÁ, con el resto, y no despues del return de
+    // abajo: antes, si fallaba cualquier otro campo, el error de la red no
+    // aparecia hasta el siguiente intento.
+    const socialInputs = PROVIDER_SOCIAL_KEYS.map(
+      (key) =>
+        [key, form.elements.namedItem(`social_${key}`) as HTMLInputElement] as const,
+    );
+    const firstInvalidSocial = socialInputs
+      .filter(([key, input]) => checkSocialLink(key, input.value))
+      .at(0)?.[1];
+    const socialInvalid = firstInvalidSocial !== undefined;
+
+    if (emailInvalid) setEmailError(providersContent.form.email.invalid);
     if (addressInvalid) {
       setAddressError(
         pickedImpreciseRef.current
           ? providersContent.form.addressImpreciseError
           : providersContent.form.addressNotPickedError,
       );
-      addressInputRef.current?.focus();
     }
+    // Si fallan varios, el foco va al primero en el orden de la pantalla. El
+    // error de cada uno se muestra igual.
+    const firstInvalidField = socialInvalid
+      ? firstInvalidSocial
+      : whatsappInvalid
+        ? whatsappInputRef.current
+        : emailInvalid
+          ? emailInputRef.current
+          : addressInvalid
+            ? addressInputRef.current
+            : null;
+    fieldFocusedOnSubmitRef.current = firstInvalidField !== null;
+    firstInvalidField?.focus();
 
     // Ojo: el <form> va con `noValidate`, asi que los `required` de los inputs
     // son semantica para lectores de pantalla y no cortan nada. Lo unico que
@@ -343,43 +441,70 @@ export function ProviderForm({
       submittedBrands,
       submittedSpecialties,
     );
-    if (addressInvalid || !hasDeclaredServices || brandsInvalid || logoError) {
-      if (!addressInvalid && hasDeclaredServices) {
+    if (
+      socialInvalid ||
+      whatsappInvalid ||
+      emailInvalid ||
+      addressInvalid ||
+      !hasDeclaredServices ||
+      brandsInvalid ||
+      logoError
+    ) {
+      if (firstInvalidField === null && hasDeclaredServices) {
         if (logoError) logoInputRef.current?.focus();
         else if (brandsInvalid) brandsRef.current?.focus();
       }
       return;
     }
 
-    const form = event.currentTarget;
-    const profile = parseProviderProfileFields(description, Object.fromEntries(
-      PROVIDER_SOCIAL_KEYS.map((key) => [key, (form.elements.namedItem(`social_${key}`) as HTMLInputElement).value]),
-    ));
-    setInvalidSocial(null);
+    // Las redes ya se chequearon arriba, asi que acá solo puede fallar la
+    // descripcion (y el textarea ya trae `maxLength`). Se arma igual con la
+    // misma funcion que usa `/api/provider`, que es la que normaliza los links.
+    const profile = parseProviderProfileFields(
+      description,
+      Object.fromEntries(socialInputs.map(([key, input]) => [key, input.value])),
+    );
     if (!profile.ok) {
       setSubmitState("error");
-      setErrorMessage(profile.kind === "description" ? providersContent.form.description.invalid : providersContent.form.social.invalid);
-      if (profile.network) {
-        setInvalidSocial(profile.network);
-        (form.elements.namedItem(`social_${profile.network}`) as HTMLInputElement).focus();
-      }
+      setErrorMessage(
+        profile.kind === "description"
+          ? providersContent.form.description.invalid
+          : providersContent.form.social.invalid,
+      );
+      return;
+    }
+
+    const taller = (form.elements.namedItem("taller") as HTMLInputElement)
+      .value;
+    const email = (
+      form.elements.namedItem("email") as HTMLInputElement
+    ).value.trim();
+    const direccion = (form.elements.namedItem("direccion") as HTMLInputElement)
+      .value;
+    const hours = (
+      form.elements.namedItem("hours") as HTMLInputElement
+    ).value.trim();
+
+    // Los inputs ya traen `maxLength`, asi que esto casi nunca salta. Queda
+    // por si un autocompletado o una extension mete mas texto que el que se
+    // puede tipear: mejor decirlo acá que comerse el 400 del backend.
+    const tooLong = findTooLongProviderText({
+      taller,
+      direccion,
+      hours,
+      service_other: otherService,
+      how_found: howFound,
+      how_found_other: otherHowFound,
+    });
+    if (tooLong) {
+      setErrorMessage(providersContent.form.textTooLong[tooLong]);
+      setSubmitState("error");
       return;
     }
 
     setSubmitState("loading");
     setErrorMessage(GENERIC_ERROR);
     setAlreadyRegistered(null);
-
-    const taller = (form.elements.namedItem("taller") as HTMLInputElement)
-      .value;
-    const whatsapp = (form.elements.namedItem("whatsapp") as HTMLInputElement)
-      .value;
-    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-    const direccion = (form.elements.namedItem("direccion") as HTMLInputElement)
-      .value;
-    const hours = (
-      form.elements.namedItem("hours") as HTMLInputElement
-    ).value.trim();
 
     try {
       let logoDataUrl: string | undefined;
@@ -499,6 +624,7 @@ export function ProviderForm({
               type="text"
               placeholder="Ej: Taller Belgrano"
               autoComplete="organization"
+              maxLength={PROVIDER_TEXT_MAX_LENGTH.taller}
               required
             />
           </Field>
@@ -567,39 +693,105 @@ export function ProviderForm({
             <legend className="font-display text-base font-bold text-ink">{providersContent.form.social.title}</legend>
             <p id="prov-social-hint" className="mb-4 text-sm text-ink/70">{providersContent.form.social.hint}</p>
             <div className="grid gap-4 sm:grid-cols-2">
-              {providersContent.form.social.networks.map(({ key, label }) => (
+              {providersContent.form.social.networks.map(({ key, label, placeholder, invalid }) => (
                 <Field key={key} label={label} htmlFor={`prov-social-${key}`}
-                  error={invalidSocial === key ? providersContent.form.social.invalid : undefined}
+                  error={invalidSocial.has(key) ? invalid : undefined}
                   errorId={`prov-social-${key}-error`}>
-                  <Input id={`prov-social-${key}`} name={`social_${key}`} type="url"
+                  {/* `text` y no `url`: se puede escribir el usuario (`@tutaller`),
+                      y el teclado de `url` en iOS esconde la arroba. */}
+                  <Input id={`prov-social-${key}`} name={`social_${key}`} type="text"
                     className="min-h-11 text-base" maxLength={2048} autoCapitalize="none" autoCorrect="off" spellCheck={false}
-                    placeholder={providersContent.form.social.placeholder}
-                    aria-invalid={invalidSocial === key}
-                    aria-describedby={invalidSocial === key ? `prov-social-hint prov-social-${key}-error` : "prov-social-hint"}
-                    onChange={() => { if (invalidSocial === key) setInvalidSocial(null); }} />
+                    placeholder={placeholder}
+                    aria-invalid={invalidSocial.has(key)}
+                    aria-describedby={invalidSocial.has(key) ? `prov-social-hint prov-social-${key}-error` : "prov-social-hint"}
+                    onBlur={(event) => {
+                      // Si se pudo armar el link, se muestra en el campo: la
+                      // persona ve lo que vamos a guardar y lo puede corregir.
+                      const link = normalizeProviderSocialLink(key, event.target.value);
+                      if (link) event.target.value = link;
+                      checkSocialLink(key, event.target.value);
+                    }}
+                    onChange={(event) => { if (invalidSocial.has(key)) checkSocialLink(key, event.target.value); }} />
                 </Field>
               ))}
             </div>
           </fieldset>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="WhatsApp de contacto" htmlFor="prov-phone" required>
-              <Input
-                id="prov-phone"
-                name="whatsapp"
-                type="tel"
-                placeholder="11 2345 6789"
-                autoComplete="tel"
-                required
-              />
+          <div className="grid gap-4 sm:grid-cols-2 sm:items-start">
+            <Field
+              label={providersContent.form.whatsapp.label}
+              htmlFor="prov-phone"
+              required
+              hint={providersContent.form.whatsapp.hint}
+              hintId="prov-phone-hint"
+              error={whatsappError}
+              errorId="prov-phone-error"
+            >
+              {/* Mismo control que /pedido: el `+54` es parte del campo, así
+                  que se escribe el número nacional y nada más. Borde, fondo,
+                  radio y foco son los de `Input` (form-controls). */}
+              <div
+                className={cn(
+                  "flex overflow-clip rounded-field border bg-surface-subtle transition-colors focus-within:border-brand",
+                  whatsappError ? "border-danger" : "border-line",
+                )}
+              >
+                <span
+                  id="prov-phone-prefix"
+                  className="flex shrink-0 items-center border-r border-line bg-surface-muted px-3.5 text-base text-ink/70"
+                >
+                  <span aria-hidden="true">
+                    {providersContent.form.whatsapp.prefix}
+                  </span>
+                  <span className="sr-only">
+                    {providersContent.form.whatsapp.prefixLabel}
+                  </span>
+                </span>
+                <WhatsappInput
+                  id="prov-phone"
+                  name="whatsapp"
+                  ref={whatsappInputRef}
+                  autoComplete="tel-national"
+                  required
+                  value={whatsapp}
+                  onValueChange={setWhatsapp}
+                  onBlur={() => setWhatsappTouched(true)}
+                  placeholder={providersContent.form.whatsapp.placeholder}
+                  disabled={submitState === "loading"}
+                  aria-invalid={whatsappError ? true : undefined}
+                  aria-describedby={
+                    whatsappError
+                      ? "prov-phone-prefix prov-phone-hint prov-phone-error"
+                      : "prov-phone-prefix prov-phone-hint"
+                  }
+                  // `text-base` (16px) y no los 15px de `Input`: con menos,
+                  // iOS hace zoom al enfocar.
+                  className="min-h-11 min-w-0 flex-1 rounded-none border-0 text-base placeholder:text-ink/65"
+                />
+              </div>
             </Field>
-            <Field label="Email" htmlFor="prov-email" required>
+            <Field
+              label="Email"
+              htmlFor="prov-email"
+              required
+              error={emailError}
+              errorId="prov-email-error"
+            >
               <Input
                 id="prov-email"
                 name="email"
                 type="email"
+                ref={emailInputRef}
                 placeholder="tuemail@negocio.com"
                 autoComplete="email"
+                autoCapitalize="none"
+                spellCheck={false}
+                maxLength={PROVIDER_EMAIL_MAX_LENGTH}
+                onChange={() => setEmailError(null)}
+                aria-invalid={emailError !== null}
+                aria-describedby={
+                  emailError !== null ? "prov-email-error" : undefined
+                }
                 required
               />
             </Field>
@@ -617,6 +809,7 @@ export function ProviderForm({
               type="text"
               placeholder="Calle y número"
               autoComplete="street-address"
+              maxLength={PROVIDER_TEXT_MAX_LENGTH.direccion}
               ref={addressInputRef}
               onChange={() => {
                 setGeo(EMPTY_GEO);
@@ -649,6 +842,7 @@ export function ProviderForm({
               name="hours"
               type="text"
               placeholder={providersContent.form.hoursPlaceholder}
+              maxLength={PROVIDER_TEXT_MAX_LENGTH.hours}
             />
           </Field>
 
@@ -924,6 +1118,7 @@ export function ProviderForm({
                   type="text"
                   placeholder="Contanos qué otro servicio ofrecés"
                   value={otherService}
+                  maxLength={PROVIDER_TEXT_MAX_LENGTH.service_other}
                   onChange={(event) => setOtherService(event.target.value)}
                   required
                 />
@@ -997,6 +1192,7 @@ export function ProviderForm({
                   type="text"
                   placeholder="Contanos cómo te enteraste..."
                   value={otherHowFound}
+                  maxLength={PROVIDER_TEXT_MAX_LENGTH.how_found_other}
                   onChange={(event) => setOtherHowFound(event.target.value)}
                   required
                 />
