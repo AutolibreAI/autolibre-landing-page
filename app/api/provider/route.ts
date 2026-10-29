@@ -5,6 +5,8 @@ import { providersContent } from "@/lib/content/providers";
 import { parseArWhatsapp } from "@/lib/phone";
 import {
   PROVIDER_LOGO_MAX_BYTES,
+  findTooLongProviderText,
+  isValidProviderEmail,
   validBrandSelection,
   parseProviderProfileFields,
 } from "@/lib/proveedores/registration";
@@ -47,8 +49,10 @@ const MESSAGES = {
    * no lo era mandaba a la persona a corregir un campo que estaba bien.
    *
    * Ya no menciona el 15: el WhatsApp se valida y normaliza en esta ruta
-   * antes de llegar al backend (ver `POST`), con su propio mensaje. Si este
-   * cartel aparece, el problema es otro campo.
+   * antes de llegar al backend (ver `POST`), con su propio mensaje. Lo mismo
+   * el email, las redes y el largo de los textos libres
+   * (lib/proveedores/registration.ts). Si este cartel aparece, el problema es
+   * otro campo, o esas reglas quedaron atras de las del backend.
    */
   invalid:
     "Revisá los datos: hay un campo con un formato que no podemos aceptar.",
@@ -129,6 +133,37 @@ export async function POST(req: NextRequest) {
   }
   const whatsapp = phone.canonical;
 
+  // Email y textos libres se validan ACÁ con las reglas del backend (ver
+  // `PROVIDER_TEXT_MAX_LENGTH` e `isValidProviderEmail`): lo que el backend
+  // rechaza vuelve como el cartel generico de `invalid`, que no dice que campo
+  // corregir. El formulario ya valida lo mismo; esto cubre a quien llega sin
+  // pasar por el.
+  if (!isValidProviderEmail(email)) {
+    return NextResponse.json(
+      { error: providersContent.form.email.invalid },
+      { status: 400 },
+    );
+  }
+
+  const serviceOther = asOptionalString(body.service_other);
+  const howFound = asOptionalString(body.how_found);
+  const howFoundOther = asOptionalString(body.how_found_other);
+  const hours = asOptionalString(body.hours);
+  const tooLong = findTooLongProviderText({
+    taller: businessName,
+    direccion: address,
+    hours,
+    service_other: serviceOther,
+    how_found: howFound,
+    how_found_other: howFoundOther,
+  });
+  if (tooLong) {
+    return NextResponse.json(
+      { error: providersContent.form.textTooLong[tooLong] },
+      { status: 400 },
+    );
+  }
+
   const profile = parseProviderProfileFields(body.description, body.social_links);
   if (!profile.ok) {
     return NextResponse.json({ error: profile.kind === "description" ? providersContent.form.description.invalid : providersContent.form.social.invalid }, { status: 400 });
@@ -193,11 +228,11 @@ export async function POST(req: NextRequest) {
     declaredFuelTypes: asStringArray(body.fuel_types),
     // Estos tres se perdian dentro de la celda "Notas". Ahora tienen columna.
     vehicleTypes: asStringArray(body.vehicle_types),
-    serviceOther: asOptionalString(body.service_other),
-    howFound: asOptionalString(body.how_found),
-    howFoundOther: asOptionalString(body.how_found_other),
+    serviceOther,
+    howFound,
+    howFoundOther,
     ...(hasGeo ? { latitude, longitude, locality, province } : {}),
-    hours: asOptionalString(body.hours),
+    hours,
     modality: asOptionalModality(body.modality),
   });
 

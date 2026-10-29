@@ -6,9 +6,91 @@ import {
   validProviderLogo,
   parseProviderProfileFields,
   appendProviderBrand,
+  findTooLongProviderText,
+  isValidProviderEmail,
+  normalizeProviderSocialLink,
 } from "../../lib/proveedores/registration.ts";
 
 describe("registro de proveedores", () => {
+  it("acepta emails comunes, recortando espacios", () => {
+    for (const email of [
+      "taller@gmail.com",
+      " Juan.Perez+alta@negocio.com.ar ",
+      "ventas_2024@mi-taller.ar",
+    ]) {
+      assert.equal(isValidProviderEmail(email), true, email);
+    }
+  });
+  it("rechaza los emails que el backend rebota", () => {
+    for (const email of [
+      "",
+      "taller",
+      "taller@gmail",
+      "taller@gmail.",
+      "taller@.com",
+      ".taller@gmail.com",
+      "ta..ller@gmail.com",
+      "taller.@gmail.com",
+      "mi taller@gmail.com",
+      "taller@gmail.com.123",
+      "taller@-gmail.com",
+      "taller@gmail_.com",
+      "talléres@gmail.com",
+      "a@b@gmail.com",
+      `${"a".repeat(65)}@gmail.com`,
+      `a@${"b".repeat(250)}.com`,
+    ]) {
+      assert.equal(isValidProviderEmail(email), false, email);
+    }
+  });
+  it("normaliza links de redes que valida @IsUrl", () => {
+    assert.equal(
+      normalizeProviderSocialLink(" https://www.youtube.com/@mitaller "),
+      "https://www.youtube.com/@mitaller",
+    );
+    assert.equal(
+      normalizeProviderSocialLink("https://facebook.com/taller ñandú"),
+      "https://facebook.com/taller%20%C3%B1and%C3%BA",
+    );
+    assert.equal(
+      normalizeProviderSocialLink("https://ñandú.com.ar/x"),
+      "https://xn--and-6ma2c.com.ar/x",
+    );
+  });
+  it("rechaza hosts que @IsUrl no acepta", () => {
+    for (const link of [
+      "https://mi_taller.com",
+      "https://instagram",
+      "https://instagram.com.",
+      "https://-taller.com",
+      "https://192.168.0.1/x",
+      "https://instagram.c0m",
+      `https://instagram.com/${"a".repeat(2048)}`,
+    ]) {
+      assert.equal(normalizeProviderSocialLink(link), null, link);
+    }
+  });
+  it("detecta el primer texto libre que supera el maximo del backend", () => {
+    assert.equal(
+      findTooLongProviderText({
+        taller: " " + "a".repeat(120) + " ",
+        direccion: "a".repeat(250),
+        hours: "a".repeat(500),
+        service_other: null,
+      }),
+      null,
+    );
+    assert.equal(findTooLongProviderText({ taller: "a".repeat(121) }), "taller");
+    assert.equal(
+      findTooLongProviderText({ direccion: "a".repeat(251) }),
+      "direccion",
+    );
+    assert.equal(findTooLongProviderText({ hours: "a".repeat(501) }), "hours");
+    assert.equal(
+      findTooLongProviderText({ how_found_other: "a".repeat(501) }),
+      "how_found_other",
+    );
+  });
   it("permite marcas libres sin repetirlas por mayusculas o espacios", () => {
     assert.deepEqual(appendProviderBrand(["Ford"], "  ford  "), ["Ford"]);
     assert.deepEqual(appendProviderBrand(["Ford"], "  Nueva   Marca "), ["Ford", "Nueva Marca"]);

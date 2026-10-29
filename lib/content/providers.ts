@@ -71,6 +71,25 @@ export const providersContent = {
       placeholder: "11 2345-6789",
       hint: "Con código de área, sin el 0 ni el 15. Ej: 381 456-7890",
     },
+    /** La regla está en `isValidProviderEmail` (lib/proveedores/registration.ts). */
+    email: {
+      invalid:
+        "Revisá el email: tiene que ser como nombre@negocio.com, sin espacios ni tildes.",
+    },
+    /**
+     * Un mensaje por campo de texto, con el máximo de
+     * `PROVIDER_TEXT_MAX_LENGTH` (lib/proveedores/registration.ts). Si cambia
+     * el número allá, cambia acá.
+     */
+    textTooLong: {
+      taller: "El nombre del taller no puede superar los 120 caracteres.",
+      direccion: "La dirección no puede superar los 250 caracteres.",
+      hours: "Los horarios no pueden superar los 500 caracteres.",
+      service_other: "El otro servicio no puede superar los 500 caracteres.",
+      how_found: "Elegí una opción de la lista en \"¿Cómo se enteraron?\".",
+      how_found_other:
+        "Cómo te enteraste no puede superar los 500 caracteres.",
+    },
     hoursLabel: "Horarios de atención",
     hoursPlaceholder: "Ej: Lun a Vie 9 a 18hs, Sáb 9 a 13hs",
     modalityTitle: "¿Cómo atendés?",

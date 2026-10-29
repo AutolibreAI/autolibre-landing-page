@@ -23,7 +23,11 @@ import type { ServiceFamilyOption } from "@/lib/autolibre-api";
 import {
   PROVIDER_LOGO_TYPES,
   PROVIDER_DESCRIPTION_MAX_LENGTH,
+  PROVIDER_EMAIL_MAX_LENGTH,
   PROVIDER_SOCIAL_KEYS,
+  PROVIDER_TEXT_MAX_LENGTH,
+  findTooLongProviderText,
+  isValidProviderEmail,
   parseProviderProfileFields,
   type ProviderSocialKey,
   appendProviderBrand,
@@ -190,6 +194,13 @@ export function ProviderForm({
    */
   const [addressError, setAddressError] = useState<string | null>(null);
   /**
+   * Mismo criterio que `addressError`. Hace falta porque el `<form>` va con
+   * `noValidate`: el `type="email"` del input no frena nada, y antes un email
+   * sin `.com` llegaba al backend y volvia como el cartel generico.
+   */
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  /**
    * Lo que se ve en el campo, ya formateado (`381 456-7890`). Controlado porque
    * `WhatsappInput` reescribe el valor mientras se tipea.
    */
@@ -346,6 +357,7 @@ export function ProviderForm({
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitAttempted(true);
+    const form = event.currentTarget;
 
     // Los cuatro campos de geocode viajan juntos o ninguno — `geo` ya
     // garantiza eso (ver el efecto de arriba), así que alcanza con chequear
@@ -357,18 +369,26 @@ export function ProviderForm({
     // no cargó no hay lista de donde elegir, y trabar el alta por eso seria
     // perder al taller por un problema nuestro — ahí sigue el texto libre.
     const addressInvalid = autocompleteRef.current !== null && !hasGeo;
-    // El WhatsApp va arriba de la dirección: si los dos fallan, el foco va al
-    // primero que se ve. El error de cada uno se muestra igual.
+    // WhatsApp, email y dirección: si fallan varios, el foco va al primero que
+    // se ve. El error de cada uno se muestra igual.
     const whatsappInvalid = !whatsappResult.ok;
-    fieldFocusedOnSubmitRef.current = whatsappInvalid || addressInvalid;
+    const emailInvalid = !isValidProviderEmail(
+      (form.elements.namedItem("email") as HTMLInputElement).value,
+    );
+    fieldFocusedOnSubmitRef.current =
+      whatsappInvalid || emailInvalid || addressInvalid;
     if (whatsappInvalid) whatsappInputRef.current?.focus();
+    if (emailInvalid) {
+      setEmailError(providersContent.form.email.invalid);
+      if (!whatsappInvalid) emailInputRef.current?.focus();
+    }
     if (addressInvalid) {
       setAddressError(
         pickedImpreciseRef.current
           ? providersContent.form.addressImpreciseError
           : providersContent.form.addressNotPickedError,
       );
-      if (!whatsappInvalid) addressInputRef.current?.focus();
+      if (!whatsappInvalid && !emailInvalid) addressInputRef.current?.focus();
     }
 
     // Ojo: el <form> va con `noValidate`, asi que los `required` de los inputs
@@ -385,19 +405,24 @@ export function ProviderForm({
     );
     if (
       whatsappInvalid ||
+      emailInvalid ||
       addressInvalid ||
       !hasDeclaredServices ||
       brandsInvalid ||
       logoError
     ) {
-      if (!whatsappInvalid && !addressInvalid && hasDeclaredServices) {
+      if (
+        !whatsappInvalid &&
+        !emailInvalid &&
+        !addressInvalid &&
+        hasDeclaredServices
+      ) {
         if (logoError) logoInputRef.current?.focus();
         else if (brandsInvalid) brandsRef.current?.focus();
       }
       return;
     }
 
-    const form = event.currentTarget;
     const profile = parseProviderProfileFields(description, Object.fromEntries(
       PROVIDER_SOCIAL_KEYS.map((key) => [key, (form.elements.namedItem(`social_${key}`) as HTMLInputElement).value]),
     ));
@@ -412,18 +437,37 @@ export function ProviderForm({
       return;
     }
 
-    setSubmitState("loading");
-    setErrorMessage(GENERIC_ERROR);
-    setAlreadyRegistered(null);
-
     const taller = (form.elements.namedItem("taller") as HTMLInputElement)
       .value;
-    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const email = (
+      form.elements.namedItem("email") as HTMLInputElement
+    ).value.trim();
     const direccion = (form.elements.namedItem("direccion") as HTMLInputElement)
       .value;
     const hours = (
       form.elements.namedItem("hours") as HTMLInputElement
     ).value.trim();
+
+    // Los inputs ya traen `maxLength`, asi que esto casi nunca salta. Queda
+    // por si un autocompletado o una extension mete mas texto que el que se
+    // puede tipear: mejor decirlo acá que comerse el 400 del backend.
+    const tooLong = findTooLongProviderText({
+      taller,
+      direccion,
+      hours,
+      service_other: otherService,
+      how_found: howFound,
+      how_found_other: otherHowFound,
+    });
+    if (tooLong) {
+      setErrorMessage(providersContent.form.textTooLong[tooLong]);
+      setSubmitState("error");
+      return;
+    }
+
+    setSubmitState("loading");
+    setErrorMessage(GENERIC_ERROR);
+    setAlreadyRegistered(null);
 
     try {
       let logoDataUrl: string | undefined;
@@ -543,6 +587,7 @@ export function ProviderForm({
               type="text"
               placeholder="Ej: Taller Belgrano"
               autoComplete="organization"
+              maxLength={PROVIDER_TEXT_MAX_LENGTH.taller}
               required
             />
           </Field>
@@ -679,13 +724,28 @@ export function ProviderForm({
                 />
               </div>
             </Field>
-            <Field label="Email" htmlFor="prov-email" required>
+            <Field
+              label="Email"
+              htmlFor="prov-email"
+              required
+              error={emailError}
+              errorId="prov-email-error"
+            >
               <Input
                 id="prov-email"
                 name="email"
                 type="email"
+                ref={emailInputRef}
                 placeholder="tuemail@negocio.com"
                 autoComplete="email"
+                autoCapitalize="none"
+                spellCheck={false}
+                maxLength={PROVIDER_EMAIL_MAX_LENGTH}
+                onChange={() => setEmailError(null)}
+                aria-invalid={emailError !== null}
+                aria-describedby={
+                  emailError !== null ? "prov-email-error" : undefined
+                }
                 required
               />
             </Field>
@@ -703,6 +763,7 @@ export function ProviderForm({
               type="text"
               placeholder="Calle y número"
               autoComplete="street-address"
+              maxLength={PROVIDER_TEXT_MAX_LENGTH.direccion}
               ref={addressInputRef}
               onChange={() => {
                 setGeo(EMPTY_GEO);
@@ -735,6 +796,7 @@ export function ProviderForm({
               name="hours"
               type="text"
               placeholder={providersContent.form.hoursPlaceholder}
+              maxLength={PROVIDER_TEXT_MAX_LENGTH.hours}
             />
           </Field>
 
@@ -1010,6 +1072,7 @@ export function ProviderForm({
                   type="text"
                   placeholder="Contanos qué otro servicio ofrecés"
                   value={otherService}
+                  maxLength={PROVIDER_TEXT_MAX_LENGTH.service_other}
                   onChange={(event) => setOtherService(event.target.value)}
                   required
                 />
@@ -1083,6 +1146,7 @@ export function ProviderForm({
                   type="text"
                   placeholder="Contanos cómo te enteraste..."
                   value={otherHowFound}
+                  maxLength={PROVIDER_TEXT_MAX_LENGTH.how_found_other}
                   onChange={(event) => setOtherHowFound(event.target.value)}
                   required
                 />
