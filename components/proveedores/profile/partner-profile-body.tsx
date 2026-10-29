@@ -104,6 +104,15 @@ export function PartnerProfileBody({ partner, serviceGroups, faqs }: PartnerProf
           ) : null}
 
           <div className="flex flex-col gap-8">
+            <dl className="grid border-t border-ink sm:auto-cols-fr sm:grid-flow-col sm:gap-x-8">
+              {facts.map((fact) => (
+                <div key={fact.id} className="flex flex-col gap-2 border-b border-line py-5">
+                  <dt className={factLabelClass}>{fact.label}</dt>
+                  <dd className="font-display text-lg leading-snug font-semibold text-ink">{fact.value}</dd>
+                </div>
+              ))}
+            </dl>
+
             <h2 id="servicios-titulo" className="font-display text-2xl font-bold text-ink md:text-3xl">
               {services.title}
             </h2>
@@ -125,15 +134,6 @@ export function PartnerProfileBody({ partner, serviceGroups, faqs }: PartnerProf
                 ))}
               </div>
             ) : null}
-
-            <dl className="grid border-t border-ink sm:auto-cols-fr sm:grid-flow-col sm:gap-x-8">
-              {facts.map((fact) => (
-                <div key={fact.id} className="flex flex-col gap-2 border-b border-line py-5">
-                  <dt className={factLabelClass}>{fact.label}</dt>
-                  <dd className="font-display text-lg leading-snug font-semibold text-ink">{fact.value}</dd>
-                </div>
-              ))}
-            </dl>
           </div>
 
           {faqs.length > 0 ? (

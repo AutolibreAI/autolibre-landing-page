@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Section } from "@/components/ui/section";
 import { homeContent } from "@/lib/content/home";
+import { siteContent } from "@/lib/content/site";
 
 /**
  * Logos de aliados, fijos (son solo tres por ahora: un slider no tiene nada
@@ -17,6 +18,7 @@ import { homeContent } from "@/lib/content/home";
  */
 export function AlliesSection() {
   const { title, logos } = homeContent.allies;
+  const { externalHint } = siteContent.nav;
 
   return (
     <Section id="aliados" tone="ink" spacing="sm" aria-labelledby="allies-title" container="content">
@@ -28,11 +30,8 @@ export function AlliesSection() {
       </h2>
 
       <ul className="mt-8 flex flex-wrap items-center justify-center gap-4">
-        {logos.map((logo) => (
-          <li
-            key={logo.id}
-            className="flex h-28 w-52 shrink-0 items-center justify-center rounded-card bg-surface"
-          >
+        {logos.map((logo) => {
+          const image = (
             <Image
               src={logo.src}
               alt={logo.name}
@@ -41,8 +40,28 @@ export function AlliesSection() {
               sizes="140px"
               className="h-auto max-h-14 w-auto max-w-35 object-contain"
             />
-          </li>
-        ))}
+          );
+          const cellClassName =
+            "flex h-28 w-52 shrink-0 items-center justify-center rounded-card bg-surface";
+
+          return (
+            <li key={logo.id}>
+              {logo.url ? (
+                <a
+                  href={logo.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${cellClassName} transition hover:opacity-80`}
+                >
+                  {image}
+                  <span className="sr-only"> {externalHint}</span>
+                </a>
+              ) : (
+                <div className={cellClassName}>{image}</div>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </Section>
   );

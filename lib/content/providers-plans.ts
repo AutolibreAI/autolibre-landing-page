@@ -7,7 +7,7 @@
  * número sin confirmar el cambio con producto.
  */
 
-import { PROVEEDORES_PLANES_PATH } from "@/lib/proveedores/query";
+import { PROVEEDORES_PLANES_PATH, PROVEEDORES_REGISTRO_PATH } from "@/lib/proveedores/query";
 
 export const providersPlansContent = {
   meta: {
@@ -40,10 +40,7 @@ export const providersPlansContent = {
         "Consultas con marca, modelo, año y servicio solicitado, de tu zona y tu rubro",
         "Hasta 1 pedido por WhatsApp por mes",
       ],
-      cta: {
-        label: "Registrate gratis",
-        whatsappMessage: "Hola! Quiero sumar mi negocio a AutoLibre con el plan Estándar.",
-      },
+      cta: { label: "Registrate gratis", href: PROVEEDORES_REGISTRO_PATH },
       highlighted: false,
     },
     {

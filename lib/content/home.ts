@@ -163,21 +163,30 @@ export const homeContent = {
   },
 
   /**
-   * Franja de logos de aliados: negocios y servicios con una alianza real con
-   * AutoLibre (no son proveedores cualquiera del marketplace). El track se
-   * desliza solo; el `alt` de cada logo ya dice el nombre, así que la imagen
-   * no necesita texto al lado.
+   * Logos de aliados: negocios y servicios con una alianza real con AutoLibre
+   * (no son proveedores cualquiera del marketplace). Cada uno linkea a su
+   * propio sitio: `url` sale del link "website" de su perfil en
+   * `/proveedores/<slug>` cuando lo tiene ahí; si no, se confirma a mano con
+   * producto antes de cargarlo (nunca una URL inventada).
    */
   allies: {
     title: "Aliados",
     logos: [
-      { id: "autech", name: "Autech", src: "/brand/aliados/autech.png", width: 283, height: 30 },
+      {
+        id: "autech",
+        name: "Autech",
+        src: "/brand/aliados/autech.png",
+        width: 283,
+        height: 30,
+        url: "https://www.autech.com.ar/",
+      },
       {
         id: "sinfotomultas",
         name: "SinFotomultas",
         src: "/brand/aliados/sinfotomultas.png",
         width: 1532,
         height: 150,
+        url: "https://sinfotomultas.com.ar/",
       },
       {
         id: "asistir24",
@@ -185,6 +194,7 @@ export const homeContent = {
         src: "/brand/aliados/asistir24.png",
         width: 828,
         height: 582,
+        url: "https://asistir24.com.ar/",
       },
     ],
   },
