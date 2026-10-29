@@ -1,0 +1,86 @@
+slug: papeles-y-vtv-de-la-moto
+title: "Si tenés moto: qué papeles y controles cambian"
+primaryQuery: "qué papeles necesito para andar en moto"
+secondaryQueries:
+  - "cuándo le hago la VTV a la moto"
+  - "es obligatorio el casco para el acompañante"
+  - "la moto tiene que llevar matafuego y balizas"
+  - "primera VTV de la moto en Provincia"
+intent: informacional
+audience: "dueño de moto en AMBA (Provincia o Ciudad) que quiere saber qué tiene que llevar encima y cuándo le toca la VTV"
+jurisdiction: [nacional, caba, pba]
+angle: "Lo mismo que el auto en papeles, lo distinto en seguridad y VTV: checklist corto de documentos, qué equipamiento se exige (casco para los dos, anteojos sin parabrisas, sin matafuego ni balizas) y cuándo toca la primera VTV en Provincia y en Ciudad, con la advertencia del cambio de régimen en CABA"
+
+outline:
+  - h2: "Qué papeles tenés que llevar si andás en moto"
+    points:
+      - "respuesta directa en el primer párrafo, citable sola: las mismas reglas de documentación que el auto"
+      - "licencia clase A vigente, cédula, comprobante del seguro obligatorio, patente colocada"
+      - "link interno a la nota de papeles para circular (lista completa y qué vale en el celular)"
+    sourceIds: [MOT-01]
+  - h2: "Qué cambia respecto del auto: casco, anteojos, matafuego y balizas"
+    points:
+      - "conductor y acompañante tienen que usar casco normalizado"
+      - "si la moto no tiene parabrisas, el conductor tiene que usar anteojos"
+      - "no se exigen matafuego ni balizas portátiles (a diferencia del auto)"
+      - "Nación anunció la adopción de la certificación ECE R22-05 para cascos (Decreto 196/2025)"
+    sourceIds: [MOT-01]
+  - h2: "Cuándo le hacés la VTV a la moto en Provincia"
+    points:
+      - "la primera es al año del patentamiento (los autos, a los 2 años)"
+      - "después, el mes lo fija el último número de la patente (link a la nota del calendario por patente)"
+    sourceIds: [MOT-01, VTV-01]
+  - h2: "Cuándo le hacés la VTV a la moto en la Ciudad"
+    points:
+      - "mismo régimen que los autos"
+      - "régimen vigente hasta el 30/09/2026: primera VTV al cumplir 4 años desde el patentamiento o al llegar al kilometraje que fija la Ciudad (VTV-07)"
+      - "la Ley 6.963 la pasaría a los 5 años desde el 1/10/2026, pero la fecha de aplicación no está confirmada en el sitio oficial (ver caveats)"
+      - "para la VTV de motos en CABA se presenta cédula verde y/o rosa"
+    sourceIds: [MOT-01, VTV-07]
+  - h2: "Preguntas frecuentes"
+    sourceIds: [MOT-01, VTV-01]
+  - h2: "Fuentes oficiales"
+
+faq:
+  - q: "¿Qué licencia necesito para manejar una moto?"
+    sourceIds: [MOT-01]
+  - q: "¿El acompañante también tiene que usar casco?"
+    sourceIds: [MOT-01]
+  - q: "¿La moto tiene que llevar matafuego y balizas?"
+    sourceIds: [MOT-01]
+  - q: "¿Cuándo hago la primera VTV de una moto en Provincia?"
+    sourceIds: [MOT-01, VTV-01]
+  - q: "¿Qué cédula llevo a la VTV de la moto en la Ciudad?"
+    sourceIds: [MOT-01]
+
+tables:
+  - purpose: "Auto vs. moto: qué se exige igual y qué cambia"
+    columns: ["Requisito", "Auto", "Moto"]
+    rows_hint: ["licencia (clase)", "cédula", "seguro obligatorio", "patente", "casco", "anteojos sin parabrisas", "matafuego y balizas", "primera VTV en PBA"]
+    sourceIds: [MOT-01, VTV-01]
+
+caveats:
+  - id: MOT-01
+    issue: "✅ mixto: la VTV de motos en CABA desde el 1/10/2026 depende de VTV-08 (🔍: plazos de la Ley 6.963 informados por prensa, no confirmados en el sitio oficial). Hoy es posterior a esa fecha y la entrada sigue en 🔍, así que la regla pudo haber cambiado."
+    handling: "NO afirmar que la primera VTV de motos en CABA es a los 5 años. Explicar que hasta el 30/09/2026 era a los 4 años y que la Ley 6.963 la pasaría a 5 según lo informado, sin confirmación oficial. Opción segura: confirmar en buenosaires.gob.ar antes de dejarla vencer y, si te toca por el régimen de 4 años, no esperar."
+  - id: VTV-07
+    issue: "inconsistencia interna de kilometraje: la respuesta corta de VTV-07 dice 60.000 km y el ejemplo oficial, MOT-01 y VTV-08 dicen 64.000 km"
+    handling: "no dar la cifra de kilometraje; decir 'o al llegar al kilometraje que fija la Ciudad' y remitir al sitio oficial"
+  - id: DOC-01
+    issue: "matafuego y balizas en CABA son 🔍 para autos"
+    handling: "no aplica a motos (MOT-01 y DOC-01 coinciden en que la exigencia es excepto motos); al comparar con el auto, no afirmar la exigencia en CABA como hecho para autos, solo decir que a la moto no se le exigen"
+
+internalLinks:
+  - slug: papeles-para-circular-amba
+    anchor: "qué papeles tenés que llevar para circular"
+  - slug: vtv-pba-cuando-vence-por-patente
+    anchor: "cuándo vence la VTV en Provincia según tu patente"
+  - slug: seguro-obligatorio-auto
+    anchor: "qué cubre el seguro obligatorio"
+  - slug: cedula-verde-y-cedula-azul
+    anchor: "cédula verde y cédula azul"
+
+cta: "Cargá tu moto en AutoLibre: guardá cédula, póliza y licencia y recibí el aviso antes de que venza la VTV, el seguro o la patente. Es gratis."
+
+cover:
+  concept: "Editorial photo of a parked generic motorcycle on a quiet Buenos Aires street at golden hour, two helmets resting on the seat, no logos, plate out of frame"
