@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { DM_Sans, Outfit } from "next/font/google";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { AnalyticsEvents } from "@/components/analytics/analytics-events";
 import { WhatsappFab } from "@/components/layout/whatsapp-fab";
 import { META_PIXEL_ID } from "@/lib/analytics/meta-pixel";
@@ -162,6 +163,7 @@ export default function RootLayout({
         )}
         {(metaPixelScript || POSTHOG_ENABLED) && <AnalyticsEvents />}
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
