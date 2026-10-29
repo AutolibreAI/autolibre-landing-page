@@ -24,10 +24,13 @@ import {
   PROVIDER_LOGO_TYPES,
   PROVIDER_DESCRIPTION_MAX_LENGTH,
   PROVIDER_EMAIL_MAX_LENGTH,
+  PROVIDER_SOCIAL_KEYS,
   PROVIDER_TEXT_MAX_LENGTH,
   findTooLongProviderText,
   isValidProviderEmail,
+  normalizeProviderSocialLink,
   parseProviderProfileFields,
+  type ProviderSocialKey,
   appendProviderBrand,
   PROVIDER_BRAND_MAX_LENGTH,
   PROVIDER_BRAND_MAX_COUNT,
@@ -147,6 +150,28 @@ export function ProviderForm({
   const [logo, setLogo] = useState<File | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
   const [description, setDescription] = useState("");
+  /**
+   * Redes con un link que el backend rechazaria. Se marca al salir del campo
+   * (no mientras se tipea) y, una vez marcado, se re-chequea en vivo para que
+   * el error se vaya apenas el link sirve. Es un Set porque pueden fallar
+   * varias a la vez y se marcan todas.
+   */
+  const [invalidSocial, setInvalidSocial] = useState<
+    ReadonlySet<ProviderSocialKey>
+  >(new Set());
+
+  function checkSocialLink(key: ProviderSocialKey, value: string): boolean {
+    const invalid =
+      value.trim() !== "" && normalizeProviderSocialLink(key, value) === null;
+    setInvalidSocial((current) => {
+      if (current.has(key) === invalid) return current;
+      const next = new Set(current);
+      if (invalid) next.add(key);
+      else next.delete(key);
+      return next;
+    });
+    return invalid;
+  }
   const logoInputRef = useRef<HTMLInputElement>(null);
   const brandsRef = useRef<HTMLFieldSetElement>(null);
   /**
@@ -370,6 +395,17 @@ export function ProviderForm({
     const emailInvalid = !isValidProviderEmail(
       (form.elements.namedItem("email") as HTMLInputElement).value,
     );
+    // Las redes se chequean ACÁ, con el resto, y no despues del return de
+    // abajo: antes, si fallaba cualquier otro campo, el error de la red no
+    // aparecia hasta el siguiente intento.
+    const socialInputs = PROVIDER_SOCIAL_KEYS.map(
+      (key) =>
+        [key, form.elements.namedItem(`social_${key}`) as HTMLInputElement] as const,
+    );
+    const firstInvalidSocial = socialInputs
+      .filter(([key, input]) => checkSocialLink(key, input.value))
+      .at(0)?.[1];
+    const socialInvalid = firstInvalidSocial !== undefined;
 
     if (emailInvalid) setEmailError(providersContent.form.email.invalid);
     if (addressInvalid) {
@@ -381,13 +417,15 @@ export function ProviderForm({
     }
     // Si fallan varios, el foco va al primero en el orden de la pantalla. El
     // error de cada uno se muestra igual.
-    const firstInvalidField = whatsappInvalid
-      ? whatsappInputRef.current
-      : emailInvalid
-        ? emailInputRef.current
-        : addressInvalid
-          ? addressInputRef.current
-          : null;
+    const firstInvalidField = socialInvalid
+      ? firstInvalidSocial
+      : whatsappInvalid
+        ? whatsappInputRef.current
+        : emailInvalid
+          ? emailInputRef.current
+          : addressInvalid
+            ? addressInputRef.current
+            : null;
     fieldFocusedOnSubmitRef.current = firstInvalidField !== null;
     firstInvalidField?.focus();
 
@@ -404,6 +442,7 @@ export function ProviderForm({
       submittedSpecialties,
     );
     if (
+      socialInvalid ||
       whatsappInvalid ||
       emailInvalid ||
       addressInvalid ||
@@ -418,12 +457,20 @@ export function ProviderForm({
       return;
     }
 
-    // Solo puede fallar la descripcion (y el textarea ya trae `maxLength`). Se
-    // arma igual con la misma funcion que usa `/api/provider`.
-    const profile = parseProviderProfileFields(description, undefined);
+    // Las redes ya se chequearon arriba, asi que acá solo puede fallar la
+    // descripcion (y el textarea ya trae `maxLength`). Se arma igual con la
+    // misma funcion que usa `/api/provider`, que es la que normaliza los links.
+    const profile = parseProviderProfileFields(
+      description,
+      Object.fromEntries(socialInputs.map(([key, input]) => [key, input.value])),
+    );
     if (!profile.ok) {
       setSubmitState("error");
-      setErrorMessage(providersContent.form.description.invalid);
+      setErrorMessage(
+        profile.kind === "description"
+          ? providersContent.form.description.invalid
+          : providersContent.form.social.invalid,
+      );
       return;
     }
 
@@ -488,6 +535,7 @@ export function ProviderForm({
           email,
           direccion,
           ...(profile.description ? { description: profile.description } : {}),
+          ...(profile.socialLinks ? { social_links: profile.socialLinks } : {}),
           works_all_brands: worksAllBrands,
           brands: worksAllBrands ? [] : submittedBrands,
           specialized_brands: submittedSpecialties,
@@ -640,6 +688,34 @@ export function ProviderForm({
               {providersContent.form.description.count(description.length)}
             </p>
           </Field>
+
+          <fieldset className="border-t border-line pt-5" aria-describedby="prov-social-hint">
+            <legend className="font-display text-base font-bold text-ink">{providersContent.form.social.title}</legend>
+            <p id="prov-social-hint" className="mb-4 text-sm text-ink/70">{providersContent.form.social.hint}</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {providersContent.form.social.networks.map(({ key, label, placeholder, invalid }) => (
+                <Field key={key} label={label} htmlFor={`prov-social-${key}`}
+                  error={invalidSocial.has(key) ? invalid : undefined}
+                  errorId={`prov-social-${key}-error`}>
+                  {/* `text` y no `url`: se puede escribir el usuario (`@tutaller`),
+                      y el teclado de `url` en iOS esconde la arroba. */}
+                  <Input id={`prov-social-${key}`} name={`social_${key}`} type="text"
+                    className="min-h-11 text-base" maxLength={2048} autoCapitalize="none" autoCorrect="off" spellCheck={false}
+                    placeholder={placeholder}
+                    aria-invalid={invalidSocial.has(key)}
+                    aria-describedby={invalidSocial.has(key) ? `prov-social-hint prov-social-${key}-error` : "prov-social-hint"}
+                    onBlur={(event) => {
+                      // Si se pudo armar el link, se muestra en el campo: la
+                      // persona ve lo que vamos a guardar y lo puede corregir.
+                      const link = normalizeProviderSocialLink(key, event.target.value);
+                      if (link) event.target.value = link;
+                      checkSocialLink(key, event.target.value);
+                    }}
+                    onChange={(event) => { if (invalidSocial.has(key)) checkSocialLink(key, event.target.value); }} />
+                </Field>
+              ))}
+            </div>
+          </fieldset>
 
           <div className="grid gap-4 sm:grid-cols-2 sm:items-start">
             <Field
