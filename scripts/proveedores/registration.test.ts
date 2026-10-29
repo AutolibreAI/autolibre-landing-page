@@ -43,31 +43,93 @@ describe("registro de proveedores", () => {
       assert.equal(isValidProviderEmail(email), false, email);
     }
   });
-  it("normaliza links de redes que valida @IsUrl", () => {
-    assert.equal(
-      normalizeProviderSocialLink(" https://www.youtube.com/@mitaller "),
-      "https://www.youtube.com/@mitaller",
-    );
-    assert.equal(
-      normalizeProviderSocialLink("https://facebook.com/taller ñandú"),
-      "https://facebook.com/taller%20%C3%B1and%C3%BA",
-    );
-    assert.equal(
-      normalizeProviderSocialLink("https://ñandú.com.ar/x"),
-      "https://xn--and-6ma2c.com.ar/x",
-    );
+  it("arma el link del perfil a partir del usuario", () => {
+    const cases = [
+      [
+        "instagram",
+        "ramirosarasola",
+        "https://www.instagram.com/ramirosarasola",
+      ],
+      [
+        "instagram",
+        " @taller.belgrano_22 ",
+        "https://www.instagram.com/taller.belgrano_22",
+      ],
+      ["tiktok", "@taller.belgrano", "https://www.tiktok.com/@taller.belgrano"],
+      ["youtube", "tallerbelgrano", "https://www.youtube.com/@tallerbelgrano"],
+      [
+        "facebook",
+        "taller.belgrano",
+        "https://www.facebook.com/taller.belgrano",
+      ],
+    ] as const;
+    for (const [network, input, expected] of cases) {
+      assert.equal(
+        normalizeProviderSocialLink(network, input),
+        expected,
+        input,
+      );
+    }
   });
-  it("rechaza hosts que @IsUrl no acepta", () => {
-    for (const link of [
-      "https://mi_taller.com",
-      "https://instagram",
-      "https://instagram.com.",
-      "https://-taller.com",
-      "https://192.168.0.1/x",
-      "https://instagram.c0m",
-      `https://instagram.com/${"a".repeat(2048)}`,
-    ]) {
-      assert.equal(normalizeProviderSocialLink(link), null, link);
+  it("acepta links de la red, con o sin protocolo", () => {
+    const cases = [
+      ["instagram", "instagram.com/taller", "https://instagram.com/taller"],
+      [
+        "instagram",
+        "www.instagram.com/taller?igsh=abc",
+        "https://www.instagram.com/taller?igsh=abc",
+      ],
+      [
+        "youtube",
+        " https://www.youtube.com/@mitaller ",
+        "https://www.youtube.com/@mitaller",
+      ],
+      [
+        "facebook",
+        "https://m.facebook.com/profile.php?id=1000",
+        "https://m.facebook.com/profile.php?id=1000",
+      ],
+      [
+        "facebook",
+        "https://facebook.com/taller ñandú",
+        "https://facebook.com/taller%20%C3%B1and%C3%BA",
+      ],
+      [
+        "tiktok",
+        "https://vm.tiktok.com/ZMabc/",
+        "https://vm.tiktok.com/ZMabc/",
+      ],
+      [
+        "linkedin",
+        "linkedin.com/company/taller",
+        "https://linkedin.com/company/taller",
+      ],
+    ] as const;
+    for (const [network, input, expected] of cases) {
+      assert.equal(
+        normalizeProviderSocialLink(network, input),
+        expected,
+        input,
+      );
+    }
+  });
+  it("no adivina: rechaza otros dominios, LinkedIn sin link y el dominio pelado", () => {
+    const cases = [
+      ["instagram", "https://taller.belgrano"],
+      ["instagram", "https://@taller.belgrano"],
+      ["instagram", "https://mitaller.com.ar"],
+      ["instagram", "https://www.facebook.com/taller"],
+      ["instagram", "instagram.com"],
+      ["instagram", "https://www.instagram.com/"],
+      ["instagram", "taller belgrano"],
+      ["instagram", "a".repeat(31)],
+      ["linkedin", "@taller"],
+      ["linkedin", "taller"],
+      ["facebook", "Taller Belgrano"],
+      ["instagram", `https://instagram.com/${"a".repeat(2048)}`],
+    ] as const;
+    for (const [network, input] of cases) {
+      assert.equal(normalizeProviderSocialLink(network, input), null, input);
     }
   });
   it("detecta el primer texto libre que supera el maximo del backend", () => {
@@ -80,7 +142,10 @@ describe("registro de proveedores", () => {
       }),
       null,
     );
-    assert.equal(findTooLongProviderText({ taller: "a".repeat(121) }), "taller");
+    assert.equal(
+      findTooLongProviderText({ taller: "a".repeat(121) }),
+      "taller",
+    );
     assert.equal(
       findTooLongProviderText({ direccion: "a".repeat(251) }),
       "direccion",
@@ -93,7 +158,10 @@ describe("registro de proveedores", () => {
   });
   it("permite marcas libres sin repetirlas por mayusculas o espacios", () => {
     assert.deepEqual(appendProviderBrand(["Ford"], "  ford  "), ["Ford"]);
-    assert.deepEqual(appendProviderBrand(["Ford"], "  Nueva   Marca "), ["Ford", "Nueva Marca"]);
+    assert.deepEqual(appendProviderBrand(["Ford"], "  Nueva   Marca "), [
+      "Ford",
+      "Nueva Marca",
+    ]);
     assert.deepEqual(appendProviderBrand([], " "), []);
     assert.deepEqual(appendProviderBrand([], "a".repeat(101)), []);
   });
@@ -124,11 +192,17 @@ describe("registro de proveedores", () => {
       }),
       { ok: true, socialLinks: { instagram: "https://instagram.com/negocio" } },
     );
+    assert.deepEqual(
+      parseProviderProfileFields(undefined, { instagram: "@negocio" }),
+      {
+        ok: true,
+        socialLinks: { instagram: "https://www.instagram.com/negocio" },
+      },
+    );
     for (const instagram of [
       "javascript:alert(1)",
-      "ftp://example.com",
-      "@negocio",
-      "https://user:pass@example.com",
+      "ftp://instagram.com/negocio",
+      "https://user:pass@instagram.com/negocio",
     ]) {
       assert.deepEqual(parseProviderProfileFields(undefined, { instagram }), {
         ok: false,

@@ -102,15 +102,46 @@ export const providersContent = {
     },
     social: {
       title: "Redes sociales (opcional)",
-      hint: "Pegá los links completos, empezando por https://. Completá solo las redes que uses.",
-      placeholder: "https://…",
-      invalid: "Revisá el link de la red social: usá una dirección completa que empiece con https:// o http://.",
+      /**
+       * Se acepta el usuario o el link (ver `normalizeProviderSocialLink` en
+       * lib/proveedores/registration.ts): la gente sabe su usuario, no el link
+       * de su perfil. Al salir del campo se muestra el link que vamos a
+       * guardar.
+       */
+      hint: "Escribí tu usuario (ej: @tutaller) o pegá el link de tu perfil. En LinkedIn, pegá el link. Completá solo las redes que uses.",
+      /** Lo usa `/api/provider`, que no sabe qué campo marcar. */
+      invalid: "Revisá tus redes sociales: escribí tu usuario (ej: @tutaller) o pegá el link de tu perfil.",
       networks: [
-        { key: "instagram", label: "Instagram" },
-        { key: "facebook", label: "Facebook" },
-        { key: "tiktok", label: "TikTok" },
-        { key: "linkedin", label: "LinkedIn" },
-        { key: "youtube", label: "YouTube" },
+        {
+          key: "instagram",
+          label: "Instagram",
+          placeholder: "@tutaller",
+          invalid: "Escribí tu usuario de Instagram (ej: @tutaller) o pegá el link de tu perfil de instagram.com.",
+        },
+        {
+          key: "facebook",
+          label: "Facebook",
+          placeholder: "@tutaller o link de tu página",
+          invalid: "Escribí tu usuario de Facebook o pegá el link de tu página de facebook.com.",
+        },
+        {
+          key: "tiktok",
+          label: "TikTok",
+          placeholder: "@tutaller",
+          invalid: "Escribí tu usuario de TikTok (ej: @tutaller) o pegá el link de tu perfil de tiktok.com.",
+        },
+        {
+          key: "linkedin",
+          label: "LinkedIn",
+          placeholder: "https://linkedin.com/company/…",
+          invalid: "Pegá el link de tu perfil de LinkedIn, por ejemplo linkedin.com/company/tutaller.",
+        },
+        {
+          key: "youtube",
+          label: "YouTube",
+          placeholder: "@tucanal",
+          invalid: "Escribí tu canal de YouTube (ej: @tucanal) o pegá el link de youtube.com.",
+        },
       ],
     },
     logo: {

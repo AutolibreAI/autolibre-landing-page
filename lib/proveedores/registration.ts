@@ -89,48 +89,123 @@ const SOCIAL_LINK_MAX_LENGTH = 2048;
 const URL_TLD = /^(?:[a-z]{2,63}|xn--[a-z0-9-]{1,59})$/;
 
 /**
- * Normaliza un link de red social, o `null` si el backend lo rechazaria. El
- * backend lo valida con `@IsUrl({ protocols: ['http', 'https'],
- * require_protocol: true })`, que es bastante mas estricto que `new URL()`:
- * `new URL("https://mi_taller")` funciona y `@IsUrl` lo rechaza (guion bajo en
- * el host, sin terminacion).
+ * Como se reconoce y como se arma el link de cada red.
  *
- * Lo que se exige:
- *   - `http://` o `https://`, sin usuario ni contraseña.
- *   - un host con nombre de dominio, no una IP: etiquetas de letras, numeros y
- *     guiones (sin guion al principio ni al final, hasta 63 caracteres) y una
- *     terminacion de solo letras. `new URL` ya paso los acentos a punycode
- *     (`xn--…`), que tambien vale.
- *   - hasta 2048 caracteres DESPUES de normalizar: lo que viaja es `url.href`,
- *     y escapar caracteres lo puede alargar.
+ * `domains`: un link pegado tiene que ser de uno de estos dominios (o de un
+ * subdominio, como `m.facebook.com` o `vm.tiktok.com`). Sin esto, un
+ * `https://taller.belgrano` —el usuario de Instagram con `https://` adelante—
+ * pasaba como URL valida y se guardaba un link que no lleva a ningun lado.
  *
- * El `@` en el path (`youtube.com/@canal`) es valido y se respeta.
+ * `handle` + `profileUrl`: la gente sabe su usuario, no el link de su perfil.
+ * Si escribe `ramirosarasola` o `@ramirosarasola`, el link lo armamos
+ * nosotros. Los patrones son los caracteres que cada red permite en un
+ * usuario. LinkedIn no tiene: con solo el usuario no se sabe si es una
+ * persona (`/in/`) o una empresa (`/company/`), y adivinar seria peor que
+ * pedir el link.
  */
-export function normalizeProviderSocialLink(value: string): string | null {
-  let url: URL;
+const SOCIAL_NETWORKS: Record<
+  ProviderSocialKey,
+  {
+    readonly domains: readonly string[];
+    readonly handle?: RegExp;
+    readonly profileUrl?: (handle: string) => string;
+  }
+> = {
+  instagram: {
+    domains: ["instagram.com", "instagr.am"],
+    handle: /^[A-Za-z0-9._]{1,30}$/,
+    profileUrl: (handle) => `https://www.instagram.com/${handle}`,
+  },
+  facebook: {
+    domains: ["facebook.com", "fb.com", "fb.me"],
+    handle: /^[A-Za-z0-9.]{5,50}$/,
+    profileUrl: (handle) => `https://www.facebook.com/${handle}`,
+  },
+  tiktok: {
+    domains: ["tiktok.com"],
+    handle: /^[A-Za-z0-9._]{2,24}$/,
+    profileUrl: (handle) => `https://www.tiktok.com/@${handle}`,
+  },
+  linkedin: { domains: ["linkedin.com", "lnkd.in"] },
+  youtube: {
+    domains: ["youtube.com", "youtu.be"],
+    handle: /^[A-Za-z0-9._-]{3,30}$/,
+    profileUrl: (handle) => `https://www.youtube.com/@${handle}`,
+  },
+};
+
+function parseHttpUrl(value: string): URL | null {
   try {
-    url = new URL(value.trim());
+    const url = new URL(value);
+    return ["http:", "https:"].includes(url.protocol) ? url : null;
   } catch {
     return null;
   }
+}
 
+/**
+ * Lo que el backend acepta. Lo valida con `@IsUrl({ protocols: ['http',
+ * 'https'], require_protocol: true })`, bastante mas estricto que `new URL()`:
+ * `new URL("https://mi_taller")` funciona y `@IsUrl` lo rechaza (guion bajo en
+ * el host, sin terminacion). Se exige:
+ *   - sin usuario ni contraseña.
+ *   - un host con nombre de dominio, no una IP: etiquetas de letras, numeros y
+ *     guiones (sin guion al principio ni al final, hasta 63 caracteres) y una
+ *     terminacion de solo letras, o punycode (`xn--…`).
+ *   - hasta 2048 caracteres DESPUES de normalizar: lo que viaja es `url.href`,
+ *     y escapar caracteres lo puede alargar.
+ */
+function acceptedByBackend(url: URL): boolean {
   const labels = url.hostname.split(".");
-  const tld = labels[labels.length - 1];
-  const validHost =
+  return (
+    !url.username &&
+    !url.password &&
     labels.length >= 2 &&
     labels.every((label) => DOMAIN_LABEL.test(label)) &&
-    URL_TLD.test(tld);
+    URL_TLD.test(labels[labels.length - 1]) &&
+    url.href.length <= SOCIAL_LINK_MAX_LENGTH
+  );
+}
 
-  if (
-    !["http:", "https:"].includes(url.protocol) ||
-    url.username ||
-    url.password ||
-    !validHost ||
-    url.href.length > SOCIAL_LINK_MAX_LENGTH
-  )
-    return null;
+/**
+ * Convierte lo que la persona escribio en el link del perfil, o `null` si no
+ * se puede sin adivinar. En orden:
+ *
+ *   1. Un link con `http(s)://`: tiene que ser del dominio de esa red.
+ *   2. Un link sin protocolo (`instagram.com/taller`): se le agrega `https://`,
+ *      con la misma condicion del dominio.
+ *   3. Un usuario, con o sin `@` (`ramirosarasola`, `@taller.belgrano`): se
+ *      arma el link del perfil.
+ *
+ * Un link al dominio pelado (`instagram.com`) no es un perfil y no vale. El
+ * `@` en el path (`youtube.com/@canal`) si.
+ */
+export function normalizeProviderSocialLink(
+  network: ProviderSocialKey,
+  value: string,
+): string | null {
+  const text = value.trim();
+  const { domains, handle, profileUrl } = SOCIAL_NETWORKS[network];
+  const hasProtocol = /^[a-z][a-z0-9+.-]*:\/\//i.test(text);
+  const asUrl = parseHttpUrl(hasProtocol ? text : `https://${text}`);
+  const onNetworkDomain =
+    asUrl !== null &&
+    domains.some(
+      (domain) =>
+        asUrl.hostname === domain || asUrl.hostname.endsWith(`.${domain}`),
+    );
 
-  return url.href;
+  let url: URL | null = null;
+  if (onNetworkDomain) {
+    // El dominio de la red sin perfil (`instagram.com`) no es un link util,
+    // y tampoco se reinterpreta como usuario.
+    if (asUrl.pathname !== "/" || asUrl.search !== "") url = asUrl;
+  } else if (!hasProtocol && handle && profileUrl) {
+    const name = text.replace(/^@/, "");
+    if (handle.test(name)) url = parseHttpUrl(profileUrl(name));
+  }
+
+  return url && acceptedByBackend(url) ? url.href : null;
 }
 
 export function appendProviderBrand(brands: readonly string[], value: string, maxCount = PROVIDER_BRAND_MAX_COUNT): string[] {
@@ -179,7 +254,7 @@ export function parseProviderProfileFields(
     if (typeof value !== "string")
       return { ok: false, kind: "socialLinks", network };
     if (!value.trim()) continue;
-    const link = normalizeProviderSocialLink(value);
+    const link = normalizeProviderSocialLink(network, value);
     if (!link) return { ok: false, kind: "socialLinks", network };
     socialLinks[network] = link;
   }
