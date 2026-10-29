@@ -35,6 +35,7 @@ export const siteContent = {
     links: [
       { label: "Producto", href: "/#producto" },
       { label: "Cómo funciona", href: "/#como-funciona" },
+      { label: "Aliados", href: "/#aliados" },
       { label: "FAQ", href: "/#faq" },
       ...(BLOG_PUBLIC ? [blogLink] : []),
       directoryLink,

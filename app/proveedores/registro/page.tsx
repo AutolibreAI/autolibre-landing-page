@@ -3,6 +3,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { JsonLd } from "@/components/seo/json-ld";
 import { ProviderForm } from "@/components/forms/provider-form";
 import { ProvidersHeroSection } from "@/components/sections/providers/hero";
+import { ProvidersPlansBannerSection } from "@/components/sections/providers/plans-banner";
 import { ProvidersReasonsSection } from "@/components/sections/providers/reasons";
 import { Section } from "@/components/ui/section";
 import { fetchServiceCatalog } from "@/lib/autolibre-api";
@@ -57,6 +58,7 @@ export default async function ProveedoresRegistroPage() {
       >
         <ProvidersHeroSection />
         <ProvidersReasonsSection />
+        <ProvidersPlansBannerSection />
 
         <Section id="form" tone="muted" spacing="md" container="narrow" aria-labelledby="registro-titulo">
           <h2 id="registro-titulo" className="text-center font-display text-2xl font-bold text-ink">

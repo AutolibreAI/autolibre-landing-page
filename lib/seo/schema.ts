@@ -378,6 +378,34 @@ export function partnerLocalBusinessSchema({
   };
 }
 
+/**
+ * Catálogo de planes pagos para proveedores (`/proveedores/planes`), como
+ * `OfferCatalog` de la organización. Sólo planes con precio en pesos; el plan
+ * gratuito no es una `Offer` (no hay transacción que describir).
+ */
+export function providerPlansOfferCatalogSchema(
+  plans: readonly { name: string; description: string; priceArs: number }[],
+) {
+  return {
+    "@type": "OfferCatalog",
+    name: "Planes para proveedores de AutoLibre",
+    itemListElement: plans.map((plan) => ({
+      "@type": "Offer",
+      name: plan.name,
+      description: plan.description,
+      price: plan.priceArs,
+      priceCurrency: "ARS",
+      priceSpecification: {
+        "@type": "UnitPriceSpecification",
+        price: plan.priceArs,
+        priceCurrency: "ARS",
+        unitText: "MON",
+      },
+      seller: { "@id": ORGANIZATION_ID },
+    })),
+  };
+}
+
 /** Envuelve varios nodos en un único `@graph`, que es lo que Google prefiere. */
 export function graph(...nodes: object[]) {
   return {

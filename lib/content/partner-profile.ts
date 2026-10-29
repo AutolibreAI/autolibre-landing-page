@@ -68,7 +68,6 @@ export const partnerProfileContent = {
   head: {
     familiesLabel: "Rubros",
     zoneLabel: "Zona de cobertura:",
-    primaryCta: { label: "Pedir presupuesto", href: "/pedido" },
     whatsapp: "WhatsApp",
     externalHint: "(se abre en otra pestaña)",
     share: {
@@ -121,11 +120,7 @@ export const partnerProfileContent = {
     directions: "Cómo llegar",
     contact: "Contacto y redes",
     email: "Email",
-    quoteCard: {
-      title: "¿Necesitás un presupuesto?",
-      body: "Contá qué le pasa a tu auto y te llegan propuestas de negocios de la red, este incluido.",
-      cta: { label: "Pedir presupuesto", href: "/pedido" },
-    },
+    mapAlt: (name: string) => `Mapa de ubicación de ${name}`,
   },
 
   related: {

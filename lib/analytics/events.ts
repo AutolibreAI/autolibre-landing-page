@@ -59,6 +59,11 @@ export const ANALYTICS_EVENTS = {
    * filtros había, nunca su valor: ni el texto buscado ni la zona.
    */
   directoryEmptyQuoteClicked: "directory_empty_quote_clicked",
+  /**
+   * Click en "Ver planes" del banner de `/proveedores/registro` hacia
+   * `/proveedores/planes`. Sólo PostHog.
+   */
+  providerPlansCtaClicked: "provider_plans_cta_clicked",
 } as const;
 
 export type AnalyticsEventName =
@@ -171,6 +176,7 @@ export type AnalyticsEventProps = {
     /** Había un rubro elegido. */
     has_category?: true;
   };
+  provider_plans_cta_clicked: Record<string, never>;
 };
 
 export type AnalyticsProps = Record<string, string | number | boolean>;
@@ -261,6 +267,11 @@ export const ANALYTICS_CATALOG: Record<AnalyticsEventName, CatalogEntry> = {
     clickable: false,
   },
   directory_empty_quote_clicked: {
+    posthog: "client",
+    meta: () => null,
+    clickable: true,
+  },
+  provider_plans_cta_clicked: {
     posthog: "client",
     meta: () => null,
     clickable: true,

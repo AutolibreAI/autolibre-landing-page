@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { JsonLd } from "@/components/seo/json-ld";
+import { AlliesSection } from "@/components/sections/home/allies";
 import { ClosingCtaSection } from "@/components/sections/home/closing-cta";
 import { DiagnosticsSection } from "@/components/sections/home/diagnostics";
 import { FaqSection } from "@/components/sections/home/faq";
@@ -54,6 +55,7 @@ export default function HomePage() {
         <ProblemSection />
         <FeaturesSection />
         <MarketplaceSection />
+        <AlliesSection />
         <HistorySection />
         <HowItWorksSection />
         <DiagnosticsSection />

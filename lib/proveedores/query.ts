@@ -12,12 +12,14 @@
 export const PROVEEDORES_PATH = "/proveedores";
 /** Alta de negocios: el formulario vive bajo el directorio. */
 export const PROVEEDORES_REGISTRO_PATH = `${PROVEEDORES_PATH}/registro`;
+/** Precios y planes pagos para proveedores: vive bajo el directorio. */
+export const PROVEEDORES_PLANES_PATH = `${PROVEEDORES_PATH}/planes`;
 /**
  * Slugs que un perfil no puede tener: son rutas estáticas hermanas de
  * `[slug]`, y la estática gana. Un negocio con uno de estos quedaría
  * inalcanzable y su URL del sitemap llevaría a otra página.
  */
-export const RESERVED_PROFILE_SLUGS: readonly string[] = ["registro"];
+export const RESERVED_PROFILE_SLUGS: readonly string[] = ["registro", "planes"];
 /** Negocios por página: 8 filas de 3 en desktop, sin cortar una fila. */
 export const PROVEEDORES_PAGE_SIZE = 24;
 /** Largo máximo de la búsqueda: el mismo tope que valida el backend. */

@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { fetchAllPartners } from "@/lib/autolibre-api";
 import {
   PROVEEDORES_PATH,
+  PROVEEDORES_PLANES_PATH,
   PROVEEDORES_REGISTRO_PATH,
   RESERVED_PROFILE_SLUGS,
   partnerPath,
@@ -22,7 +23,7 @@ import { siteConfig } from "@/lib/seo/config";
 const routes = [
   {
     path: "/",
-    lastModified: "2026-10-27",
+    lastModified: "2026-10-29",
     changeFrequency: "weekly",
     priority: 1,
   },
@@ -46,9 +47,15 @@ const routes = [
   },
   {
     path: PROVEEDORES_REGISTRO_PATH,
-    lastModified: "2026-10-27",
+    lastModified: "2026-10-29",
     changeFrequency: "monthly",
     priority: 0.8,
+  },
+  {
+    path: PROVEEDORES_PLANES_PATH,
+    lastModified: "2026-10-29",
+    changeFrequency: "monthly",
+    priority: 0.7,
   },
   {
     path: PROVEEDORES_PATH,
@@ -58,7 +65,7 @@ const routes = [
   },
   {
     path: "/sobre-nosotros",
-    lastModified: "2026-10-02",
+    lastModified: "2026-10-29",
     changeFrequency: "monthly",
     priority: 0.6,
   },

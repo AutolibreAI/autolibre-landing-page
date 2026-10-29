@@ -27,7 +27,7 @@ export const homeContent = {
       {
         id: "highlight-presupuestos",
         icon: "receipt",
-        text: "Hace tu pedido y compara soluciones",
+        text: "Hacé tu pedido y compará soluciones",
       },
       {
         id: "highlight-diagnostico",
@@ -160,6 +160,33 @@ export const homeContent = {
     ],
     servicesMore: "+20 servicios más",
     coverage: "Hoy operamos en AMBA y estamos ampliando.",
+  },
+
+  /**
+   * Franja de logos de aliados: negocios y servicios con una alianza real con
+   * AutoLibre (no son proveedores cualquiera del marketplace). El track se
+   * desliza solo; el `alt` de cada logo ya dice el nombre, así que la imagen
+   * no necesita texto al lado.
+   */
+  allies: {
+    title: "Aliados",
+    logos: [
+      { id: "autech", name: "Autech", src: "/brand/aliados/autech.png", width: 283, height: 30 },
+      {
+        id: "sinfotomultas",
+        name: "SinFotomultas",
+        src: "/brand/aliados/sinfotomultas.png",
+        width: 1532,
+        height: 150,
+      },
+      {
+        id: "asistir24",
+        name: "Asistir24",
+        src: "/brand/aliados/asistir24.png",
+        width: 828,
+        height: 582,
+      },
+    ],
   },
 
   history: {

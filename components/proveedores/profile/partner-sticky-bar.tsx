@@ -11,10 +11,13 @@ type PartnerStickyBarProps = {
  * Barra fija al pie del perfil debajo de `md`, mismo patrón que
  * `MobileDownloadBar` del blog: Server Component, siempre visible, sin JS.
  * Va con un separador del mismo alto después del footer, así no tapa nada
- * al llegar al final de la página.
+ * al llegar al final de la página. Sin WhatsApp del negocio no hay nada que
+ * mostrar acá (la cabecera ya ofrece compartir el perfil): no se renderiza.
  */
 export function PartnerStickyBar({ whatsappHref }: PartnerStickyBarProps) {
   const { head, stickyBar } = partnerProfileContent;
+
+  if (!whatsappHref) return null;
 
   return (
     <>
@@ -27,23 +30,17 @@ export function PartnerStickyBar({ whatsappHref }: PartnerStickyBarProps) {
         // del iPhone. `px-[6%]`: el gutter de `Container`.
         className="fixed inset-x-0 bottom-0 z-40 flex gap-3 border-t border-line bg-surface/95 px-[6%] pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md md:hidden [html:has(#mobile-nav-panel)_&]:invisible"
       >
-        <ButtonLink href={head.primaryCta.href} size="lg" className="flex-1">
-          {head.primaryCta.label}
+        <ButtonLink
+          href={whatsappHref}
+          target="_blank"
+          rel="noopener nofollow"
+          size="lg"
+          className="flex-1"
+        >
+          <Icon name="whatsapp" size={20} strokeWidth={1.8} />
+          {head.whatsapp}
+          <span className="sr-only"> {head.externalHint}</span>
         </ButtonLink>
-        {whatsappHref ? (
-          <ButtonLink
-            href={whatsappHref}
-            target="_blank"
-            rel="noopener nofollow"
-            variant="outline"
-            size="lg"
-            className="bg-surface"
-          >
-            <Icon name="whatsapp" size={20} strokeWidth={1.8} />
-            {head.whatsapp}
-            <span className="sr-only"> {head.externalHint}</span>
-          </ButtonLink>
-        ) : null}
       </aside>
     </>
   );

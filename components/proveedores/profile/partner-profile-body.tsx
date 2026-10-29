@@ -1,4 +1,4 @@
-import { ButtonLink } from "@/components/ui/button";
+import Image from "next/image";
 import { Icon } from "@/components/ui/icon";
 import { Section } from "@/components/ui/section";
 import type { PartnerDetail } from "@/lib/autolibre-api";
@@ -36,6 +36,20 @@ function mapsHref(partner: PartnerDetail): string | null {
     : null;
 }
 
+const STATIC_MAP_SIZE = { width: 400, height: 240 } as const;
+
+/** Mapa estático de Google solo si hay coordenadas Y la API key pública. */
+function staticMapUrl(partner: PartnerDetail): string | null {
+  const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim();
+  if (!key || !partner.geo) return null;
+  const center = `${partner.geo.latitude},${partner.geo.longitude}`;
+  return (
+    "https://maps.googleapis.com/maps/api/staticmap" +
+    `?center=${center}&zoom=16&size=${STATIC_MAP_SIZE.width}x${STATIC_MAP_SIZE.height}` +
+    `&scale=2&maptype=roadmap&markers=color:green%7C${center}&key=${encodeURIComponent(key)}`
+  );
+}
+
 /**
  * Cuerpo del perfil: columna principal (sobre, servicios, preguntas) y una
  * columna lateral de contacto. Dos columnas con `flex-wrap` y bases (600 /
@@ -51,6 +65,7 @@ function mapsHref(partner: PartnerDetail): string | null {
 export function PartnerProfileBody({ partner, serviceGroups, faqs }: PartnerProfileBodyProps) {
   const modality = partner.modality ? partnerProfileContent.modalityLabel(partner.modality) : null;
   const directions = mapsHref(partner);
+  const mapUrl = staticMapUrl(partner);
   const hasContact = partner.links.length > 0;
 
   const facts = [
@@ -163,6 +178,19 @@ export function PartnerProfileBody({ partner, serviceGroups, faqs }: PartnerProf
               <h2 id="ubicacion-titulo" className={cardTitleClass}>
                 {aside.location}
               </h2>
+              {mapUrl ? (
+                <Image
+                  src={mapUrl}
+                  alt={aside.mapAlt(partner.name)}
+                  width={STATIC_MAP_SIZE.width}
+                  height={STATIC_MAP_SIZE.height}
+                  // El mapa lo pide el navegador con la API key pública (puede
+                  // estar restringida por referer), no el optimizador del server.
+                  unoptimized
+                  sizes="(min-width: 1024px) 340px, 100vw"
+                  className="h-auto w-full rounded-xl border border-line"
+                />
+              ) : null}
               <address className="flex flex-col gap-1 leading-relaxed text-ink/80 not-italic">
                 {partner.address ? <span>{partner.address}</span> : null}
                 {partner.coverageZone ? <span>{partner.coverageZone}</span> : null}
@@ -205,16 +233,6 @@ export function PartnerProfileBody({ partner, serviceGroups, faqs }: PartnerProf
               </ul>
             </div>
           ) : null}
-
-          <div className="flex flex-col gap-3 rounded-card bg-ink p-6 text-white">
-            <h2 id="presupuesto-titulo" className="font-display text-lg font-bold">
-              {aside.quoteCard.title}
-            </h2>
-            <p className="leading-relaxed text-white/75">{aside.quoteCard.body}</p>
-            <ButtonLink href={aside.quoteCard.cta.href} variant="inverse" size="lg" className="mt-2">
-              {aside.quoteCard.cta.label}
-            </ButtonLink>
-          </div>
         </aside>
       </div>
     </Section>

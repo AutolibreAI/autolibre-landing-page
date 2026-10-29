@@ -17,10 +17,10 @@ type PartnerProfileHeadProps = {
 
 /**
  * Cabecera del perfil: migas, logo (o monograma), el único `h1`, la línea de
- * zona y modalidad, las familias, y las acciones. "Pedir presupuesto" es la
- * principal: el contacto pasa por AutoLibre. El WhatsApp del negocio aparece
- * solo si hay `redirectLink` (un wa.me con el texto de atribución ya armado);
- * nunca se arma un link desde el campo `whatsapp` crudo.
+ * zona y modalidad, las familias, y las acciones. El WhatsApp del negocio es
+ * la acción principal, y aparece solo si hay `redirectLink` (un wa.me con el
+ * texto de atribución ya armado); nunca se arma un link desde el campo
+ * `whatsapp` crudo. Sin WhatsApp, la única acción es compartir el perfil.
  *
  * Sin `reveal`: es lo que está en pantalla al cargar y el `h1` es la LCP.
  */
@@ -91,15 +91,11 @@ export function PartnerProfileHead({ partner, breadcrumbs, familyNames }: Partne
         </div>
 
         <div className="flex w-full flex-wrap items-start gap-3 lg:w-auto">
-          <ButtonLink href={head.primaryCta.href} size="lg">
-            {head.primaryCta.label}
-          </ButtonLink>
           {whatsappHref ? (
             <ButtonLink
               href={whatsappHref}
               target="_blank"
               rel="noopener nofollow"
-              variant="outline"
               size="lg"
             >
               <Icon name="whatsapp" size={20} strokeWidth={1.8} />

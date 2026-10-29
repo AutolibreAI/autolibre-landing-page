@@ -125,7 +125,7 @@ Material real disponible, nada que inventar:
 - Copy de producto ya escrito y en producción en `lib/content/`.
 - WhatsApp y email de contacto reales en `siteConfig.contact`.
 
-Cifras de tracción publicadas (a sep 2026): 200+ vehículos únicos y 50+
+Cifras de tracción publicadas (a oct 2026): 700+ vehículos únicos y 100+
 proveedores en el marketplace (fuente: la constante `traction` de
 `lib/content/about.ts`, que alimenta la ficha del hero y el hito "Tracción" de
 `/sobre-nosotros`). Son las únicas cifras publicables: no se redondean para

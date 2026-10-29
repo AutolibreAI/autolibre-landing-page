@@ -83,9 +83,9 @@ const FOUNDING_DATE = "2026-02";
  * corte que se lee en pantalla).
  */
 export const traction = {
-  vehicles: "200+",
-  providers: "50+",
-  asOf: "Sep 2026",
+  vehicles: "700+",
+  providers: "100+",
+  asOf: "Oct 2026",
 } as const;
 
 /**
