@@ -52,7 +52,26 @@ export async function generateStaticParams() {
  * caso de que el cliente deje de usar `fetch`.
  */
 const getPartner = cache(fetchPartnerBySlug);
-const getCatalog = cache(fetchServiceCatalog);
+
+/**
+ * El catalogo, o un error. Sin catalogo el perfil sale sin rubros, sin
+ * familias en la meta description y sin relacionados: indexable pero pobre, y
+ * con el `revalidate` de un dia del catalogo quedaria asi en el cache ISR todo
+ * ese tiempo. Tirando, una regeneracion en segundo plano falla y Next sigue
+ * sirviendo la ultima version buena (`incremental-static-regeneration.md` ›
+ * Handling uncaught exceptions). Mismo criterio que `fetchPartnerBySlug`: un
+ * backend caido no es un perfil sin rubros. El costo es un 500 en el primer
+ * request de un perfil que todavia no estaba en cache, que es lo mismo que ya
+ * pasa si lo que falla es el perfil. No afecta el build: no hay perfiles
+ * prerenderizados (ver `generateStaticParams`).
+ */
+const getCatalog = cache(async () => {
+  const catalog = await fetchServiceCatalog();
+  if (catalog === null) {
+    throw new Error("[proveedor] sin catalogo de servicios: no se regenera el perfil.");
+  }
+  return catalog;
+});
 
 /** Meta description: solo campos reales, única por negocio. */
 function profileDescription(partner: PartnerDetail, familyNames: readonly string[]): string {
@@ -74,7 +93,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const { partner } = lookup;
-  const families = partnerFamilies(partner, catalog ?? []).map((family) => family.name);
+  const families = partnerFamilies(partner, catalog).map((family) => family.name);
   const logoUrl = safeHttpUrl(partner.logoUrl);
 
   return createMetadata({
@@ -118,13 +137,13 @@ export default async function PartnerProfilePage({ params }: PageProps) {
   if (lookup.status === "moved") permanentRedirect(partnerPath(lookup.slug));
 
   const { partner } = lookup;
-  const families = partnerFamilies(partner, catalog ?? []);
+  const families = partnerFamilies(partner, catalog);
   const familyNames = families.map((family) => family.name);
-  const serviceGroups = partnerServiceGroups(partner, catalog ?? []);
+  const serviceGroups = partnerServiceGroups(partner, catalog);
   const faqs = partnerFaqs(partner);
   const firstFamily = families[0] ?? null;
   const related = firstFamily ? await loadRelated(firstFamily.slug, partner.slug) : [];
-  const categoryNames = new Map((catalog ?? []).map((family) => [family.slug, family.name]));
+  const categoryNames = new Map(catalog.map((family) => [family.slug, family.name]));
 
   const path = partnerPath(partner.slug);
   const description = profileDescription(partner, familyNames);

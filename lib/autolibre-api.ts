@@ -71,15 +71,20 @@ export type ServiceFamilyOption = ServiceCatalogCategory;
 /**
  * Cada cuanto se revalida el catalogo de servicios.
  *
- * Cinco minutos es un numero elegido por lo que cuesta EQUIVOCARSE, no por lo
- * que cuesta acertar: el catalogo cambia una vez cada varios meses, asi que
- * cualquier ventana lo sirve igual de fresco. Lo que la ventana acota de verdad
- * es cuanto tiempo queda pegado un render que salio mal — si el backend estaba
- * caido justo cuando Next armo la pagina, el formulario degradado vive cinco
- * minutos y no una hora. Refetchear cada cinco minutos una lista de 79 filas no
- * le cuesta nada a nadie; servir el formulario roto media tarde, si.
+ * Un dia. El catalogo cambia una vez cada varios meses, asi que cualquier
+ * ventana lo sirve igual de fresco; lo que la ventana decide de verdad es otra
+ * cosa: el periodo ISR de las paginas que lo leen. Next toma el `revalidate`
+ * MAS CORTO de los fetch de una pagina, asi que este numero manda sobre
+ * `/proveedores/registro` y sobre cada `/proveedores/[slug]` (el perfil va a
+ * una hora). Con cinco minutos, cada regeneracion era una escritura ISR —en
+ * registro, la pagina mas sus `.segments`— y se comia la cuota de Vercel.
+ *
+ * Antes la ventana corta acotaba cuanto vivia un render degradado (backend
+ * caido justo al regenerar). Eso ya no depende de este numero: las paginas no
+ * dejan que un render sin catalogo reemplace a uno bueno en el cache (ver el
+ * `connection()` de registro y el `getCatalog` del perfil).
  */
-const SERVICE_CATALOG_REVALIDATE_SECONDS = 300;
+const SERVICE_CATALOG_REVALIDATE_SECONDS = 86400;
 
 /**
  * Catalogo de servicios (familias y rubros) que el backend expone publico.

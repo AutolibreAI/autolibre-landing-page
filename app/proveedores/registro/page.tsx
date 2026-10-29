@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { PageShell } from "@/components/layout/page-shell";
 import { JsonLd } from "@/components/seo/json-ld";
 import { ProviderForm } from "@/components/forms/provider-form";
@@ -39,15 +40,31 @@ const schema = graph(
  * El catalogo se lee acá, en el servidor, y no dentro del formulario: la URL
  * del backend es server-side (sin `NEXT_PUBLIC_`), asi que un fetch desde el
  * cliente obligaria a abrir una ruta proxy nueva solo para leer una lista
- * publica. Resolviendolo en el render la pagina sigue siendo estatica, el
- * formulario nace con sus opciones puestas y no hay un estado de carga que
- * mantener.
+ * publica. Resolviendolo en el render la pagina sigue siendo estatica (ISR, al
+ * ritmo del `revalidate` del catalogo), el formulario nace con sus opciones
+ * puestas y no hay un estado de carga que mantener.
  */
 export default async function ProveedoresRegistroPage() {
   // El catalogo cruza ENTERO al cliente, familias y rubros: el formulario
   // agrupa por familia pero lo que se marca (y lo que se manda) son rubros.
   // Ver `ServiceFamilyOption`.
-  const serviceFamilies = (await fetchServiceCatalog()) ?? [];
+  const catalog = await fetchServiceCatalog();
+
+  // Sin catalogo, el render degradado NO puede quedar en el cache ISR un dia
+  // entero. `connection()` le pide a Next un render por request, y eso se
+  // resuelve distinto segun cuando pase:
+  // - al regenerar en segundo plano, una pagina que era estatica no puede
+  //   volverse dinamica ("static to dynamic at runtime"): la regeneracion falla
+  //   y Next sigue sirviendo la ultima version buena (ver
+  //   `incremental-static-regeneration.md` › Handling uncaught exceptions), y
+  //   reintenta en el request siguiente;
+  // - en el build con el backend caido, la ruta queda dinamica para ese deploy
+  //   (el build no falla) y cada visita ve el formulario completo apenas el
+  //   backend vuelve.
+  // Un `throw` no sirve aca: rompe el build, y perder un negocio que se anota
+  // es peor que mostrarle el formulario degradado.
+  if (catalog === null) await connection();
+  const serviceFamilies = catalog ?? [];
 
   return (
     <>
