@@ -30,15 +30,16 @@ export const providersPlansContent = {
 
   plans: [
     {
-      id: "plan-estandar",
-      name: "Estándar",
+      id: "plan-gratis",
+      name: "Gratis",
       price: "Gratis",
       priceNote: null,
       description: "Para sumar tu negocio a la red de AutoLibre.",
       features: [
-        "Tu perfil en la app, con logo, horarios y especialidades",
-        "Consultas con marca, modelo, año y servicio solicitado, de tu zona y tu rubro",
-        "Hasta 1 pedido por WhatsApp por mes",
+        "Aparecés en las recomendaciones de la IA",
+        "Perfil en el directorio de AutoLibre",
+        "1 propuesta por WhatsApp por mes",
+        "Métricas de clics en tu perfil",
       ],
       cta: { label: "Registrate gratis", href: PROVEEDORES_REGISTRO_PATH },
       highlighted: false,
@@ -47,12 +48,13 @@ export const providersPlansContent = {
       id: "plan-plus",
       name: "Plus",
       price: "ARS 20.000",
-      priceNote: "por mes",
-      description: "Hasta 10 pedidos compatibles por WhatsApp incluidos por mes.",
+      priceNote: "por mes + IVA",
+      description: "Hasta 10 pedidos por WhatsApp por mes, sin usar la app.",
       features: [
-        "Todo lo del plan Estándar",
-        "Hasta 10 pedidos por WhatsApp incluidos por mes",
-        "Sin cargo extra por pedido",
+        "Todo lo del plan Gratis",
+        "Recibís pedidos y respondés propuestas por WhatsApp, sin usar la app",
+        "Hasta 10 pedidos por WhatsApp por mes",
+        "Página web propia dentro de autolibre.ai: aparece en Google y en las IAs, la podés usar como tu web",
       ],
       cta: {
         label: "Quiero el plan Plus",
@@ -64,12 +66,11 @@ export const providersPlansContent = {
       id: "plan-plus-max",
       name: "Plus Max",
       price: "ARS 30.000",
-      priceNote: "por mes",
-      description: "Hasta 15 pedidos compatibles por WhatsApp incluidos por mes.",
+      priceNote: "por mes + IVA",
+      description: "Hasta 15 pedidos por WhatsApp por mes.",
       features: [
         "Todo lo del plan Plus",
-        "Hasta 15 pedidos por WhatsApp incluidos por mes",
-        "Sin cargo extra por pedido",
+        "Hasta 15 pedidos por WhatsApp por mes",
       ],
       cta: {
         label: "Quiero el plan Plus Max",
@@ -77,6 +78,17 @@ export const providersPlansContent = {
       },
       highlighted: false,
     },
+  ],
+
+  /**
+   * Aclaraciones debajo de las cards (decisión de producto del 02/11/2026).
+   * El período de prueba se probó con 1 mes; ajustar acá si producto cambia
+   * la duración.
+   */
+  notes: [
+    "Precio fijo mensual, no cobramos comisión por trabajo (+IVA).",
+    "El plan no influye en la recomendación de la IA: el usuario siempre elige libremente.",
+    "Los talleres que se suman tienen un período de prueba de 1 mes sin cargo.",
   ],
 
   sales: {
