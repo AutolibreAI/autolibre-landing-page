@@ -1,6 +1,49 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { classifyPartnerApplicationBadRequest } from "../../lib/autolibre-api.ts";
+import {
+  classifyPartnerApplicationBadRequest,
+  describePartnerApplicationRejection,
+} from "../../lib/autolibre-api.ts";
+
+// El cartel que ve la persona es deliberadamente vago; el log del servidor no
+// puede serlo. Sin esto, el motivo que mando el backend se perdia en la
+// landing y nadie podia explicar por que un taller no se pudo anotar.
+describe("log de un rechazo del alta de partner", () => {
+  it("guarda el status y el motivo textual del backend", () => {
+    assert.deepEqual(
+      describePartnerApplicationRejection(400, {
+        statusCode: 400,
+        message: "Invalid application logo image",
+        code: "VALIDATION_ERROR",
+      }),
+      {
+        msg: "partner-application rejected by backend",
+        status: 400,
+        reason: "Invalid application logo image",
+        code: "VALIDATION_ERROR",
+      },
+    );
+  });
+
+  it("une los mensajes de validacion de Nest (array) en un solo motivo", () => {
+    assert.equal(
+      describePartnerApplicationRejection(400, {
+        message: ["email must be an email", "address must be a string"],
+        error: "Bad Request",
+      }).reason,
+      "email must be an email; address must be a string",
+    );
+  });
+
+  it("no inventa un motivo cuando el body no se pudo leer", () => {
+    assert.deepEqual(describePartnerApplicationRejection(502, null), {
+      msg: "partner-application rejected by backend",
+      status: 502,
+      reason: null,
+      code: null,
+    });
+  });
+});
 
 // El 2026-11-03 un taller no se pudo anotar: el backend rechazaba el logo y
 // la landing le mostraba "hay un campo con un formato que no podemos

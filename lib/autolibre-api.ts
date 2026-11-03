@@ -284,13 +284,58 @@ export async function submitPartnerApplication(
     return { ok: true, id: payload.id };
   }
 
+  const body: unknown = await response.json().catch(() => null);
+  // Una linea por rechazo en los logs de Vercel. El body del formulario NO va:
+  // trae datos personales y el backend ya lo loguea redactado del otro lado
+  // ("Request rejected"); para cruzarlos alcanza con la hora y el motivo.
+  console.warn(
+    JSON.stringify(describePartnerApplicationRejection(response.status, body)),
+  );
+
   if (response.status === 409) return { ok: false, kind: "duplicate" };
   if (response.status === 400) {
-    const body: unknown = await response.json().catch(() => null);
     return { ok: false, kind: classifyPartnerApplicationBadRequest(body) };
   }
 
   return { ok: false, kind: "unknown" };
+}
+
+export interface PartnerApplicationRejectionLog {
+  readonly msg: "partner-application rejected by backend";
+  readonly status: number;
+  /** El `message` del backend tal cual; `null` si el body no se pudo leer. */
+  readonly reason: string | null;
+  readonly code: string | null;
+}
+
+/**
+ * Lo que la landing deja en su log cuando el backend rechaza un alta.
+ *
+ * El cartel que ve la persona es deliberadamente vago (el texto del backend
+ * esta en ingles y es del dominio). El log no puede serlo: el 2026-11-03 un
+ * taller no se pudo anotar y en ningun lado quedaba escrito por que.
+ */
+export function describePartnerApplicationRejection(
+  status: number,
+  body: unknown,
+): PartnerApplicationRejectionLog {
+  const fields =
+    body !== null && typeof body === "object"
+      ? (body as { readonly message?: unknown; readonly code?: unknown })
+      : {};
+  const reason =
+    typeof fields.message === "string"
+      ? fields.message
+      : Array.isArray(fields.message)
+        ? fields.message.filter((m) => typeof m === "string").join("; ")
+        : null;
+
+  return {
+    msg: "partner-application rejected by backend",
+    status,
+    reason,
+    code: typeof fields.code === "string" ? fields.code : null,
+  };
 }
 
 /** Nivel del acuerdo comercial del partner. La landing no lo muestra. */
