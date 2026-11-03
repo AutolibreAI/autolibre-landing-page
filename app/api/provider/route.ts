@@ -65,6 +65,14 @@ const MESSAGES = {
   "invalid-services":
     "El listado de servicios se actualizó mientras completabas el " +
     "formulario. Recargá la página y volvé a marcar los tuyos.",
+  /**
+   * La landing valida el prefijo y el tamano del logo, pero solo el backend
+   * abre la imagen: un JPG renombrado a .png, una imagen animada o una
+   * corrupta llegan hasta alla. Mismo texto que la validacion local, porque se
+   * corrige igual (caso real del 2026-11-03: un taller vio el cartel generico
+   * y no supo que el problema era el logo).
+   */
+  "invalid-logo": providersContent.form.logo.invalid,
   duplicate:
     "Ya tenemos tu solicitud con ese email y la estamos revisando. Te vamos a " +
     "escribir por WhatsApp.",

@@ -207,7 +207,12 @@ export type SubmitPartnerApplicationResult =
    */
   | {
       readonly ok: false;
-      readonly kind: "invalid" | "invalid-services" | "duplicate" | "unknown";
+      readonly kind:
+        | "invalid"
+        | "invalid-services"
+        | "invalid-logo"
+        | "duplicate"
+        | "unknown";
     };
 
 /**
@@ -235,16 +240,24 @@ export type SubmitPartnerApplicationResult =
  * Y si aun asi deja de matchear, falla para el lado seguro: cae en "invalid",
  * que es exactamente lo que hacia antes de este cambio. Nunca queda peor.
  */
-async function classifyBadRequest(
-  response: Response,
-): Promise<"invalid" | "invalid-services"> {
-  const body = (await response.json().catch(() => null)) as {
-    readonly message?: unknown;
-  } | null;
+export function classifyPartnerApplicationBadRequest(
+  body: unknown,
+): "invalid" | "invalid-services" | "invalid-logo" {
+  const message =
+    body !== null && typeof body === "object" && "message" in body
+      ? (body as { readonly message?: unknown }).message
+      : undefined;
+  if (typeof message !== "string") return "invalid";
 
-  return typeof body?.message === "string" && /\bslugs?\b/i.test(body.message)
-    ? "invalid-services"
-    : "invalid";
+  if (/\bslugs?\b/i.test(message)) return "invalid-services";
+  // Mismo criterio que "slug": se busca la palabra "logo", no la frase. Los
+  // tres rechazos del backend (formato, tamano, contenido de la imagen) la
+  // mencionan, y ningun otro campo del alta lo hace. La landing ya valida
+  // prefijo y tamano antes de mandar; lo que solo ve el backend es si los
+  // bytes son de verdad la imagen que dicen ser (un JPG renombrado a .png).
+  if (/\blogo\b/i.test(message)) return "invalid-logo";
+
+  return "invalid";
 }
 
 /**
@@ -273,7 +286,8 @@ export async function submitPartnerApplication(
 
   if (response.status === 409) return { ok: false, kind: "duplicate" };
   if (response.status === 400) {
-    return { ok: false, kind: await classifyBadRequest(response) };
+    const body: unknown = await response.json().catch(() => null);
+    return { ok: false, kind: classifyPartnerApplicationBadRequest(body) };
   }
 
   return { ok: false, kind: "unknown" };
