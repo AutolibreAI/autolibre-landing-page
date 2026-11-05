@@ -3,6 +3,7 @@ import { submitPartnerApplication } from "@/lib/autolibre-api";
 import { whatsappErrorMessage } from "@/lib/content/presupuesto";
 import { providersContent } from "@/lib/content/providers";
 import { parseArWhatsapp } from "@/lib/phone";
+import { forwardableAuthorization } from "@/lib/proveedores/application-auth";
 import {
   PROVIDER_LOGO_MAX_BYTES,
   findTooLongProviderText,
@@ -33,6 +34,15 @@ import {
  * Los tres desaparecen del lado del backend: la unicidad la garantiza un indice
  * de Postgres, cada campo tiene su columna, y la traduccion al catalogo pasa a
  * ser un paso explicito de la aprobacion.
+ *
+ * ── Alta con dueño (spec 212, US3) ──────────────────────────────────────────
+ *
+ * El formulario (`/proveedores/registro/formulario`) exige sesión y manda
+ * `Authorization: Bearer <token de Clerk>`. Esta ruta NO lo valida (no hay SDK
+ * de Clerk en el server): lo reenvía tal cual al backend, que deja esa cuenta
+ * como dueña del taller cuando aprueba la solicitud. Si el backend responde
+ * 401, sale de acá como 401 con `kind: "unauthenticated"` para que el browser
+ * renueve el token y reintente una vez. El header NUNCA se loguea.
  */
 
 /**
@@ -76,6 +86,8 @@ const MESSAGES = {
   duplicate:
     "Ya tenemos tu solicitud con ese email y la estamos revisando. Te vamos a " +
     "escribir por WhatsApp.",
+  /** Lo reemplaza el formulario por su propio texto (con el link para volver a entrar). */
+  unauthenticated: providersContent.form.session.expired,
   unknown: "Algo salió mal. Por favor intentá de nuevo.",
 } as const;
 
@@ -242,7 +254,7 @@ export async function POST(req: NextRequest) {
     ...(hasGeo ? { latitude, longitude, locality, province } : {}),
     hours,
     modality: asOptionalModality(body.modality),
-  });
+  }, { authorization: forwardableAuthorization(req.headers.get("authorization")) });
 
   if (result.ok) {
     return NextResponse.json({ success: true, id: result.id });
@@ -257,6 +269,15 @@ export async function POST(req: NextRequest) {
       alreadyRegistered: true,
       message: MESSAGES.duplicate,
     });
+  }
+
+  // Token vencido o inválido: distinguible del resto para que el browser lo
+  // renueve y reintente UNA vez con el header (nunca sin él).
+  if (result.kind === "unauthenticated") {
+    return NextResponse.json(
+      { ok: false, kind: "unauthenticated", error: MESSAGES.unauthenticated },
+      { status: 401 },
+    );
   }
 
   // 502 solo para `unknown`: ahi el que fallo es el backend, no esta ruta ni

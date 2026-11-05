@@ -212,6 +212,12 @@ export type SubmitPartnerApplicationResult =
         | "invalid-services"
         | "invalid-logo"
         | "duplicate"
+        /**
+         * 401 del backend (spec 212, US3): el token de Clerk que mandó el
+         * browser no sirve (vencido o inválido). NUNCA se reintenta sin el
+         * header: la ruta lo devuelve como 401 y el browser renueva el token.
+         */
+        | "unauthenticated"
         | "unknown";
     };
 
@@ -261,19 +267,51 @@ export function classifyPartnerApplicationBadRequest(
 }
 
 /**
- * Registra la solicitud de un taller que quiere ser partner.
+ * Traduce un rechazo del backend (`!response.ok`) a un `kind`.
  *
  * Ojo con los codigos: el backend devuelve 409 cuando ese email YA tiene una
  * solicitud sin cerrar, y eso no es un error del usuario — es "ya te tenemos".
  * Tratarlo como falla generica haria que alguien que insiste crea que el
  * formulario esta roto.
+ *
+ * El 401 (spec 212, US3, contrato `partner-onboarding-owner`) es su propio
+ * `kind`: el token de Clerk no sirve y el browser tiene que renovarlo. Nunca
+ * se lo trata como "anonimo" ni como falla generica.
+ */
+export function classifyPartnerApplicationRejection(
+  status: number,
+  body: unknown,
+): Exclude<SubmitPartnerApplicationResult, { ok: true }>["kind"] {
+  if (status === 409) return "duplicate";
+  if (status === 401) return "unauthenticated";
+  if (status === 400) return classifyPartnerApplicationBadRequest(body);
+  return "unknown";
+}
+
+/**
+ * Registra la solicitud de un taller que quiere ser partner.
+ *
+ * `authorization` (spec 212, US3): el header `Authorization` que mandó el
+ * browser (`Bearer <token de Clerk>`), reenviado TAL CUAL. La landing no lo
+ * valida ni lo decodifica (no hay SDK de Clerk en el server): el que decide es
+ * el backend, que deja como dueña del taller a esa cuenta cuando aprueba la
+ * solicitud. Sin header, el backend la acepta como anonima (solicitudes de
+ * formularios abiertos antes del deploy).
+ *
+ * NUNCA se loguea: ni el header ni el token. El unico log de esta funcion es
+ * `describePartnerApplicationRejection`, que solo lleva status, motivo y code
+ * del BODY de la respuesta.
  */
 export async function submitPartnerApplication(
   submission: PartnerApplicationSubmission,
+  options: { readonly authorization?: string } = {},
 ): Promise<SubmitPartnerApplicationResult> {
   const response = await fetch(`${apiBaseUrl()}/api/v1/partner-applications`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.authorization ? { Authorization: options.authorization } : {}),
+    },
     body: JSON.stringify(submission),
     // La landing puede estar cacheada; esta llamada nunca.
     cache: "no-store",
@@ -287,17 +325,13 @@ export async function submitPartnerApplication(
   const body: unknown = await response.json().catch(() => null);
   // Una linea por rechazo en los logs de Vercel. El body del formulario NO va:
   // trae datos personales y el backend ya lo loguea redactado del otro lado
-  // ("Request rejected"); para cruzarlos alcanza con la hora y el motivo.
+  // ("Request rejected"); para cruzarlos alcanza con la hora y el motivo. Los
+  // headers del request tampoco: el `Authorization` es una credencial.
   console.warn(
     JSON.stringify(describePartnerApplicationRejection(response.status, body)),
   );
 
-  if (response.status === 409) return { ok: false, kind: "duplicate" };
-  if (response.status === 400) {
-    return { ok: false, kind: classifyPartnerApplicationBadRequest(body) };
-  }
-
-  return { ok: false, kind: "unknown" };
+  return { ok: false, kind: classifyPartnerApplicationRejection(response.status, body) };
 }
 
 export interface PartnerApplicationRejectionLog {

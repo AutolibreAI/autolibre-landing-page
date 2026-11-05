@@ -47,7 +47,7 @@ const routes = [
   },
   {
     path: PROVEEDORES_REGISTRO_PATH,
-    lastModified: "2026-10-29",
+    lastModified: "2026-11-04",
     changeFrequency: "monthly",
     priority: 0.8,
   },

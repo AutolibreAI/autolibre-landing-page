@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { providersPlansContent } from "@/lib/content/providers-plans";
+import { PROVEEDORES_CONTRATAR_PATH } from "@/lib/proveedores/query";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
 
@@ -62,34 +63,21 @@ export function ProvidersPlansGrid() {
             </ul>
 
             {/* El plan gratis lleva directo al formulario de registro; los
-                pagos abren WhatsApp con el mensaje ya armado según el plan:
-                ningún botón de plan cobra solo, todo sigue gestionándose por
-                WhatsApp o la web (ver AGENTS.md). */}
-            {"href" in plan.cta ? (
-              <ButtonLink
-                href={plan.cta.href}
-                variant={plan.highlighted ? "primary" : "outline"}
-                block
-              >
-                {plan.cta.label}
-              </ButtonLink>
-            ) : (
-              <a
-                href={whatsappUrl(plan.cta.whatsappMessage)}
-                target="_blank"
-                rel="noopener noreferrer"
-                data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
-                data-analytics-placement={`proveedores_planes_${plan.id}`}
-                className={cn(
-                  buttonVariants({
-                    variant: plan.highlighted ? "primary" : "outline",
-                    block: true,
-                  }),
-                )}
-              >
-                {plan.cta.label}
-              </a>
-            )}
+                pagos, a la contratación online (spec 212), que es privada y
+                carga Clerk: sin prefetch (ni en viewport ni en hover), así
+                esta página indexable no baja nada de Clerk (SC-005). */}
+            <ButtonLink
+              href={plan.cta.href}
+              prefetch={
+                plan.cta.href.startsWith(PROVEEDORES_CONTRATAR_PATH)
+                  ? false
+                  : undefined
+              }
+              variant={plan.highlighted ? "primary" : "outline"}
+              block
+            >
+              {plan.cta.label}
+            </ButtonLink>
           </Card>
         ))}
 

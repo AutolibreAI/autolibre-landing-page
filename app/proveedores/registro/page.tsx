@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
-import { connection } from "next/server";
 import { PageShell } from "@/components/layout/page-shell";
 import { JsonLd } from "@/components/seo/json-ld";
-import { ProviderForm } from "@/components/forms/provider-form";
 import { ProvidersHeroSection } from "@/components/sections/providers/hero";
 import { ProvidersPlansBannerSection } from "@/components/sections/providers/plans-banner";
 import { ProvidersReasonsSection } from "@/components/sections/providers/reasons";
+import { ButtonLink } from "@/components/ui/button";
 import { Section } from "@/components/ui/section";
-import { fetchServiceCatalog } from "@/lib/autolibre-api";
 import { providersContent } from "@/lib/content/providers";
 import { PROVEEDORES_PATH, PROVEEDORES_REGISTRO_PATH } from "@/lib/proveedores/query";
 import { createMetadata } from "@/lib/seo/metadata";
@@ -38,34 +36,22 @@ const schema = graph(
 );
 
 /**
- * El catalogo se lee acá, en el servidor, y no dentro del formulario: la URL
- * del backend es server-side (sin `NEXT_PUBLIC_`), asi que un fetch desde el
- * cliente obligaria a abrir una ruta proxy nueva solo para leer una lista
- * publica. Resolviendolo en el render la pagina sigue siendo estatica (ISR, al
- * ritmo del `revalidate` del catalogo), el formulario nace con sus opciones
- * puestas y no hay un estado de carga que mantener.
+ * `/proveedores/registro`: página pública e INDEXABLE del alta de talleres.
+ *
+ * Desde la spec 212 (US3) el formulario ya no vive acá: el alta exige la
+ * cuenta de AutoLibre (el backend deja como dueña del taller a la cuenta que lo
+ * registró) y eso trae Clerk. Para que esta página siga sin cargar un solo
+ * byte de Clerk (FR-011, SC-005), el formulario se mudó a
+ * `/proveedores/registro/formulario` (privada, `noindex`, con su propio layout
+ * de Clerk) y acá queda el contenido citable más el CTA hacia allá.
+ *
+ * El CTA va con `prefetch={false}`: prefetchear el formulario traería su
+ * payload (y los chunks de Clerk) a esta página. La sección conserva
+ * `id="form"` para que los links viejos a `/proveedores/registro#form` sigan
+ * cayendo en el lugar correcto.
  */
-export default async function ProveedoresRegistroPage() {
-  // El catalogo cruza ENTERO al cliente, familias y rubros: el formulario
-  // agrupa por familia pero lo que se marca (y lo que se manda) son rubros.
-  // Ver `ServiceFamilyOption`.
-  const catalog = await fetchServiceCatalog();
-
-  // Sin catalogo, el render degradado NO puede quedar en el cache ISR un dia
-  // entero. `connection()` le pide a Next un render por request, y eso se
-  // resuelve distinto segun cuando pase:
-  // - al regenerar en segundo plano, una pagina que era estatica no puede
-  //   volverse dinamica ("static to dynamic at runtime"): la regeneracion falla
-  //   y Next sigue sirviendo la ultima version buena (ver
-  //   `incremental-static-regeneration.md` › Handling uncaught exceptions), y
-  //   reintenta en el request siguiente;
-  // - en el build con el backend caido, la ruta queda dinamica para ese deploy
-  //   (el build no falla) y cada visita ve el formulario completo apenas el
-  //   backend vuelve.
-  // Un `throw` no sirve aca: rompe el build, y perder un negocio que se anota
-  // es peor que mostrarle el formulario degradado.
-  if (catalog === null) await connection();
-  const serviceFamilies = catalog ?? [];
+export default function ProveedoresRegistroPage() {
+  const { register } = providersContent;
 
   return (
     <>
@@ -79,12 +65,22 @@ export default async function ProveedoresRegistroPage() {
 
         <Section id="form" tone="muted" spacing="md" container="narrow" aria-labelledby="registro-titulo">
           <h2 id="registro-titulo" className="text-center font-display text-2xl font-bold text-ink">
-            {providersContent.form.title}
+            {register.title}
           </h2>
-          <p className="mt-3 mb-10 text-center text-[0.9375rem] text-ink/65">
-            {providersContent.form.subtitle}
+          <p className="mt-3 text-center text-[0.9375rem] leading-relaxed text-ink/70">
+            {register.intro}
           </p>
-          <ProviderForm serviceFamilies={serviceFamilies} />
+
+          <h3 className="mt-10 font-display text-lg font-bold text-ink">{register.stepsTitle}</h3>
+          <ol className="mt-4 flex list-decimal flex-col gap-3 pl-6 text-[0.9375rem] leading-relaxed text-ink/75 marker:font-bold marker:text-brand">
+            {register.steps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+
+          <ButtonLink href={register.cta.href} prefetch={false} size="lg" block className="mt-10">
+            {register.cta.label}
+          </ButtonLink>
         </Section>
       </PageShell>
 
