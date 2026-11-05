@@ -18,6 +18,11 @@ type PartnerProfileBodyProps = {
   readonly serviceGroups: readonly ServiceGroup[];
   /** Preguntas armadas con campos reales; `[]` si no llegan a dos. */
   readonly faqs: readonly ProfileFaq[];
+  /**
+   * Bloque extra al final de la columna principal (hoy, "¿Es tu taller?").
+   * Lo decide la página: el cuerpo no sabe qué va ahí.
+   */
+  readonly children?: React.ReactNode;
 };
 
 const { about, services, faq, aside } = partnerProfileContent;
@@ -62,7 +67,7 @@ function staticMapUrl(partner: PartnerDetail): string | null {
  * Cada bloque se renderiza solo si tiene datos. Nunca "Sin información": un
  * bloque vacío no le sirve a nadie y un LLM lo citaría como dato.
  */
-export function PartnerProfileBody({ partner, serviceGroups, faqs }: PartnerProfileBodyProps) {
+export function PartnerProfileBody({ partner, serviceGroups, faqs, children }: PartnerProfileBodyProps) {
   const modality = partner.modality ? partnerProfileContent.modalityLabel(partner.modality) : null;
   const directions = mapsHref(partner);
   const mapUrl = staticMapUrl(partner);
@@ -161,6 +166,8 @@ export function PartnerProfileBody({ partner, serviceGroups, faqs }: PartnerProf
               </div>
             </div>
           ) : null}
+
+          {children}
         </div>
 
         <aside aria-label={aside.label} className="flex min-w-0 grow basis-85 flex-col gap-6">

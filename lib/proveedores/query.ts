@@ -12,14 +12,40 @@
 export const PROVEEDORES_PATH = "/proveedores";
 /** Alta de negocios: el formulario vive bajo el directorio. */
 export const PROVEEDORES_REGISTRO_PATH = `${PROVEEDORES_PATH}/registro`;
+/**
+ * Formulario del alta (spec 212, US3): privado (`noindex`), con Clerk, fuera
+ * del sitemap y de `llms.txt`. Vive DEBAJO de `registro`, así que no es
+ * hermano de `[slug]` y no hace falta reservarlo.
+ */
+export const PROVEEDORES_REGISTRO_FORMULARIO_PATH = `${PROVEEDORES_REGISTRO_PATH}/formulario`;
 /** Precios y planes pagos para proveedores: vive bajo el directorio. */
 export const PROVEEDORES_PLANES_PATH = `${PROVEEDORES_PATH}/planes`;
+/**
+ * Canje del código de reclamo de un taller (spec 211). Privada (`noindex`) y
+ * fuera del sitemap. Backend también reserva este slug (migración 0145).
+ */
+export const PROVEEDORES_RECLAMAR_PATH = `${PROVEEDORES_PATH}/reclamar`;
+/**
+ * Contratación de un plan pago (spec 212). Privada (`noindex`) y fuera del
+ * sitemap. Backend tiene que reservar este slug (AGENTS.md).
+ */
+export const PROVEEDORES_CONTRATAR_PATH = `${PROVEEDORES_PATH}/contratar`;
+/**
+ * Vuelta de Mercado Pago (la `back_url` del backend). Vive debajo de
+ * `contratar`, así que no es hermana de `[slug]` y no se reserva aparte.
+ */
+export const PROVEEDORES_CONTRATAR_RESULTADO_PATH = `${PROVEEDORES_CONTRATAR_PATH}/resultado`;
 /**
  * Slugs que un perfil no puede tener: son rutas estáticas hermanas de
  * `[slug]`, y la estática gana. Un negocio con uno de estos quedaría
  * inalcanzable y su URL del sitemap llevaría a otra página.
  */
-export const RESERVED_PROFILE_SLUGS: readonly string[] = ["registro", "planes"];
+export const RESERVED_PROFILE_SLUGS: readonly string[] = [
+  "registro",
+  "planes",
+  "reclamar",
+  "contratar",
+];
 /** Negocios por página: 8 filas de 3 en desktop, sin cortar una fila. */
 export const PROVEEDORES_PAGE_SIZE = 24;
 /** Largo máximo de la búsqueda: el mismo tope que valida el backend. */
