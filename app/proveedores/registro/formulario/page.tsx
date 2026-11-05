@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
+import { Suspense } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import {
+  PRIVATE_FLOW_TITLE_ID,
+  SignInLayout,
+  SignInLoading,
+} from "@/components/proveedores/account/private-flow";
+import { FlowSteps } from "@/components/proveedores/flow/flow-steps";
 import { RegisterFormGate } from "@/components/proveedores/registro/register-form-gate";
 import { Section } from "@/components/ui/section";
 import { fetchServiceCatalog } from "@/lib/autolibre-api";
@@ -55,14 +62,37 @@ export default async function ProveedoresRegistroFormularioPage() {
   if (catalog === null) await connection();
   const serviceFamilies = catalog ?? [];
 
+  const head = { eyebrow: content.eyebrow, title: content.title, intro: content.intro };
+  // Contexto del login: qué viene después de entrar (paso 1 = el actual).
+  const context = (
+    <FlowSteps
+      orientation="vertical"
+      label={content.steps.label}
+      steps={content.steps.items}
+      current={0}
+    />
+  );
+
   return (
     <PageShell currentPath={PATH}>
-      <Section tone="muted" spacing="md" container="narrow" aria-labelledby="formulario-titulo">
-        <h1 id="formulario-titulo" className="font-display text-3xl font-bold text-ink md:text-4xl">
-          {content.title}
-        </h1>
-        <p className="mt-4 mb-10 text-lead leading-relaxed text-ink/70">{content.intro}</p>
-        <RegisterFormGate serviceFamilies={serviceFamilies} selfPath={PATH} />
+      {/* Contenedor `wide`: el `<h1>` y el login quedan alineados con el
+          header. El `<h1>` lo pinta la isla (o el fallback), siempre en el
+          HTML del server. */}
+      <Section tone="muted" spacing="md" aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
+        {/* La isla lee `?next` (la contratación de la que vino) con
+            `useSearchParams`: en una página estática eso exige un
+            `<Suspense>` (si no, falla el build). El fallback es el mismo
+            login en "cargando" que muestra la isla mientras carga Clerk:
+            mismo layout, sin salto. */}
+        <Suspense
+          fallback={
+            <SignInLayout head={head} context={context}>
+              <SignInLoading />
+            </SignInLayout>
+          }
+        >
+          <RegisterFormGate serviceFamilies={serviceFamilies} selfPath={PATH} head={head} context={context} />
+        </Suspense>
       </Section>
     </PageShell>
   );

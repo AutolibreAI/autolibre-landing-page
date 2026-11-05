@@ -1,6 +1,7 @@
+import { partnerAccountContent } from "@/lib/content/partner-account";
 import { providersPlansContent } from "@/lib/content/providers-plans";
 import { LANDING_PLAN_ID_TO_CODE, type CheckoutFailureKind } from "@/lib/partner-billing/checkout";
-import { PROVEEDORES_PLANES_PATH, PROVEEDORES_REGISTRO_FORMULARIO_PATH } from "@/lib/proveedores/query";
+import { PROVEEDORES_PLANES_PATH } from "@/lib/proveedores/query";
 
 /**
  * Copy de la contratación de un plan pago (`/proveedores/contratar` y
@@ -11,13 +12,22 @@ import { PROVEEDORES_PLANES_PATH, PROVEEDORES_REGISTRO_FORMULARIO_PATH } from "@
  * `trialEligible` (FR-017) y el pago se confirma solo con el estado del
  * backend. El TEXTO de los términos comerciales no vive acá: sale de
  * `GET /billing/terms` (research D15); acá solo está la copy de la UI.
+ *
+ * El login es el compartido de `lib/content/partner-account.ts`.
  */
+
+export type LandingPlan = (typeof providersPlansContent.plans)[number];
+
+/** El plan de la página de planes (nombre, bajada, beneficios) por `code` del backend. */
+export function planContent(code: string): LandingPlan | null {
+  const entry = Object.entries(LANDING_PLAN_ID_TO_CODE).find(([, planCode]) => planCode === code);
+  if (!entry) return null;
+  return providersPlansContent.plans.find((plan) => plan.id === entry[0]) ?? null;
+}
 
 /** Nombre del plan como en la página de planes (FR-013), por `code` del backend. */
 export function planDisplayName(code: string): string | null {
-  const entry = Object.entries(LANDING_PLAN_ID_TO_CODE).find(([, planCode]) => planCode === code);
-  if (!entry) return null;
-  return providersPlansContent.plans.find((plan) => plan.id === entry[0])?.name ?? null;
+  return planContent(code)?.name ?? null;
 }
 
 /** Un mensaje por cada rechazo del checkout (research D9). */
@@ -37,6 +47,12 @@ const checkoutErrors: Record<CheckoutFailureKind, string> = {
   unknown: "No pudimos iniciar el pago. No se te cobró nada: probá de nuevo en un rato.",
 };
 
+/** Estado de una suscripción con acceso, en castellano (solo los confirmados). */
+const subscriptionStatusLabels: Record<string, string> = {
+  active: "Activo",
+  trialing: "En período de prueba",
+};
+
 export const partnerCheckoutContent = {
   meta: {
     title: "Contratar un plan para tu taller",
@@ -44,8 +60,16 @@ export const partnerCheckoutContent = {
       "Elegí el taller, revisá el resumen del plan y pagalo con Mercado Pago desde tu cuenta de AutoLibre.",
   },
 
+  eyebrow: "Planes para talleres",
   title: (planName: string) => `Contratá el plan ${planName}`,
-  intro: "Usá la misma cuenta de AutoLibre que en la app. El pago se hace en Mercado Pago.",
+  intro: "Son tres pasos: confirmás qué taller, revisás el plan y lo pagás en Mercado Pago.",
+
+  /** Columna de contexto del login: los mismos tres pasos, explicados. */
+  signInSteps: [
+    { id: "taller", label: "Tu taller", description: "Entrás y elegís a qué taller le aplicás el plan." },
+    { id: "plan", label: "Plan", description: "Revisás el precio y aceptás los términos." },
+    { id: "pago", label: "Pago", description: "Lo pagás en Mercado Pago." },
+  ],
 
   /** `?plan=` que no es un plan pago (o es el gratis). */
   invalidPlan: {
@@ -54,10 +78,26 @@ export const partnerCheckoutContent = {
     cta: { label: "Ver los planes", href: PROVEEDORES_PLANES_PATH },
   },
 
-  signIn: {
-    title: "Iniciá sesión o creá tu cuenta",
-    body: "Primero entrá con tu cuenta de AutoLibre. Después elegís el taller y confirmás el plan.",
-    loading: "Cargando el inicio de sesión…",
+  /** Indicador de progreso de la contratación (`FlowSteps`). */
+  steps: {
+    label: "Pasos de la contratación",
+    items: [
+      { id: "taller", label: "Tu taller" },
+      { id: "plan", label: "Plan" },
+      { id: "pago", label: "Pago" },
+    ],
+  },
+
+  /**
+   * Tarjeta del plan elegido que acompaña toda la contratación (al costado
+   * en desktop, arriba en mobile). No muestra precio a propósito: el precio
+   * que vale es el del backend y aparece en el paso "Plan", antes de pagar.
+   */
+  planCard: {
+    title: (planName: string) => `Plan ${planName}`,
+    featuresLabel: (planName: string) => `Qué incluye el plan ${planName}`,
+    note: "El precio final y si te corresponde el período de prueba los ves antes de pagar.",
+    change: { label: "Cambiar de plan", href: PROVEEDORES_PLANES_PATH },
   },
 
   loading: "Buscando tus talleres…",
@@ -65,27 +105,60 @@ export const partnerCheckoutContent = {
   plansError: "No pudimos cargar el precio del plan. Sin el precio no podemos seguir: probá de nuevo.",
   planUnavailable: "Este plan no está disponible para contratar online en este momento.",
   retry: "Reintentar",
-  reauth: "Iniciar sesión de nuevo",
+  reauth: partnerAccountContent.reauth,
 
-  /** Sesión iniciada pero sin talleres como dueño (US2). */
+  /**
+   * Sesión iniciada pero sin talleres como dueño (US2). Cubre los cuatro
+   * casos reales: tiene código (pantalla privada: acá se puede nombrar),
+   * aparece (sin explicar cómo se verifica), registró y espera la
+   * aprobación (no hay endpoint para ver la solicitud: solo se explica), o
+   * no aparece.
+   *
+   * Lo comparten la contratación (con el plan elegido) y `/cuenta` (sin
+   * plan: `planName` en `null`), por eso cada texto recibe el plan.
+   */
   noPartner: {
-    title: "Para contratar un plan necesitás un taller en tu cuenta",
-    body: "Tu cuenta todavía no figura como dueña de ningún taller. Elegí cómo seguir:",
-    claim: {
-      title: "Mi taller ya está en AutoLibre",
-      body: "Canjeá el código que te mandó el equipo de AutoLibre para vincular el taller a tu cuenta. Después volvés a este plan.",
-      cta: "Reclamar mi taller",
-    },
-    requestCode: {
-      label: "¿No tenés el código? Pedíselo al equipo por WhatsApp",
-      whatsappMessage: "Hola! Quiero contratar un plan para mi taller y necesito el código para reclamarlo en AutoLibre.",
-    },
-    register: {
-      title: "Todavía no lo registré",
-      body: "Registralo gratis con esta misma cuenta. Cuando aprobemos tu taller, queda en tu cuenta y vas a poder contratar el plan.",
-      cta: "Registrar mi taller",
-      // Directo al formulario (spec 212, US3): la persona ya tiene sesión.
-      href: PROVEEDORES_REGISTRO_FORMULARIO_PATH,
+    title: "¿Cómo está tu taller en AutoLibre?",
+    body: "Tu cuenta todavía no administra ningún taller. Elegí la opción que te describe y te decimos cómo seguir.",
+    options: {
+      haveCode: {
+        title: "Tengo un código de reclamo",
+        body: (planName: string | null) =>
+          planName
+            ? "Canjealo y el taller queda vinculado a tu cuenta. Después volvés a esta contratación."
+            : "Canjealo y el taller queda vinculado a tu cuenta. Después lo ves acá.",
+        cta: "Canjear mi código",
+      },
+      /** Sin explicar el mecanismo de verificación: lo maneja el equipo. */
+      listedNoCode: {
+        title: "Mi taller ya aparece en AutoLibre",
+        body: (planName: string | null) =>
+          planName
+            ? "Escribinos por WhatsApp y verificamos que sos el dueño. Después volvés a esta contratación."
+            : "Escribinos por WhatsApp y verificamos que sos el dueño.",
+        cta: "Escribinos por WhatsApp",
+        whatsappMessage: (planName: string | null) =>
+          planName
+            ? `Hola! Mi taller ya aparece en AutoLibre, quiero administrarlo y contratar el plan ${planName}.`
+            : "Hola! Mi taller ya aparece en AutoLibre y quiero administrarlo.",
+      },
+      pendingApproval: {
+        title: "Ya registré mi taller y espero la aprobación",
+        body: (planName: string | null) =>
+          planName
+            ? `No hace falta registrarlo de nuevo. Cuando lo aprobemos, el taller queda en esta cuenta y vas a poder contratar el plan ${planName} desde esta misma página.`
+            : "No hace falta registrarlo de nuevo. Cuando lo aprobemos, el taller queda en esta cuenta y lo vas a ver acá.",
+        cta: "Consultar por mi solicitud",
+        whatsappMessage: "Hola! Registré mi taller en AutoLibre y quiero saber cómo va la revisión de la solicitud.",
+      },
+      notListed: {
+        title: "Mi taller no aparece en AutoLibre",
+        body: (planName: string | null) =>
+          planName
+            ? "Registralo gratis con esta misma cuenta. Cuando lo aprobemos, volvés a esta contratación."
+            : "Registralo gratis con esta misma cuenta. Cuando lo aprobemos, lo vas a ver acá.",
+        cta: "Registrar mi taller",
+      },
     },
   },
 
@@ -95,7 +168,7 @@ export const partnerCheckoutContent = {
   },
 
   summary: {
-    title: "Resumen",
+    title: "Revisá el plan",
     plan: "Plan",
     price: "Precio",
     partner: "Taller",
@@ -150,13 +223,30 @@ export const partnerCheckoutContent = {
     whatsappMessage: providersPlansContent.sales.whatsappMessage,
   },
 
-  /** El taller elegido ya tiene un plan pago con acceso: no se ofrece pagar. */
+  /**
+   * El taller elegido ya tiene un plan pago con acceso: no se ofrece pagar.
+   * Hoy no hay cambio de plan online: lo resuelve ventas.
+   */
   activePlan: {
     title: (planName: string) => `Tu taller ya tiene el plan ${planName}`,
     titleWithoutName: "Tu taller ya tiene un plan activo",
+    rows: {
+      plan: "Plan actual",
+      status: "Estado",
+      trialUntil: "Prueba hasta",
+      accessUntil: "Acceso hasta",
+    },
+    statusLabel: (status: string | null) => (status ? (subscriptionStatusLabels[status] ?? null) : null),
+    canceled: "Baja pedida",
+    body: "No hace falta contratarlo de nuevo. Los cambios de plan todavía no se hacen online: si querés pasarte a otro, lo vemos con ventas.",
     accessUntil: (date: string) =>
       `Pediste la baja: tu plan sigue activo hasta el ${date}. Después de esa fecha vas a poder contratar de nuevo.`,
-    body: "No hace falta contratarlo de nuevo. Si querés cambiar de plan, hablá con ventas.",
+    salesCta: "Cambiar de plan con ventas",
+    salesWhatsappMessage: (currentPlan: string | null, wantedPlan: string) =>
+      currentPlan
+        ? `Hola! Mi taller tiene el plan ${currentPlan} de AutoLibre y quiero pasarme al plan ${wantedPlan}.`
+        : `Hola! Mi taller ya tiene un plan de AutoLibre y quiero pasarme al plan ${wantedPlan}.`,
+    plansLink: { label: "Ver los planes", href: PROVEEDORES_PLANES_PATH },
   },
 
   /** `/proveedores/contratar/resultado`: la vuelta de Mercado Pago. */
@@ -166,6 +256,8 @@ export const partnerCheckoutContent = {
       description: "Consultá si Mercado Pago ya confirmó el pago del plan de tu taller en AutoLibre.",
     },
     title: "Estado de tu contratación",
+    intro: "Consultamos a Mercado Pago el estado del pago del plan de tu taller.",
+    signInIntro: "Entrá con la cuenta con la que contrataste para ver el estado del pago.",
     checking: {
       title: "Estamos confirmando tu pago",
       body: "Esperá unos segundos mientras Mercado Pago nos confirma el pago. No cierres esta página.",
@@ -174,14 +266,38 @@ export const partnerCheckoutContent = {
       title: (planName: string) => `¡Listo! Tu taller tiene el plan ${planName}`,
       titleWithoutName: "¡Listo! Tu taller ya tiene su plan",
       trialUntil: (date: string) => `Tu período de prueba sin cargo termina el ${date}.`,
-      body: "Para administrar tu taller, entrá a la app de AutoLibre con esta misma cuenta.",
-      appStore: "Descargar en App Store",
-      playStore: "Descargar en Google Play",
+      nextTitle: "Próximos pasos",
+      next: {
+        app: {
+          title: "Administrá tu taller desde la app",
+          body: "Entrá a la app de AutoLibre con esta misma cuenta para completar tu perfil y responder pedidos.",
+        },
+        help: {
+          title: "¿Dudas con tu plan?",
+          body: "Escribinos por WhatsApp y lo vemos con vos.",
+        },
+      },
     },
+    /**
+     * `pending` = el checkout se inició y Mercado Pago todavía no lo autorizó.
+     * Incluye a quien pagó y espera la confirmación Y a quien abandonó en MP
+     * (no vence). La pantalla no puede saber cuál: les habla a los dos.
+     */
     pendingTimeout: {
-      title: "Tu pago está pendiente de confirmación",
-      body: "Mercado Pago todavía no nos confirmó el pago. Puede tardar unos minutos: volvé a esta página más tarde para ver el estado.",
-      check: "Consultar de nuevo",
+      title: "Todavía no tenemos la confirmación del pago",
+      body: "Puede ser que Mercado Pago todavía no nos haya avisado, o que el pago no se haya completado.",
+      paid: {
+        title: "Si completaste el pago en Mercado Pago",
+        body: "La confirmación puede demorar unos minutos. No vuelvas a pagar: consultá de nuevo en un rato.",
+        cta: "Consultar de nuevo",
+      },
+      notPaid: {
+        title: "Si no llegaste a pagar",
+        body: "No se te cobró nada. Podés volver a intentarlo cuando quieras.",
+        cta: "Volver a intentarlo",
+      },
+      /** Sin plan guardado en esta pestaña: se elige de nuevo. */
+      choosePlan: "Elegir un plan",
     },
     free: {
       title: "No se registró ningún pago",

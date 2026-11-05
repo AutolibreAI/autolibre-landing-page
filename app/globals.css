@@ -1,3 +1,8 @@
+/* Orden de capas: la de Clerk (`cssLayerName: "clerk"`, ver
+   `lib/auth/clerk-appearance.ts`) va ANTES de `utilities`, así las clases de
+   Tailwind con que se tematiza el login le ganan al CSS de Clerk. Solo
+   declara el orden: en las páginas sin Clerk la capa queda vacía. */
+@layer theme, base, clerk, components, utilities;
 @import "tailwindcss";
 
 /* ============================================================

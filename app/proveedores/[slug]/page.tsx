@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 import { safeHttpUrl } from "@/components/proveedores/partner-monogram";
-import { PartnerClaimCta } from "@/components/proveedores/profile/partner-claim-cta";
 import { PartnerProfileBody } from "@/components/proveedores/profile/partner-profile-body";
 import { PartnerProfileHead } from "@/components/proveedores/profile/partner-profile-head";
 import { PartnerRelated } from "@/components/proveedores/profile/partner-related";
@@ -178,11 +177,11 @@ export default async function PartnerProfilePage({ params }: PageProps) {
           header no es esta página, así que no lleva `aria-current="page"`. */}
       <PageShell currentPath={path}>
         <PartnerProfileHead partner={partner} breadcrumbs={crumbs} familyNames={familyNames} />
-        <PartnerProfileBody partner={partner} serviceGroups={serviceGroups} faqs={faqs}>
-          {/* Invitación secundaria al dueño (spec 211): al final del contenido,
-              nunca en la sticky bar ni al lado del WhatsApp del negocio. */}
-          <PartnerClaimCta name={partner.name} slug={partner.slug} />
-        </PartnerProfileBody>
+        {/* Sin invitación al dueño ("¿Es tu taller?"): decisión de producto
+            del 2026-11-05, el perfil no ofrece reclamarlo ni administrarlo.
+            Los dueños de talleres que ya aparecen llegan por el hub
+            `/proveedores/registro` ("Mi taller ya aparece"). */}
+        <PartnerProfileBody partner={partner} serviceGroups={serviceGroups} faqs={faqs} />
         {firstFamily && related.length > 0 ? (
           <PartnerRelated family={firstFamily} partners={related} categoryNames={categoryNames} />
         ) : null}

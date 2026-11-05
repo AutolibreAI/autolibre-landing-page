@@ -46,7 +46,15 @@ export function checkoutHref(contratarPath: string, planCode: string): string {
   return `${contratarPath}?${new URLSearchParams({ plan: planCode }).toString()}`;
 }
 
+/**
+ * `<ruta>?next=<ruta codificada>`: ir a otra pantalla y ofrecer volver. La
+ * pantalla de destino SIEMPRE revalida `next` con `safeContinuePath`.
+ */
+export function withReturnHref(path: string, next: string): string {
+  return `${path}?${new URLSearchParams({ next }).toString()}`;
+}
+
 /** `/proveedores/reclamar?next=<ruta codificada>`: reclamar y volver. */
 export function claimWithReturnHref(reclamarPath: string, next: string): string {
-  return `${reclamarPath}?${new URLSearchParams({ next }).toString()}`;
+  return withReturnHref(reclamarPath, next);
 }

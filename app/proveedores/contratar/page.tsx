@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { PageShell } from "@/components/layout/page-shell";
 import { CheckoutFlow } from "@/components/proveedores/checkout/checkout-flow";
+import { PRIVATE_FLOW_TITLE_ID } from "@/components/proveedores/account/private-flow";
+import { PlanSummaryCard } from "@/components/proveedores/flow/plan-summary-card";
 import { ButtonLink } from "@/components/ui/button";
 import { Section } from "@/components/ui/section";
-import { partnerCheckoutContent, planDisplayName } from "@/lib/content/partner-checkout";
+import { partnerCheckoutContent, planContent } from "@/lib/content/partner-checkout";
 import { parsePlanParam } from "@/lib/partner-billing/checkout";
 import { checkoutHref } from "@/lib/partner-billing/return-path";
 import { PROVEEDORES_CONTRATAR_PATH } from "@/lib/proveedores/query";
@@ -33,31 +35,41 @@ type ContratarPageProps = {
  * un plan pago y lo paga en Mercado Pago. El plan se valida acá, en el server
  * (research D3); la isla client hace el login, elige el taller e inicia el
  * pago. Clerk solo existe en este segmento (`layout.tsx`).
+ *
+ * El plan elegido (tarjeta server) queda a la vista todo el tiempo: en la
+ * columna de contexto del login y al costado de la contratación
+ * (`FlowLayout`, adentro de la isla).
  */
 export default async function ProveedoresContratarPage({ searchParams }: ContratarPageProps) {
   const planCode = parsePlanParam((await searchParams).plan);
-  const planName = planCode ? planDisplayName(planCode) : null;
+  const plan = planCode ? planContent(planCode) : null;
+
+  if (!planCode || !plan) {
+    return (
+      <PageShell currentPath={PATH}>
+        <Section tone="muted" spacing="md" container="narrow" aria-labelledby="contratar-titulo">
+          <h1 id="contratar-titulo" className="font-display text-3xl font-bold text-ink md:text-4xl">
+            {content.invalidPlan.title}
+          </h1>
+          <p className="mt-4 mb-8 text-lead leading-relaxed text-ink/70">{content.invalidPlan.body}</p>
+          <ButtonLink href={content.invalidPlan.cta.href}>{content.invalidPlan.cta.label}</ButtonLink>
+        </Section>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell currentPath={PATH}>
-      <Section tone="muted" spacing="md" container="narrow" aria-labelledby="contratar-titulo">
-        {planCode && planName ? (
-          <>
-            <h1 id="contratar-titulo" className="font-display text-3xl font-bold text-ink md:text-4xl">
-              {content.title(planName)}
-            </h1>
-            <p className="mt-4 mb-10 text-lead leading-relaxed text-ink/70">{content.intro}</p>
-            <CheckoutFlow planCode={planCode} planName={planName} selfPath={checkoutHref(PATH, planCode)} />
-          </>
-        ) : (
-          <>
-            <h1 id="contratar-titulo" className="font-display text-3xl font-bold text-ink md:text-4xl">
-              {content.invalidPlan.title}
-            </h1>
-            <p className="mt-4 mb-8 text-lead leading-relaxed text-ink/70">{content.invalidPlan.body}</p>
-            <ButtonLink href={content.invalidPlan.cta.href}>{content.invalidPlan.cta.label}</ButtonLink>
-          </>
-        )}
+      {/* Contenedor `wide`: alineado con el header. El `<h1>` lo pinta la
+          isla en los dos estados (login y contratación). */}
+      <Section tone="muted" spacing="md" aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
+        <CheckoutFlow
+          planCode={planCode}
+          planName={plan.name}
+          selfPath={checkoutHref(PATH, planCode)}
+          head={{ eyebrow: content.eyebrow, title: content.title(plan.name), intro: content.intro }}
+          planCard={<PlanSummaryCard plan={plan} />}
+        />
       </Section>
     </PageShell>
   );

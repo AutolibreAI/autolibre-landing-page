@@ -169,6 +169,13 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M15.5 5.6a3.2 3.2 0 0 1 0 5.8M17.5 14.2a6 6 0 0 1 3.5 5.3" />
     </>
   ),
+  /** Una persona: la cuenta del usuario ("Mi cuenta"). */
+  user: (
+    <>
+      <circle cx="12" cy="8.5" r="3.6" />
+      <path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+    </>
+  ),
   smartphone: (
     <>
       <rect x="6.5" y="2.5" width="11" height="19" rx="2.2" />

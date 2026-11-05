@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageShell } from "@/components/layout/page-shell";
+import { PRIVATE_FLOW_TITLE_ID } from "@/components/proveedores/account/private-flow";
 import { CheckoutResult } from "@/components/proveedores/checkout/checkout-result";
 import { Section } from "@/components/ui/section";
 import { partnerCheckoutContent } from "@/lib/content/partner-checkout";
@@ -34,10 +35,9 @@ export default async function ProveedoresContratarResultadoPage({ searchParams }
 
   return (
     <PageShell currentPath={PATH}>
-      <Section tone="muted" spacing="md" container="narrow" aria-labelledby="resultado-titulo">
-        <h1 id="resultado-titulo" className="mb-10 font-display text-3xl font-bold text-ink md:text-4xl">
-          {content.title}
-        </h1>
+      {/* Contenedor `wide`, como `/contratar`: la isla pinta el `<h1>` y el
+          mismo armazón de flujo (paso en curso + tarjeta del plan). */}
+      <Section tone="muted" spacing="md" aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
         <CheckoutResult partnerIdFromQuery={partnerId} selfPath={selfPath} />
       </Section>
     </PageShell>

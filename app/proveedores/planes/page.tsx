@@ -47,12 +47,12 @@ const schema = graph(
 export default function ProveedoresPlanesPage() {
   return (
     <>
-      <PageShell cta={{ label: "Sumar mi negocio", href: "#planes" }} currentPath={PATH}>
+      <PageShell cta={providersPlansContent.headerCta} currentPath={PATH}>
         <ProvidersPlansHeroSection />
 
         <Section id="planes" spacing="md" container="content" aria-labelledby="planes-titulo">
           <h2 id="planes-titulo" className="sr-only">
-            Planes disponibles
+            {providersPlansContent.gridTitle}
           </h2>
           <ProvidersPlansGrid />
         </Section>

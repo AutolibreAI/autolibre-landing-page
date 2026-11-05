@@ -1,6 +1,5 @@
 import type { FuelType, PartnerLinkKind } from "@/lib/autolibre-api";
-import { PROVEEDORES_PATH, partnerPath } from "@/lib/proveedores/query";
-import { siteConfig } from "@/lib/seo/config";
+import { PROVEEDORES_PATH } from "@/lib/proveedores/query";
 
 /**
  * Copy del perfil público de un negocio (`/proveedores/[slug]`). Los datos del
@@ -130,21 +129,6 @@ export const partnerProfileContent = {
   },
 
   stickyBar: { label: "Acciones del perfil" },
-
-  /**
-   * "¿Es tu taller?": invitación secundaria al final del perfil (spec 211).
-   * El WhatsApp va a AutoLibre, NO al negocio: no compite con el CTA
-   * principal del perfil. El texto lleva el nombre y la URL del perfil para
-   * que el equipo sepa de qué taller se trata.
-   */
-  claimCta: {
-    title: "¿Es tu taller?",
-    body: "Pedile un código al equipo de AutoLibre para administrar este perfil.",
-    requestCode: "Pedí tu código",
-    haveCode: "Ya tengo mi código",
-    whatsappText: (name: string, slug: string) =>
-      `Hola, soy el dueño de ${name} (${siteConfig.url}${partnerPath(slug)}) y quiero administrar su perfil en AutoLibre. ¿Me pasan el código?`,
-  },
 
   notFound: {
     eyebrow: "Proveedores",

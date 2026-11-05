@@ -1,15 +1,23 @@
 "use client";
 
 import { useAuth, useClerk, useUser } from "@clerk/nextjs";
+import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
-import { CheckoutSignIn } from "@/components/proveedores/checkout/checkout-sign-in";
-import { Button, ButtonLink } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { AccountBar } from "@/components/proveedores/account/account-bar";
+import { NoPartnerOptions } from "@/components/proveedores/account/no-partner-options";
+import { PartnerSignIn } from "@/components/proveedores/account/partner-sign-in";
+import { PrivateFlowHead, type PrivateFlowHeadContent } from "@/components/proveedores/account/private-flow";
+import { FlowLayout } from "@/components/proveedores/flow/flow-layout";
+import { FlowSteps } from "@/components/proveedores/flow/flow-steps";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { ChoiceRow } from "@/components/ui/choice";
 import { Field, Input } from "@/components/ui/form-controls";
+import { Icon } from "@/components/ui/icon";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
+import { accountContent } from "@/lib/content/account";
 import { partnerCheckoutContent, planDisplayName } from "@/lib/content/partner-checkout";
+import type { IconName } from "@/lib/content/types";
 import {
   findPlan,
   formatDate,
@@ -29,15 +37,17 @@ import {
   savePendingCheckout,
   startCheckout,
 } from "@/lib/partner-billing/client";
-import { claimWithReturnHref } from "@/lib/partner-billing/return-path";
 import { hasActivePlan, trialNoteFor, type SubscriptionView } from "@/lib/partner-billing/subscription";
 import type { Membership } from "@/lib/partner-claims/redeem";
-import { PROVEEDORES_RECLAMAR_PATH } from "@/lib/proveedores/query";
+import { cn } from "@/lib/utils";
 import { whatsappUrl } from "@/lib/whatsapp";
 
 const content = partnerCheckoutContent;
 
-type CheckoutFlowProps = {
+/** Índices de `content.steps.items`. */
+const STEP = { partner: 0, plan: 1, payment: 2 } as const;
+
+type SignedInCheckoutProps = {
   readonly planCode: PaidPlanCode;
   /** Nombre del plan como en la página de planes (FR-013). */
   readonly planName: string;
@@ -45,27 +55,57 @@ type CheckoutFlowProps = {
   readonly selfPath: string;
 };
 
+type CheckoutFlowProps = SignedInCheckoutProps & {
+  /** Encabezado de la página (el `<h1>` lo pinta la isla). */
+  readonly head: PrivateFlowHeadContent;
+  /** Tarjeta del plan elegido (server): al costado del paso y en el login. */
+  readonly planCard: React.ReactNode;
+};
+
+/** Indicador de progreso de la contratación, arriba del paso en curso. */
+function CheckoutSteps({ current }: { readonly current: number }) {
+  return <FlowSteps label={content.steps.label} steps={content.steps.items} current={current} />;
+}
+
 /**
- * Isla client de `/proveedores/contratar` (spec 212). Sin sesión muestra el
- * `<SignIn>`; con sesión, la contratación. La página (server) ya validó el
- * plan y tiene el `<h1>`.
+ * Isla client de `/proveedores/contratar` (spec 212). Sin sesión, el login
+ * compartido: a la izquierda los tres pasos explicados y el plan elegido, a
+ * la derecha la tarjeta de login. Con sesión, el encabezado, la fila de
+ * sesión y la contratación, con la tarjeta del plan al costado. La página
+ * (server) ya validó el plan.
  */
-export function CheckoutFlow({ planCode, planName, selfPath }: CheckoutFlowProps) {
+export function CheckoutFlow({ planCode, planName, selfPath, head, planCard }: CheckoutFlowProps) {
   const { isLoaded, isSignedIn } = useAuth();
 
-  if (!isLoaded) {
+  if (!isLoaded || !isSignedIn) {
     return (
-      <p role="status" className="text-ink/65">
-        {content.signIn.loading}
-      </p>
+      <PartnerSignIn
+        head={head}
+        context={
+          <>
+            <FlowSteps
+              orientation="vertical"
+              label={content.steps.label}
+              steps={content.signInSteps}
+              current={STEP.partner}
+            />
+            {planCard}
+          </>
+        }
+        redirectUrl={selfPath}
+        loading={!isLoaded}
+      />
     );
   }
 
-  if (!isSignedIn) {
-    return <CheckoutSignIn title={content.signIn.title} body={content.signIn.body} redirectUrl={selfPath} />;
-  }
-
-  return <SignedInCheckout planCode={planCode} planName={planName} selfPath={selfPath} />;
+  return (
+    <div className="flex max-w-280 flex-col gap-8">
+      <PrivateFlowHead head={head} />
+      <FlowLayout aside={planCard}>
+        <SignedInCheckout planCode={planCode} planName={planName} selfPath={selfPath} />
+      </FlowLayout>
+    </div>
+  );
 }
 
 type PartnersState =
@@ -91,7 +131,7 @@ type SubmitStatus =
   | { readonly kind: "redirecting" }
   | { readonly kind: "error"; readonly result: Exclude<CheckoutResult, { kind: "success" }> };
 
-function SignedInCheckout({ planCode, planName, selfPath }: CheckoutFlowProps) {
+function SignedInCheckout({ planCode, planName, selfPath }: SignedInCheckoutProps) {
   const { getToken } = useAuth();
   const { signOut } = useClerk();
   const { user } = useUser();
@@ -102,6 +142,8 @@ function SignedInCheckout({ planCode, planName, selfPath }: CheckoutFlowProps) {
   const [planAttempt, setPlanAttempt] = useState(0);
   const [terms, setTerms] = useState<TermsState>({ kind: "loading" });
   const [termsAttempt, setTermsAttempt] = useState(0);
+  /** Ya se va a Mercado Pago: el indicador marca el paso "Pago". */
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -163,8 +205,14 @@ function SignedInCheckout({ planCode, planName, selfPath }: CheckoutFlowProps) {
     await signOut({ redirectUrl: selfPath });
   }
 
+  const hasPartner = partners.kind === "ready" && partners.owners.length > 0;
+  const step = redirecting ? STEP.payment : hasPartner ? STEP.plan : STEP.partner;
+
   return (
-    <div className="flex flex-col gap-8">
+    <>
+      <AccountBar selfPath={selfPath} />
+      <CheckoutSteps current={step} />
+
       {/* Región viva SIEMPRE montada: anuncia la carga y sus errores. */}
       <div aria-live="polite" aria-atomic="true">
         {partners.kind === "loading" ? (
@@ -188,7 +236,11 @@ function SignedInCheckout({ planCode, planName, selfPath }: CheckoutFlowProps) {
       </div>
 
       {partners.kind === "ready" && partners.owners.length === 0 ? (
-        <NoPartnerPanel headingRef={panelHeadingRef} selfPath={selfPath} />
+        <NoPartnerOptions
+          headingRef={panelHeadingRef}
+          checkout={{ returnPath: selfPath, planName }}
+          placementPrefix="contratar"
+        />
       ) : null}
 
       {partners.kind === "ready" && partners.owners.length > 0 ? (
@@ -203,9 +255,10 @@ function SignedInCheckout({ planCode, planName, selfPath }: CheckoutFlowProps) {
           onRetryPlan={retryPlan}
           onReloadTerms={reloadTerms}
           onReauth={reauth}
+          onRedirecting={() => setRedirecting(true)}
         />
       ) : null}
-    </div>
+    </>
   );
 }
 
@@ -214,53 +267,17 @@ const optionLinkClass =
 
 /** Filas del resumen: término arriba en mobile, a la izquierda desde `sm`. */
 const summaryRowClass = "flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-6";
-const summaryTermClass = "text-sm font-semibold text-ink/70 sm:w-20 sm:shrink-0";
+const summaryTermClass = "text-sm font-semibold text-ink/70 sm:w-24 sm:shrink-0";
 
-/** Sin talleres como dueño (US2): reclamar uno existente o registrar uno nuevo. */
-function NoPartnerPanel({
-  headingRef,
-  selfPath,
-}: {
-  readonly headingRef: React.RefObject<HTMLHeadingElement | null>;
-  readonly selfPath: string;
-}) {
-  const { noPartner } = content;
-  const titleId = useId();
-
+/** Ícono de un aviso: ayuda a escanear, no reemplaza al texto. */
+function RowIcon({ name }: { readonly name: IconName }) {
   return (
-    <div role="group" aria-labelledby={titleId} className="flex flex-col gap-6">
-      <div>
-        <h2 id={titleId} ref={headingRef} tabIndex={-1} className="font-display text-xl font-bold text-ink">
-          {noPartner.title}
-        </h2>
-        <p className="mt-2 text-ink/70">{noPartner.body}</p>
-      </div>
-      <ul className="grid gap-4 md:grid-cols-2">
-        <Card as="li" className="flex flex-col gap-3 p-6">
-          <h3 className="font-display text-lg font-bold text-ink">{noPartner.claim.title}</h3>
-          <p className="flex-1 text-ink/70">{noPartner.claim.body}</p>
-          {/* Sin prefetch: el reclamo es otra pantalla privada con su Clerk. */}
-          <ButtonLink href={claimWithReturnHref(PROVEEDORES_RECLAMAR_PATH, selfPath)} prefetch={false} block>
-            {noPartner.claim.cta}
-          </ButtonLink>
-          <a
-            href={whatsappUrl(noPartner.requestCode.whatsappMessage)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={optionLinkClass}
-          >
-            {noPartner.requestCode.label}
-          </a>
-        </Card>
-        <Card as="li" className="flex flex-col gap-3 p-6">
-          <h3 className="font-display text-lg font-bold text-ink">{noPartner.register.title}</h3>
-          <p className="flex-1 text-ink/70">{noPartner.register.body}</p>
-          <ButtonLink href={noPartner.register.href} variant="outline" block>
-            {noPartner.register.cta}
-          </ButtonLink>
-        </Card>
-      </ul>
-    </div>
+    <span
+      aria-hidden="true"
+      className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-muted text-brand-hover"
+    >
+      <Icon name={name} size={20} strokeWidth={1.8} />
+    </span>
   );
 }
 
@@ -276,6 +293,8 @@ type CheckoutFormProps = {
   readonly onRetryPlan: () => void;
   readonly onReloadTerms: () => void;
   readonly onReauth: () => void;
+  /** El checkout salió bien y se va a Mercado Pago. */
+  readonly onRedirecting: () => void;
 };
 
 /**
@@ -297,6 +316,7 @@ function CheckoutForm({
   onRetryPlan,
   onReloadTerms,
   onReauth,
+  onRedirecting,
 }: CheckoutFormProps) {
   const { getToken } = useAuth();
   const [pickedPartnerId, setPickedPartnerId] = useState<string | null>(null);
@@ -392,6 +412,7 @@ function CheckoutForm({
       savePendingCheckout({ partnerId, planCode, subscriptionId: result.subscriptionId });
       track(ANALYTICS_EVENTS.planCheckoutRedirected, { plan: planCode });
       setStatus({ kind: "redirecting" });
+      onRedirecting();
       window.location.assign(result.initPointUrl);
       return; // `inFlight` queda en true: ya nos vamos a MP.
     }
@@ -436,7 +457,7 @@ function CheckoutForm({
       ) : null}
 
       {activeView ? (
-        <ActivePlanNotice headingRef={headingRef} view={activeView} />
+        <ActivePlanNotice headingRef={headingRef} view={activeView} wantedPlanName={planName} />
       ) : (
         <>
           <div aria-labelledby={summaryId} role="group" className="rounded-card border border-line bg-surface p-6">
@@ -444,6 +465,10 @@ function CheckoutForm({
               {content.summary.title}
             </h2>
             <dl className="mt-4 flex flex-col gap-3">
+              <div className={summaryRowClass}>
+                <dt className={summaryTermClass}>{content.summary.partner}</dt>
+                <dd className="font-semibold text-ink">{partner ? partner.name : "—"}</dd>
+              </div>
               <div className={summaryRowClass}>
                 <dt className={summaryTermClass}>{content.summary.plan}</dt>
                 <dd className="text-ink">{planName}</dd>
@@ -462,7 +487,7 @@ function CheckoutForm({
                     </span>
                   ) : billingPlan ? (
                     <>
-                      <span className="font-display text-2xl font-bold">{formatPlanPrice(billingPlan)}</span>{" "}
+                      <span className="font-display text-2xl font-bold tabular-nums">{formatPlanPrice(billingPlan)}</span>{" "}
                       <span className="text-ink/65">{content.summary.priceNote(billingPlan.priceIncludesVat)}</span>
                     </>
                   ) : (
@@ -470,20 +495,26 @@ function CheckoutForm({
                   )}
                 </dd>
               </div>
-              <div className={summaryRowClass}>
-                <dt className={summaryTermClass}>{content.summary.partner}</dt>
-                <dd className="text-ink">{partner ? partner.name : "—"}</dd>
-              </div>
             </dl>
             {billingPlan && trialNote !== "none" ? (
-              <p className="mt-4 text-sm leading-relaxed text-ink/70">
-                {subscriptionLoading
-                  ? content.summary.trial.loading
-                  : trialNote === "eligible"
-                    ? content.summary.trial.eligible(billingPlan.trialDays)
-                    : trialNote === "used"
-                      ? content.summary.trial.used
-                      : content.summary.trial.conditional(billingPlan.trialDays)}
+              <p
+                className={cn(
+                  "mt-5 flex items-start gap-2.5 rounded-field px-4 py-3 text-sm leading-relaxed",
+                  trialNote === "eligible" && !subscriptionLoading
+                    ? "bg-brand/8 text-ink"
+                    : "bg-surface-subtle text-ink/75",
+                )}
+              >
+                <Icon name="info" size={18} strokeWidth={1.8} className="mt-0.5 shrink-0 text-brand-hover" />
+                <span>
+                  {subscriptionLoading
+                    ? content.summary.trial.loading
+                    : trialNote === "eligible"
+                      ? content.summary.trial.eligible(billingPlan.trialDays)
+                      : trialNote === "used"
+                        ? content.summary.trial.used
+                        : content.summary.trial.conditional(billingPlan.trialDays)}
+                </span>
               </p>
             ) : null}
           </div>
@@ -527,7 +558,7 @@ function CheckoutForm({
             ) : (
               <>
                 {/* El texto (del backend) está en el DOM aunque el <details> esté cerrado. */}
-                <details className="rounded-field border border-line bg-surface-subtle p-4">
+                <details className="rounded-field border border-line bg-surface p-4">
                   <summary className="flex min-h-11 cursor-pointer items-center font-semibold text-ink">
                     {content.terms.summary}
                   </summary>
@@ -579,32 +610,76 @@ function CheckoutForm({
   );
 }
 
-/** El taller elegido ya tiene un plan con acceso: se avisa de entrada y no se ofrece pagar. */
+/**
+ * El taller elegido ya tiene un plan con acceso: se avisa de entrada, con el
+ * plan y su estado a la vista, y no se ofrece pagar. Cambiar de plan no se
+ * hace online: el CTA va a ventas con el plan actual y el buscado en el
+ * mensaje.
+ */
 function ActivePlanNotice({
   headingRef,
   view,
+  wantedPlanName,
 }: {
   readonly headingRef: React.RefObject<HTMLHeadingElement | null>;
   readonly view: SubscriptionView;
+  readonly wantedPlanName: string;
 }) {
   const { activePlan } = content;
   const currentPlanName = planDisplayName(view.planCode);
+  const statusLabel = view.cancelAtPeriodEnd ? activePlan.canceled : activePlan.statusLabel(view.status);
+  const trialUntil = view.status === "trialing" ? formatDate(view.trialEndsAt) : null;
   const until = view.cancelAtPeriodEnd ? formatDate(view.accessUntil) : null;
 
+  const rows = [
+    currentPlanName ? { term: activePlan.rows.plan, value: currentPlanName } : null,
+    statusLabel ? { term: activePlan.rows.status, value: statusLabel } : null,
+    trialUntil ? { term: activePlan.rows.trialUntil, value: trialUntil } : null,
+    until ? { term: activePlan.rows.accessUntil, value: until } : null,
+  ].filter((row) => row !== null);
+
   return (
-    <div className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
-      <h2 ref={headingRef} tabIndex={-1} className="font-display text-xl font-bold text-ink">
-        {currentPlanName ? activePlan.title(currentPlanName) : activePlan.titleWithoutName}
-      </h2>
-      <p className="text-ink/70">{until ? activePlan.accessUntil(until) : activePlan.body}</p>
-      <a
-        href={whatsappUrl(content.disabled.whatsappMessage)}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={optionLinkClass}
-      >
-        {content.disabled.salesCta}
-      </a>
+    <div className="flex flex-col gap-5 rounded-card border border-line bg-surface p-6">
+      <div className="flex items-start gap-4">
+        <RowIcon name="shield-check" />
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <h2 ref={headingRef} tabIndex={-1} className="font-display text-xl font-bold text-ink">
+            {currentPlanName ? activePlan.title(currentPlanName) : activePlan.titleWithoutName}
+          </h2>
+          <p className="text-ink/70">{until ? activePlan.accessUntil(until) : activePlan.body}</p>
+        </div>
+      </div>
+
+      {rows.length > 0 ? (
+        <dl className="flex flex-col gap-3 border-t border-line pt-4">
+          {rows.map((row) => (
+            <div key={row.term} className={summaryRowClass}>
+              <dt className={summaryTermClass}>{row.term}</dt>
+              <dd className="font-semibold text-ink">{row.value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-6">
+        <a
+          href={whatsappUrl(activePlan.salesWhatsappMessage(currentPlanName, wantedPlanName))}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
+          data-analytics-placement="contratar_plan_activo"
+          className={cn(buttonVariants({ variant: "outline" }), "min-h-11 self-start")}
+        >
+          {activePlan.salesCta}
+        </a>
+        <Link href={activePlan.plansLink.href} className={cn(optionLinkClass, "self-start")}>
+          {activePlan.plansLink.label}
+        </Link>
+        {/* Sin prefetch: `/cuenta` es otra pantalla privada con su Clerk. */}
+        <Link href={accountContent.link.href} prefetch={false} className={cn(optionLinkClass, "self-start")}>
+          {accountContent.link.label}
+        </Link>
+      </div>
     </div>
   );
 }

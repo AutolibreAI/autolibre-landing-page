@@ -13,9 +13,9 @@ import {
   Select,
   Textarea,
 } from "@/components/ui/form-controls";
-import { FormError, FormSuccess } from "@/components/ui/form-feedback";
+import { FormError } from "@/components/ui/form-feedback";
 import { WhatsappInput } from "@/components/ui/whatsapp-input";
-import { ButtonLink } from "@/components/ui/button";
+import { RegistrationStatus } from "@/components/proveedores/registro/registration-status";
 import { whatsappErrorMessage } from "@/lib/content/presupuesto";
 import { parseArWhatsapp } from "@/lib/phone";
 import { cn } from "@/lib/utils";
@@ -144,12 +144,18 @@ export function ProviderForm({
   serviceFamilies,
   getToken,
   reauthHref,
+  checkout = null,
 }: {
   readonly serviceFamilies: readonly ServiceFamilyOption[];
   /** `getToken` de `useAuth()` de Clerk. */
   readonly getToken: OwnerGetToken;
   /** Adónde se vuelve a entrar si la sesión venció (se abre en otra pestaña). */
   readonly reauthHref: string;
+  /**
+   * La contratación de la que vino la persona (`?next` validado) y su plan:
+   * la pantalla de estado se lo recuerda y ofrece volver.
+   */
+  readonly checkout?: { readonly href: string; readonly planName: string } | null;
 }) {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMessage, setErrorMessage] = useState(GENERIC_ERROR);
@@ -614,27 +620,20 @@ export function ProviderForm({
 
   if (submitState === "success") {
     return (
-      <Card variant="solid" className="p-8">
-        <FormSuccess
-          title={
-            alreadyRegistered
-              ? providersContent.form.success.alreadyRegisteredTitle
-              : providersContent.form.success.title
-          }
-          description={
-            alreadyRegistered ?? providersContent.form.success.description
-          }
-        >
-          <ButtonLink href="/" variant="outline" size="sm" className="mt-2">
-            {providersContent.form.success.homeCta}
-          </ButtonLink>
-        </FormSuccess>
-      </Card>
+      <RegistrationStatus
+        alreadyRegisteredMessage={alreadyRegistered}
+        checkout={checkout}
+      />
     );
   }
 
   return (
     <>
+      {/* El título del formulario vive acá y no en la página: cuando el
+          formulario se reemplaza por la pantalla de estado, se va con él. */}
+      <h2 className="mb-6 font-display text-xl font-bold text-ink">
+        {providersContent.formPage.formTitle}
+      </h2>
       {GOOGLE_MAPS_API_KEY ? (
         <Script
           id="google-maps-places"

@@ -1,3 +1,4 @@
+import { ACCOUNT_PATH } from "@/lib/account/paths";
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
 import { PROVEEDORES_PATH, PROVEEDORES_REGISTRO_PATH } from "@/lib/proveedores/query";
 import { PROVIDER_INDEX_PATH } from "@/lib/provider-profile/routes";
@@ -45,6 +46,13 @@ export const siteContent = {
     quoteLink,
     /** Alta de negocios: le habla al taller que se quiere sumar. */
     providerLink: { label: "Soy proveedor", href: PROVEEDORES_REGISTRO_PATH },
+    /**
+     * "Mi cuenta": solo cuando hay sesión de Clerk en el browser (pista de la
+     * cookie `__client_uat`, sin cargar Clerk: ver `HeaderAccountSwap`).
+     * Reemplaza a "Soy proveedor" en el header desde `lg` y se suma en el
+     * menú mobile.
+     */
+    accountLink: { label: "Mi cuenta", href: ACCOUNT_PATH },
     /**
      * Aviso para lectores de pantalla en los links que abren otra pestaña
      * (va en un `sr-only` después del label).
@@ -108,8 +116,10 @@ export const siteContent = {
         title: "Servicios",
         links: [
           quoteLink,
-          // Mismo texto que el título del form de `/proveedores`.
-          { label: providersContent.form.title, href: "/proveedores" },
+          // Al hub del alta (la bifurcación ya aparece / registrar), como el
+          // resto de los "Sumar mi negocio" del sitio. `/proveedores` es el
+          // directorio, no el alta.
+          { label: providersContent.form.title, href: PROVEEDORES_REGISTRO_PATH },
           // El índice de perfiles entra al footer recién cuando es público
           // (`lib/provider-profile/visibility.ts`).
           ...(PROVIDER_PROFILES_PUBLIC

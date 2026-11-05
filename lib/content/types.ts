@@ -95,7 +95,8 @@ export type IconName =
   | "camera"
   | "users"
   | "smartphone"
-  | "wrench";
+  | "wrench"
+  | "user";
 
 /** Tiendas donde está publicada la app. */
 export type StoreId = "appStore" | "playStore";

@@ -46,6 +46,47 @@ export const providersContent = {
     },
   ],
 
+  /** Botón del header en `/proveedores/registro`: baja a la bifurcación. */
+  headerCta: { label: "Sumar mi negocio", href: "#form" },
+
+  /**
+   * Bifurcación de `/proveedores/registro`, apenas debajo del hero: antes de
+   * registrar, ¿el taller ya aparece en la red? Si aparece, se le escribe al
+   * equipo para administrarlo (no se registra dos veces); si no, se registra. Inspiración: el "Is this your
+   * business?" de los directorios y el "crear / vincular" de las fintech.
+   *
+   * La búsqueda es el mismo form GET del directorio (`/proveedores?q=…#red`):
+   * sin JS, y el resultado es el directorio de siempre.
+   */
+  fork: {
+    title: "¿Tu taller ya aparece en AutoLibre?",
+    intro:
+      "Puede que tu taller ya figure en la red de AutoLibre. Si aparece, no lo registres de nuevo: escribinos y te ayudamos a administrarlo.",
+    /**
+     * Página pública: NO se explica cómo se verifica al dueño (el mecanismo
+     * de reclamo es interno; el equipo lo maneja por WhatsApp).
+     */
+    listed: {
+      title: "Mi taller ya aparece",
+      body: "Buscalo en el directorio para confirmarlo y escribinos. Verificamos que sos el dueño y te damos acceso para administrarlo.",
+      search: {
+        label: "Nombre de tu taller",
+        placeholder: "Ej: Taller Belgrano",
+        submit: "Buscar mi taller",
+      },
+      contact: {
+        cta: "Escribinos para administrarlo",
+        whatsappMessage: "Hola! Mi taller ya aparece en AutoLibre y quiero administrarlo.",
+      },
+    },
+    firstTime: {
+      title: "Es la primera vez",
+      body: "Registralo gratis con tu cuenta de AutoLibre. Revisamos la solicitud y te contactamos por WhatsApp para activar tu perfil.",
+      cta: "Registrar mi taller",
+      stepsLink: "Ver cómo es el registro",
+    },
+  },
+
   /**
    * Bloque de `/proveedores/registro` que reemplaza al formulario (spec 212,
    * US3): la página indexable explica el alta y manda a
@@ -53,10 +94,10 @@ export const providersContent = {
    * pública no carga Clerk (FR-011).
    */
   register: {
-    title: "Sumate como proveedor",
+    id: "como-es-el-registro",
+    title: "Cómo es el registro",
     intro:
       "El registro es gratis y se hace con tu cuenta de AutoLibre, la misma de la app: así el taller queda a tu nombre cuando lo aprobamos.",
-    stepsTitle: "Cómo es el registro",
     steps: [
       "Entrás con tu cuenta de AutoLibre o creás una.",
       "Completás los datos de tu taller: servicios, marcas que atendés, dirección y horarios.",
@@ -68,7 +109,8 @@ export const providersContent = {
 
   /**
    * `/proveedores/registro/formulario` (spec 212, US3): privada, `noindex`, con
-   * Clerk. Sin sesión muestra el login; con sesión, el formulario.
+   * Clerk. Sin sesión muestra el login (copy compartida en
+   * `lib/content/partner-account.ts`); con sesión, el formulario.
    */
   formPage: {
     meta: {
@@ -76,15 +118,28 @@ export const providersContent = {
       description:
         "Formulario de alta de talleres y servicios en AutoLibre. Requiere iniciar sesión con tu cuenta de AutoLibre.",
     },
+    eyebrow: "Registro de talleres",
     title: "Registrá tu taller",
     intro:
       "Completá los datos de tu taller. Cuando aprobemos la solicitud, el taller queda en tu cuenta.",
-    loading: "Cargando…",
-    signIn: {
-      title: "Entrá con tu cuenta de AutoLibre",
-      body: "Usá la misma cuenta que en la app, o creá una. Después completás los datos de tu taller.",
-    },
     formTitle: "Datos de tu taller",
+    /** Columna de contexto del login: qué viene después de entrar. */
+    steps: {
+      label: "Cómo es el registro",
+      items: [
+        { id: "cuenta", label: "Entrá o creá tu cuenta", description: "La misma de la app de AutoLibre." },
+        {
+          id: "datos",
+          label: "Completá los datos del taller",
+          description: "Servicios, marcas que atendés, dirección y horarios.",
+        },
+        {
+          id: "revision",
+          label: "Lo revisamos y lo publicamos",
+          description: "Te contactamos por WhatsApp para activar tu perfil.",
+        },
+      ],
+    },
   },
 
   form: {
@@ -93,12 +148,52 @@ export const providersContent = {
     submitLabel: "Quiero registrar mi taller",
     submitLoadingLabel: "Enviando...",
     note: "Te contactamos para activar tu perfil.",
+    /**
+     * Pantalla de estado después de enviar (y del 409 "ya te teníamos
+     * anotado", que es lo mismo: una solicitud en revisión, no un error).
+     * Sin plazos: no hay uno comprometido por producto.
+     */
     success: {
-      title: "¡Registro recibido!",
-      description:
-        "Te vamos a contactar para activar el perfil de tu taller. Cuando aprobemos tu taller, vas a poder administrarlo y contratar un plan desde tu cuenta.",
-      alreadyRegisteredTitle: "Ya te teníamos anotado",
-      homeCta: "Volver al inicio",
+      title: "Recibimos tu solicitud",
+      alreadyRegisteredTitle: "Tu solicitud ya está en revisión",
+      description: "Ya está en manos del equipo. Por ahora no tenés que hacer nada más.",
+      timeline: {
+        label: "Estado de tu solicitud",
+        currentBadge: "Ahora",
+        steps: [
+          {
+            id: "enviada",
+            label: "Solicitud enviada",
+            description: "Recibimos los datos de tu taller.",
+          },
+          {
+            id: "revision",
+            label: "En revisión",
+            description: "El equipo revisa los datos y te contacta por WhatsApp para activar tu perfil.",
+          },
+          {
+            id: "publicada",
+            label: "Taller publicado",
+            description:
+              "Tu taller aparece en la red y lo administrás con tu cuenta de AutoLibre. Desde ahí también contratás un plan.",
+          },
+        ],
+      },
+      nextTitle: "Mientras tanto",
+      plans: {
+        body: "Con el plan Gratis tu taller ya aparece en la red. Si querés recibir más pedidos por WhatsApp, mirá los planes pagos.",
+        cta: "Conocé los planes",
+      },
+      /** Vino de contratar un plan (`?next`): se lo recuerda y se ofrece volver. */
+      checkout: {
+        body: (planName: string) =>
+          `Elegiste el plan ${planName}. Cuando aprobemos tu taller, volvé a la contratación con esta misma cuenta y la terminás en un par de pasos.`,
+        cta: (planName: string) => `Ir a la contratación del plan ${planName}`,
+      },
+      help: {
+        label: "¿Dudas? Escribinos por WhatsApp",
+        whatsappMessage: "Hola! Registré mi taller en AutoLibre y tengo una consulta sobre mi solicitud.",
+      },
     },
     /**
      * El backend rechazó el token también después de renovarlo (spec 212,

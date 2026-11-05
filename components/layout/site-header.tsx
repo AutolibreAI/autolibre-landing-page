@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { DownloadCta } from "@/components/ui/download-cta";
+import { HeaderAccountSwap } from "@/components/layout/header-account-swap";
 import { MobileNav } from "@/components/layout/mobile-nav";
+import { clerkClientUatCookieName } from "@/lib/auth/session-cookie";
 import { NavCtaLink } from "@/components/layout/nav-cta";
 import { Container } from "@/components/ui/container";
 import { ANALYTICS_EVENTS, QUOTE_CTA_PLACEMENTS } from "@/lib/analytics/events";
@@ -54,7 +56,9 @@ export function SiteHeader({
   cta = siteContent.nav.cta,
   currentPath,
 }: SiteHeaderProps) {
-  const { links, quoteLink, providerLink } = siteContent.nav;
+  const { links, quoteLink, providerLink, accountLink } = siteContent.nav;
+  /** Cookie de sesión de Clerk de esta instancia (ver `lib/auth/session-cookie.ts`). */
+  const sessionCookie = clerkClientUatCookieName();
   /**
    * Sólo el CTA de descarga cambia de destino según la plataforma. Las
    * páginas que pisan `cta` con otra acción (p. ej. /proveedores/registro, /pedido)
@@ -117,13 +121,15 @@ export function SiteHeader({
                 </Link>
               </li>
               <li className="hidden lg:block">
-                <Link
-                  href={providerLink.href}
-                  aria-current={current(providerLink.href)}
+                {/* "Soy proveedor", o "Mi cuenta" si hay sesión (isla que
+                    lee la cookie de Clerk sin cargar Clerk). */}
+                <HeaderAccountSwap
+                  sessionCookie={sessionCookie}
+                  providerLink={providerLink}
+                  accountLink={accountLink}
+                  currentPath={currentPath}
                   className={pageLink}
-                >
-                  {providerLink.label}
-                </Link>
+                />
               </li>
             </ul>
           </nav>
@@ -135,6 +141,8 @@ export function SiteHeader({
           <MobileNav
             links={links}
             pageLinks={[quoteLink, providerLink]}
+            accountLink={accountLink}
+            sessionCookie={sessionCookie}
             quoteHref={quoteLink.href}
             cta={cta}
             isDownloadCta={isDownloadCta}

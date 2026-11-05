@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { checkoutHref, claimWithReturnHref, safeContinuePath } from "../../lib/partner-billing/return-path.ts";
+import { checkoutHref, claimWithReturnHref, safeContinuePath, withReturnHref } from "../../lib/partner-billing/return-path.ts";
 
 const PREFIX = "/proveedores/contratar";
 
@@ -67,5 +67,12 @@ describe("hrefs", () => {
     assert.equal(href, "/proveedores/reclamar?next=%2Fproveedores%2Fcontratar%3Fplan%3Dplus");
     const next = new URL(href, "https://x.test").searchParams.get("next") ?? undefined;
     assert.equal(safeContinuePath(next, PREFIX), "/proveedores/contratar?plan=plus");
+  });
+
+  it("withReturnHref lleva el next al alta y vuelve a pasar el filtro", () => {
+    const href = withReturnHref("/proveedores/registro/formulario", checkoutHref(PREFIX, "plus_max"));
+    assert.equal(href, "/proveedores/registro/formulario?next=%2Fproveedores%2Fcontratar%3Fplan%3Dplus_max");
+    const next = new URL(href, "https://x.test").searchParams.get("next") ?? undefined;
+    assert.equal(safeContinuePath(next, PREFIX), "/proveedores/contratar?plan=plus_max");
   });
 });

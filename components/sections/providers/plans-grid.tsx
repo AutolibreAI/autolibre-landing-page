@@ -16,7 +16,7 @@ export function ProvidersPlansGrid() {
   const { plans, notes, sales } = providersPlansContent;
 
   return (
-    <div className="mx-auto max-w-[1100px]">
+    <div className="mx-auto max-w-275">
       <ul className="grid gap-6 md:grid-cols-3">
         {plans.map((plan) => (
           <Card
@@ -33,7 +33,7 @@ export function ProvidersPlansGrid() {
                 {plan.name}
               </h3>
               <p className="mt-4 flex items-baseline gap-1.5">
-                <span className="font-display text-3xl font-bold text-ink">
+                <span className="font-display text-3xl font-bold text-ink tabular-nums">
                   {plan.price}
                 </span>
                 {plan.priceNote ? (
@@ -62,7 +62,7 @@ export function ProvidersPlansGrid() {
               ))}
             </ul>
 
-            {/* El plan gratis lleva directo al formulario de registro; los
+            {/* El plan gratis lleva al hub del alta (ya aparece o registrar); los
                 pagos, a la contratación online (spec 212), que es privada y
                 carga Clerk: sin prefetch (ni en viewport ni en hover), así
                 esta página indexable no baja nada de Clerk (SC-005). */}
@@ -119,7 +119,7 @@ export function ProvidersPlansGrid() {
         {notes.map((note) => (
           <li
             key={note}
-            className="text-[0.8125rem] leading-relaxed text-ink/60"
+            className="text-label leading-relaxed text-ink/65"
           >
             {note}
           </li>

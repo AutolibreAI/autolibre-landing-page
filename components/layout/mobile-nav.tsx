@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { NavCtaLink } from "@/components/layout/nav-cta";
 import { DownloadCta } from "@/components/ui/download-cta";
+import { useSessionHint } from "@/lib/auth/use-session-hint";
 import { ANALYTICS_EVENTS, QUOTE_CTA_PLACEMENTS } from "@/lib/analytics/events";
 import type { NavCta, NavLink } from "@/lib/content/types";
 
@@ -25,6 +26,10 @@ type MobileNavProps = {
   readonly isDownloadCta?: boolean;
   /** Ruta actual: su link lleva `aria-current="page"`. */
   readonly currentPath?: string;
+  /** "Mi cuenta": se suma al final de `pageLinks` solo si hay sesión. */
+  readonly accountLink?: NavLink;
+  /** Cookie `__client_uat` de la instancia de Clerk (pista de sesión, sin Clerk). */
+  readonly sessionCookie?: string | null;
 };
 
 /**
@@ -39,7 +44,12 @@ export function MobileNav({
   cta,
   isDownloadCta = false,
   currentPath,
+  accountLink,
+  sessionCookie = null,
 }: MobileNavProps) {
+  // Pista de sesión (cookie de Clerk, sin cargar Clerk). El link aparece
+  // adentro del panel, que solo se abre con un click: no mueve nada.
+  const signedIn = useSessionHint(sessionCookie);
   // El cierre al navegar lo maneja el `onClick` de cada enlace, no un
   // efecto sobre `pathname`: así no hay render en cascada al cambiar de ruta.
   const [open, setOpen] = useState(false);
@@ -71,7 +81,11 @@ export function MobileNav({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
-  const allLinks: readonly NavLink[] = [...links, ...pageLinks];
+  const allLinks: readonly NavLink[] = [
+    ...links,
+    ...pageLinks,
+    ...(signedIn && accountLink ? [accountLink] : []),
+  ];
 
   return (
     <>
@@ -135,6 +149,8 @@ export function MobileNav({
                     key={link.href}
                     href={link.href}
                     onClick={() => setOpen(false)}
+                    // `/cuenta` carga Clerk: sin prefetch desde páginas públicas.
+                    prefetch={link.href === accountLink?.href ? false : undefined}
                     aria-current={
                       link.href === currentPath ? "page" : undefined
                     }
