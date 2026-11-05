@@ -1,0 +1,25 @@
+{
+  // Typecheck de los módulos puros de la contratación de planes (spec 212) y
+  // sus pruebas. Corren con `node --test` (type stripping de Node): solo
+  // sintaxis TS borrable e imports relativos con extensión `.ts`. El tsconfig
+  // raíz excluye `scripts/` para no mezclar estos flags con el de Next.
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "./**/*.ts",
+    "../../lib/partner-billing/checkout.ts",
+    "../../lib/partner-billing/subscription.ts",
+    "../../lib/partner-billing/return-path.ts"
+  ]
+}

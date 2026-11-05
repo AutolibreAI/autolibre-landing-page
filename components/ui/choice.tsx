@@ -56,12 +56,14 @@ export function ChoiceRow({
   label,
   checked,
   onChange,
-}: Omit<ChoicePillProps, "className">) {
+  className,
+}: ChoicePillProps) {
   return (
     <label
       className={cn(
         "flex cursor-pointer items-center gap-2.5 rounded-field border px-3.5 py-2.5 text-sm transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand",
         checked ? pillState.on : pillState.off,
+        className,
       )}
     >
       <input

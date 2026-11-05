@@ -7,7 +7,13 @@
  * número sin confirmar el cambio con producto.
  */
 
-import { PROVEEDORES_PLANES_PATH, PROVEEDORES_REGISTRO_PATH } from "@/lib/proveedores/query";
+import { LANDING_PLAN_ID_TO_CODE } from "@/lib/partner-billing/checkout";
+import { checkoutHref } from "@/lib/partner-billing/return-path";
+import {
+  PROVEEDORES_CONTRATAR_PATH,
+  PROVEEDORES_PLANES_PATH,
+  PROVEEDORES_REGISTRO_PATH,
+} from "@/lib/proveedores/query";
 
 export const providersPlansContent = {
   meta: {
@@ -58,7 +64,8 @@ export const providersPlansContent = {
       ],
       cta: {
         label: "Quiero el plan Plus",
-        whatsappMessage: "Hola! Estoy interesado en el plan Plus de proveedores de AutoLibre.",
+        // Contratación online (spec 212): la página es privada y carga Clerk.
+        href: checkoutHref(PROVEEDORES_CONTRATAR_PATH, LANDING_PLAN_ID_TO_CODE["plan-plus"]),
       },
       highlighted: true,
     },
@@ -74,7 +81,7 @@ export const providersPlansContent = {
       ],
       cta: {
         label: "Quiero el plan Plus Max",
-        whatsappMessage: "Hola! Estoy interesado en el plan Plus Max de proveedores de AutoLibre.",
+        href: checkoutHref(PROVEEDORES_CONTRATAR_PATH, LANDING_PLAN_ID_TO_CODE["plan-plus-max"]),
       },
       highlighted: false,
     },

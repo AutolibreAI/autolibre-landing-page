@@ -1,26 +1,27 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 1.0.0 → 1.1.0 (MINOR: new principles added, stale references fixed)
-Added sections:
-  - Principle VI. Semantic HTML & Heading Hierarchy
-  - Principle VII. SEO & GEO by Default (NON-NEGOTIABLE)
-  - Principle VIII. Tailwind v4 Canonical Classes & Design Tokens
-Modified principles:
-  - I. Next.js App Router First → strengthened: client boundary pushed to leaf islands; indexable content must be in server HTML
-  - II. Content-Driven Architecture → lib/landing-content.ts → lib/content/*; lib/landing-types.ts → lib/content/types.ts
-  - III. Typed Component Contracts → types reference updated to lib/content/types.ts
-  - IV. Accessibility and Performance → added `sizes`, `preload` only on the LCP image (`priority` is deprecated in Next 16), next/font, reduced motion
-  - V. Section Isolation → components/landing/ → components/sections/<page>/
+Version change: 1.2.1 → 1.2.2 (PATCH: the Clerk scope also covers the registration form `/proveedores/registro/formulario`, spec 212 US3; the indexable `/proveedores/registro` stays Clerk-free)
+Previous: 1.2.0 → 1.2.1 (PATCH: the Clerk scope also covers `/proveedores/contratar`, spec 212)
+Earlier: 1.1.0 → 1.2.0 (MINOR: Technology Stack gains an authentication entry)
+Added sections: none
+Modified principles: none
 Technology Stack:
-  - Removed shadcn/ui + Radix UI, tw-animate-css and lucide-react (none are installed per package.json)
-  - Icons: inline SVG paths in components/ui/icon.tsx
+  - Added `@clerk/nextjs` 7.x (auth): ONLY for the partner claim-code redemption flow
+    (`/proveedores/reclamar`, spec 211). Rationale: the owner logs in with the same
+    AutoLibre account (same Clerk instance) that the app, the admin and the backend
+    validate; building auth or validating tokens by hand is insecure and duplicates
+    Clerk. Scope rule: `<ClerkProvider>` lives in a nested layout of that segment,
+    never in `app/layout.tsx`, so indexable pages ship zero Clerk bytes.
 Removed sections: none
 Templates checked:
-  - .specify/templates/plan-template.md ✅ aligned (Constitution Check section is generic)
+  - .specify/templates/plan-template.md ✅ aligned
   - .specify/templates/spec-template.md ✅ aligned
   - .specify/templates/tasks-template.md ✅ aligned
-Follow-up TODOs: none. Operational rules and the per-page checklist live in AGENTS.md ("Principios del sitio").
+Follow-up TODOs: none.
+
+Previous amendment (1.0.0 → 1.1.0, 2026-09-22): added principles VI–VIII, moved copy to
+lib/content/*, removed shadcn/ui, Radix, tw-animate-css and lucide-react from the stack.
 -->
 
 # Autolibre Landing Page Constitution
@@ -84,6 +85,7 @@ Styling MUST use canonical Tailwind scale classes (`w-5`, `max-w-155`) instead o
 - **Language**: TypeScript 5 in strict mode
 - **Runtime**: React 19 (Server Components default)
 - **Linting**: ESLint with `eslint-config-next`
+- **Auth**: `@clerk/nextjs` 7.x, scoped to the private partner routes (claim-code redemption `/proveedores/reclamar`, spec 211, plan checkout `/proveedores/contratar`, spec 212, and the noindex registration form `/proveedores/registro/formulario`, spec 212 US3; the indexable `/proveedores/registro` itself MUST stay Clerk-free) via nested layouts that share `components/auth/scoped-clerk-provider.tsx`; MUST NOT be mounted in `app/layout.tsx` or loaded by any indexable page. Rationale: same AutoLibre account (Clerk instance) the app, admin and backend use (spec 211). Its UI strings come from `@clerk/localizations` (`esUY`, voseo), loaded in the same nested layout only
 
 No new runtime dependencies may be added without updating this section and providing a rationale in the PR description.
 
@@ -108,4 +110,4 @@ This constitution supersedes all implicit conventions. Any amendment requires:
 
 For runtime development guidance, refer to `.specify/` workflow docs and AGENTS.md.
 
-**Version**: 1.1.0 | **Ratified**: 2026-05-12 | **Last Amended**: 2026-09-22
+**Version**: 1.2.2 | **Ratified**: 2026-05-12 | **Last Amended**: 2026-11-04
