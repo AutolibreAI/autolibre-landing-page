@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   classifyPartnerApplicationBadRequest,
+  classifyPartnerApplicationRejection,
   describePartnerApplicationRejection,
 } from "../../lib/autolibre-api.ts";
 
@@ -83,5 +84,34 @@ describe("clasificacion de un 400 del alta de partner", () => {
     ]) {
       assert.equal(classifyPartnerApplicationBadRequest(body), "invalid");
     }
+  });
+});
+
+// Spec 212, US3: el 401 del backend (token vencido o inválido) tiene su propio
+// `kind` para que la ruta lo devuelva como 401 y el browser renueve el token.
+// Nunca se confunde con un rechazo de datos ni con "ya te tenemos".
+describe("clasificacion de un rechazo del alta por status", () => {
+  it("401 es unauthenticated", () => {
+    assert.equal(
+      classifyPartnerApplicationRejection(401, { message: "Unauthorized", statusCode: 401 }),
+      "unauthenticated",
+    );
+  });
+
+  it("409 sigue siendo duplicate", () => {
+    assert.equal(classifyPartnerApplicationRejection(409, null), "duplicate");
+  });
+
+  it("400 sigue clasificando por el body", () => {
+    assert.equal(
+      classifyPartnerApplicationRejection(400, { message: "Unknown service slugs: x" }),
+      "invalid-services",
+    );
+    assert.equal(classifyPartnerApplicationRejection(400, { message: ["email must be an email"] }), "invalid");
+  });
+
+  it("403 y 5xx caen en unknown, no en unauthenticated", () => {
+    assert.equal(classifyPartnerApplicationRejection(403, null), "unknown");
+    assert.equal(classifyPartnerApplicationRejection(502, null), "unknown");
   });
 });

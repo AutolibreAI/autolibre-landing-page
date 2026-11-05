@@ -21,6 +21,10 @@ import { parseArWhatsapp } from "@/lib/phone";
 import { cn } from "@/lib/utils";
 import type { ServiceFamilyOption } from "@/lib/autolibre-api";
 import {
+  submitWithOwnerToken,
+  type OwnerGetToken,
+} from "@/lib/proveedores/application-auth";
+import {
   PROVIDER_LOGO_TYPES,
   PROVIDER_DESCRIPTION_MAX_LENGTH,
   PROVIDER_EMAIL_MAX_LENGTH,
@@ -127,14 +131,30 @@ const GENERIC_ERROR = "Algo salió mal. Por favor intentá de nuevo.";
  * el 0 y el 15 mientras se escribe, valida con `parseArWhatsapp` al salir del
  * campo y al enviar, y si algo falta lo dice en el campo. `/api/provider`
  * vuelve a validar y manda la forma canonica (`549…`) al backend.
+ *
+ * ── Alta con dueño (spec 212, US3) ──────────────────────────────────────────
+ *
+ * Vive en `/proveedores/registro/formulario`, detras del login. Cada envio
+ * lleva `Authorization: Bearer <token de Clerk>` (`submitWithOwnerToken`): el
+ * backend deja esa cuenta como dueña del taller cuando aprueba la solicitud.
+ * Ante un 401 se renueva el token y se reintenta UNA vez, siempre con el
+ * header; si igual falla, se pide volver a entrar SIN borrar lo escrito.
  */
 export function ProviderForm({
   serviceFamilies,
+  getToken,
+  reauthHref,
 }: {
   readonly serviceFamilies: readonly ServiceFamilyOption[];
+  /** `getToken` de `useAuth()` de Clerk. */
+  readonly getToken: OwnerGetToken;
+  /** Adónde se vuelve a entrar si la sesión venció (se abre en otra pestaña). */
+  readonly reauthHref: string;
 }) {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMessage, setErrorMessage] = useState(GENERIC_ERROR);
+  /** El último envío falló por sesión: se muestra el link para volver a entrar. */
+  const [sessionExpired, setSessionExpired] = useState(false);
   /**
    * "Ya te teniamos anotado" es un exito, no un error: la solicitud existe y
    * alguien la va a mirar. Mostrarlo en rojo haria que la persona reintente o
@@ -505,6 +525,7 @@ export function ProviderForm({
     setSubmitState("loading");
     setErrorMessage(GENERIC_ERROR);
     setAlreadyRegistered(null);
+    setSessionExpired(false);
 
     try {
       let logoDataUrl: string | undefined;
@@ -526,10 +547,8 @@ export function ProviderForm({
           return;
         }
       }
-      const response = await fetch("/api/provider", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const outcome = await submitWithOwnerToken(
+        JSON.stringify({
           taller,
           whatsapp,
           email,
@@ -557,8 +576,18 @@ export function ProviderForm({
           hours: hours || null,
           modality: modality || null,
         }),
-      });
+        getToken,
+      );
 
+      // Nada se resetea: el formulario sigue montado con todo lo escrito.
+      if (outcome.kind === "unauthenticated") {
+        setErrorMessage(providersContent.form.session.expired);
+        setSessionExpired(true);
+        setSubmitState("error");
+        return;
+      }
+
+      const { response } = outcome;
       const payload = (await response.json().catch(() => ({}))) as {
         error?: string;
         message?: string;
@@ -588,15 +617,16 @@ export function ProviderForm({
       <Card variant="solid" className="p-8">
         <FormSuccess
           title={
-            alreadyRegistered ? "Ya te teniamos anotado" : "¡Registro recibido!"
+            alreadyRegistered
+              ? providersContent.form.success.alreadyRegisteredTitle
+              : providersContent.form.success.title
           }
           description={
-            alreadyRegistered ??
-            "Te contactaremos pronto para activar el perfil de tu taller en AutoLibre."
+            alreadyRegistered ?? providersContent.form.success.description
           }
         >
           <ButtonLink href="/" variant="outline" size="sm" className="mt-2">
-            Volver al inicio
+            {providersContent.form.success.homeCta}
           </ButtonLink>
         </FormSuccess>
       </Card>
@@ -1201,7 +1231,19 @@ export function ProviderForm({
           </div>
 
           {submitState === "error" ? (
-            <FormError message={errorMessage} />
+            <div className="flex flex-col items-start gap-2">
+              <FormError message={errorMessage} />
+              {sessionExpired ? (
+                <a
+                  href={reauthHref}
+                  target="_blank"
+                  rel="noopener"
+                  className="inline-flex min-h-11 items-center font-semibold text-brand-hover underline underline-offset-4"
+                >
+                  {providersContent.form.session.reauthLink}
+                </a>
+              ) : null}
+            </div>
           ) : null}
         </div>
       </Card>

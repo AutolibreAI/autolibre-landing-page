@@ -1,3 +1,5 @@
+import { PROVEEDORES_REGISTRO_FORMULARIO_PATH } from "@/lib/proveedores/query";
+
 /**
  * Copy y opciones de la página de proveedores.
  *
@@ -44,12 +46,70 @@ export const providersContent = {
     },
   ],
 
+  /**
+   * Bloque de `/proveedores/registro` que reemplaza al formulario (spec 212,
+   * US3): la página indexable explica el alta y manda a
+   * `/proveedores/registro/formulario`, que pide la cuenta. Así la página
+   * pública no carga Clerk (FR-011).
+   */
+  register: {
+    title: "Sumate como proveedor",
+    intro:
+      "El registro es gratis y se hace con tu cuenta de AutoLibre, la misma de la app: así el taller queda a tu nombre cuando lo aprobamos.",
+    stepsTitle: "Cómo es el registro",
+    steps: [
+      "Entrás con tu cuenta de AutoLibre o creás una.",
+      "Completás los datos de tu taller: servicios, marcas que atendés, dirección y horarios.",
+      "Revisamos la solicitud y te contactamos para activar tu perfil.",
+      "Cuando aprobamos tu taller, lo administrás y contratás un plan desde tu cuenta.",
+    ],
+    cta: { label: "Registrar mi taller", href: PROVEEDORES_REGISTRO_FORMULARIO_PATH },
+  },
+
+  /**
+   * `/proveedores/registro/formulario` (spec 212, US3): privada, `noindex`, con
+   * Clerk. Sin sesión muestra el login; con sesión, el formulario.
+   */
+  formPage: {
+    meta: {
+      title: "Registrá tu taller",
+      description:
+        "Formulario de alta de talleres y servicios en AutoLibre. Requiere iniciar sesión con tu cuenta de AutoLibre.",
+    },
+    title: "Registrá tu taller",
+    intro:
+      "Completá los datos de tu taller. Cuando aprobemos la solicitud, el taller queda en tu cuenta.",
+    loading: "Cargando…",
+    signIn: {
+      title: "Entrá con tu cuenta de AutoLibre",
+      body: "Usá la misma cuenta que en la app, o creá una. Después completás los datos de tu taller.",
+    },
+    formTitle: "Datos de tu taller",
+  },
+
   form: {
     title: "Sumate como proveedor",
     subtitle: "Te contactamos para activar tu perfil.",
     submitLabel: "Quiero registrar mi taller",
     submitLoadingLabel: "Enviando...",
     note: "Te contactamos para activar tu perfil.",
+    success: {
+      title: "¡Registro recibido!",
+      description:
+        "Te vamos a contactar para activar el perfil de tu taller. Cuando aprobemos tu taller, vas a poder administrarlo y contratar un plan desde tu cuenta.",
+      alreadyRegisteredTitle: "Ya te teníamos anotado",
+      homeCta: "Volver al inicio",
+    },
+    /**
+     * El backend rechazó el token también después de renovarlo (spec 212,
+     * US3). Lo escrito NO se borra: la persona entra de nuevo en otra pestaña
+     * (Clerk comparte la sesión entre pestañas) y vuelve a enviar.
+     */
+    session: {
+      expired:
+        "Tu sesión venció. Lo que completaste sigue acá: volvé a entrar con tu cuenta y después tocá de nuevo «Quiero registrar mi taller».",
+      reauthLink: "Volver a entrar (se abre en otra pestaña)",
+    },
     addressHelper:
       "Empezá a escribir y elegí tu dirección de la lista para que te ubiquemos bien en el mapa.",
     /** Se escribió la dirección a mano (o se editó después de elegirla). */
