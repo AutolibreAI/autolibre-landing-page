@@ -1,0 +1,20 @@
+{
+  // Typecheck del módulo puro del canje de códigos de reclamo y sus pruebas.
+  // Corren con `node --test` (type stripping de Node): solo sintaxis TS
+  // borrable e imports relativos con extensión `.ts`. El tsconfig raíz excluye
+  // `scripts/` para no mezclar estos flags con el typecheck de Next.
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true
+  },
+  "include": ["./**/*.ts", "../../lib/partner-claims/redeem.ts"]
+}

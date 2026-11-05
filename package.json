@@ -15,9 +15,15 @@
     "typecheck:blog": "tsc -p scripts/blog/tsconfig.json",
     "test:provider-profile": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"scripts/provider-profile/**/*.test.ts\"",
     "typecheck:provider-profile": "tsc -p scripts/provider-profile/tsconfig.json",
-    "test:proveedores": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"scripts/proveedores/**/*.test.ts\""
+    "test:proveedores": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"scripts/proveedores/**/*.test.ts\"",
+    "test:partner-claims": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"scripts/partner-claims/**/*.test.ts\"",
+    "typecheck:partner-claims": "tsc -p scripts/partner-claims/tsconfig.json",
+    "test:partner-billing": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"scripts/partner-billing/**/*.test.ts\"",
+    "typecheck:partner-billing": "tsc -p scripts/partner-billing/tsconfig.json"
   },
   "dependencies": {
+    "@clerk/localizations": "^4.24.5",
+    "@clerk/nextjs": "^7.9.24",
     "@graphcms/rich-text-react-renderer": "^0.6.2",
     "@graphcms/rich-text-types": "^0.5.1",
     "@vercel/analytics": "^2.0.1",
