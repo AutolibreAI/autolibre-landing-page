@@ -6,6 +6,7 @@ import {
   APP_STORES,
   CLICKABLE_EVENTS,
   LEAD_SOURCES,
+  PARTNER_PLANS,
   PROVIDER_ACTIONS,
   QUOTE_CTA_PLACEMENTS,
   type AnalyticsEventName,
@@ -17,6 +18,7 @@ import { trackUnchecked } from "@/lib/analytics/track";
 
 const LEAD_SOURCE_VALUES = new Set<string>(Object.values(LEAD_SOURCES));
 const STORE_VALUES = new Set<string>(Object.values(APP_STORES));
+const PLAN_VALUES = new Set<string>(Object.values(PARTNER_PLANS));
 const PROVIDER_ACTION_VALUES = new Set<string>(Object.values(PROVIDER_ACTIONS));
 const QUOTE_CTA_PLACEMENT_VALUES = new Set<string>(
   Object.values(QUOTE_CTA_PLACEMENTS),
@@ -54,7 +56,9 @@ const QUOTE_CTA_PLACEMENT_VALUES = new Set<string>(
  *   - `data-analytics-has-query` / `-has-zone` / `-has-category` →
  *     `has_query` / `has_zone` / `has_category: true` (qué filtros tenía el
  *     directorio de proveedores al quedar sin resultados; sólo presencia).
- *   `lead_source`, `store`, `action` y el `placement` de presupuesto sólo aceptan los
+ *   - `data-analytics-plan="plus"` → `plan` de `plan_checkout_started` (sólo
+ *     los valores de `PARTNER_PLANS`).
+ *   `lead_source`, `store`, `action`, `plan` y el `placement` de presupuesto sólo aceptan los
  *   valores del catálogo; el resto se ignora para que un typo no abra una
  *   fuente nueva en los reportes.
  *   Nunca datos personales.
@@ -100,6 +104,8 @@ export function AnalyticsEvents() {
       if (action) props.action = action;
       const store = el.dataset.analyticsStore;
       if (store && STORE_VALUES.has(store)) props.store = store;
+      const plan = el.dataset.analyticsPlan;
+      if (plan && PLAN_VALUES.has(plan)) props.plan = plan;
 
       trackUnchecked(
         name as AnalyticsEventName,

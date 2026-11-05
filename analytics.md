@@ -104,6 +104,19 @@ Todos los eventos de PostHog llevan `app: "landing"`, y los de la sesión incluy
 | --------------------------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | "Pedir presupuesto" del estado vacío (búsqueda, zona o rubro sin negocios, no un error) | `directory_empty_quote_clicked` | `has_query?`, `has_zone?`, `has_category?` (`true`) | —    | Click. Dice qué filtros había, nunca su valor: ni el texto buscado ni la zona. Sirve para medir cuántas búsquedas sin resultados se rescatan pidiendo presupuesto |
 
+### 🧾 Talleres: registro, reclamo y contratación de planes (specs 211 y 212)
+
+Embudo de contratación: `plan_checkout_started` → `plan_checkout_redirected` → `plan_checkout_confirmed`. Ninguno lleva datos personales: ni email, ni código de reclamo, ni taller. Hoy ninguno va a Meta; si marketing quiere optimizar sobre la suscripción, el candidato es `plan_checkout_confirmed`.
+
+| Botón / momento                                                          | Evento PostHog             | Props                                  | Meta | Cuándo                                                                                                                                       |
+| ------------------------------------------------------------------------ | -------------------------- | -------------------------------------- | ---- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| "Quiero el plan Plus / Plus Max" en `/proveedores/planes`                | `plan_checkout_started`    | `plan: plus\|plus_max`                 | —    | Click                                                                                                                                        |
+| El backend creó el checkout y se manda a Mercado Pago (`/contratar`)     | `plan_checkout_redirected` | `plan`                                 | —    | Justo antes de redirigir. Si PostHog todavía no había cargado, puede perderse en la navegación                                              |
+| La pantalla de resultado confirma la suscripción (`/contratar/resultado`) | `plan_checkout_confirmed`  | `plan`, `trial` (arrancó en prueba)    | —    | Estado del backend, nunca los params de MP. Una vez por checkout: solo si esa pestaña tenía un checkout pendiente (recargar no lo repite)     |
+| "Registrar mi taller" en `/proveedores/registro`                         | `partner_register_started` | —                                      | —    | Click. El envío del formulario no tiene evento propio                                                                                       |
+| Canje exitoso de un código en `/proveedores/reclamar`                    | `partner_claim_redeemed`   | `from_checkout?` (`true`)              | —    | Al recibir el OK del backend. `from_checkout`: el reclamo venía de contratar un plan                                                        |
+| "Hablar con ventas" en `/proveedores/planes`                             | `whatsapp_clicked`         | `placement: "proveedores_planes_ventas"` | `Contact {placement}` | Click                                                                                                                    |
+
 ---
 
 ## 4. `quote_submitted` en el server
@@ -132,6 +145,6 @@ La Conversions API de Meta sale en paralelo con el mismo `eventID` que el Pixel,
 ## 5. Lo que no se mide hoy
 
 - **Abrir el modal** no tiene evento propio: se aproxima con `quote_step_viewed step: 1`.
-- **Formulario de proveedores (`/proveedores/registro`):** no tiene eventos, solo `$pageview` y la grabación. Hasta el release de AUT-137 el formulario vivía en `/proveedores`: los `$pageview` de esa ruta anteriores a la fecha de salida (completar al deployar: ____) son del formulario y los posteriores son del directorio; la serie nueva arranca en `/proveedores/registro`.
+- **Envío del formulario de proveedores (`/proveedores/registro/formulario`):** no tiene evento propio; se aproxima con `partner_register_started` y el `$pageview` del formulario. Desde la spec 212 el formulario vive en esa ruta privada; antes estaba en `/proveedores/registro`. Hasta el release de AUT-137 el formulario vivía en `/proveedores`: los `$pageview` de esa ruta anteriores a la fecha de salida (completar al deployar: ____) son del formulario y los posteriores son del directorio; la serie nueva arranca en `/proveedores/registro`.
 - **Links de navegación** (el menú y el link de texto "Pedir presupuesto" a `/pedido`): solo se ve el `$pageview` de destino.
 - **UTMs dentro del pedido:** hay un TODO porque el DTO del backend rechaza campos desconocidos. Igual, PostHog guarda los UTMs de la sesión, así que el funnel sí se puede cortar por campaña.

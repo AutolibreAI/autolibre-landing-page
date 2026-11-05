@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { CheckoutSignIn } from "@/components/proveedores/checkout/checkout-sign-in";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
 import { partnerCheckoutContent, planDisplayName } from "@/lib/content/partner-checkout";
 import { formatDate, isPaidPlanCode } from "@/lib/partner-billing/checkout";
 import {
@@ -125,6 +127,14 @@ function SignedInResult({ partnerIdFromQuery, selfPath }: CheckoutResultProps) {
         return;
       }
       if (classification === "confirmed") {
+        // Una conversión por checkout: sólo si esta pestaña tenía uno pendiente
+        // (recargar la página o volver otro día no la cuenta de nuevo).
+        if (readPendingCheckout() && isPaidPlanCode(result.view.planCode)) {
+          track(ANALYTICS_EVENTS.planCheckoutConfirmed, {
+            plan: result.view.planCode,
+            trial: result.view.status === "trialing",
+          });
+        }
         clearPendingCheckout();
         setState({ kind: "confirmed", view: result.view });
         return;

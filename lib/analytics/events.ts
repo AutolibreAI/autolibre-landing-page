@@ -64,6 +64,27 @@ export const ANALYTICS_EVENTS = {
    * `/proveedores/planes`. Sólo PostHog.
    */
   providerPlansCtaClicked: "provider_plans_cta_clicked",
+  /**
+   * Embudo de contratación online (spec 212). Sólo PostHog: si marketing
+   * quiere optimizar campañas sobre la suscripción, el que va a Meta es
+   * `plan_checkout_confirmed` (decisión pendiente).
+   *
+   * Click en "Quiero el plan …" de `/proveedores/planes` (clickable, con
+   * `data-analytics-plan`).
+   */
+  planCheckoutStarted: "plan_checkout_started",
+  /** El backend creó el checkout y se manda a Mercado Pago. */
+  planCheckoutRedirected: "plan_checkout_redirected",
+  /**
+   * La pantalla de resultado confirmó la suscripción (estado del backend, no
+   * los params de MP). Una vez por checkout: sólo si en esta pestaña había un
+   * checkout pendiente.
+   */
+  planCheckoutConfirmed: "plan_checkout_confirmed",
+  /** Click en "Registrar mi taller" de `/proveedores/registro` (clickable). */
+  partnerRegisterStarted: "partner_register_started",
+  /** Canje exitoso de un código de reclamo (spec 211). Nunca el código. */
+  partnerClaimRedeemed: "partner_claim_redeemed",
 } as const;
 
 export type AnalyticsEventName =
@@ -136,6 +157,18 @@ export const APP_STORES = {
 
 export type AppStore = (typeof APP_STORES)[keyof typeof APP_STORES];
 
+/**
+ * Planes pagos de proveedores: los `code` del backend (`GET /billing/plans`).
+ * Viaja como `plan`; el listener de `data-analytics-plan` descarta cualquier
+ * otro valor.
+ */
+export const PARTNER_PLANS = {
+  plus: "plus",
+  plusMax: "plus_max",
+} as const;
+
+export type PartnerPlan = (typeof PARTNER_PLANS)[keyof typeof PARTNER_PLANS];
+
 /** Props de cada evento. Tipados para que un typo no abra una columna nueva. */
 export type AnalyticsEventProps = {
   whatsapp_clicked: {
@@ -177,6 +210,18 @@ export type AnalyticsEventProps = {
     has_category?: true;
   };
   provider_plans_cta_clicked: Record<string, never>;
+  plan_checkout_started: { plan: PartnerPlan };
+  plan_checkout_redirected: { plan: PartnerPlan };
+  plan_checkout_confirmed: {
+    plan: PartnerPlan;
+    /** La suscripción arrancó en período de prueba. */
+    trial?: boolean;
+  };
+  partner_register_started: Record<string, never>;
+  partner_claim_redeemed: {
+    /** El canje vino de la contratación de un plan (`?next`). */
+    from_checkout?: true;
+  };
 };
 
 export type AnalyticsProps = Record<string, string | number | boolean>;
@@ -275,6 +320,31 @@ export const ANALYTICS_CATALOG: Record<AnalyticsEventName, CatalogEntry> = {
     posthog: "client",
     meta: () => null,
     clickable: true,
+  },
+  plan_checkout_started: {
+    posthog: "client",
+    meta: () => null,
+    clickable: true,
+  },
+  plan_checkout_redirected: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  plan_checkout_confirmed: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  partner_register_started: {
+    posthog: "client",
+    meta: () => null,
+    clickable: true,
+  },
+  partner_claim_redeemed: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
   },
 };
 

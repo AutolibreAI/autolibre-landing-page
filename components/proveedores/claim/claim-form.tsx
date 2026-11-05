@@ -5,6 +5,8 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/form-controls";
 import { Icon } from "@/components/ui/icon";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
 import { partnerClaimContent } from "@/lib/content/partner-claim";
 import { fetchClaimedPartnerName, redeemClaimCode } from "@/lib/partner-claims/client";
 import { validateCode, type RedeemFailureKind } from "@/lib/partner-claims/redeem";
@@ -106,6 +108,8 @@ export function ClaimForm({ continueHref = null, selfPath = PROVEEDORES_RECLAMAR
     try {
       const result = await redeemClaimCode(checked.code, getToken);
       if (result.kind === "success") {
+        // Nunca el código ni el taller: sólo si el canje vino de contratar un plan.
+        track(ANALYTICS_EVENTS.partnerClaimRedeemed, continueHref ? { from_checkout: true } : {});
         const partnerName = await fetchClaimedPartnerName(result.partnerId, getToken);
         setStatus({ kind: "success", partnerName });
         setCode("");

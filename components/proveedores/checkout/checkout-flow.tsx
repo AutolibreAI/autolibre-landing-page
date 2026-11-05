@@ -7,6 +7,8 @@ import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ChoiceRow } from "@/components/ui/choice";
 import { Field, Input } from "@/components/ui/form-controls";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
 import { partnerCheckoutContent, planDisplayName } from "@/lib/content/partner-checkout";
 import {
   findPlan,
@@ -388,6 +390,7 @@ function CheckoutForm({
     if (result.kind === "success") {
       // Fallback de la pantalla de resultado si la `back_url` no trae `partnerId`.
       savePendingCheckout({ partnerId, planCode, subscriptionId: result.subscriptionId });
+      track(ANALYTICS_EVENTS.planCheckoutRedirected, { plan: planCode });
       setStatus({ kind: "redirecting" });
       window.location.assign(result.initPointUrl);
       return; // `inFlight` queda en true: ya nos vamos a MP.

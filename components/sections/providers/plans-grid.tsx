@@ -75,6 +75,12 @@ export function ProvidersPlansGrid() {
               }
               variant={plan.highlighted ? "primary" : "outline"}
               block
+              {...("analyticsPlan" in plan.cta
+                ? {
+                    "data-analytics-event": ANALYTICS_EVENTS.planCheckoutStarted,
+                    "data-analytics-plan": plan.cta.analyticsPlan,
+                  }
+                : {})}
             >
               {plan.cta.label}
             </ButtonLink>

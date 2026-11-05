@@ -66,6 +66,8 @@ export const providersPlansContent = {
         label: "Quiero el plan Plus",
         // Contratación online (spec 212): la página es privada y carga Clerk.
         href: checkoutHref(PROVEEDORES_CONTRATAR_PATH, LANDING_PLAN_ID_TO_CODE["plan-plus"]),
+        /** `plan` de `plan_checkout_started`. */
+        analyticsPlan: LANDING_PLAN_ID_TO_CODE["plan-plus"],
       },
       highlighted: true,
     },
@@ -82,6 +84,7 @@ export const providersPlansContent = {
       cta: {
         label: "Quiero el plan Plus Max",
         href: checkoutHref(PROVEEDORES_CONTRATAR_PATH, LANDING_PLAN_ID_TO_CODE["plan-plus-max"]),
+        analyticsPlan: LANDING_PLAN_ID_TO_CODE["plan-plus-max"],
       },
       highlighted: false,
     },

@@ -6,6 +6,7 @@ import { ProvidersPlansBannerSection } from "@/components/sections/providers/pla
 import { ProvidersReasonsSection } from "@/components/sections/providers/reasons";
 import { ButtonLink } from "@/components/ui/button";
 import { Section } from "@/components/ui/section";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { providersContent } from "@/lib/content/providers";
 import { PROVEEDORES_PATH, PROVEEDORES_REGISTRO_PATH } from "@/lib/proveedores/query";
 import { createMetadata } from "@/lib/seo/metadata";
@@ -78,7 +79,14 @@ export default function ProveedoresRegistroPage() {
             ))}
           </ol>
 
-          <ButtonLink href={register.cta.href} prefetch={false} size="lg" block className="mt-10">
+          <ButtonLink
+            href={register.cta.href}
+            prefetch={false}
+            size="lg"
+            block
+            className="mt-10"
+            data-analytics-event={ANALYTICS_EVENTS.partnerRegisterStarted}
+          >
             {register.cta.label}
           </ButtonLink>
         </Section>
