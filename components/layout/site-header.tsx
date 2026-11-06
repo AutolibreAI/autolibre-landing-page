@@ -4,20 +4,24 @@ import { DownloadCta } from "@/components/ui/download-cta";
 import { HeaderAccountSwap } from "@/components/layout/header-account-swap";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { clerkClientUatCookieName } from "@/lib/auth/session-cookie";
-import { NavCtaLink } from "@/components/layout/nav-cta";
 import { Container } from "@/components/ui/container";
 import { ANALYTICS_EVENTS, QUOTE_CTA_PLACEMENTS } from "@/lib/analytics/events";
 import { siteContent } from "@/lib/content/site";
-import type { NavCta } from "@/lib/content/types";
 
 type SiteHeaderProps = {
   /**
-   * Botón de la derecha. Default: descarga. Es la ÚNICA variación que una
-   * página puede pedir (`/proveedores` y `/pedido` tienen su propia
-   * conversión): los links del header son los mismos en todo el sitio y por
-   * eso este componente no acepta props para cambiarlos.
+   * Botón de la derecha. Sin la prop: "Descargar la app" (el default de todo
+   * el sitio). `cta={false}`: el header va SIN botón, ni en desktop ni en el
+   * menú mobile. Lo usan las páginas que son una conversión en sí mismas y no
+   * deben sacar al usuario de ahí: `/pedido` (su única conversión es el
+   * WhatsApp), `/proveedores/planes` y `/proveedores/registro`.
+   *
+   * Es la ÚNICA variación que una página puede pedir: los links del header
+   * son los mismos en todo el sitio y por eso este componente no acepta
+   * props para cambiarlos. No hay CTAs a medida: si una página necesita otra
+   * acción, va en su contenido, no en el header.
    */
-  readonly cta?: NavCta;
+  readonly cta?: false;
   /**
    * Ruta de la página que renderiza el header. Marca con
    * `aria-current="page"` el link que apunta a ella. Viaja como prop (y no
@@ -52,19 +56,11 @@ const pageLink = `${headerLink} text-sm text-ink/70`;
  * - xl: + anclas de sección, Blog, Proveedores y Sobre nosotros, y recién ahí
  *   se va el menú.
  */
-export function SiteHeader({
-  cta = siteContent.nav.cta,
-  currentPath,
-}: SiteHeaderProps) {
+export function SiteHeader({ cta, currentPath }: SiteHeaderProps) {
   const { links, quoteLink, providerLink, accountLink } = siteContent.nav;
   /** Cookie de sesión de Clerk de esta instancia (ver `lib/auth/session-cookie.ts`). */
   const sessionCookie = clerkClientUatCookieName();
-  /**
-   * Sólo el CTA de descarga cambia de destino según la plataforma. Las
-   * páginas que pisan `cta` con otra acción (p. ej. /proveedores/registro, /pedido)
-   * quedan con su link tal cual.
-   */
-  const isDownloadCta = cta.href === siteContent.nav.cta.href;
+  const showCta = cta !== false;
   const current = (href: string) => (href === currentPath ? "page" : undefined);
 
   return (
@@ -133,19 +129,18 @@ export function SiteHeader({
               </li>
             </ul>
           </nav>
-          {isDownloadCta ? (
-            <DownloadCta className="hidden sm:contents" />
-          ) : (
-            <NavCtaLink cta={cta} className="hidden sm:inline-flex" />
-          )}
+          {/* Sin CTA no queda ningún wrapper: el `gap` del flex solo separa
+              hijos que existen, y "Soy proveedor" / "Mi cuenta" queda
+              pegado al borde derecho (desde `xl` el botón de menú no se ve). */}
+          {showCta ? <DownloadCta className="hidden sm:contents" /> : null}
           <MobileNav
             links={links}
             pageLinks={[quoteLink, providerLink]}
             accountLink={accountLink}
             sessionCookie={sessionCookie}
+            noPrefetchHrefs={[providerLink.href]}
             quoteHref={quoteLink.href}
-            cta={cta}
-            isDownloadCta={isDownloadCta}
+            showCta={showCta}
             currentPath={currentPath}
           />
         </div>

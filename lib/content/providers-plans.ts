@@ -1,6 +1,5 @@
 /**
- * Copy de los planes pagos para proveedores (`/proveedores/planes`) y del
- * banner que los promociona en `/proveedores/registro`.
+ * Copy de los planes pagos para proveedores (`/proveedores/planes`).
  *
  * Precios y topes: decisión de producto del 24/10/2026 (research "Planes Plus
  * de proveedores — precio, tope de pedidos y costo de IA"). No modificar un
@@ -17,7 +16,6 @@ import { LANDING_PLAN_ID_TO_CODE } from "@/lib/partner-billing/checkout";
 import { checkoutHref } from "@/lib/partner-billing/return-path";
 import {
   PROVEEDORES_CONTRATAR_PATH,
-  PROVEEDORES_PLANES_PATH,
   PROVEEDORES_REGISTRO_PATH,
 } from "@/lib/proveedores/query";
 
@@ -27,19 +25,6 @@ export const providersPlansContent = {
     description:
       "Conocé los planes pagos de AutoLibre para talleres y servicios: cuánto cuestan, cuántos pedidos por WhatsApp incluyen y cómo sumar más volumen.",
   },
-
-  banner: {
-    title: "¿Querés recibir más pedidos por WhatsApp?",
-    subtitle: "Conocé los planes pagos para proveedores y elegí el que mejor se ajusta a tu negocio.",
-    cta: { label: "Ver planes", href: PROVEEDORES_PLANES_PATH },
-  },
-
-  /**
-   * Botón del header en `/proveedores/planes`. Antes bajaba a `#planes`, que
-   * es la grilla que ya está en pantalla: no llevaba a ningún lado. Va al hub
-   * del alta, como el resto de los "Sumar mi negocio".
-   */
-  headerCta: { label: "Sumar mi negocio", href: PROVEEDORES_REGISTRO_PATH },
 
   hero: {
     titleLines: ["Elegí el plan que se ajusta", "al volumen de tu negocio"],

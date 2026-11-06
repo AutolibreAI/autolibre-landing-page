@@ -37,7 +37,7 @@ import {
  *
  * ── Alta con dueño (spec 212, US3) ──────────────────────────────────────────
  *
- * El formulario (`/proveedores/registro/formulario`) exige sesión y manda
+ * El formulario (`/proveedores/registro`) exige sesión y manda
  * `Authorization: Bearer <token de Clerk>`. Esta ruta NO lo valida (no hay SDK
  * de Clerk en el server): lo reenvía tal cual al backend, que deja esa cuenta
  * como dueña del taller cuando aprueba la solicitud. Si el backend responde

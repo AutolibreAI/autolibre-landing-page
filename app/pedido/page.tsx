@@ -12,9 +12,7 @@ import { PedidoStickyBar } from "@/components/pedido/pedido-sticky-bar";
 import { WhatsappLink } from "@/components/pedido/whatsapp-link";
 import { JsonLd } from "@/components/seo/json-ld";
 import { Container } from "@/components/ui/container";
-import { ANALYTICS_EVENTS, LEAD_SOURCES } from "@/lib/analytics/events";
 import { presupuestoContent } from "@/lib/content/presupuesto";
-import type { NavCta } from "@/lib/content/types";
 import { createMetadata } from "@/lib/seo/metadata";
 import {
   breadcrumbSchema,
@@ -23,30 +21,10 @@ import {
   organizationSchema,
   webPageSchema,
 } from "@/lib/seo/schema";
-import { whatsappUrl } from "@/lib/whatsapp";
 
-const { meta, faq, stickyBar, whatsapp } = presupuestoContent.pedidoPage;
+const { meta, faq, stickyBar } = presupuestoContent.pedidoPage;
 
 const PATH = "/pedido";
-
-/**
- * En `/pedido` el CTA del header es el mismo chat de WhatsApp que el resto de
- * la página (no "Descargar la app"): una sola conversión. Se mide igual que
- * `WhatsappLink`: `whatsapp_clicked` con `lead_source: "whatsapp"` (en Meta,
- * `Lead`) y `placement` `header`, y `header_menu` dentro del menú mobile.
- */
-const headerCta: NavCta = {
-  label: whatsapp.label,
-  href: whatsappUrl(whatsapp.text),
-  external: true,
-  icon: "whatsapp",
-  tracking: {
-    event: ANALYTICS_EVENTS.whatsappClicked,
-    placement: "header",
-    menuPlacement: "header_menu",
-    leadSource: LEAD_SOURCES.whatsapp,
-  },
-};
 
 /**
  * Se indexa: es la landing que se comparte por WhatsApp y en anuncios, y la
@@ -82,8 +60,9 @@ const schema = graph(
  * confirmación) y `PedidoStickyBar` (cuándo mostrar la barra fija mobile).
  *
  * Usa `PageShell` como el resto del sitio: header y footer compartidos, con
- * el link "Pedir presupuesto" marcado como página actual y WhatsApp como CTA
- * del header. Sin anclas de sección en el header (son de la home).
+ * el link "Pedir presupuesto" marcado como página actual. El header va SIN
+ * botón (`cta={false}`): la única conversión de esta página es el WhatsApp
+ * (hero, barra fija, banda de cierre), y "Descargar la app" competiría con él.
  *
  * Outline: h1 (hero) → h2 del form → h2 por sección → h3 por paso y por
  * pregunta.
@@ -91,7 +70,7 @@ const schema = graph(
 export default function PedidoPage() {
   return (
     <>
-      <PageShell cta={headerCta} currentPath={PATH}>
+      <PageShell cta={false} currentPath={PATH}>
         {/* El fondo va en un wrapper y no en `<main>` (lo pone `PageShell`):
             las secciones viven dentro de `Container` y el lavado verde tiene
             que llegar de borde a borde. */}

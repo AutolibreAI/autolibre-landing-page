@@ -3,11 +3,10 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { NavCtaLink } from "@/components/layout/nav-cta";
 import { DownloadCta } from "@/components/ui/download-cta";
 import { useSessionHint } from "@/lib/auth/use-session-hint";
 import { ANALYTICS_EVENTS, QUOTE_CTA_PLACEMENTS } from "@/lib/analytics/events";
-import type { NavCta, NavLink } from "@/lib/content/types";
+import type { NavLink } from "@/lib/content/types";
 
 type MobileNavProps = {
   /** Anclas de sección, Blog, Proveedores y Sobre nosotros (las mismas en todas las páginas). */
@@ -21,15 +20,22 @@ type MobileNavProps = {
    * del sitio acá lo metería entero en el bundle.
    */
   readonly quoteHref: string;
-  readonly cta: NavCta;
-  /** Si es el CTA de descarga, apunta a la tienda según la plataforma. */
-  readonly isDownloadCta?: boolean;
+  /**
+   * "Descargar la app" al fondo del panel. `false` cuando la página pidió el
+   * header sin CTA (`SiteHeader cta={false}`): el panel queda solo con links.
+   */
+  readonly showCta?: boolean;
   /** Ruta actual: su link lleva `aria-current="page"`. */
   readonly currentPath?: string;
   /** "Mi cuenta": se suma al final de `pageLinks` solo si hay sesión. */
   readonly accountLink?: NavLink;
   /** Cookie `__client_uat` de la instancia de Clerk (pista de sesión, sin Clerk). */
   readonly sessionCookie?: string | null;
+  /**
+   * Links a pantallas que cargan Clerk (`/proveedores/registro`): sin
+   * prefetch, como "Mi cuenta".
+   */
+  readonly noPrefetchHrefs?: readonly string[];
 };
 
 /**
@@ -41,11 +47,11 @@ export function MobileNav({
   links,
   pageLinks,
   quoteHref,
-  cta,
-  isDownloadCta = false,
+  showCta = true,
   currentPath,
   accountLink,
   sessionCookie = null,
+  noPrefetchHrefs = [],
 }: MobileNavProps) {
   // Pista de sesión (cookie de Clerk, sin cargar Clerk). El link aparece
   // adentro del panel, que solo se abre con un click: no mueve nada.
@@ -149,8 +155,12 @@ export function MobileNav({
                     key={link.href}
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    // `/cuenta` carga Clerk: sin prefetch desde páginas públicas.
-                    prefetch={link.href === accountLink?.href ? false : undefined}
+                    // `/cuenta` y el alta cargan Clerk: sin prefetch desde páginas públicas.
+                    prefetch={
+                      link.href === accountLink?.href || noPrefetchHrefs.includes(link.href)
+                        ? false
+                        : undefined
+                    }
                     aria-current={
                       link.href === currentPath ? "page" : undefined
                     }
@@ -171,16 +181,17 @@ export function MobileNav({
                 `mt-auto` ancla el CTA al fondo del panel. Va en un wrapper y
                 no en el botón para no tocarle el padding propio. Si algún día
                 los links llenan el alto, el auto colapsa a 0 y el `pt-6`
-                garantiza que el botón nunca quede pegado al último link.
+                garantiza que el botón nunca quede pegado al último link. Sin
+                CTA no se renderiza el wrapper (nada de `pt-6` vacío).
               */}
-              <div className="mt-auto pt-6">
-                {/*
-                  `text-xl` pisa el `text-base` que trae `size="lg"` (lo
-                  resuelve tailwind-merge dentro de `cn`). Va igualado a los
-                  links de navegación a propósito: el CTA es la conversión de
-                  la landing, no puede pesar visualmente menos que "FAQ".
-                */}
-                {isDownloadCta ? (
+              {showCta ? (
+                <div className="mt-auto pt-6">
+                  {/*
+                    `text-xl` pisa el `text-base` que trae `size="lg"` (lo
+                    resuelve tailwind-merge dentro de `cn`). Va igualado a los
+                    links de navegación a propósito: el CTA es la conversión de
+                    la landing, no puede pesar visualmente menos que "FAQ".
+                  */}
                   <DownloadCta
                     placement="header_menu"
                     size="lg"
@@ -188,17 +199,8 @@ export function MobileNav({
                     onClick={() => setOpen(false)}
                     linkClassName="text-xl"
                   />
-                ) : (
-                  <NavCtaLink
-                    cta={cta}
-                    placement={cta.tracking?.menuPlacement}
-                    size="lg"
-                    block
-                    onClick={() => setOpen(false)}
-                    className="text-xl"
-                  />
-                )}
-              </div>
+                </div>
+              ) : null}
             </div>,
             document.body,
           )

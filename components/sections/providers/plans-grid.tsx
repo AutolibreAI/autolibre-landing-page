@@ -3,7 +3,6 @@ import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { providersPlansContent } from "@/lib/content/providers-plans";
-import { PROVEEDORES_CONTRATAR_PATH } from "@/lib/proveedores/query";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
 
@@ -62,17 +61,13 @@ export function ProvidersPlansGrid() {
               ))}
             </ul>
 
-            {/* El plan gratis lleva al hub del alta (ya aparece o registrar); los
-                pagos, a la contratación online (spec 212), que es privada y
-                carga Clerk: sin prefetch (ni en viewport ni en hover), así
-                esta página indexable no baja nada de Clerk (SC-005). */}
+            {/* El plan gratis lleva al alta (`/proveedores/registro`, el
+                formulario); los pagos, a la contratación online (spec 212).
+                Las dos cargan Clerk: sin prefetch (ni en viewport ni en
+                hover), así esta página no baja nada de Clerk (SC-005). */}
             <ButtonLink
               href={plan.cta.href}
-              prefetch={
-                plan.cta.href.startsWith(PROVEEDORES_CONTRATAR_PATH)
-                  ? false
-                  : undefined
-              }
+              prefetch={false}
               variant={plan.highlighted ? "primary" : "outline"}
               block
               {...("analyticsPlan" in plan.cta

@@ -2,7 +2,7 @@ import { ACCOUNT_PATH } from "@/lib/account/paths";
 import {
   PROVEEDORES_PLANES_PATH,
   PROVEEDORES_RECLAMAR_PATH,
-  PROVEEDORES_REGISTRO_FORMULARIO_PATH,
+  PROVEEDORES_REGISTRO_PATH,
 } from "@/lib/proveedores/query";
 
 /**
@@ -104,6 +104,8 @@ export const accountContent = {
         unauthenticated: "Tu sesión venció. Iniciá sesión de nuevo para cancelar la suscripción.",
       },
       retry: "Reintentar",
+      /** Con la sesión vencida: cierra la sesión y vuelve al login de `/cuenta`. */
+      reauth: "Volver a iniciar sesión",
     },
   },
 
@@ -118,7 +120,7 @@ export const accountContent = {
     register: {
       label: "Cargar otro taller",
       description: "Si todavía no aparece en AutoLibre.",
-      href: PROVEEDORES_REGISTRO_FORMULARIO_PATH,
+      href: PROVEEDORES_REGISTRO_PATH,
     },
     claim: {
       label: "Reclamar un taller",

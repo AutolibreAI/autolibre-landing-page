@@ -60,11 +60,6 @@ export const ANALYTICS_EVENTS = {
    */
   directoryEmptyQuoteClicked: "directory_empty_quote_clicked",
   /**
-   * Click en "Ver planes" del banner de `/proveedores/registro` hacia
-   * `/proveedores/planes`. Sólo PostHog.
-   */
-  providerPlansCtaClicked: "provider_plans_cta_clicked",
-  /**
    * Embudo de contratación online (spec 212). Sólo PostHog: si marketing
    * quiere optimizar campañas sobre la suscripción, el que va a Meta es
    * `plan_checkout_confirmed` (decisión pendiente).
@@ -90,8 +85,20 @@ export const ANALYTICS_EVENTS = {
   subscriptionCancelRequested: "subscription_cancel_requested",
   subscriptionCancelSucceeded: "subscription_cancel_succeeded",
   subscriptionCancelFailed: "subscription_cancel_failed",
-  /** Click en "Registrar mi taller" de `/proveedores/registro` (clickable). */
+  /**
+   * Click en un link al alta de talleres desde otra pantalla (clickable, con
+   * `data-analytics-placement`, ej. `cuenta_otro_taller_cargar`). Sólo
+   * PostHog. Hasta el 2026-11-05 lo mandaba también el botón "Registrar mi
+   * taller" de `/proveedores/registro` (sin `placement`), que ya no existe:
+   * la página es el formulario.
+   */
   partnerRegisterStarted: "partner_register_started",
+  /**
+   * Click en un link al reclamo de un taller (`/proveedores/reclamar`)
+   * (clickable, con `data-analytics-placement`, ej.
+   * `cuenta_otro_taller_reclamar`). Sólo PostHog. Nunca el código.
+   */
+  partnerClaimStarted: "partner_claim_started",
   /** Canje exitoso de un código de reclamo (spec 211). Nunca el código. */
   partnerClaimRedeemed: "partner_claim_redeemed",
 } as const;
@@ -218,7 +225,6 @@ export type AnalyticsEventProps = {
     /** Había un rubro elegido. */
     has_category?: true;
   };
-  provider_plans_cta_clicked: Record<string, never>;
   plan_checkout_started: { plan: PartnerPlan };
   plan_checkout_redirected: { plan: PartnerPlan };
   plan_checkout_confirmed: {
@@ -240,7 +246,14 @@ export type AnalyticsEventProps = {
     /** `retryable`: 503/5xx/red. `not_found`: 404 uniforme o 400. `unauthenticated`: 401. */
     reason: "retryable" | "not_found" | "unauthenticated";
   };
-  partner_register_started: Record<string, never>;
+  partner_register_started: {
+    /** De qué link vino (`cuenta_otro_taller_cargar`…). */
+    placement?: string;
+  };
+  partner_claim_started: {
+    /** De qué link vino (`cuenta_otro_taller_reclamar`…). */
+    placement?: string;
+  };
   partner_claim_redeemed: {
     /** El canje vino de la contratación de un plan (`?next`). */
     from_checkout?: true;
@@ -339,11 +352,6 @@ export const ANALYTICS_CATALOG: Record<AnalyticsEventName, CatalogEntry> = {
     meta: () => null,
     clickable: true,
   },
-  provider_plans_cta_clicked: {
-    posthog: "client",
-    meta: () => null,
-    clickable: true,
-  },
   plan_checkout_started: {
     posthog: "client",
     meta: () => null,
@@ -375,6 +383,11 @@ export const ANALYTICS_CATALOG: Record<AnalyticsEventName, CatalogEntry> = {
     clickable: false,
   },
   partner_register_started: {
+    posthog: "client",
+    meta: () => null,
+    clickable: true,
+  },
+  partner_claim_started: {
     posthog: "client",
     meta: () => null,
     clickable: true,

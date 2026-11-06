@@ -7,7 +7,7 @@ import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { partnerCheckoutContent } from "@/lib/content/partner-checkout";
 import type { IconName } from "@/lib/content/types";
 import { claimWithReturnHref, withReturnHref } from "@/lib/partner-billing/return-path";
-import { PROVEEDORES_RECLAMAR_PATH, PROVEEDORES_REGISTRO_FORMULARIO_PATH } from "@/lib/proveedores/query";
+import { PROVEEDORES_RECLAMAR_PATH, PROVEEDORES_REGISTRO_PATH } from "@/lib/proveedores/query";
 import { cn } from "@/lib/utils";
 import { whatsappUrl } from "@/lib/whatsapp";
 
@@ -140,8 +140,8 @@ export function NoPartnerOptions({ headingRef, checkout, placementPrefix }: NoPa
           <ButtonLink
             href={
               checkout
-                ? withReturnHref(PROVEEDORES_REGISTRO_FORMULARIO_PATH, checkout.returnPath)
-                : PROVEEDORES_REGISTRO_FORMULARIO_PATH
+                ? withReturnHref(PROVEEDORES_REGISTRO_PATH, checkout.returnPath)
+                : PROVEEDORES_REGISTRO_PATH
             }
             prefetch={false}
             variant="outline"

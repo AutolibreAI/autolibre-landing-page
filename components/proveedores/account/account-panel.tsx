@@ -120,7 +120,7 @@ function SignedInAccount({ selfPath }: AccountPanelProps) {
           </h2>
           <ul className="flex flex-col divide-y divide-line rounded-card border border-line bg-surface">
             {partners.owners.map((owner) => (
-              <PartnerRow key={owner.partnerId} partner={owner} />
+              <PartnerRow key={owner.partnerId} partner={owner} selfPath={selfPath} />
             ))}
           </ul>
         </section>
@@ -131,6 +131,15 @@ function SignedInAccount({ selfPath }: AccountPanelProps) {
     </div>
   );
 }
+
+/**
+ * Links de "¿Tenés otro taller?", medidos con el listener delegado
+ * (`data-analytics-event` + `data-analytics-placement`). Sólo PostHog.
+ */
+const MORE_ACTIONS = [
+  { ...more.register, event: ANALYTICS_EVENTS.partnerRegisterStarted, placement: "cuenta_otro_taller_cargar" },
+  { ...more.claim, event: ANALYTICS_EVENTS.partnerClaimStarted, placement: "cuenta_otro_taller_reclamar" },
+] as const;
 
 /** Sumar otro taller: el alta (directo al formulario: ya hay sesión) o el reclamo. */
 function MorePartners() {
@@ -143,10 +152,16 @@ function MorePartners() {
         <p className="mt-1 text-ink/70">{more.body}</p>
       </div>
       <ul className="flex flex-col gap-3 sm:flex-row sm:gap-10">
-        {[more.register, more.claim].map((action) => (
+        {MORE_ACTIONS.map((action) => (
           <li key={action.href} className="flex flex-col">
-            {/* Sin prefetch: las dos son pantallas privadas con su Clerk. */}
-            <Link href={action.href} prefetch={false} className={cn(linkClass, "self-start")}>
+            {/* Sin prefetch: las dos pantallas cargan su propio Clerk. */}
+            <Link
+              href={action.href}
+              prefetch={false}
+              data-analytics-event={action.event}
+              data-analytics-placement={action.placement}
+              className={cn(linkClass, "self-start")}
+            >
               {action.label}
             </Link>
             <span className="text-sm text-ink/65">{action.description}</span>
@@ -189,7 +204,7 @@ function describePlan(view: SubscriptionView): {
 }
 
 /** Un taller de la cuenta con el estado de su plan y la acción que corresponde. */
-function PartnerRow({ partner }: { readonly partner: Membership }) {
+function PartnerRow({ partner, selfPath }: { readonly partner: Membership; readonly selfPath: string }) {
   const { getToken } = useAuth();
   const [subscription, setSubscription] = useState<SubscriptionState>({ kind: "loading" });
   /** Sube después de una baja: se vuelve a consultar el estado (sin pasar por "cargando"). */
@@ -301,6 +316,7 @@ function PartnerRow({ partner }: { readonly partner: Membership }) {
                   partnerName={partner.name}
                   planLabel={described.plan}
                   view={subscription.view}
+                  selfPath={selfPath}
                   onCanceled={handleCanceled}
                 />
               ) : null}

@@ -70,8 +70,8 @@ describe("hrefs", () => {
   });
 
   it("withReturnHref lleva el next al alta y vuelve a pasar el filtro", () => {
-    const href = withReturnHref("/proveedores/registro/formulario", checkoutHref(PREFIX, "plus_max"));
-    assert.equal(href, "/proveedores/registro/formulario?next=%2Fproveedores%2Fcontratar%3Fplan%3Dplus_max");
+    const href = withReturnHref("/proveedores/registro", checkoutHref(PREFIX, "plus_max"));
+    assert.equal(href, "/proveedores/registro?next=%2Fproveedores%2Fcontratar%3Fplan%3Dplus_max");
     const next = new URL(href, "https://x.test").searchParams.get("next") ?? undefined;
     assert.equal(safeContinuePath(next, PREFIX), "/proveedores/contratar?plan=plus_max");
   });

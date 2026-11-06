@@ -1,5 +1,3 @@
-import { PROVEEDORES_REGISTRO_FORMULARIO_PATH } from "@/lib/proveedores/query";
-
 /**
  * Copy y opciones de la página de proveedores.
  *
@@ -16,112 +14,28 @@ export const providersContent = {
     description:
       "Recibí consultas con la información del vehículo y el servicio solicitado. Registrá tu taller o servicio en AutoLibre y armá tu perfil en la app.",
   },
-  hero: {
-    titleLines: [
-      "Las consultas llegan con la información",
-      "del vehículo.",
-    ],
-    subtitle:
-      "Recibís la consulta con la información del vehículo (marca, modelo y año) y el servicio que necesita la persona. Reducimos el ida y vuelta por WhatsApp.",
-  },
-
-  reasons: [
-    {
-      id: "reason-consultas",
-      title: "Consultas acotadas",
-      description:
-        "Marca, modelo, año y el servicio solicitado, para que puedas evaluar la consulta.",
-    },
-    {
-      id: "reason-zona",
-      title: "De tu zona y de tu especialidad",
-      description:
-        "Recibís lo que corresponde a tu rubro y tu área. Contestás los que te sirven.",
-    },
-    {
-      id: "reason-perfil",
-      title: "Tu perfil en la app",
-      description:
-        "Los usuarios te ven con tu logo, tus horarios, tus especialidades y cómo contactarte.",
-    },
-  ],
-
-  /** Botón del header en `/proveedores/registro`: baja a la bifurcación. */
-  headerCta: { label: "Sumar mi negocio", href: "#form" },
-
   /**
-   * Bifurcación de `/proveedores/registro`, apenas debajo del hero: antes de
-   * registrar, ¿el taller ya aparece en la red? Si aparece, se le escribe al
-   * equipo para administrarlo (no se registra dos veces); si no, se registra. Inspiración: el "Is this your
-   * business?" de los directorios y el "crear / vincular" de las fintech.
-   *
-   * La búsqueda es el mismo form GET del directorio (`/proveedores?q=…#red`):
-   * sin JS, y el resultado es el directorio de siempre.
+   * `/proveedores/registro` (spec 212, US3; fusionada con el viejo
+   * `/formulario` el 2026-11-05): página indexable con el alta. El `<h1>`, la
+   * bajada y el aviso de "ya aparece" salen en el HTML del server; sin sesión,
+   * el login (copy compartida en `lib/content/partner-account.ts`); con
+   * sesión, el formulario. Página pública: NO se nombra el código de reclamo.
    */
-  fork: {
-    title: "¿Tu taller ya aparece en AutoLibre?",
-    intro:
-      "Puede que tu taller ya figure en la red de AutoLibre. Si aparece, no lo registres de nuevo: escribinos y te ayudamos a administrarlo.",
-    /**
-     * Página pública: NO se explica cómo se verifica al dueño (el mecanismo
-     * de reclamo es interno; el equipo lo maneja por WhatsApp).
-     */
-    listed: {
-      title: "Mi taller ya aparece",
-      body: "Buscalo en el directorio para confirmarlo y escribinos. Verificamos que sos el dueño y te damos acceso para administrarlo.",
-      search: {
-        label: "Nombre de tu taller",
-        placeholder: "Ej: Taller Belgrano",
-        submit: "Buscar mi taller",
-      },
-      contact: {
-        cta: "Escribinos para administrarlo",
-        whatsappMessage: "Hola! Mi taller ya aparece en AutoLibre y quiero administrarlo.",
-      },
-    },
-    firstTime: {
-      title: "Es la primera vez",
-      body: "Registralo gratis con tu cuenta de AutoLibre. Revisamos la solicitud y te contactamos por WhatsApp para activar tu perfil.",
-      cta: "Registrar mi taller",
-      stepsLink: "Ver cómo es el registro",
-    },
-  },
-
-  /**
-   * Bloque de `/proveedores/registro` que reemplaza al formulario (spec 212,
-   * US3): la página indexable explica el alta y manda a
-   * `/proveedores/registro/formulario`, que pide la cuenta. Así la página
-   * pública no carga Clerk (FR-011).
-   */
-  register: {
-    id: "como-es-el-registro",
-    title: "Cómo es el registro",
-    intro:
-      "El registro es gratis y se hace con tu cuenta de AutoLibre, la misma de la app: así el taller queda a tu nombre cuando lo aprobamos.",
-    steps: [
-      "Entrás con tu cuenta de AutoLibre o creás una.",
-      "Completás los datos de tu taller: servicios, marcas que atendés, dirección y horarios.",
-      "Revisamos la solicitud y te contactamos para activar tu perfil.",
-      "Cuando aprobamos tu taller, lo administrás y contratás un plan desde tu cuenta.",
-    ],
-    cta: { label: "Registrar mi taller", href: PROVEEDORES_REGISTRO_FORMULARIO_PATH },
-  },
-
-  /**
-   * `/proveedores/registro/formulario` (spec 212, US3): privada, `noindex`, con
-   * Clerk. Sin sesión muestra el login (copy compartida en
-   * `lib/content/partner-account.ts`); con sesión, el formulario.
-   */
-  formPage: {
-    meta: {
-      title: "Registrá tu taller",
-      description:
-        "Formulario de alta de talleres y servicios en AutoLibre. Requiere iniciar sesión con tu cuenta de AutoLibre.",
-    },
+  registerPage: {
+    breadcrumb: "Registro",
     eyebrow: "Registro de talleres",
     title: "Registrá tu taller",
     intro:
-      "Completá los datos de tu taller. Cuando aprobemos la solicitud, el taller queda en tu cuenta.",
+      "El registro de talleres y servicios en AutoLibre es gratis y se hace con tu cuenta de AutoLibre, la misma de la app. Completás los datos de tu taller y, cuando aprobamos la solicitud, el taller queda a tu nombre para administrarlo y contratar un plan desde tu cuenta.",
+    /**
+     * Para un taller que ya figura en la red: no se registra dos veces. No se
+     * explica cómo se verifica al dueño (lo maneja el equipo por WhatsApp).
+     */
+    listed: {
+      body: "¿Tu taller ya aparece en AutoLibre? No lo registres de nuevo.",
+      cta: "Escribinos para administrarlo",
+      whatsappMessage: "Hola! Mi taller ya aparece en AutoLibre y quiero administrarlo.",
+    },
     formTitle: "Datos de tu taller",
     /** Columna de contexto del login: qué viene después de entrar. */
     steps: {

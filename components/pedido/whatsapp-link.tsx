@@ -13,7 +13,6 @@ const { whatsapp } = presupuestoContent.pedidoPage;
  * `confirmation`).
  */
 export type WhatsappPlacement =
-  | "header"
   | "hero"
   | "sticky_bar"
   | "cta_band"

@@ -35,7 +35,12 @@ export function PrivateFlowHead({
 }
 
 type SignInLayoutProps = {
-  readonly head: PrivateFlowHeadContent;
+  /**
+   * Encabezado de la pantalla. Sin él, la página lo pinta afuera (server,
+   * arriba de las dos columnas): así lo hace `/proveedores/registro`, que es
+   * indexable.
+   */
+  readonly head?: PrivateFlowHeadContent;
   /** Lo que viene después de entrar: los pasos del flujo, el plan elegido… */
   readonly context?: React.ReactNode;
   /** El cuerpo de la tarjeta: el `<SignIn>` de Clerk o su "cargando". */
@@ -62,7 +67,7 @@ export function SignInLayout({ head, context, children }: SignInLayoutProps) {
   return (
     <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-16">
       <div className="flex flex-col gap-8 lg:max-w-130 lg:flex-1 lg:pt-4">
-        <PrivateFlowHead head={head} />
+        {head ? <PrivateFlowHead head={head} /> : null}
         {context}
       </div>
 

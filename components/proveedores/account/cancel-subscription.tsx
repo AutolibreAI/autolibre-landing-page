@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useClerk } from "@clerk/nextjs";
 import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
@@ -24,6 +24,8 @@ type CancelSubscriptionProps = {
   /** "Plan Plus", "Plan pago"…: el mismo rótulo que muestra la fila. */
   readonly planLabel: string;
   readonly view: SubscriptionView;
+  /** `/cuenta`: adónde vuelve "Volver a iniciar sesión" con la sesión vencida. */
+  readonly selfPath: string;
   /** La baja quedó pedida: la fila avisa y vuelve a consultar el estado. */
   readonly onCanceled: (accessUntil: string | null) => void;
 };
@@ -34,8 +36,16 @@ type CancelSubscriptionProps = {
  * título, al que va el foco; "No, mantener el plan" o Escape lo cierran y el
  * foco vuelve al botón. El POST es idempotente, así que "Reintentar" es seguro.
  */
-export function CancelSubscription({ partnerId, partnerName, planLabel, view, onCanceled }: CancelSubscriptionProps) {
+export function CancelSubscription({
+  partnerId,
+  partnerName,
+  planLabel,
+  view,
+  selfPath,
+  onCanceled,
+}: CancelSubscriptionProps) {
   const { getToken } = useAuth();
+  const { signOut } = useClerk();
   const [phase, setPhase] = useState<Phase>({ kind: "closed" });
   const panelId = useId();
   const titleId = useId();
@@ -140,6 +150,13 @@ export function CancelSubscription({ partnerId, partnerName, planLabel, view, on
             }}
           >
             {submitting ? cancel.confirming : error === "retryable" ? cancel.retry : cancel.confirm}
+          </Button>
+        ) : null}
+        {/* Sesión vencida: el mismo camino que la lista de talleres de
+            `/cuenta` (cerrar la sesión y volver al login de esta pantalla). */}
+        {error === "unauthenticated" ? (
+          <Button type="button" size="sm" className="min-h-11" onClick={() => void signOut({ redirectUrl: selfPath })}>
+            {cancel.reauth}
           </Button>
         ) : null}
         <Button

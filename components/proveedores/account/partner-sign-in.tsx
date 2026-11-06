@@ -8,8 +8,8 @@ import {
 } from "@/components/proveedores/account/private-flow";
 
 type PartnerSignInProps = {
-  /** Encabezado de la pantalla (rótulo, `<h1>`, bajada). */
-  readonly head: PrivateFlowHeadContent;
+  /** Encabezado de la pantalla (rótulo, `<h1>`, bajada). Sin él, lo pinta la página. */
+  readonly head?: PrivateFlowHeadContent;
   /** Columna de contexto: pasos del flujo, plan elegido… */
   readonly context?: React.ReactNode;
   /** Adónde vuelve después de entrar o crear la cuenta: la misma URL (con su query). */

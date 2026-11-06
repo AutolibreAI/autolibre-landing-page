@@ -134,7 +134,7 @@ const GENERIC_ERROR = "Algo salió mal. Por favor intentá de nuevo.";
  *
  * ── Alta con dueño (spec 212, US3) ──────────────────────────────────────────
  *
- * Vive en `/proveedores/registro/formulario`, detras del login. Cada envio
+ * Vive en `/proveedores/registro`, detras del login. Cada envio
  * lleva `Authorization: Bearer <token de Clerk>` (`submitWithOwnerToken`): el
  * backend deja esa cuenta como dueña del taller cuando aprueba la solicitud.
  * Ante un 401 se renueva el token y se reintenta UNA vez, siempre con el
@@ -632,7 +632,7 @@ export function ProviderForm({
       {/* El título del formulario vive acá y no en la página: cuando el
           formulario se reemplaza por la pantalla de estado, se va con él. */}
       <h2 className="mb-6 font-display text-xl font-bold text-ink">
-        {providersContent.formPage.formTitle}
+        {providersContent.registerPage.formTitle}
       </h2>
       {GOOGLE_MAPS_API_KEY ? (
         <Script

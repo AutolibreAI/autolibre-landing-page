@@ -39,7 +39,7 @@ const nextConfig: NextConfig = {
     ],
   },
   /**
-   * Rutas viejas de la sección de proveedores, indexadas en producción:
+   * Rutas viejas de la sección de proveedores. Las dos primeras estaban indexadas en producción:
    * `/proveedor` era el directorio y `/proveedor/<slug>` el perfil de cada
    * negocio. Sin estos redirects se pierde el posicionamiento y se rompen los
    * links que los negocios compartieron de su perfil.
@@ -58,6 +58,17 @@ const nextConfig: NextConfig = {
       {
         source: "/proveedor/:slug",
         destination: "/proveedores/:slug",
+        statusCode: 301,
+      },
+      /**
+       * El formulario del alta vivía en `/proveedores/registro/formulario`
+       * hasta el 2026-11-05; hoy `/proveedores/registro` ES el formulario. La
+       * query pasa sola: el `?next=` de la contratación (`withReturnHref`)
+       * llega intacto a la isla del formulario.
+       */
+      {
+        source: "/proveedores/registro/formulario",
+        destination: "/proveedores/registro",
         statusCode: 301,
       },
     ];

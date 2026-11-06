@@ -10,14 +10,12 @@
  */
 
 export const PROVEEDORES_PATH = "/proveedores";
-/** Alta de negocios: el formulario vive bajo el directorio. */
-export const PROVEEDORES_REGISTRO_PATH = `${PROVEEDORES_PATH}/registro`;
 /**
- * Formulario del alta (spec 212, US3): privado (`noindex`), con Clerk, fuera
- * del sitemap y de `llms.txt`. Vive DEBAJO de `registro`, así que no es
- * hermano de `[slug]` y no hace falta reservarlo.
+ * Alta de negocios: el formulario (con su login de Clerk) vive bajo el
+ * directorio. La vieja `/proveedores/registro/formulario` redirige acá
+ * (301, `next.config.ts`).
  */
-export const PROVEEDORES_REGISTRO_FORMULARIO_PATH = `${PROVEEDORES_REGISTRO_PATH}/formulario`;
+export const PROVEEDORES_REGISTRO_PATH = `${PROVEEDORES_PATH}/registro`;
 /** Precios y planes pagos para proveedores: vive bajo el directorio. */
 export const PROVEEDORES_PLANES_PATH = `${PROVEEDORES_PATH}/planes`;
 /**

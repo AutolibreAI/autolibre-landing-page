@@ -54,7 +54,8 @@ export function ProveedoresHero({ activeCategoryCount }: ProveedoresHeroProps) {
           <ButtonLink href={primaryCta.href} size="lg">
             {primaryCta.label}
           </ButtonLink>
-          <ButtonLink href={secondaryCta.href} variant="outline" size="lg">
+          {/* "Sumar mi negocio" va al alta, que carga Clerk: sin prefetch. */}
+          <ButtonLink href={secondaryCta.href} prefetch={false} variant="outline" size="lg">
             {secondaryCta.label}
           </ButtonLink>
         </div>

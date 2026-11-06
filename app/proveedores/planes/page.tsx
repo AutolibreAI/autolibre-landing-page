@@ -47,7 +47,7 @@ const schema = graph(
 export default function ProveedoresPlanesPage() {
   return (
     <>
-      <PageShell cta={providersPlansContent.headerCta} currentPath={PATH}>
+      <PageShell cta={false} currentPath={PATH}>
         <ProvidersPlansHeroSection />
 
         <Section id="planes" spacing="md" container="content" aria-labelledby="planes-titulo">

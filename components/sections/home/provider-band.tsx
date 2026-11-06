@@ -15,7 +15,8 @@ export function ProviderBandSection() {
             </h2>
             <p className="mt-1.5 text-sm text-white/65">{subtitle}</p>
           </div>
-          <ButtonLink href={cta.href} size="lg">
+          {/* El alta carga Clerk: sin prefetch. */}
+          <ButtonLink href={cta.href} prefetch={false} size="lg">
             {cta.label}
           </ButtonLink>
         </div>

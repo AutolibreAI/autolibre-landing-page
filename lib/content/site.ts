@@ -25,7 +25,7 @@ const directoryLink = { label: "Proveedores", href: PROVEEDORES_PATH } as const;
  *
  * El header sale SIEMPRE de acá y es el mismo en todas las páginas: ninguna
  * página elige sus links (`SiteHeader` no acepta props para eso). Lo único
- * que una página puede cambiar es el botón de la derecha (`cta`).
+ * que una página puede cambiar es sacar el botón de la derecha (`cta={false}`).
  */
 export const siteContent = {
   nav: {
@@ -116,9 +116,9 @@ export const siteContent = {
         title: "Servicios",
         links: [
           quoteLink,
-          // Al hub del alta (la bifurcación ya aparece / registrar), como el
-          // resto de los "Sumar mi negocio" del sitio. `/proveedores` es el
-          // directorio, no el alta.
+          // Al alta (`/proveedores/registro`, con el formulario), como el resto
+          // de los links de alta del sitio. `/proveedores` es el directorio, no
+          // el alta.
           { label: providersContent.form.title, href: PROVEEDORES_REGISTRO_PATH },
           // El índice de perfiles entra al footer recién cuando es público
           // (`lib/provider-profile/visibility.ts`).

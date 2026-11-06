@@ -1,7 +1,7 @@
 /**
  * Alta de un taller CON DUEÑO (spec 212, US3; contrato `partner-onboarding-owner`).
  *
- * El formulario de `/proveedores/registro/formulario` exige sesión de Clerk y
+ * El formulario de `/proveedores/registro` exige sesión de Clerk y
  * manda el token como `Authorization: Bearer <token>` a `/api/provider`, que lo
  * reenvía TAL CUAL a `POST /partner-applications`. El backend guarda quién
  * pidió el alta y, cuando el equipo aprueba la solicitud, deja esa cuenta como

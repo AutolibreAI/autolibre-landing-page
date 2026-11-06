@@ -43,8 +43,9 @@ export function HeaderAccountSwap({
     <Link
       href={link.href}
       aria-current={link.href === currentPath ? "page" : undefined}
-      // `/cuenta` carga Clerk: sin prefetch, esta página pública no lo baja.
-      prefetch={signedIn ? false : undefined}
+      // Los dos destinos cargan Clerk (`/cuenta` y `/proveedores/registro`,
+      // que es el formulario del alta): sin prefetch, esta página no lo baja.
+      prefetch={false}
       className={className}
     >
       {signedIn ? <Icon name="user" size={18} strokeWidth={1.8} className="mr-1.5" /> : null}

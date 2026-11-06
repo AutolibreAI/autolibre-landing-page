@@ -179,8 +179,8 @@ export default async function PartnerProfilePage({ params }: PageProps) {
         <PartnerProfileHead partner={partner} breadcrumbs={crumbs} familyNames={familyNames} />
         {/* Sin invitación al dueño ("¿Es tu taller?"): decisión de producto
             del 2026-11-05, el perfil no ofrece reclamarlo ni administrarlo.
-            Los dueños de talleres que ya aparecen llegan por el hub
-            `/proveedores/registro` ("Mi taller ya aparece"). */}
+            Los dueños de talleres que ya aparecen llegan por
+            `/proveedores/registro` (aviso "¿Tu taller ya aparece?"). */}
         <PartnerProfileBody partner={partner} serviceGroups={serviceGroups} faqs={faqs} />
         {firstFamily && related.length > 0 ? (
           <PartnerRelated family={firstFamily} partners={related} categoryNames={categoryNames} />

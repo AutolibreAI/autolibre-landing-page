@@ -9,10 +9,12 @@ type ScopedClerkProviderProps = {
 };
 
 /**
- * Clerk acotado a las pantallas privadas de talleres (`/proveedores/reclamar`,
- * `/proveedores/contratar`, `/proveedores/registro/formulario` y `/cuenta`).
- * Se monta SOLO desde el `layout.tsx` anidado de cada una y NUNCA en
- * `app/layout.tsx`: ninguna página indexable carga JS de Clerk.
+ * Clerk acotado a las pantallas de talleres que piden la cuenta
+ * (`/proveedores/reclamar`, `/proveedores/contratar`, `/proveedores/registro`
+ * y `/cuenta`). Se monta SOLO desde el `layout.tsx` anidado de cada una y
+ * NUNCA en `app/layout.tsx`. La única indexable que lo carga es
+ * `/proveedores/registro` (la página ES el formulario del alta desde el
+ * 2026-11-05); los links públicos hacia ella van sin prefetch.
  *
  * Sin `dynamic`: el provider no lee la sesión en el server (no llama a
  * `auth()`), la sesión la resuelve el browser y no hace falta

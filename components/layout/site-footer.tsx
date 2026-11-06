@@ -4,6 +4,7 @@ import { LAYOUT_IDS } from "@/components/layout/ids";
 import { Container } from "@/components/ui/container";
 import { ANALYTICS_EVENTS, QUOTE_CTA_PLACEMENTS } from "@/lib/analytics/events";
 import { siteContent } from "@/lib/content/site";
+import { PROVEEDORES_REGISTRO_PATH } from "@/lib/proveedores/query";
 
 /** Es un link externo si sale del sitio (redes, mail, WhatsApp). */
 function isExternal(href: string) {
@@ -43,6 +44,8 @@ export function SiteFooter() {
                     <li key={link.href}>
                       <Link
                         href={link.href}
+                        // El alta carga Clerk: sin prefetch desde el footer.
+                        prefetch={link.href === PROVEEDORES_REGISTRO_PATH ? false : undefined}
                         {...(isExternal(link.href)
                           ? { target: "_blank", rel: "noopener noreferrer" }
                           : {})}
