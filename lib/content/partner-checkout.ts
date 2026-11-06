@@ -111,57 +111,24 @@ export const partnerCheckoutContent = {
   reauth: partnerAccountContent.reauth,
 
   /**
-   * Sesión iniciada pero sin talleres como dueño (US2). Cubre los cuatro
-   * casos reales: tiene código (pantalla privada: acá se puede nombrar),
-   * aparece (sin explicar cómo se verifica), registró y espera la
-   * aprobación (no hay endpoint para ver la solicitud: solo se explica), o
-   * no aparece.
+   * Sesión iniciada pero sin talleres como dueño (US2). Un solo camino: el
+   * canje del código de reclamo (pantalla privada: acá se puede nombrar).
+   * Las opciones de "ya aparece", "espero la aprobación" y "no aparece" se
+   * sacaron el 2026-11-06 (decisión de producto: hacían ruido y confundían).
    *
    * Lo comparten la contratación (con el plan elegido) y `/cuenta` (sin
-   * plan: `planName` en `null`), por eso cada texto recibe el plan.
+   * plan: `planName` en `null`), por eso el texto recibe el plan.
    */
   noPartner: {
-    title: "¿Cómo está tu taller en AutoLibre?",
-    body: "Tu cuenta todavía no administra ningún taller. Elegí la opción que te describe y te decimos cómo seguir.",
-    options: {
-      haveCode: {
-        title: "Tengo un código de reclamo",
-        body: (planName: string | null) =>
-          planName
-            ? "Canjealo y el taller queda vinculado a tu cuenta. Después volvés a esta contratación."
-            : "Canjealo y el taller queda vinculado a tu cuenta. Después lo ves acá.",
-        cta: "Canjear mi código",
-      },
-      /** Sin explicar el mecanismo de verificación: lo maneja el equipo. */
-      listedNoCode: {
-        title: "Mi taller ya aparece en AutoLibre",
-        body: (planName: string | null) =>
-          planName
-            ? "Escribinos por WhatsApp y verificamos que sos el dueño. Después volvés a esta contratación."
-            : "Escribinos por WhatsApp y verificamos que sos el dueño.",
-        cta: "Escribinos por WhatsApp",
-        whatsappMessage: (planName: string | null) =>
-          planName
-            ? `Hola! Mi taller ya aparece en AutoLibre, quiero administrarlo y contratar el plan ${planName}.`
-            : "Hola! Mi taller ya aparece en AutoLibre y quiero administrarlo.",
-      },
-      pendingApproval: {
-        title: "Ya registré mi taller y espero la aprobación",
-        body: (planName: string | null) =>
-          planName
-            ? `No hace falta registrarlo de nuevo. Cuando lo aprobemos, el taller queda en esta cuenta y vas a poder contratar el plan ${planName} desde esta misma página.`
-            : "No hace falta registrarlo de nuevo. Cuando lo aprobemos, el taller queda en esta cuenta y lo vas a ver acá.",
-        cta: "Consultar por mi solicitud",
-        whatsappMessage: "Hola! Registré mi taller en AutoLibre y quiero saber cómo va la revisión de la solicitud.",
-      },
-      notListed: {
-        title: "Mi taller no aparece en AutoLibre",
-        body: (planName: string | null) =>
-          planName
-            ? "Registralo gratis con esta misma cuenta. Cuando lo aprobemos, volvés a esta contratación."
-            : "Registralo gratis con esta misma cuenta. Cuando lo aprobemos, lo vas a ver acá.",
-        cta: "Registrar mi taller",
-      },
+    title: "Todavía no administrás ningún taller",
+    body: "Si recibiste un código de reclamo, canjealo acá.",
+    haveCode: {
+      title: "Tengo un código de reclamo",
+      body: (planName: string | null) =>
+        planName
+          ? "Canjealo y el taller queda vinculado a tu cuenta. Después volvés a esta contratación."
+          : "Canjealo y el taller queda vinculado a tu cuenta. Después lo ves acá.",
+      cta: "Canjear mi código",
     },
   },
 

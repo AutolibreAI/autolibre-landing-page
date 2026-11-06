@@ -39,8 +39,12 @@ export const clerkAppearance = {
   },
   elements: {
     rootBox: "w-full",
-    cardBox: "w-full max-w-none rounded-none border-0 bg-transparent shadow-none",
-    card: "gap-6 rounded-none border-0 bg-transparent p-0 shadow-none",
+    // `overflow-visible` + `m-0`: Clerk le pone `overflow: hidden` al cardBox
+    // y márgenes negativos a la card (para tapar su propio borde). Con
+    // `p-0` eso recortaba el borde derecho de los botones y el badge
+    // "Último usado", que sobresale de la esquina del botón de Google.
+    cardBox: "w-full max-w-none overflow-visible rounded-none border-0 bg-transparent shadow-none",
+    card: "m-0 w-full gap-6 overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none",
     header: "hidden",
     logoBox: "hidden",
     socialButtonsBlockButton:

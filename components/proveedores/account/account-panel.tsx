@@ -110,7 +110,7 @@ function SignedInAccount({ selfPath }: AccountPanelProps) {
       </div>
 
       {partners.kind === "ready" && partners.owners.length === 0 ? (
-        <NoPartnerOptions headingRef={headingRef} checkout={null} placementPrefix="cuenta" />
+        <NoPartnerOptions headingRef={headingRef} checkout={null} />
       ) : null}
 
       {partners.kind === "ready" && partners.owners.length > 0 ? (
@@ -126,7 +126,7 @@ function SignedInAccount({ selfPath }: AccountPanelProps) {
         </section>
       ) : null}
 
-      {/* Sin talleres, `NoPartnerOptions` ya ofrece reclamar y cargar uno. */}
+      {/* Sin talleres, `NoPartnerOptions` ofrece canjear un código de reclamo. */}
       {partners.kind === "ready" && partners.owners.length > 0 ? <MorePartners /> : null}
     </div>
   );

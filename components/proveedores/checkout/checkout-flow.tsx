@@ -250,7 +250,6 @@ function SignedInCheckout({ planCode, planName, selfPath }: SignedInCheckoutProp
         <NoPartnerOptions
           headingRef={panelHeadingRef}
           checkout={{ returnPath: selfPath, planName }}
-          placementPrefix="contratar"
         />
       ) : null}
 
