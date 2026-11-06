@@ -10,6 +10,8 @@ import {
 type PartnerSignInProps = {
   /** Encabezado de la pantalla (rótulo, `<h1>`, bajada). Sin él, lo pinta la página. */
   readonly head?: PrivateFlowHeadContent;
+  /** Encabezado ya renderizado (en el server), en lugar de `head`. Ver `SignInLayout`. */
+  readonly headSlot?: React.ReactNode;
   /** Columna de contexto: pasos del flujo, plan elegido… */
   readonly context?: React.ReactNode;
   /** Adónde vuelve después de entrar o crear la cuenta: la misma URL (con su query). */
@@ -25,9 +27,9 @@ type PartnerSignInProps = {
  * y redirección forzada a la misma URL para no perder el plan, el `?next` o
  * el código. La apariencia sale del `ScopedClerkProvider`.
  */
-export function PartnerSignIn({ head, context, redirectUrl, loading = false }: PartnerSignInProps) {
+export function PartnerSignIn({ head, headSlot, context, redirectUrl, loading = false }: PartnerSignInProps) {
   return (
-    <SignInLayout head={head} context={context}>
+    <SignInLayout head={head} headSlot={headSlot} context={context}>
       {loading ? (
         <SignInLoading />
       ) : (

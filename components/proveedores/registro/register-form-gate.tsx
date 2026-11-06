@@ -16,6 +16,13 @@ type RegisterFormGateProps = {
   readonly serviceFamilies: readonly ServiceFamilyOption[];
   /** Esta misma URL: vuelta del login y link para volver a entrar. */
   readonly selfPath: string;
+  /**
+   * Encabezado de la página (rótulo, `<h1>`, bajada y aviso para los talleres
+   * que ya aparecen), armado en el SERVER: la página es indexable y así el
+   * `<h1>` está en el HTML inicial en todos los estados. Sin sesión va en la
+   * columna izquierda del login; con sesión, arriba del formulario.
+   */
+  readonly head: React.ReactNode;
   /** Contexto del login: los pasos del registro. */
   readonly context: React.ReactNode;
 };
@@ -39,11 +46,12 @@ function checkoutFromNext(raw: string | null): { readonly href: string; readonly
 
 /**
  * Isla client de `/proveedores/registro` (spec 212, US3). El encabezado
- * (`<h1>` y bajada) NO es de la isla: lo pinta la página en el server, porque
- * la página es indexable. Sin sesión muestra el login compartido (dos columnas: los pasos del registro
- * y la tarjeta de login; vuelta forzada a esta URL con su `?next`); con
- * sesión, la fila de sesión y el formulario de alta, que manda el token de
- * Clerk en cada envío.
+ * (`<h1>` y bajada) NO es de la isla: lo arma la página en el server (es
+ * indexable) y llega como `head`, ya renderizado. Sin sesión muestra el login
+ * compartido (dos columnas: encabezado y pasos del registro a la izquierda,
+ * tarjeta de login a la derecha; vuelta forzada a esta URL con su `?next`);
+ * con sesión, el encabezado arriba y debajo la fila de sesión y el formulario
+ * de alta, que manda el token de Clerk en cada envío.
  *
  * Lee `?next` con `useSearchParams`: la página es estática (ISR), así que la
  * isla va adentro de un `<Suspense>` (ver la página).
@@ -53,7 +61,7 @@ function checkoutFromNext(raw: string | null): { readonly href: string; readonly
  * todo lo escrito. En ese caso `getToken` no da token, el envío no sale (nunca
  * se manda anónimo) y el formulario pide volver a entrar en otra pestaña.
  */
-export function RegisterFormGate({ serviceFamilies, selfPath, context }: RegisterFormGateProps) {
+export function RegisterFormGate({ serviceFamilies, selfPath, head, context }: RegisterFormGateProps) {
   const { isLoaded, isSignedIn, getToken } = useAuth();
   const [formShown, setFormShown] = useState(false);
   const checkout = checkoutFromNext(useSearchParams().get("next"));
@@ -64,20 +72,23 @@ export function RegisterFormGate({ serviceFamilies, selfPath, context }: Registe
   if (isSignedIn && !formShown) setFormShown(true);
 
   if (!formShown && !isSignedIn) {
-    return <PartnerSignIn context={context} redirectUrl={returnPath} loading={!isLoaded} />;
+    return <PartnerSignIn headSlot={head} context={context} redirectUrl={returnPath} loading={!isLoaded} />;
   }
 
   // El formulario es una sola columna de lectura: ancho `narrow` (720px),
   // alineado a la izquierda con el header como el resto de la página.
   return (
-    <div className="flex max-w-180 flex-col gap-8">
-      <AccountBar selfPath={returnPath} />
-      <ProviderForm
-        serviceFamilies={serviceFamilies}
-        getToken={getToken}
-        reauthHref={returnPath}
-        checkout={checkout}
-      />
+    <div className="flex flex-col gap-10">
+      {head}
+      <div className="flex max-w-180 flex-col gap-8">
+        <AccountBar selfPath={returnPath} />
+        <ProviderForm
+          serviceFamilies={serviceFamilies}
+          getToken={getToken}
+          reauthHref={returnPath}
+          checkout={checkout}
+        />
+      </div>
     </div>
   );
 }

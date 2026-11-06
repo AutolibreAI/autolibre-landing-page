@@ -35,12 +35,17 @@ export function PrivateFlowHead({
 }
 
 type SignInLayoutProps = {
-  /**
-   * Encabezado de la pantalla. Sin él, la página lo pinta afuera (server,
-   * arriba de las dos columnas): así lo hace `/proveedores/registro`, que es
-   * indexable.
-   */
+  /** Encabezado de la pantalla (rótulo, `<h1>`, bajada), armado acá adentro. */
   readonly head?: PrivateFlowHeadContent;
+  /**
+   * Encabezado YA renderizado, en lugar de `head`: lo usa `/proveedores/registro`,
+   * que es indexable y arma su encabezado en el server (con `PrivateFlowHead` y
+   * el aviso para los talleres que ya aparecen) y lo pasa a la isla. Un nodo
+   * server pasado como prop a un client component sigue en el HTML inicial.
+   * Va en la columna izquierda igual que `head`: arriba de `context` y
+   * alineado con la tarjeta.
+   */
+  readonly headSlot?: React.ReactNode;
   /** Lo que viene después de entrar: los pasos del flujo, el plan elegido… */
   readonly context?: React.ReactNode;
   /** El cuerpo de la tarjeta: el `<SignIn>` de Clerk o su "cargando". */
@@ -61,13 +66,13 @@ type SignInLayoutProps = {
  * Sin estado: sirve en el server (el fallback de `<Suspense>`) y en las
  * islas.
  */
-export function SignInLayout({ head, context, children }: SignInLayoutProps) {
+export function SignInLayout({ head, headSlot, context, children }: SignInLayoutProps) {
   const { signIn } = partnerAccountContent;
 
   return (
     <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-16">
       <div className="flex flex-col gap-8 lg:max-w-130 lg:flex-1 lg:pt-4">
-        {head ? <PrivateFlowHead head={head} /> : null}
+        {head ? <PrivateFlowHead head={head} /> : headSlot}
         {context}
       </div>
 

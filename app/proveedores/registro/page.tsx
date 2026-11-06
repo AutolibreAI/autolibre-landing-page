@@ -60,10 +60,14 @@ const linkClass =
  * cuenta de AutoLibre (con los pasos del registro al costado); con sesión, el
  * formulario.
  *
- * Lo citable va en el HTML del server, FUERA de la isla: el `<h1>`, la bajada
- * y el aviso para los talleres que ya aparecen. Un crawler no ve un muro de
- * login vacío. Los pasos del registro también salen en el HTML (el fallback
- * del `<Suspense>`). Página pública: el código de reclamo no se nombra.
+ * Lo citable se arma acá, en el server: el `<h1>`, la bajada y el aviso para
+ * los talleres que ya aparecen (`head`). Un crawler no ve un muro de login
+ * vacío. Ese nodo se pasa al layout del login (columna izquierda, arriba de
+ * los pasos, alineado con la tarjeta) tanto en el fallback del `<Suspense>`
+ * como en la isla; con sesión, la isla lo pinta arriba del formulario. Un nodo
+ * server pasado como prop a un client component sigue en el HTML inicial, así
+ * que el `<h1>` sale en el HTML en todos los estados. Página pública: el
+ * código de reclamo no se nombra.
  *
  * El catálogo se lee acá, en el servidor, y no dentro del formulario: la URL
  * del backend es server-side (sin `NEXT_PUBLIC_`), así que un fetch desde el
@@ -96,6 +100,28 @@ export default async function ProveedoresRegistroPage() {
   const serviceFamilies = catalog ?? [];
 
   const { listed } = content;
+  // Encabezado de la página. Uno solo, compartido por el fallback y la isla:
+  // exactamente un `<h1>` en cada estado.
+  const head = (
+    <div className="flex flex-col gap-4">
+      <PrivateFlowHead head={{ eyebrow: content.eyebrow, title: content.title, intro: content.intro }} />
+      {/* Un taller que ya figura no se registra dos veces. */}
+      <p className="max-w-150 text-[0.9375rem] leading-relaxed text-ink/72">
+        {listed.body}{" "}
+        <a
+          href={whatsappUrl(listed.whatsappMessage)}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
+          data-analytics-placement="registro_ya_aparece"
+          className={linkClass}
+        >
+          <Icon name="whatsapp" size={18} strokeWidth={1.8} />
+          {listed.cta}
+        </a>
+      </p>
+    </div>
+  );
   // Contexto del login: qué viene después de entrar (paso 1 = el actual).
   const context = (
     <FlowSteps
@@ -111,41 +137,20 @@ export default async function ProveedoresRegistroPage() {
       <PageShell cta={false} currentPath={PATH}>
         {/* `id="form"`: los links viejos a `/proveedores/registro#form`. */}
         <Section id="form" tone="muted" spacing="md" aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
-          <div className="flex flex-col gap-10">
-            <div className="flex flex-col gap-4">
-              <PrivateFlowHead head={{ eyebrow: content.eyebrow, title: content.title, intro: content.intro }} />
-              {/* Un taller que ya figura no se registra dos veces. */}
-              <p className="max-w-150 text-[0.9375rem] leading-relaxed text-ink/72">
-                {listed.body}{" "}
-                <a
-                  href={whatsappUrl(listed.whatsappMessage)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
-                  data-analytics-placement="registro_ya_aparece"
-                  className={linkClass}
-                >
-                  <Icon name="whatsapp" size={18} strokeWidth={1.8} />
-                  {listed.cta}
-                </a>
-              </p>
-            </div>
-
-            {/* La isla lee `?next` (la contratación de la que vino) con
-                `useSearchParams`: en una página estática eso exige un
-                `<Suspense>` (si no, falla el build). El fallback es el mismo
-                login en "cargando" que muestra la isla mientras carga Clerk:
-                mismo layout, sin salto. */}
-            <Suspense
-              fallback={
-                <SignInLayout context={context}>
-                  <SignInLoading />
-                </SignInLayout>
-              }
-            >
-              <RegisterFormGate serviceFamilies={serviceFamilies} selfPath={PATH} context={context} />
-            </Suspense>
-          </div>
+          {/* La isla lee `?next` (la contratación de la que vino) con
+              `useSearchParams`: en una página estática eso exige un
+              `<Suspense>` (si no, falla el build). El fallback es el mismo
+              login en "cargando" que muestra la isla mientras carga Clerk:
+              mismo layout y mismo encabezado, sin salto. */}
+          <Suspense
+            fallback={
+              <SignInLayout headSlot={head} context={context}>
+                <SignInLoading />
+              </SignInLayout>
+            }
+          >
+            <RegisterFormGate serviceFamilies={serviceFamilies} selfPath={PATH} head={head} context={context} />
+          </Suspense>
         </Section>
       </PageShell>
 
