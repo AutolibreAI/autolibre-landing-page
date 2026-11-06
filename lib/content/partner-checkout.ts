@@ -10,8 +10,8 @@ import { PROVEEDORES_PLANES_PATH } from "@/lib/proveedores/query";
  *
  * Nada de acá promete algo que el backend no confirma: la prueba depende de
  * `trialEligible` (FR-017) y el pago se confirma solo con el estado del
- * backend. El TEXTO de los términos comerciales no vive acá: sale de
- * `GET /billing/terms` (research D15); acá solo está la copy de la UI.
+ * backend. Los términos comerciales no se muestran por decisión de producto
+ * (2026-11-05): el checkout solo manda su versión vigente.
  *
  * El login es el compartido de `lib/content/partner-account.ts`.
  */
@@ -30,6 +30,9 @@ export function planDisplayName(code: string): string | null {
   return planContent(code)?.name ?? null;
 }
 
+/** Error genérico y reintentable del checkout. */
+const genericCheckoutError = "No pudimos iniciar el pago. No se te cobró nada: probá de nuevo en un rato.";
+
 /** Un mensaje por cada rechazo del checkout (research D9). */
 const checkoutErrors: Record<CheckoutFailureKind, string> = {
   "payer-email-rejected":
@@ -38,13 +41,13 @@ const checkoutErrors: Record<CheckoutFailureKind, string> = {
   unauthenticated: "Tu sesión venció. Iniciá sesión de nuevo para seguir con la contratación.",
   disabled: "La contratación online no está disponible ahora. Si querés contratar un plan, hablá con ventas.",
   "not-found": "No encontramos ese taller en tu cuenta.",
-  "terms-outdated":
-    "Los términos comerciales cambiaron mientras estabas en esta pantalla. Leé la versión nueva y aceptala para seguir.",
+  // La UI reintenta sola con la versión vigente; si igual llega, es el genérico.
+  "terms-outdated": genericCheckoutError,
   "already-live": "Tu taller ya tiene un plan activo.",
   "in-progress": "Ya hay un pago en curso para este taller. Esperá un momento y probá de nuevo.",
   "rate-limited": "Hiciste muchos intentos. Esperá un minuto y probá de nuevo.",
   unavailable: "Mercado Pago no responde en este momento. No se te cobró nada: probá de nuevo en unos minutos.",
-  unknown: "No pudimos iniciar el pago. No se te cobró nada: probá de nuevo en un rato.",
+  unknown: genericCheckoutError,
 };
 
 /** Estado de una suscripción con acceso, en castellano (solo los confirmados). */
@@ -67,7 +70,7 @@ export const partnerCheckoutContent = {
   /** Columna de contexto del login: los mismos tres pasos, explicados. */
   signInSteps: [
     { id: "taller", label: "Tu taller", description: "Entrás y elegís a qué taller le aplicás el plan." },
-    { id: "plan", label: "Plan", description: "Revisás el precio y aceptás los términos." },
+    { id: "plan", label: "Plan", description: "Revisás el plan y su precio." },
     { id: "pago", label: "Pago", description: "Lo pagás en Mercado Pago." },
   ],
 
@@ -196,15 +199,8 @@ export const partnerCheckoutContent = {
     invalid: "Revisá el email: no parece válido.",
   },
 
-  /** Solo la copy de la UI: el texto y la versión salen de `GET /billing/terms`. */
-  terms: {
-    summary: "Leer los términos comerciales para talleres",
-    version: (version: string) => `Versión ${version}`,
-    loading: "Cargando los términos…",
-    error: "No pudimos cargar los términos comerciales. Sin leerlos no podés contratar: probá de nuevo.",
-    checkbox: "Acepto los términos comerciales para talleres",
-    required: "Aceptá los términos para continuar.",
-  },
+  /** No se pudo preparar el checkout (falta un dato del backend): se reintenta. */
+  prepareError: "No pudimos preparar la contratación. Probá de nuevo.",
 
   submit: "Pagar con Mercado Pago",
   submitting: "Te llevamos a Mercado Pago…",

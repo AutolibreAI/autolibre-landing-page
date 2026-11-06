@@ -22,12 +22,10 @@ import {
   findPlan,
   formatDate,
   formatPlanPrice,
-  termsParagraphs,
   validatePayerEmail,
   type BillingPlan,
   type CheckoutResult,
   type PaidPlanCode,
-  type PartnerTerms,
 } from "@/lib/partner-billing/checkout";
 import {
   fetchBillingPlans,
@@ -119,10 +117,11 @@ type PlanState =
   /** `plan: null`: el backend no lo ofrece (inactivo o no existe). */
   | { readonly kind: "ready"; readonly plan: BillingPlan | null };
 
-type TermsState =
+/** Solo la versión vigente de los términos: el texto no se muestra. */
+type TermsVersionState =
   | { readonly kind: "loading" }
   | { readonly kind: "error" }
-  | { readonly kind: "ready"; readonly terms: PartnerTerms };
+  | { readonly kind: "ready"; readonly version: string };
 
 type SubmitStatus =
   | { readonly kind: "idle" }
@@ -140,7 +139,7 @@ function SignedInCheckout({ planCode, planName, selfPath }: SignedInCheckoutProp
   const [partnersAttempt, setPartnersAttempt] = useState(0);
   const [plan, setPlan] = useState<PlanState>({ kind: "loading" });
   const [planAttempt, setPlanAttempt] = useState(0);
-  const [terms, setTerms] = useState<TermsState>({ kind: "loading" });
+  const [terms, setTerms] = useState<TermsVersionState>({ kind: "loading" });
   const [termsAttempt, setTermsAttempt] = useState(0);
   /** Ya se va a Mercado Pago: el indicador marca el paso "Pago". */
   const [redirecting, setRedirecting] = useState(false);
@@ -167,12 +166,13 @@ function SignedInCheckout({ planCode, planName, selfPath }: SignedInCheckoutProp
     };
   }, [planCode, planAttempt]);
 
-  // Términos: única fuente `GET /billing/terms` (texto + versión).
+  // Versión vigente de los términos (`GET /billing/terms`), en segundo plano:
+  // el checkout la exige como `termsVersion`. El texto no se muestra.
   useEffect(() => {
     let active = true;
     void fetchBillingTerms().then((result) => {
       if (!active) return;
-      setTerms(result.ok ? { kind: "ready", terms: result.terms } : { kind: "error" });
+      setTerms(result.ok ? { kind: "ready", version: result.terms.version } : { kind: "error" });
     });
     return () => {
       active = false;
@@ -199,6 +199,17 @@ function SignedInCheckout({ planCode, planName, selfPath }: SignedInCheckoutProp
   function reloadTerms() {
     setTerms({ kind: "loading" });
     setTermsAttempt((attempt) => attempt + 1);
+  }
+
+  /**
+   * Vuelve a pedir la versión vigente (tras un 409 de versión vieja) y la
+   * devuelve. Si falla, deja la que había: el envío muestra el error genérico.
+   */
+  async function refreshTermsVersion(): Promise<string | null> {
+    const result = await fetchBillingTerms();
+    if (!result.ok) return null;
+    setTerms({ kind: "ready", version: result.terms.version });
+    return result.terms.version;
   }
 
   async function reauth() {
@@ -248,12 +259,13 @@ function SignedInCheckout({ planCode, planName, selfPath }: SignedInCheckoutProp
           headingRef={panelHeadingRef}
           owners={partners.owners}
           plan={plan}
-          terms={terms}
+          termsVersion={terms}
           planCode={planCode}
           planName={planName}
           defaultEmail={user?.primaryEmailAddress?.emailAddress ?? ""}
           onRetryPlan={retryPlan}
           onReloadTerms={reloadTerms}
+          onRefreshTermsVersion={refreshTermsVersion}
           onReauth={reauth}
           onRedirecting={() => setRedirecting(true)}
         />
@@ -285,13 +297,15 @@ type CheckoutFormProps = {
   readonly headingRef: React.RefObject<HTMLHeadingElement | null>;
   readonly owners: readonly Membership[];
   readonly plan: PlanState;
-  readonly terms: TermsState;
+  readonly termsVersion: TermsVersionState;
   readonly planCode: PaidPlanCode;
   readonly planName: string;
   /** Email principal de la cuenta de Clerk: valor inicial del email de MP (FR-016). */
   readonly defaultEmail: string;
   readonly onRetryPlan: () => void;
   readonly onReloadTerms: () => void;
+  /** Pide de nuevo la versión vigente de los términos; `null` si no se pudo. */
+  readonly onRefreshTermsVersion: () => Promise<string | null>;
   readonly onReauth: () => void;
   /** El checkout salió bien y se va a Mercado Pago. */
   readonly onRedirecting: () => void;
@@ -309,12 +323,13 @@ function CheckoutForm({
   headingRef,
   owners,
   plan,
-  terms,
+  termsVersion,
   planCode,
   planName,
   defaultEmail,
   onRetryPlan,
   onReloadTerms,
+  onRefreshTermsVersion,
   onReauth,
   onRedirecting,
 }: CheckoutFormProps) {
@@ -322,8 +337,6 @@ function CheckoutForm({
   const [pickedPartnerId, setPickedPartnerId] = useState<string | null>(null);
   // `null` = la persona no lo tocó: vale el email de su cuenta.
   const [emailDraft, setEmailDraft] = useState<string | null>(null);
-  // Se acepta UNA versión: si los términos cambian, hay que aceptar de nuevo.
-  const [acceptedVersion, setAcceptedVersion] = useState<string | null>(null);
   const [subscription, setSubscription] = useState<PartnerSubscription | null>(null);
   const [status, setStatus] = useState<SubmitStatus>({ kind: "idle" });
   const inFlight = useRef(false);
@@ -333,7 +346,6 @@ function CheckoutForm({
   const summaryId = useId();
   const emailId = useId();
   const emailHintId = useId();
-  const termsId = useId();
   const messageId = useId();
 
   // Con un solo taller va preseleccionado (FR-003).
@@ -360,10 +372,9 @@ function CheckoutForm({
 
   const email = emailDraft ?? defaultEmail;
   const billingPlan = plan.kind === "ready" ? plan.plan : null;
-  const currentTerms = terms.kind === "ready" ? terms.terms : null;
-  const termsAccepted = currentTerms !== null && acceptedVersion === currentTerms.version;
+  const currentTermsVersion = termsVersion.kind === "ready" ? termsVersion.version : null;
   const busy = status.kind === "submitting" || status.kind === "redirecting";
-  const canSubmit = termsAccepted && billingPlan !== null && !subscriptionLoading && !busy;
+  const canSubmit = currentTermsVersion !== null && billingPlan !== null && !subscriptionLoading && !busy;
 
   const emailError =
     (status.kind === "local-error" && status.field === "email") ||
@@ -383,7 +394,7 @@ function CheckoutForm({
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (inFlight.current || !canSubmit || !currentTerms) return;
+    if (inFlight.current || !canSubmit || !currentTermsVersion) return;
 
     if (!partnerId) {
       setStatus({ kind: "local-error", field: "partner", message: content.partnerPicker.required });
@@ -401,12 +412,19 @@ function CheckoutForm({
 
     inFlight.current = true;
     setStatus({ kind: "submitting" });
-    const result = await startCheckout(
-      partnerId,
-      // La versión es la del texto que la persona aceptó, tal como vino del backend.
-      { planCode, termsVersion: currentTerms.version, payerEmail: checkedEmail.email },
-      getToken,
-    );
+    const payerEmail = checkedEmail.email;
+    // Términos ocultos por decisión de producto (2026-11-05): se manda la versión vigente sin mostrarla. Revertir cuando el backend haga termsVersion opcional o se vuelvan a mostrar.
+    const checkout = (version: string) =>
+      startCheckout(partnerId, { planCode, termsVersion: version, payerEmail }, getToken);
+
+    let result = await checkout(currentTermsVersion);
+    if (result.kind === "terms-outdated") {
+      // La versión cambió con la pantalla abierta: se pide la vigente y se
+      // reintenta UNA sola vez. Si vuelve a fallar, error genérico reintentable.
+      const freshVersion = await onRefreshTermsVersion();
+      result = freshVersion ? await checkout(freshVersion) : { kind: "unknown" };
+      if (result.kind === "terms-outdated") result = { kind: "unknown" };
+    }
     if (result.kind === "success") {
       // Fallback de la pantalla de resultado si la `back_url` no trae `partnerId`.
       savePendingCheckout({ partnerId, planCode, subscriptionId: result.subscriptionId });
@@ -417,11 +435,6 @@ function CheckoutForm({
       return; // `inFlight` queda en true: ya nos vamos a MP.
     }
     inFlight.current = false;
-    if (result.kind === "terms-outdated") {
-      // Términos nuevos: se vuelven a pedir y hay que aceptarlos otra vez.
-      setAcceptedVersion(null);
-      onReloadTerms();
-    }
     setStatus({ kind: "error", result });
   }
 
@@ -546,50 +559,19 @@ function CheckoutForm({
           </Field>
 
           <div className="flex flex-col gap-3">
-            {terms.kind === "loading" ? (
-              <p className="text-ink/65">{content.terms.loading}</p>
-            ) : terms.kind === "error" ? (
+            {/* Sin la versión de los términos el backend rechaza el checkout: error genérico y reintento. */}
+            {termsVersion.kind === "error" ? (
               <div className="flex flex-col items-start gap-2">
-                <p className="text-danger">{content.terms.error}</p>
-                <Button type="button" variant="outline" onClick={onReloadTerms}>
+                <p className="text-danger">{content.prepareError}</p>
+                <Button type="button" variant="outline" className="min-h-11" onClick={onReloadTerms}>
                   {content.retry}
                 </Button>
               </div>
-            ) : (
-              <>
-                {/* El texto (del backend) está en el DOM aunque el <details> esté cerrado. */}
-                <details className="rounded-field border border-line bg-surface p-4">
-                  <summary className="flex min-h-11 cursor-pointer items-center font-semibold text-ink">
-                    {content.terms.summary}
-                  </summary>
-                  <div className="mt-3 flex flex-col gap-3 text-sm leading-relaxed text-ink/75">
-                    <p className="text-xs font-semibold text-ink/60">{content.terms.version(terms.terms.version)}</p>
-                    {termsParagraphs(terms.terms.text).map((paragraph, index) => (
-                      <p key={index} className="whitespace-pre-line">
-                        {paragraph}
-                      </p>
-                    ))}
-                  </div>
-                </details>
-                <label htmlFor={termsId} className="flex min-h-11 cursor-pointer items-center gap-3 text-ink">
-                  <input
-                    id={termsId}
-                    type="checkbox"
-                    checked={termsAccepted}
-                    onChange={(event) => setAcceptedVersion(event.target.checked ? terms.terms.version : null)}
-                    className="size-5 shrink-0 accent-brand"
-                  />
-                  <span>{content.terms.checkbox}</span>
-                </label>
-              </>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-3">
+            ) : null}
             <Button type="submit" size="lg" block disabled={!canSubmit} aria-disabled={!canSubmit}>
               {busy ? content.submitting : content.submit}
             </Button>
-            <p className="text-sm text-ink/65">{termsAccepted ? content.paymentNote : content.terms.required}</p>
+            <p className="text-sm text-ink/65">{content.paymentNote}</p>
           </div>
         </>
       )}

@@ -261,8 +261,8 @@ export function parseCheckoutResponse({ status, body, requestId }: HttpResponse)
 
 /**
  * Términos comerciales para talleres, de `GET /billing/terms` (público). Es
- * la ÚNICA fuente del texto y de la versión: la landing muestra ese `text` y
- * manda esa misma `version` como `termsVersion` en el checkout.
+ * la ÚNICA fuente de la versión que se manda como `termsVersion` en el
+ * checkout. Hoy el `text` no se muestra (decisión de producto, 2026-11-05).
  */
 export type PartnerTerms = {
   readonly version: string;
@@ -281,19 +281,6 @@ export function parseTerms(body: unknown): PartnerTerms | null {
     return { version: body.version, text: body.text };
   }
   return null;
-}
-
-/**
- * El texto de los términos en párrafos (separados por una línea en blanco).
- * Se renderiza como texto, nunca como HTML; los saltos simples quedan dentro
- * del párrafo.
- */
-export function termsParagraphs(text: string): string[] {
-  return text
-    .replace(/\r\n?/g, "\n")
-    .split(/\n\s*\n/)
-    .map((paragraph) => paragraph.trim())
-    .filter((paragraph) => paragraph !== "");
 }
 
 /** Lo mínimo de una membresía (`GET /partners/me/memberships`, spec 211). */

@@ -11,7 +11,6 @@ import {
   parsePlanParam,
   parsePlans,
   parseTerms,
-  termsParagraphs,
   validatePayerEmail,
 } from "../../lib/partner-billing/checkout.ts";
 
@@ -269,7 +268,7 @@ describe("ownerMemberships", () => {
   });
 });
 
-describe("parseTerms / termsParagraphs", () => {
+describe("parseTerms", () => {
   it("versión y texto del backend", () => {
     assert.deepEqual(parseTerms({ version: "2026-11-draft", text: "Uno.\n\nDos." }), {
       version: "2026-11-draft",
@@ -281,10 +280,5 @@ describe("parseTerms / termsParagraphs", () => {
     for (const body of [null, [], { version: "", text: "x" }, { version: "v", text: "  " }, { version: 1, text: "x" }]) {
       assert.equal(parseTerms(body), null, JSON.stringify(body));
     }
-  });
-
-  it("párrafos separados por línea en blanco (con CRLF y espacios)", () => {
-    assert.deepEqual(termsParagraphs("Uno\nsigue.\r\n\r\nDos.\n  \n\nTres. "), ["Uno\nsigue.", "Dos.", "Tres."]);
-    assert.deepEqual(termsParagraphs("   "), []);
   });
 });
