@@ -1,5 +1,9 @@
 import { ACCOUNT_PATH } from "@/lib/account/paths";
-import { PROVEEDORES_PLANES_PATH } from "@/lib/proveedores/query";
+import {
+  PROVEEDORES_PLANES_PATH,
+  PROVEEDORES_RECLAMAR_PATH,
+  PROVEEDORES_REGISTRO_FORMULARIO_PATH,
+} from "@/lib/proveedores/query";
 
 /**
  * Copy de la cuenta de talleres: la fila "Sesión iniciada como…" de las
@@ -67,6 +71,59 @@ export const accountContent = {
         planName
           ? `Hola! Mi taller ${partnerName} tiene el plan ${planName} de AutoLibre y quiero cambiar de plan.`
           : `Hola! Mi taller ${partnerName} tiene un plan de AutoLibre y quiero cambiar de plan.`,
+    },
+
+    /**
+     * Baja de un plan pago (`POST /partners/{id}/subscription/cancellation`).
+     * Se confirma en la misma fila, sin `window.confirm`.
+     */
+    cancel: {
+      trigger: "Cancelar suscripción",
+      title: (partnerName: string) => `¿Cancelar la suscripción de ${partnerName}?`,
+      /** `date`: fin de la prueba si está en prueba; si no, fin del período pago. */
+      keepsPlan: (planLabel: string, date: string | null) =>
+        date
+          ? `Tu taller mantiene el ${planLabel} hasta el ${date}. Después pasa al plan Gratis y no se te vuelve a cobrar.`
+          : `Tu taller mantiene el ${planLabel} hasta el final del período en curso. Después pasa al plan Gratis y no se te vuelve a cobrar.`,
+      trialUsed: "Si cancelás durante la prueba, la prueba cuenta como usada: si más adelante volvés a contratar, el plan se cobra desde el primer mes.",
+      mercadoPagoWarning:
+        "Cancelá desde acá y no desde tu cuenta de Mercado Pago: si la cancelás allá, tu taller pierde el plan en el momento, aunque ya hayas pagado el mes.",
+      confirm: "Sí, cancelar la suscripción",
+      confirming: "Cancelando…",
+      keep: "No, mantener el plan",
+      success: (date: string | null) =>
+        date
+          ? `Listo, cancelamos la suscripción. Tu taller mantiene el plan hasta el ${date} y después pasa a Gratis.`
+          : "Listo, cancelamos la suscripción. Tu taller mantiene el plan hasta el final del período y después pasa a Gratis.",
+      /** `accessUntil: null`: solo había un pago sin confirmar, y se canceló. */
+      successPending: "Listo, la contratación pendiente quedó cancelada. Tu taller sigue en el plan Gratis.",
+      errors: {
+        retryable: "No pudimos cancelar la suscripción y no se cambió nada. Probá de nuevo en un momento.",
+        notFound:
+          "No pudimos cancelar la suscripción de este taller. Actualizá la página para ver el estado actual de su plan.",
+        unauthenticated: "Tu sesión venció. Iniciá sesión de nuevo para cancelar la suscripción.",
+      },
+      retry: "Reintentar",
+    },
+  },
+
+  /**
+   * Sumar otro taller a la cuenta. `/cuenta` y `/proveedores/reclamar` son las
+   * únicas pantallas que pueden nombrar el código de reclamo (ambas
+   * `noindex`): este copy no se reutiliza en páginas públicas.
+   */
+  more: {
+    title: "¿Tenés otro taller?",
+    body: "Sumalo a tu cuenta para manejarlo desde acá.",
+    register: {
+      label: "Cargar otro taller",
+      description: "Si todavía no aparece en AutoLibre.",
+      href: PROVEEDORES_REGISTRO_FORMULARIO_PATH,
+    },
+    claim: {
+      label: "Reclamar un taller",
+      description: "Si ya aparece en AutoLibre y te dimos un código de reclamo.",
+      href: PROVEEDORES_RECLAMAR_PATH,
     },
   },
 } as const;

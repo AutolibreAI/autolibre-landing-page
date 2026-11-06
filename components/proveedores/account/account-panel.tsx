@@ -4,6 +4,7 @@ import { useAuth, useClerk } from "@clerk/nextjs";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AccountBar } from "@/components/proveedores/account/account-bar";
+import { CancelSubscription } from "@/components/proveedores/account/cancel-subscription";
 import { NoPartnerOptions } from "@/components/proveedores/account/no-partner-options";
 import { PartnerSignIn } from "@/components/proveedores/account/partner-sign-in";
 import { PrivateFlowHead } from "@/components/proveedores/account/private-flow";
@@ -15,13 +16,13 @@ import { planDisplayName } from "@/lib/content/partner-checkout";
 import { formatDate } from "@/lib/partner-billing/checkout";
 import { fetchOwnerPartners, fetchSubscription } from "@/lib/partner-billing/client";
 import { checkoutHref } from "@/lib/partner-billing/return-path";
-import { classifySubscription, type SubscriptionView } from "@/lib/partner-billing/subscription";
+import { canCancelSubscription, classifySubscription, type SubscriptionView } from "@/lib/partner-billing/subscription";
 import type { Membership } from "@/lib/partner-claims/redeem";
 import { PROVEEDORES_CONTRATAR_PATH, PROVEEDORES_CONTRATAR_RESULTADO_PATH } from "@/lib/proveedores/query";
 import { cn } from "@/lib/utils";
 import { whatsappUrl } from "@/lib/whatsapp";
 
-const { page } = accountContent;
+const { page, more } = accountContent;
 
 const linkClass =
   "inline-flex min-h-11 items-center font-semibold text-brand-hover underline-offset-4 hover:underline";
@@ -124,7 +125,35 @@ function SignedInAccount({ selfPath }: AccountPanelProps) {
           </ul>
         </section>
       ) : null}
+
+      {/* Sin talleres, `NoPartnerOptions` ya ofrece reclamar y cargar uno. */}
+      {partners.kind === "ready" && partners.owners.length > 0 ? <MorePartners /> : null}
     </div>
+  );
+}
+
+/** Sumar otro taller: el alta (directo al formulario: ya hay sesión) o el reclamo. */
+function MorePartners() {
+  return (
+    <section aria-labelledby="cuenta-otro-taller-titulo" className="flex flex-col gap-3">
+      <div>
+        <h2 id="cuenta-otro-taller-titulo" className="font-display text-xl font-bold text-ink">
+          {more.title}
+        </h2>
+        <p className="mt-1 text-ink/70">{more.body}</p>
+      </div>
+      <ul className="flex flex-col gap-3 sm:flex-row sm:gap-10">
+        {[more.register, more.claim].map((action) => (
+          <li key={action.href} className="flex flex-col">
+            {/* Sin prefetch: las dos son pantallas privadas con su Clerk. */}
+            <Link href={action.href} prefetch={false} className={cn(linkClass, "self-start")}>
+              {action.label}
+            </Link>
+            <span className="text-sm text-ink/65">{action.description}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -163,6 +192,20 @@ function describePlan(view: SubscriptionView): {
 function PartnerRow({ partner }: { readonly partner: Membership }) {
   const { getToken } = useAuth();
   const [subscription, setSubscription] = useState<SubscriptionState>({ kind: "loading" });
+  /** Sube después de una baja: se vuelve a consultar el estado (sin pasar por "cargando"). */
+  const [reload, setReload] = useState(0);
+  const [notice, setNotice] = useState<string | null>(null);
+  const noticeRef = useRef<HTMLParagraphElement>(null);
+
+  // La confirmación de la baja desaparece: el foco pasa al aviso de éxito.
+  useEffect(() => {
+    if (notice) noticeRef.current?.focus();
+  }, [notice]);
+
+  function handleCanceled(accessUntil: string | null) {
+    setNotice(accessUntil ? page.cancel.success(formatDate(accessUntil)) : page.cancel.successPending);
+    setReload((value) => value + 1);
+  }
 
   useEffect(() => {
     let active = true;
@@ -173,7 +216,7 @@ function PartnerRow({ partner }: { readonly partner: Membership }) {
     return () => {
       active = false;
     };
-  }, [partner.partnerId, getToken]);
+  }, [partner.partnerId, getToken, reload]);
 
   const described = subscription.kind === "ready" ? describePlan(subscription.view) : null;
   const currentPlanName = subscription.kind === "ready" ? planDisplayName(subscription.view.planCode) : null;
@@ -201,6 +244,14 @@ function PartnerRow({ partner }: { readonly partner: Membership }) {
             ) : null}
           </p>
         )}
+      </div>
+
+      <div aria-live="polite" aria-atomic="true">
+        {notice ? (
+          <p ref={noticeRef} tabIndex={-1} className="font-medium text-brand-hover">
+            {notice}
+          </p>
+        ) : null}
       </div>
 
       {described ? (
@@ -231,16 +282,29 @@ function PartnerRow({ partner }: { readonly partner: Membership }) {
               {page.actions.pending}
             </ButtonLink>
           ) : (
-            <a
-              href={whatsappUrl(page.actions.changePlanWhatsapp(partner.name, currentPlanName))}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
-              data-analytics-placement="cuenta_cambiar_plan"
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "min-h-11 self-start")}
-            >
-              {page.actions.changePlan}
-            </a>
+            <>
+              <a
+                href={whatsappUrl(page.actions.changePlanWhatsapp(partner.name, currentPlanName))}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
+                data-analytics-placement="cuenta_cambiar_plan"
+                className={cn(buttonVariants({ variant: "outline", size: "sm" }), "min-h-11 self-start")}
+              >
+                {page.actions.changePlan}
+              </a>
+              {/* Solo con el plan vivo y sin baja pedida: con la baja pedida no
+                  se ofrece volver a contratar (409 hasta `accessUntil`). */}
+              {subscription.kind === "ready" && canCancelSubscription(subscription.view) && !notice ? (
+                <CancelSubscription
+                  partnerId={partner.partnerId}
+                  partnerName={partner.name}
+                  planLabel={described.plan}
+                  view={subscription.view}
+                  onCanceled={handleCanceled}
+                />
+              ) : null}
+            </>
           )}
         </div>
       ) : null}

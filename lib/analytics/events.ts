@@ -81,6 +81,15 @@ export const ANALYTICS_EVENTS = {
    * checkout pendiente.
    */
   planCheckoutConfirmed: "plan_checkout_confirmed",
+  /**
+   * Baja de un plan pago desde `/cuenta`. Sólo PostHog. `requested`: confirmó
+   * la baja en la pantalla (cada intento, también los reintentos);
+   * `succeeded`: el backend la registró; `failed`: el backend o la red la
+   * rechazaron (con el motivo, nunca datos del taller).
+   */
+  subscriptionCancelRequested: "subscription_cancel_requested",
+  subscriptionCancelSucceeded: "subscription_cancel_succeeded",
+  subscriptionCancelFailed: "subscription_cancel_failed",
   /** Click en "Registrar mi taller" de `/proveedores/registro` (clickable). */
   partnerRegisterStarted: "partner_register_started",
   /** Canje exitoso de un código de reclamo (spec 211). Nunca el código. */
@@ -217,6 +226,20 @@ export type AnalyticsEventProps = {
     /** La suscripción arrancó en período de prueba. */
     trial?: boolean;
   };
+  subscription_cancel_requested: {
+    plan: PartnerPlan;
+    /** La suscripción estaba en período de prueba. */
+    trial?: boolean;
+  };
+  subscription_cancel_succeeded: {
+    plan: PartnerPlan;
+    trial?: boolean;
+  };
+  subscription_cancel_failed: {
+    plan: PartnerPlan;
+    /** `retryable`: 503/5xx/red. `not_found`: 404 uniforme o 400. `unauthenticated`: 401. */
+    reason: "retryable" | "not_found" | "unauthenticated";
+  };
   partner_register_started: Record<string, never>;
   partner_claim_redeemed: {
     /** El canje vino de la contratación de un plan (`?next`). */
@@ -332,6 +355,21 @@ export const ANALYTICS_CATALOG: Record<AnalyticsEventName, CatalogEntry> = {
     clickable: false,
   },
   plan_checkout_confirmed: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  subscription_cancel_requested: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  subscription_cancel_succeeded: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  subscription_cancel_failed: {
     posthog: "client",
     meta: () => null,
     clickable: false,

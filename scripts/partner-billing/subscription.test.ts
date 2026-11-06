@@ -1,9 +1,12 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  canCancelSubscription,
+  cancellationAccessDate,
   classifySubscription,
   hasActivePlan,
   trialNoteFor,
+  parseCancellationResponse,
   parsePartnerIdParam,
   parsePendingCheckout,
   parseSubscriptionResponse,
@@ -20,6 +23,7 @@ const view = (status: string | null): SubscriptionView => ({
   planCode: "plus",
   status,
   trialEndsAt: null,
+  currentPeriodEnd: null,
   accessUntil: null,
   cancelAtPeriodEnd: false,
   trialEligible: null,
@@ -48,6 +52,7 @@ describe("parseSubscriptionResponse", () => {
           planCode: "plus",
           status: "trialing",
           trialEndsAt: "2026-12-05T03:00:00.000Z",
+          currentPeriodEnd: null,
           accessUntil: null,
           cancelAtPeriodEnd: false,
           trialEligible: null,
@@ -64,6 +69,7 @@ describe("parseSubscriptionResponse", () => {
         planCode: "free",
         status: null,
         trialEndsAt: null,
+        currentPeriodEnd: null,
         accessUntil: null,
         cancelAtPeriodEnd: false,
         trialEligible: null,
@@ -199,5 +205,69 @@ describe("trialNoteFor", () => {
 
   it("sin días de prueba no se muestra nada", () => {
     assert.equal(trialNoteFor(0, true), "none");
+  });
+});
+
+describe("canCancelSubscription", () => {
+  it("plan pago confirmado y sin baja pedida", () => {
+    assert.equal(canCancelSubscription(view("active")), true);
+    assert.equal(canCancelSubscription(view("trialing")), true);
+  });
+
+  it("con la baja pedida, Gratis, pendiente o sin confirmar: no", () => {
+    assert.equal(canCancelSubscription({ ...view("active"), cancelAtPeriodEnd: true }), false);
+    assert.equal(canCancelSubscription({ ...view(null), planCode: "free" }), false);
+    assert.equal(canCancelSubscription(view("pending")), false);
+    assert.equal(canCancelSubscription(view("paused")), false);
+  });
+});
+
+describe("cancellationAccessDate", () => {
+  const dates = { trialEndsAt: "2026-12-05T03:00:00.000Z", currentPeriodEnd: "2026-12-20T03:00:00.000Z" };
+
+  it("en prueba: el fin de la prueba", () => {
+    assert.equal(cancellationAccessDate({ ...view("trialing"), ...dates }), dates.trialEndsAt);
+  });
+
+  it("activo: el fin del período pago", () => {
+    assert.equal(cancellationAccessDate({ ...view("active"), ...dates }), dates.currentPeriodEnd);
+  });
+
+  it("sin el dato: null", () => {
+    assert.equal(cancellationAccessDate(view("active")), null);
+  });
+});
+
+describe("parseCancellationResponse", () => {
+  it("200 con accessUntil", () => {
+    assert.deepEqual(
+      parseCancellationResponse({ status: 200, body: { accessUntil: "2026-12-05T03:00:00.000Z" }, requestId: null }),
+      { kind: "success", accessUntil: "2026-12-05T03:00:00.000Z" },
+    );
+  });
+
+  it("200 con accessUntil null (solo había un checkout pendiente) o body raro", () => {
+    assert.deepEqual(parseCancellationResponse({ status: 200, body: { accessUntil: null }, requestId: null }), {
+      kind: "success",
+      accessUntil: null,
+    });
+    assert.deepEqual(parseCancellationResponse({ status: 200, body: null, requestId: null }), {
+      kind: "success",
+      accessUntil: null,
+    });
+  });
+
+  it("401, 404 uniforme y 400", () => {
+    assert.equal(parseCancellationResponse({ status: 401, body: null, requestId: null }).kind, "unauthenticated");
+    assert.equal(parseCancellationResponse({ status: 404, body: null, requestId: "r1" }).kind, "not-found");
+    assert.equal(parseCancellationResponse({ status: 400, body: null, requestId: null }).kind, "not-found");
+  });
+
+  it("503 y 500: reintentable, con requestId", () => {
+    assert.deepEqual(parseCancellationResponse({ status: 503, body: { code: "SERVICE_UNAVAILABLE" }, requestId: "r2" }), {
+      kind: "retryable",
+      requestId: "r2",
+    });
+    assert.equal(parseCancellationResponse({ status: 500, body: null, requestId: null }).kind, "retryable");
   });
 });

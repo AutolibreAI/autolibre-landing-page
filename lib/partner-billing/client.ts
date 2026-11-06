@@ -10,10 +10,12 @@ import {
   type PartnerTerms,
 } from "@/lib/partner-billing/checkout";
 import {
+  parseCancellationResponse,
   parsePendingCheckout,
   parseSubscriptionResponse,
   PENDING_CHECKOUT_STORAGE_KEY,
   serializePendingCheckout,
+  type CancellationResult,
   type PendingCheckout,
   type SubscriptionResult,
 } from "@/lib/partner-billing/subscription";
@@ -186,6 +188,44 @@ export async function fetchSubscription(partnerId: string, getToken: GetToken): 
   } catch (error) {
     console.error(`${LOG} no se pudo consultar el estado:`, error);
     return { kind: "unknown" };
+  }
+}
+
+/**
+ * `POST /partners/{partnerId}/subscription/cancellation` (body vacío, solo el
+ * dueño): pide la baja al fin del período. Idempotente, así que la red caída
+ * cae en `retryable`: reintentar no puede cancelar dos veces.
+ */
+export async function cancelSubscription(partnerId: string, getToken: GetToken): Promise<CancellationResult> {
+  const base = apiBaseUrl();
+  if (!base) {
+    console.error(`${LOG} falta NEXT_PUBLIC_AUTOLIBRE_API_URL: no se puede cancelar.`);
+    return { kind: "retryable" };
+  }
+  try {
+    const token = await getToken();
+    if (!token) return { kind: "unauthenticated" };
+
+    const response = await fetch(`${base}/partners/${encodeURIComponent(partnerId)}/subscription/cancellation`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "omit",
+      cache: "no-store",
+    });
+    const result = parseCancellationResponse({
+      status: response.status,
+      body: await readJson(response),
+      requestId: response.headers.get("x-request-id"),
+    });
+    if (result.kind !== "success") {
+      console.error(`${LOG} cancelación rechazada (${response.status}, ${result.kind})`, {
+        requestId: result.requestId,
+      });
+    }
+    return result;
+  } catch (error) {
+    console.error(`${LOG} no se pudo cancelar:`, error);
+    return { kind: "retryable" };
   }
 }
 

@@ -28,6 +28,8 @@ export type SubscriptionView = {
   /** `null` = Gratis: no hay suscripción viva. */
   readonly status: string | null;
   readonly trialEndsAt: string | null;
+  /** Fin del período pago en curso (sin prueba). Hasta ahí llega una baja pedida hoy. */
+  readonly currentPeriodEnd: string | null;
   readonly accessUntil: string | null;
   /** La baja está pedida: el acceso sigue hasta `accessUntil`. */
   readonly cancelAtPeriodEnd: boolean;
@@ -79,6 +81,7 @@ export function parseSubscriptionResponse({
           planCode: body.planCode,
           status: body.status,
           trialEndsAt: optionalString(body.trialEndsAt),
+          currentPeriodEnd: optionalString(body.currentPeriodEnd),
           accessUntil: optionalString(body.accessUntil),
           cancelAtPeriodEnd: body.cancelAtPeriodEnd === true,
           trialEligible: typeof body.trialEligible === "boolean" ? body.trialEligible : null,
@@ -114,6 +117,61 @@ export function classifySubscription(view: SubscriptionView): SubscriptionClass 
  */
 export function hasActivePlan(view: SubscriptionView): boolean {
   return view.planCode !== "free" && classifySubscription(view) === "confirmed";
+}
+
+/**
+ * Se ofrece "Cancelar suscripción": plan pago con acceso y sin baja pedida.
+ * Con la baja ya pedida no se ofrece nada más (ni cancelar de nuevo ni volver
+ * a contratar: el checkout respondería 409 `SUBSCRIPTION_ALREADY_LIVE` hasta
+ * `accessUntil`).
+ */
+export function canCancelSubscription(view: SubscriptionView): boolean {
+  return hasActivePlan(view) && !view.cancelAtPeriodEnd;
+}
+
+/**
+ * Hasta cuándo mantendría el plan si cancela hoy (lo que el backend
+ * devolverá como `accessUntil`): el fin de la prueba si está en prueba; si
+ * no, el fin del período pago en curso. `null` si el GET no lo trae.
+ */
+export function cancellationAccessDate(view: SubscriptionView): string | null {
+  return view.status === "trialing" ? view.trialEndsAt : view.currentPeriodEnd;
+}
+
+/**
+ * Resultado de `POST /partners/{partnerId}/subscription/cancellation`.
+ *
+ * - `success`: la baja quedó pedida (idempotente: repetirla devuelve el mismo
+ *   `accessUntil`). `accessUntil: null` = solo había un checkout pendiente y
+ *   se canceló.
+ * - `unauthenticated`: 401 (o no hay token).
+ * - `not-found`: 404 uniforme (no existe, no es dueño, está en Gratis o la
+ *   baja ya venció) o 400 (id con mala forma). Para la pantalla: "actualizá".
+ * - `retryable`: 503, 5xx o la red. No cambió nada; reintentar es seguro
+ *   porque el POST es idempotente.
+ */
+export type CancellationResult =
+  | { readonly kind: "success"; readonly accessUntil: string | null }
+  | { readonly kind: "unauthenticated" | "not-found" | "retryable"; readonly requestId?: string };
+
+export function parseCancellationResponse({
+  status,
+  body,
+  requestId,
+}: {
+  readonly status: number;
+  readonly body: unknown;
+  readonly requestId: string | null;
+}): CancellationResult {
+  const meta = requestId ? { requestId } : {};
+
+  if (status >= 200 && status < 300) {
+    // Un 2xx ya canceló: aunque el body venga raro, no se ofrece reintentar.
+    return { kind: "success", accessUntil: isRecord(body) ? optionalString(body.accessUntil) : null };
+  }
+  if (status === 401) return { kind: "unauthenticated", ...meta };
+  if (status === 400 || status === 404) return { kind: "not-found", ...meta };
+  return { kind: "retryable", ...meta };
 }
 
 /** Qué texto de prueba mostrar en el resumen (research D15). */
