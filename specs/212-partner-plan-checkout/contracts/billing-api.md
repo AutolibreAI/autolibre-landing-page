@@ -10,7 +10,7 @@
 
 - Códigos: `free`, `plus`, `plus_max`. El identificador es SIEMPRE el `code`.
 - Mapeo con la landing: `plan-plus` → `plus`, `plan-plus-max` → `plus_max`, `plan-gratis` → `free` (este no se compra).
-- Valores hoy: plus 20000, plus_max 30000, `trialDays` 30.
+- Valores hoy (verificados contra `subscription_plans` de producción el 2026-11-12): plus 10000, plus_max 20000, `trialDays` 30.
 
 ## GET /billing/terms (público, sin token) — actualización 2026-11-04
 

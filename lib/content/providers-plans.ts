@@ -1,9 +1,9 @@
 /**
  * Copy de los planes pagos para proveedores (`/proveedores/planes`).
  *
- * Precios y topes: decisión de producto del 24/10/2026 (research "Planes Plus
- * de proveedores — precio, tope de pedidos y costo de IA"). No modificar un
- * número sin confirmar el cambio con producto.
+ * Precios y topes: alineados el 2026-11-12 con la tabla `subscription_plans`
+ * de producción. La base es la fuente de verdad: no modificar un número sin
+ * verificarlo contra esa tabla.
  *
  * TODO(precios): los precios de acá están escritos a mano y el checkout cobra
  * el de `GET /billing/plans`. Si producto cambia el precio en el backend, esta
@@ -54,13 +54,13 @@ export const providersPlansContent = {
     {
       id: "plan-plus",
       name: "Plus",
-      price: "ARS 20.000",
+      price: "ARS 10.000",
       priceNote: "por mes + IVA",
-      description: "Hasta 10 pedidos por WhatsApp por mes, sin usar la app.",
+      description: "Hasta 5 pedidos por WhatsApp por mes, sin usar la app.",
       features: [
         "Todo lo del plan Gratis",
         "Recibís pedidos y respondés propuestas por WhatsApp, sin usar la app",
-        "Hasta 10 pedidos por WhatsApp por mes",
+        "Hasta 5 pedidos por WhatsApp por mes",
         "Página web propia dentro de autolibre.ai: aparece en Google y en las IAs, la podés usar como tu web",
       ],
       cta: {
@@ -75,12 +75,12 @@ export const providersPlansContent = {
     {
       id: "plan-plus-max",
       name: "Plus Max",
-      price: "ARS 30.000",
+      price: "ARS 20.000",
       priceNote: "por mes + IVA",
-      description: "Hasta 15 pedidos por WhatsApp por mes.",
+      description: "Hasta 12 pedidos por WhatsApp por mes.",
       features: [
         "Todo lo del plan Plus",
-        "Hasta 15 pedidos por WhatsApp por mes",
+        "Hasta 12 pedidos por WhatsApp por mes",
       ],
       cta: {
         label: "Quiero el plan Plus Max",

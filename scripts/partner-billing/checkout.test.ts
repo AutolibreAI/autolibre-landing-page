@@ -44,7 +44,7 @@ describe("LANDING_PLAN_ID_TO_CODE", () => {
 describe("parsePlans / findPlan", () => {
   const body = [
     { code: "free", name: "Gratis", priceAmount: 0, currency: "ARS", priceIncludesVat: false, trialDays: 0 },
-    { code: "plus", name: "Plus", priceAmount: 20000, currency: "ARS", priceIncludesVat: false, trialDays: 30 },
+    { code: "plus", name: "Plus", priceAmount: 10000, currency: "ARS", priceIncludesVat: false, trialDays: 30 },
     { code: "roto", priceAmount: "20000", currency: "ARS" },
     null,
   ];
@@ -70,15 +70,15 @@ describe("parsePlans / findPlan", () => {
 
   it("encuentra por code", () => {
     const plans = parsePlans(body);
-    assert.equal(findPlan(plans, "plus")?.priceAmount, 20000);
+    assert.equal(findPlan(plans, "plus")?.priceAmount, 10000);
     assert.equal(findPlan(plans, "plus_max"), null);
   });
 });
 
 describe("formatPlanPrice", () => {
   it("formato de la página de planes", () => {
+    assert.equal(formatPlanPrice({ priceAmount: 10000, currency: "ARS" }), "ARS 10.000");
     assert.equal(formatPlanPrice({ priceAmount: 20000, currency: "ARS" }), "ARS 20.000");
-    assert.equal(formatPlanPrice({ priceAmount: 30000, currency: "ARS" }), "ARS 30.000");
   });
 
   it("con decimales, hasta dos", () => {

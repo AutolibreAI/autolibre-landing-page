@@ -53,7 +53,7 @@ const routes = [
   },
   {
     path: PROVEEDORES_PLANES_PATH,
-    lastModified: "2026-11-05",
+    lastModified: "2026-11-12",
     changeFrequency: "monthly",
     priority: 0.7,
   },

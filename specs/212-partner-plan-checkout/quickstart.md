@@ -16,7 +16,7 @@ Las mismas variables de la 211: `NEXT_PUBLIC_AUTOLIBRE_API_URL=http://localhost:
 2. `/proveedores/contratar?plan=otro` y `?plan=free` ⇒ mensaje con link a planes.
 3. Sin sesión ⇒ login/alta; después vuelve al mismo plan.
 4. Cuenta **sin talleres** ⇒ "Para contratar un plan necesitás un taller en tu cuenta" con las dos opciones. "Mi taller ya está en AutoLibre" lleva a `/proveedores/reclamar?next=…`; tras canjear un código aparece "Seguir con la contratación" y vuelve al plan.
-5. Cuenta **dueña de un taller** ⇒ resumen con plan, precio del backend ("ARS 20.000 por mes + IVA"), prueba condicional y taller. Con **varios** ⇒ radios para elegir.
+5. Cuenta **dueña de un taller** ⇒ resumen con plan, precio del backend ("ARS 10.000 por mes + IVA" para Plus, "ARS 20.000 por mes + IVA" para Plus Max), prueba condicional y taller. Con **varios** ⇒ radios para elegir.
 6. El botón queda deshabilitado hasta aceptar los términos. El email arranca con el de la cuenta.
 7. Pagar ⇒ redirige a MP (sandbox). Al volver a `/proveedores/contratar/resultado`: "Estamos confirmando tu pago" y después "¡Listo!" o "pendiente".
 8. Errores: kill switch apagado ⇒ 403. Un taller que ya tiene un plan `active`/`trialing` ⇒ el aviso "Tu taller ya tiene el plan …" aparece de entrada, sin formulario. Si cambiás la versión de los términos en el backend con la pantalla abierta ⇒ 409, la landing recarga los términos y hay que volver a aceptarlos. Si `GET /billing/terms` falla ⇒ mensaje + "Reintentar" y no se puede pagar.
