@@ -51,11 +51,11 @@ export default function HomePage() {
 
       <main>
         <HeroSection />
+        <AlliesSection />
         <QuotesSection />
         <ProblemSection />
         <FeaturesSection />
         <MarketplaceSection />
-        <AlliesSection />
         <HistorySection />
         <HowItWorksSection />
         <DiagnosticsSection />

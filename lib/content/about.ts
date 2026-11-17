@@ -131,6 +131,12 @@ const members = [
     name: "Mateo Ghidini",
     role: "Cofundador · Desarrollo",
     founder: true,
+    photo: {
+      src: "/images/about/equipo-mateo-ghidini.webp",
+      alt: "Mateo Ghidini, cofundador y desarrollador de AutoLibre, sonríe con una remera negra de AutoLibre.AI.",
+      width: 800,
+      height: 1000,
+    },
   },
   {
     id: "matias-vidal",
