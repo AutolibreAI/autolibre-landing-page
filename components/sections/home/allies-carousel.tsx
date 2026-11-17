@@ -106,7 +106,9 @@ export function AlliesCarousel({ slides, label, prevLabel, nextLabel, goToLabels
         <Icon name="arrow-right" size={20} />
       </button>
 
-      <div className="mt-5 flex justify-center gap-2.5">
+      {/* Sobre el banner, no debajo: una franja blanca separada se veía
+          desconectada del banner full-bleed (pedido de producto, 2026-11-17). */}
+      <div className="absolute right-0 bottom-5 left-0 flex justify-center gap-2.5">
         {slides.map((_, position) => (
           <button
             key={position}
@@ -118,8 +120,8 @@ export function AlliesCarousel({ slides, label, prevLabel, nextLabel, goToLabels
           >
             <span
               className={cn(
-                "block h-2 rounded-field transition-all",
-                position === index ? "w-7 bg-ink" : "w-2 bg-ink/25",
+                "block h-2 rounded-field bg-white transition-all",
+                position === index ? "w-7 opacity-100" : "w-2 opacity-40",
               )}
             />
           </button>
