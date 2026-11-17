@@ -1,3 +1,8 @@
+import {
+  PROVEEDORES_PATH,
+  PROVEEDORES_PLANES_PATH,
+  PROVEEDORES_REGISTRO_PATH,
+} from "@/lib/proveedores/query";
 import type {
   FeatureItem,
   HeroHighlight,
@@ -89,6 +94,40 @@ export const homeContent = {
       "Pantallas de la app AutoLibre: el inicio con tu garage, la ficha del auto con alertas y documentos, los talleres aliados, el pedido de cotización y su seguimiento, y el chat de diagnóstico con IA.",
   },
 
+  /**
+   * "Dos caminos": la misma cuenta de AutoLibre sirve para pedir un servicio
+   * o para ofrecerlo. Va justo después del hero (decisión de producto del
+   * 12/11/2026, research "AutoLibre marketplace rediseño").
+   */
+  twoPaths: {
+    eyebrow: "Una sola cuenta",
+    title: "Pedís servicios para tu auto o los ofrecés.",
+    subtitle:
+      "Es la misma cuenta de la app de AutoLibre: si tenés un taller, lo sumás sin crear otro usuario.",
+    driver: {
+      eyebrow: "Para conductores",
+      title: "Necesito un servicio para mi auto",
+      items: [
+        "Contá qué necesita, con los datos de tu auto ya cargados.",
+        "Te responden talleres cerca tuyo y elegís.",
+        "El trabajo queda en el historial de tu auto.",
+      ],
+      cta: { label: "Hacé tu pedido", href: "/pedido" },
+      secondaryCta: { label: "Ver proveedores", href: PROVEEDORES_PATH },
+    },
+    provider: {
+      eyebrow: "Para talleres y negocios",
+      title: "Tengo un taller o presto un servicio",
+      items: [
+        "Registrarte es gratis y aparecés en el directorio.",
+        "Recibí pedidos de gente que ya sabe qué necesita.",
+        "Planes con precio fijo mensual, sin comisión por trabajo.",
+      ],
+      primaryCta: { label: "Sumá tu negocio", href: PROVEEDORES_REGISTRO_PATH },
+      secondaryCta: { label: "Ver planes", href: PROVEEDORES_PLANES_PATH },
+    },
+  },
+
   problem: {
     title: "Ahora sabés qué necesita tu auto",
     paragraphs: [
@@ -163,38 +202,57 @@ export const homeContent = {
   },
 
   /**
-   * Logos de aliados: negocios y servicios con una alianza real con AutoLibre
-   * (no son proveedores cualquiera del marketplace). Cada uno linkea a su
-   * propio sitio: `url` sale del link "website" de su perfil en
+   * Carrusel de beneficios de aliados: negocios y servicios con una alianza
+   * real con AutoLibre (no son proveedores cualquiera del marketplace), cada
+   * uno con su propio banner. `href` sale del link "website" de su perfil en
    * `/proveedores/<slug>` cuando lo tiene ahí; si no, se confirma a mano con
    * producto antes de cargarlo (nunca una URL inventada).
+   *
+   * Dejamos afuera, a propósito, el banner de La Esquina del Neumático (pedido
+   * explícito, 2026-11-17): se suma el día que haya decisión de producto.
    */
   allies: {
-    title: "Aliados",
-    logos: [
+    title: "Beneficios de nuestros aliados",
+    prevLabel: "Aliado anterior",
+    nextLabel: "Aliado siguiente",
+    goToLabel: (position: number) => `Ir al banner ${position}`,
+    slides: [
       {
-        id: "autech",
-        name: "Autech",
-        src: "/brand/aliados/autech.png",
-        width: 283,
-        height: 30,
-        url: "https://www.autech.com.ar/",
+        id: "asistir24",
+        /* Versión blanca del isologo: el banner tiene fondo de marca (azul), no `surface`. */
+        partnerLogo: { src: "/brand/aliados/asistir24-white.png", alt: "Asistir24", width: 520, height: 370 },
+        bigNumber: "24",
+        bigNumberLabel: "horas de asistencia",
+        badgeCta: { label: "Pedí auxilio", href: "https://asistir24.com.ar/" },
+        headline: "Del auxilio al taller, sin vueltas.",
+        description:
+          "Si te quedás en el camino, la grúa te lleva directo a un taller de la red AutoLibre.",
+        steps: ["Grúa de Asistir24", "Taller de la red AutoLibre"],
       },
       {
         id: "sinfotomultas",
-        name: "SinFotomultas",
-        src: "/brand/aliados/sinfotomultas.png",
-        width: 1532,
-        height: 150,
-        url: "https://sinfotomultas.com.ar/",
+        /* Versión blanca del isologo: el banner tiene fondo oscuro, no `surface`. */
+        partnerLogo: { src: "/brand/aliados/sinfotomultas-white.png", alt: "Sin Fotomultas", width: 742, height: 72 },
+        headline: "Reducí tus multas de tránsito.",
+        headlineHighlight: "multas de tránsito.",
+        description:
+          "Antes de pagar, mirá cuánto se pueden reducir. Gestión legal en CABA y Provincia de Buenos Aires.",
+        cta: { label: "Consultá tu caso", href: "https://sinfotomultas.com.ar/" },
+        note: { label: "libre deuda", value: "7 a 10", unit: "días" },
       },
       {
-        id: "asistir24",
-        name: "Asistir24",
-        src: "/brand/aliados/asistir24.png",
-        width: 828,
-        height: 582,
-        url: "https://asistir24.com.ar/",
+        id: "integrity",
+        partnerLogo: { src: "/brand/aliados/integrity.svg", alt: "Intēgrity Seguros", width: 262, height: 57 },
+        eyebrow: "Disfrutá manejar. De protegerte nos ocupamos nosotros.",
+        discount: "30%",
+        discountUnit: "off",
+        planLabel: "En tu seguro de auto",
+        installments: "+3 cuotas fijas",
+        description: "Cobertura premium y asistencia para que viajes con tranquilidad.",
+        cta: {
+          label: "Cotizá con Intēgrity",
+          href: "https://cotizadores.integrityseguros.com.ar/auto/?promo=AUTO18&origen=Libre",
+        },
       },
     ],
   },
