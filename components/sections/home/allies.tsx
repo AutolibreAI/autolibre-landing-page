@@ -98,16 +98,16 @@ function Asistir24Slide({ slide }: { readonly slide: Asistir24SlideData }) {
       <div
         /* #F45C9D / #14102B: rosa y tinta de marca de Asistir24. */
         style={{ background: "#F45C9D", color: "#14102B" }}
-        className="flex flex-col items-start justify-center gap-5 px-8 py-10 sm:w-[30%] sm:px-10 sm:py-0 md:px-12"
+        className="flex flex-col items-start justify-center gap-4 px-6 py-7 sm:w-[30%] sm:gap-5 sm:px-10 sm:py-0 md:px-12"
       >
-        <p className="font-display text-8xl leading-none font-extrabold md:text-9xl">{slide.bigNumber}</p>
-        <p className="font-display text-2xl leading-tight font-bold md:text-3xl">{slide.bigNumberLabel}</p>
+        <p className="font-display text-6xl leading-none font-extrabold sm:text-8xl md:text-9xl">{slide.bigNumber}</p>
+        <p className="font-display text-xl leading-tight font-bold sm:text-2xl md:text-3xl">{slide.bigNumberLabel}</p>
         <a
           href={slide.badgeCta.href}
           target="_blank"
           rel="noopener noreferrer"
           style={{ background: "#14102B" }}
-          className="mt-1 inline-flex h-12 items-center gap-2.5 rounded-field px-6 font-display text-lg font-bold text-white transition hover:opacity-90 md:h-14 md:px-7 md:text-xl"
+          className="mt-1 inline-flex h-11 items-center gap-2.5 rounded-field px-5 font-display text-base font-bold text-white transition hover:opacity-90 sm:h-12 sm:px-6 sm:text-lg md:h-14 md:px-7 md:text-xl"
         >
           <Icon name="phone" size={20} />
           {slide.badgeCta.label}
@@ -115,7 +115,7 @@ function Asistir24Slide({ slide }: { readonly slide: Asistir24SlideData }) {
         </a>
       </div>
 
-      <Container size="wide" className="flex flex-1 flex-col justify-center gap-5 py-10 sm:py-12 md:py-16">
+      <Container size="wide" className="flex flex-1 flex-col justify-center gap-4 py-8 sm:gap-5 sm:py-12 md:py-16">
         <div className="flex items-center gap-3">
           <AutoLibreMark />
           <span aria-hidden="true" className="font-display text-lg font-semibold text-white/50">
