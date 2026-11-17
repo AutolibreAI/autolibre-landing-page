@@ -89,11 +89,15 @@ export function AlliesCarousel({ slides, label, prevLabel, nextLabel, goToLabels
         </div>
       </div>
 
+      {/* Solo desde `sm`: en mobile los slides se apilan (panel + contenido)
+          y quedan mucho más altos que anchos, así que centrar las flechas
+          a media altura las terminaba superponiendo con el texto (reporte
+          de producto, 2026-11-17). En mobile queda la navegación por puntos. */}
       <button
         type="button"
         aria-label={prevLabel}
         onClick={() => goTo(index - 1)}
-        className="absolute top-1/2 left-2 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-ink/10 bg-surface text-ink shadow-sm transition hover:bg-surface-muted sm:left-4"
+        className="absolute top-1/2 left-2 hidden size-11 -translate-y-1/2 items-center justify-center rounded-full border border-ink/10 bg-surface text-ink shadow-sm transition hover:bg-surface-muted sm:flex sm:left-4"
       >
         <Icon name="arrow-left" size={20} />
       </button>
@@ -101,7 +105,7 @@ export function AlliesCarousel({ slides, label, prevLabel, nextLabel, goToLabels
         type="button"
         aria-label={nextLabel}
         onClick={() => goTo(index + 1)}
-        className="absolute top-1/2 right-2 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-ink/10 bg-surface text-ink shadow-sm transition hover:bg-surface-muted sm:right-4"
+        className="absolute top-1/2 right-2 hidden size-11 -translate-y-1/2 items-center justify-center rounded-full border border-ink/10 bg-surface text-ink shadow-sm transition hover:bg-surface-muted sm:flex sm:right-4"
       >
         <Icon name="arrow-right" size={20} />
       </button>
