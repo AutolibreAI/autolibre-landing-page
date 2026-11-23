@@ -17,10 +17,9 @@ import { siteContent } from "@/lib/content/site";
  *
  * Full-bleed a propósito (pedido de producto, 2026-11-17): la `Section` no
  * tiene `Container` propio ni fondo propio, así el ancho y el color de cada
- * banner son los del banner mismo, borde a borde. El `Container` que sí
- * usa cada banner (`size="wide"`, 1440px) es solo para que el contenido no
- * se pierda en pantallas muy anchas; en la pieza original el panel lateral
- * de Asistir24 bleedea hasta el borde, afuera de ese `Container`. Sin título
+ * banner son los del banner mismo, borde a borde. Los FONDOS bleedean; el
+ * CONTENIDO vive alineado con el `Container` wide del header (en Asistir24,
+ * el texto del panel rosa se alinea recién desde `lg`). Sin título
  * visible tampoco; el `<h2>` sigue existiendo (outline y lectores de
  * pantalla) pero queda `sr-only`.
  *
@@ -86,19 +85,30 @@ function Asistir24Slide({ slide }: { readonly slide: Asistir24SlideData }) {
   return (
     <article
       aria-labelledby="allies-asistir24-title"
-      /* #005EBA: azul de marca de Asistir24. */
-      style={{ background: "#005EBA" }}
+      style={
+        {
+          /* #005EBA: azul de marca de Asistir24. */
+          background: "#005EBA",
+          /* Borde izquierdo del contenido del `Container` wide (padding del 6%
+             o lo que sobra a cada lado de los 1440px, lo que sea mayor). Desde
+             `lg` alinea el panel rosa y el texto con el header. Si cambia el
+             ancho de `Container size="wide"`, cambia acá también. */
+          "--asistir24-edge": "max(6%, (100% - 1440px) / 2)",
+        } as React.CSSProperties
+      }
       // `min-h-150 sm:min-h-120`: la misma en los tres banners (ver nota en
       // `IntegritySlide`), para que el carrusel no salte de alto al pasar de
       // uno a otro (pedido de producto, 2026-11-17).
       className="relative flex w-full min-h-150 flex-col text-white sm:min-h-120 sm:flex-row sm:items-stretch"
     >
-      {/* Panel de la izquierda: bleedea hasta el borde (como la pieza
-          original), por eso no vive adentro del `Container` de abajo. */}
+      {/* Panel de la izquierda: su FONDO bleedea hasta el borde (como la pieza
+          original). Abajo de `lg`, tal cual la pieza original. Desde `lg`, su
+          contenido arranca en el borde del `Container` wide, alineado con el
+          header: ancho = borde + 24rem, padding izquierdo = borde. */}
       <div
         /* #F45C9D / #14102B: rosa y tinta de marca de Asistir24. */
         style={{ background: "#F45C9D", color: "#14102B" }}
-        className="flex flex-col items-start justify-center gap-4 px-6 py-7 sm:w-[30%] sm:gap-5 sm:px-10 sm:py-0 md:px-12"
+        className="flex flex-col items-start justify-center gap-4 px-6 py-7 sm:w-[30%] sm:gap-5 sm:px-10 sm:py-0 md:px-12 lg:w-[calc(var(--asistir24-edge)+24rem)] lg:shrink-0 lg:gap-6 lg:pr-12 lg:pl-(--asistir24-edge)"
       >
         <p className="font-display text-6xl leading-none font-extrabold sm:text-8xl md:text-9xl">{slide.bigNumber}</p>
         <p className="font-display text-xl leading-tight font-bold sm:text-2xl md:text-3xl">{slide.bigNumberLabel}</p>
@@ -115,42 +125,48 @@ function Asistir24Slide({ slide }: { readonly slide: Asistir24SlideData }) {
         </a>
       </div>
 
-      <Container size="wide" className="flex flex-1 flex-col justify-center gap-4 py-8 sm:gap-5 sm:py-12 md:py-16">
-        <div className="flex items-center gap-3">
-          <AutoLibreMark />
-          <span aria-hidden="true" className="font-display text-lg font-semibold text-white/50">
-            ×
-          </span>
-          <Image
-            src={slide.partnerLogo.src}
-            alt={slide.partnerLogo.alt}
-            width={slide.partnerLogo.width}
-            height={slide.partnerLogo.height}
-            sizes="80px"
-            className="h-10 w-auto object-contain"
-          />
+      {/* Abajo de `lg` es el mismo marcado que arma `Container size="wide"`
+          (padding 6% afuera, max-width adentro). No usa `Container` porque
+          desde `lg` el borde derecho tiene que coincidir con el del header
+          (`--asistir24-edge`) y `Container` no deja cambiar su padding. */}
+      <div className="w-full px-[6%] lg:flex lg:flex-1 lg:flex-col lg:justify-center lg:pr-(--asistir24-edge) lg:pl-16">
+        <div className="mx-auto flex w-full max-w-[1440px] flex-col justify-center gap-4 py-8 sm:gap-5 sm:py-12 md:py-16 lg:mx-0">
+          <div className="flex items-center gap-3">
+            <AutoLibreMark />
+            <span aria-hidden="true" className="font-display text-lg font-semibold text-white/50">
+              ×
+            </span>
+            <Image
+              src={slide.partnerLogo.src}
+              alt={slide.partnerLogo.alt}
+              width={slide.partnerLogo.width}
+              height={slide.partnerLogo.height}
+              sizes="80px"
+              className="h-10 w-auto object-contain"
+            />
+          </div>
+          <h3 id="allies-asistir24-title" className="font-display text-3xl leading-tight font-bold md:text-4xl lg:text-5xl">
+            {slide.headline}
+          </h3>
+          <p className="max-w-150 text-base text-white/90 md:text-lg">{slide.description}</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="flex h-11 items-center rounded-full border-2 border-white px-5 font-display text-sm font-semibold whitespace-nowrap">
+              {slide.steps[0]}
+            </span>
+            {/* #F45C9D: rosa de marca de Asistir24. */}
+            <span className="shrink-0" style={{ color: "#F45C9D" }}>
+              <Icon name="arrow-right" size={20} />
+            </span>
+            {/* #005EBA: azul de marca de Asistir24. */}
+            <span
+              style={{ color: "#005EBA" }}
+              className="flex h-11 items-center rounded-full bg-white px-5 font-display text-sm font-bold whitespace-nowrap"
+            >
+              {slide.steps[1]}
+            </span>
+          </div>
         </div>
-        <h3 id="allies-asistir24-title" className="font-display text-3xl leading-tight font-bold md:text-4xl">
-          {slide.headline}
-        </h3>
-        <p className="max-w-150 text-base text-white/90 md:text-lg">{slide.description}</p>
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="flex h-11 items-center rounded-full border-2 border-white px-5 font-display text-sm font-semibold whitespace-nowrap">
-            {slide.steps[0]}
-          </span>
-          {/* #F45C9D: rosa de marca de Asistir24. */}
-          <span className="shrink-0" style={{ color: "#F45C9D" }}>
-            <Icon name="arrow-right" size={20} />
-          </span>
-          {/* #005EBA: azul de marca de Asistir24. */}
-          <span
-            style={{ color: "#005EBA" }}
-            className="flex h-11 items-center rounded-full bg-white px-5 font-display text-sm font-bold whitespace-nowrap"
-          >
-            {slide.steps[1]}
-          </span>
-        </div>
-      </Container>
+      </div>
     </article>
   );
 }
