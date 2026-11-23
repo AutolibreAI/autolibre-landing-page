@@ -39,8 +39,9 @@ import {
   PROVIDER_BRAND_MAX_LENGTH,
   PROVIDER_BRAND_MAX_COUNT,
   validBrandSelection,
-  validProviderLogo,
+  validProviderLogoSource,
 } from "@/lib/proveedores/registration";
+import { compressProviderLogo } from "@/lib/proveedores/logo-compression";
 import {
   EMPTY_GEO,
   findAddressComponent,
@@ -173,8 +174,20 @@ export function ProviderForm({
   const [brands, setBrands] = useState<string[]>([]);
   const [specializedBrands, setSpecializedBrands] = useState<string[]>([]);
   const [otherSpecialty, setOtherSpecialty] = useState("");
-  const [logo, setLogo] = useState<File | null>(null);
+  /**
+   * El logo YA comprimido (ver lib/proveedores/logo-compression.ts), no el
+   * archivo que eligio la persona: se achica al elegirlo, asi el error aparece
+   * en el momento y el envio no espera.
+   */
+  const [logo, setLogo] = useState<Blob | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
+  const [logoProcessing, setLogoProcessing] = useState(false);
+  /**
+   * Cada eleccion de archivo suma uno. Si la persona elige otro logo (o lo
+   * quita) mientras el anterior se comprime, el resultado viejo llega con un
+   * numero que ya no es el actual y se descarta.
+   */
+  const logoPickRef = useRef(0);
   const [description, setDescription] = useState("");
   /**
    * Redes con un link que el backend rechazaria. Se marca al salir del campo
@@ -680,22 +693,43 @@ export function ProviderForm({
                   ? "prov-logo-hint prov-logo-error"
                   : "prov-logo-hint"
               }
-              onChange={(event) => {
+              onChange={async (event) => {
                 const file = event.target.files?.[0] ?? null;
-                setLogo(file && validProviderLogo(file) ? file : null);
+                const pick = ++logoPickRef.current;
+                setLogo(null);
+                setLogoProcessing(false);
+                if (!file) {
+                  setLogoError(null);
+                  return;
+                }
+                if (!validProviderLogoSource(file)) {
+                  setLogoError(providersContent.form.logo.invalid);
+                  return;
+                }
+                setLogoError(null);
+                setLogoProcessing(true);
+                const compressed = await compressProviderLogo(file);
+                if (pick !== logoPickRef.current) return;
+                setLogoProcessing(false);
+                setLogo(compressed);
                 setLogoError(
-                  file && !validProviderLogo(file)
-                    ? providersContent.form.logo.invalid
-                    : null,
+                  compressed ? null : providersContent.form.logo.processError,
                 );
               }}
             />
-            {logo || logoError ? (
+            {logoProcessing ? (
+              <p role="status" className="text-sm text-ink/70">
+                {providersContent.form.logo.processing}
+              </p>
+            ) : null}
+            {logo || logoError || logoProcessing ? (
               <button
                 type="button"
                 className="min-h-11 self-start text-sm font-semibold text-brand underline underline-offset-4"
                 disabled={submitState === "loading"}
                 onClick={() => {
+                  logoPickRef.current += 1;
+                  setLogoProcessing(false);
                   setLogo(null);
                   setLogoError(null);
                   if (logoInputRef.current) logoInputRef.current.value = "";
@@ -1252,7 +1286,7 @@ export function ProviderForm({
           size="lg"
           block
           className="mt-7"
-          disabled={submitState === "loading"}
+          disabled={submitState === "loading" || logoProcessing}
         >
           {submitState === "loading"
             ? providersContent.form.submitLoadingLabel
