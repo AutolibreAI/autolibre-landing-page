@@ -113,6 +113,12 @@ const members = [
     name: "Matías García Guevara",
     role: "Cofundador y CFO: finanzas, estrategia, seguros y financiación",
     founder: true,
+    photo: {
+      src: "/images/about/equipo-matias-garcia-guevara.webp",
+      alt: "Matías García Guevara, cofundador y CFO de AutoLibre, sonríe con una remera negra de AutoLibre.AI.",
+      width: 800,
+      height: 1000,
+    },
   },
   {
     id: "ramiro-sarasola",

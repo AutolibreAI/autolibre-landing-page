@@ -65,7 +65,7 @@ const routes = [
   },
   {
     path: "/sobre-nosotros",
-    lastModified: "2026-10-29",
+    lastModified: "2026-11-19",
     changeFrequency: "monthly",
     priority: 0.6,
   },
