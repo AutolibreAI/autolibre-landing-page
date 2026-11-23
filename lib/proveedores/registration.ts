@@ -281,6 +281,50 @@ export function validProviderLogo(file: {
   );
 }
 
+/**
+ * El logo se achica en el navegador antes de enviarse
+ * (`lib/proveedores/logo-compression.ts`), para que el taller pueda subir la
+ * foto o el PNG que tenga a mano (habitualmente 1-4 MB) sin chocar con
+ * `PROVIDER_LOGO_MAX_BYTES`. Ese tope NO se sube: la ruta /api/provider y el
+ * backend lo siguen validando como defensa. Lo que cambia es que la persona ya
+ * no lo ve.
+ *
+ * 512 px es el tamaño que el perfil publico declara en su Open Graph
+ * (app/proveedores/[slug]/page.tsx): guardar mas pixeles es pagar
+ * almacenamiento y transferencia por algo que nadie ve.
+ */
+export const PROVIDER_LOGO_MAX_SIDE = 512;
+
+/**
+ * Tope del archivo ORIGINAL, antes de comprimir. No protege al backend (eso ya
+ * lo hace `PROVIDER_LOGO_MAX_BYTES`): protege al navegador, que decodifica la
+ * imagen entera en memoria, y un celular con poca RAM se puede trabar con una
+ * foto enorme.
+ */
+export const PROVIDER_LOGO_SOURCE_MAX_BYTES = 15 * 1024 * 1024;
+
+export function validProviderLogoSource(file: {
+  size: number;
+  type: string;
+}): boolean {
+  return (
+    file.size > 0 &&
+    file.size <= PROVIDER_LOGO_SOURCE_MAX_BYTES &&
+    (PROVIDER_LOGO_TYPES as readonly string[]).includes(file.type)
+  );
+}
+
+export function fitProviderLogo(
+  width: number,
+  height: number,
+): { width: number; height: number } {
+  const scale = Math.min(1, PROVIDER_LOGO_MAX_SIDE / Math.max(width, height));
+  return {
+    width: Math.max(1, Math.round(width * scale)),
+    height: Math.max(1, Math.round(height * scale)),
+  };
+}
+
 export function validBrandSelection(
   worksAllBrands: boolean,
   brands: readonly string[],
