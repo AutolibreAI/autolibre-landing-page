@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 import { PageShell } from "@/components/layout/page-shell";
 import { AccountPanel } from "@/components/proveedores/account/account-panel";
-import { PRIVATE_FLOW_TITLE_ID } from "@/components/proveedores/account/private-flow";
-import { Section } from "@/components/ui/section";
-import { ACCOUNT_PATH } from "@/lib/account/paths";
+import { ACCOUNT_PATH, ACCOUNT_SIGN_OUT_PARAM } from "@/lib/account/paths";
+import {
+  accountSectionHref,
+  ACCOUNT_PARTNER_PARAM,
+  ACCOUNT_SECTION_PARAM,
+  parseAccountPartnerParam,
+  parseAccountSection,
+} from "@/lib/account/sections";
 import { clerkClientUatCookieName } from "@/lib/auth/session-cookie";
 import { accountContent } from "@/lib/content/account";
 import { createMetadata } from "@/lib/seo/metadata";
@@ -23,19 +28,33 @@ export const metadata: Metadata = createMetadata({
   index: false,
 });
 
+type CuentaPageProps = {
+  readonly searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
 /**
- * `/cuenta`: "Mi cuenta" mínimo de los talleres. Server con una sola isla,
- * que pinta el `<h1>` en los dos estados: sin sesión, el login compartido;
- * con sesión, quién sos (con cerrar sesión), tus talleres y el estado de su
- * plan. Sin features nuevas de backend: `GET /partners/me/memberships` y
- * `GET /partners/{id}/subscription`.
+ * `/cuenta`: "Mi negocio" de los talleres (fase 6 del rediseño). La página
+ * lee la sección (`?seccion=`), el negocio (`?negocio=`) y el pedido de
+ * cerrar sesión (`?salir=1`) y se los pasa a la isla: cada sección es una
+ * URL (ver `lib/account/sections.ts`). Una sola isla pinta el `<h1>` en
+ * todos los estados.
  */
-export default function CuentaPage() {
+export default async function CuentaPage({ searchParams }: CuentaPageProps) {
+  const params = await searchParams;
+  const section = parseAccountSection(params[ACCOUNT_SECTION_PARAM]);
+  const partnerId = parseAccountPartnerParam(params[ACCOUNT_PARTNER_PARAM]);
+  const signOutRequested = params[ACCOUNT_SIGN_OUT_PARAM] !== undefined;
+
   return (
     <PageShell currentPath={PATH}>
-      <Section tone="muted" spacing="md" aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
-        <AccountPanel selfPath={PATH} sessionCookie={clerkClientUatCookieName()} />
-      </Section>
+      <AccountPanel
+        selfPath={PATH}
+        currentPath={accountSectionHref(PATH, section, partnerId)}
+        sessionCookie={clerkClientUatCookieName()}
+        section={section}
+        requestedPartnerId={partnerId}
+        signOutRequested={signOutRequested}
+      />
     </PageShell>
   );
 }
