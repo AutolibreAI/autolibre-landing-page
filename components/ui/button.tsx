@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
  * Botón compartido. Conviven DOS sistemas mientras dura el rediseño
  * (2026-11, ver DESIGN.md):
  *
- * - **AutoLibre AI (vigente)**: variantes `primary`, `outline` y `light`, en
+ * - **AutoLibre AI (vigente)**: variantes `primary`, `outline`, `light` y `outlineDark`, en
  *   píldora, con Outfit semibold y alto fijo de 44 a 56px (tamaños `"44"`,
  *   `"48"`, `"52"`, `"56"`). Es lo que se usa en código nuevo.
  * - **Anterior (deprecado)**: `brand`, `brandOutline`, `outlineInverse` e
@@ -36,6 +36,12 @@ const buttonVariants = cva(
         /** Sobre fondos oscuros (`action`/`ink`): `card` con texto `fg` (17.58:1). */
         light:
           "rounded-full bg-card font-display text-fg hover:bg-brand-50",
+        /**
+         * Secundaria sobre fondos oscuros (`action`): borde `on-dark-subtle`
+         * (4.86:1, WCAG 1.4.11) y texto blanco (14.88:1).
+         */
+        outlineDark:
+          "rounded-full border border-on-dark-subtle font-display text-white hover:bg-action-hover",
 
         // ── Sistema anterior (deprecado) ──
         /**

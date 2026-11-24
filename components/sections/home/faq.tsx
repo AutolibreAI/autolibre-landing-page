@@ -1,102 +1,98 @@
-"use client";
-
-import { useState } from "react";
+import { FaqList } from "@/components/marketing/faq-list";
+import { eyebrow, inlineLink, sectionTitle } from "@/components/marketing/styles";
 import { Section } from "@/components/ui/section";
 import { faqCategories } from "@/lib/content/faq";
 import { homeContent } from "@/lib/content/home";
-import { cn } from "@/lib/utils";
+import { siteContent } from "@/lib/content/site";
+import { siteConfig } from "@/lib/seo/config";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+
+const { duplicateIds } = homeContent.faq;
 
 /**
- * FAQ con pestañas por categoría.
+ * Preguntas de la app (`lib/content/faq.ts`) que se muestran debajo de las
+ * del pedido, por tema. Sin las que repiten una de arriba.
+ */
+export const homeAppFaqCategories = faqCategories.map((category) => ({
+  ...category,
+  items: category.items.filter((item) => !(duplicateIds as readonly string[]).includes(item.id)),
+}));
+
+/** Todo lo que se ve en la FAQ del Home: alimenta su `FAQPage`. */
+export const homeFaqItems = [
+  ...homeContent.faq.items,
+  ...homeAppFaqCategories.flatMap((category) => category.items),
+];
+
+/**
+ * Preguntas frecuentes del Home. Server Component, sin JS: `<details>`
+ * nativo (antes eran pestañas client).
  *
- * Dos decisiones deliberadas:
- *
- * 1. Las categorías inactivas se ocultan con el atributo `hidden`, no se
- *    desmontan. Todas las respuestas quedan en el HTML servido, así que el
- *    crawler las lee aunque nunca ejecute el click.
- * 2. El acordeón es `<details>/<summary>` nativo: accesible por teclado,
- *    expandible sin JavaScript y sin estado que sincronizar.
+ * Arriba, las cinco del lienzo (el pedido). Debajo, "Sobre la app": las
+ * preguntas que ya publicaba el Home (documentación, diagnóstico, OBD2…),
+ * agrupadas por tema en un `<details>` por grupo, para no perder ese
+ * contenido indexable sin alargar la página. Todo está en el HTML.
  */
 export function FaqSection() {
-  const [activeId, setActiveId] = useState(faqCategories[0].id);
+  const { title, contact, items, moreTitle } = homeContent.faq;
+  const { externalHint } = siteContent.nav;
 
   return (
-    <Section
-      id="faq"
-      tone="surface"
-      aria-labelledby="faq-title"
-      container="prose"
-      containerClassName="reveal-group"
-    >
-      <h2
-        id="faq-title"
-        className="mb-12 text-center font-display text-[2rem] font-bold text-ink md:text-[2.25rem]"
-      >
-        {homeContent.faq.title}
-      </h2>
-
-      <div
-        role="tablist"
-        aria-label="Categorías de preguntas frecuentes"
-        className="mb-10 flex flex-wrap justify-center gap-2.5"
-      >
-        {faqCategories.map((category) => {
-          const isActive = category.id === activeId;
-          return (
-            <button
-              key={category.id}
-              type="button"
-              role="tab"
-              id={`faq-tab-${category.id}`}
-              aria-selected={isActive}
-              aria-controls={`faq-panel-${category.id}`}
-              onClick={() => setActiveId(category.id)}
-              className={cn(
-                "rounded-full px-5 py-2.5 text-sm font-semibold transition-colors",
-                isActive
-                  ? "bg-brand text-white"
-                  : "bg-surface-muted text-ink hover:bg-surface-muted/70",
-              )}
+    <Section id="faq" tone="canvas" spacing="md" aria-labelledby="faq-title">
+      <div className="flex flex-wrap gap-x-16 gap-y-6">
+        <div className="min-w-0 flex-[1_1_17.5rem]">
+          <h2 id="faq-title" className={sectionTitle}>
+            {title}
+          </h2>
+          <p className="mt-2.5 text-base text-fg-muted">
+            {contact.prefix}
+            <a href={`mailto:${siteConfig.contact.email}`} className={inlineLink}>
+              {siteConfig.contact.email}
+            </a>
+            {contact.middle}
+            <a
+              href={siteConfig.contact.whatsappChat}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={inlineLink}
+              data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
+              data-analytics-placement="home_faq"
             >
-              {category.name}
-            </button>
-          );
-        })}
-      </div>
-
-      {faqCategories.map((category) => (
-        <div
-          key={category.id}
-          role="tabpanel"
-          id={`faq-panel-${category.id}`}
-          aria-labelledby={`faq-tab-${category.id}`}
-          hidden={category.id !== activeId}
-          /* Flujo de bloque a propósito: una clase `flex` pisaría el
-             `display:none` que aporta el atributo `hidden`. */
-          className="space-y-2.5"
-        >
-          {category.items.map((item) => (
-            <details
-              key={item.id}
-              name={`faq-${category.id}`}
-              className="group overflow-hidden rounded-[0.875rem] border border-line"
-            >
-              <summary className="flex list-none items-center justify-between gap-4 px-6 py-5 font-display text-base font-semibold text-ink">
-                <span>{item.question}</span>
-                <span
-                  aria-hidden="true"
-                  className="shrink-0 text-xl leading-none text-ink/60 transition-transform group-open:rotate-45"
-                >
-                  +
-                </span>
-              </summary>
-              <p className="px-6 pb-5.5 text-[0.9375rem] leading-relaxed text-ink/72">
-                {item.answer}
-              </p>
-            </details>
-          ))}
+              {contact.whatsapp}
+              <span className="sr-only"> {externalHint}</span>
+            </a>
+            {contact.suffix}
+          </p>
         </div>
-      ))}
+
+        <div className="flex min-w-0 flex-[2_1_32.5rem] flex-col gap-8">
+          <FaqList items={items} />
+
+          <div>
+            <h3 className={`mb-2 ${eyebrow}`}>{moreTitle}</h3>
+            <div className="flex flex-col gap-2">
+              {homeAppFaqCategories.map((category) => (
+                <details key={category.id} className="group rounded-xl border border-card-line bg-card">
+                  <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 px-5 py-3 font-display text-base font-semibold text-fg [&::-webkit-details-marker]:hidden">
+                    {category.name}
+                    <span aria-hidden="true" className="shrink-0 text-xl leading-none text-fg-muted transition-transform group-open:rotate-45 motion-reduce:transition-none">
+                      +
+                    </span>
+                  </summary>
+                  <dl className="flex flex-col gap-4 px-5 pb-5">
+                    {category.items.map((item) => (
+                      <div key={item.id}>
+                        <dt className="font-semibold text-fg">{item.question}</dt>
+                        <dd className="mt-1 text-control text-fg-muted">{item.answer}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </details>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </Section>
   );
 }

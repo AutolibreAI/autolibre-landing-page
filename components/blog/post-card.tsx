@@ -32,7 +32,7 @@ export function PostCard({ post, headingLevel: Heading = "h3" }: PostCardProps) 
         <p className="text-label font-semibold text-brand-hover">
           {post.category.name}
           {date ? (
-            <span className="font-normal text-ink/60">
+            <span className="font-normal text-fg-subtle">
               {" · "}
               <time dateTime={post.date}>{date}</time>
             </span>

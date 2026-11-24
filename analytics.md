@@ -70,12 +70,15 @@ Desde la fase 2 del rediseño (2026-11-24) el header ya no tiene "Descargar la a
 
 ### 🏠 Home `/`
 
-| Botón / zona                           | Evento PostHog                  | Props                               | Meta                  | Cuándo |
-| -------------------------------------- | ------------------------------- | ----------------------------------- | --------------------- | ------ |
-| Botones de tienda del hero             | `app_store_clicked`             | `store`, `placement: "hero"`        | —                     | Click  |
-| Botones de tienda del CTA de cierre    | `app_store_clicked`             | `store`, `placement: "closing_cta"` | —                     | Click  |
-| WhatsApp en la sección de presupuestos | `whatsapp_clicked`              | `placement: "home_quotes"`          | `Contact {placement}` | Click  |
-| "Pedir presupuesto" (abre el modal)    | (sin evento propio) → ver modal |                                     |                       |        |
+Desde el 2026-11-24 (rediseño, fase 4a) el Home monta el módulo de pedido (`placement: "modulo_home"`, ver más abajo). Dejan de llegar `app_store_clicked` `hero` y `closing_cta` del Home, y `whatsapp_clicked` / `quote_cta_clicked` `home_quotes` (esas secciones ya no existen; `closing_cta` sigue llegando desde `/blog` y `/sobre-nosotros`).
+
+| Botón / zona                                        | Evento PostHog             | Props                                  | Meta                  | Cuándo |
+| --------------------------------------------------- | -------------------------- | -------------------------------------- | --------------------- | ------ |
+| Tarjetas y links de "Todo lo que podés pedir"       | `quote_cta_clicked`        | `placement: "home_services"`           | —                     | Click (llevan a `/pedido`) |
+| "Hacé tu pedido" de la barra fija (sube al módulo)  | `quote_cta_clicked`        | `placement: "mobile_bar"`              | —                     | Click  |
+| Botones de tienda del panel de la app               | `app_store_clicked`        | `store`, `placement: "home_app"`       | —                     | Click  |
+| WhatsApp del texto de la FAQ                        | `whatsapp_clicked`         | `placement: "home_faq"`                | `Contact {placement}` | Click  |
+| "Sumate a AutoLibre" de la banda para negocios      | `partner_register_started` | `placement: "home_band"`               | —                     | Click  |
 
 ### 🪟 Modal de presupuesto (se abre desde la home), 4 pasos
 
@@ -92,21 +95,21 @@ Desde la fase 2 del rediseño (2026-11-24) el header ya no tiene "Descargar la a
 
 Hasta el 2026-11-05 el header de `/pedido` tenía un botón de WhatsApp (`placement: "header"` y `"header_menu"`, con `lead_source: "whatsapp"`). Ya no existe, así que esos placements de `whatsapp_clicked` (con `lead_source`) dejan de llegar desde esa fecha. Desde el 2026-11-24 el header de `/pedido` va sin acción principal (la página ES el pedido).
 
-| Botón / zona                                                               | Evento PostHog     | Props                                                    | Meta                                                                       | Cuándo                           |
-| -------------------------------------------------------------------------- | ------------------ | -------------------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------- |
-| WhatsApp del hero                                                          | `whatsapp_clicked` | `placement: "hero"`, `lead_source: "whatsapp"`           | `Lead`                                                                     | Click                            |
-| WhatsApp de la barra fija (sticky)                                         | `whatsapp_clicked` | `placement: "sticky_bar"`, `lead_source: "whatsapp"`     | `Lead`                                                                     | Click                            |
-| WhatsApp de la banda CTA                                                   | `whatsapp_clicked` | `placement: "cta_band"`, `lead_source: "whatsapp"`       | `Lead`                                                                     | Click                            |
-| Primera interacción con el formulario (foco en un campo o un atajo rápido) | `quote_started`    | `flow: "page"`                                           | `QuoteStart` (custom)                                                      | Una vez por carga del formulario |
-| Pedido registrado                                                          | `quote_submitted`  | server, ver [sección 4](#4-quote_submitted-en-el-server) | `Lead {lead_source: "form"}` + `eventID` compartido con la Conversions API | Solo con OK del backend          |
-| Envío fallido                                                              | `quote_failed`     | `flow: "page"`, `reason`, `status?`                      | —                                                                          | Error                            |
-| WhatsApp de la confirmación                                                | `whatsapp_clicked` | `placement: "confirmation"`, `pedido: true`              | `Contact` (no Lead)                                                        | Click después de pedir           |
+Desde el 2026-11-24 (rediseño, fase 4a) el formulario de `/pedido` es el módulo de pedido (`placement: "modulo_pedido"`, ver abajo). Se fueron el form viejo (`flow: "page"` sin `tab`), el hero con WhatsApp y QR y la barra fija vieja: dejan de llegar `whatsapp_clicked` `hero`, `sticky_bar` y `confirmation`.
 
-> **Clave para Ads:** en `/pedido` la campaña optimiza sobre un solo `Lead`, que llega por dos caminos y se separa con `lead_source`: `whatsapp` (clicks) o `form` (pedido registrado).
+| Botón / zona                                          | Evento PostHog      | Props                                                    | Meta     | Cuándo |
+| ----------------------------------------------------- | ------------------- | -------------------------------------------------------- | -------- | ------ |
+| WhatsApp de la barra fija en celular                  | `whatsapp_clicked`  | `placement: "mobile_bar"`, `lead_source: "whatsapp"`     | `Lead`   | Click  |
+| "Hacé tu pedido" de la barra fija (sube al módulo)    | `quote_cta_clicked` | `placement: "mobile_bar"`                                | —        | Click  |
+| WhatsApp de la banda de cierre                        | `whatsapp_clicked`  | `placement: "cta_band"`, `lead_source: "whatsapp"`       | `Lead`   | Click  |
+| "Hacé tu pedido" de la banda de cierre (sube al módulo) | `quote_cta_clicked` | `placement: "pedido_cta_band"`                         | —        | Click  |
+| Pedido, inicio, paso 2, envío, WhatsApp del módulo    | ver Módulo de pedido | `placement: "modulo_pedido"`                            |          |        |
+
+> **Clave para Ads:** en `/pedido` la campaña optimiza sobre un solo `Lead`, que llega por dos caminos y se separa con `lead_source`: `whatsapp` (clicks) o `form` (pedido registrado). `PedidoPaso` (`quote_step_viewed`, `step: 2`) ahora lo manda el módulo en el Home y en `/pedido`: hay que avisarle a marketing.
 
 ### 🧩 Módulo de pedido (`components/modulo-pedido`, rediseño fase 3)
 
-Pestañas Taller / Auxilio / Multas / Seguro. Lo van a montar el Home (`placement: "modulo_home"`) y `/pedido` (`placement: "modulo_pedido"`) en la fase 4; desde el 2026-11-24 vive en la vista previa `/pedido/modulo` (noindex, mide como `modulo_pedido`). Valores cerrados en `QUOTE_TABS`, `QUOTE_MODULE_PLACEMENTS` y `QUOTE_CHIPS` (`lib/analytics/events.ts`). Solo Taller registra un pedido; el `flow` sigue siendo `page` (mismo body y misma route que el form de `/pedido`), y `tab` + `placement` son lo que lo separa.
+Pestañas Taller / Auxilio / Multas (Seguro se sacó el 2026-11-24, decisión de producto: no se ofrecen seguros por ahora; los eventos viejos con `tab: "seguro"` quedan en el histórico de la vista previa). Montado en el Home (`placement: "modulo_home"`) y en `/pedido` (`placement: "modulo_pedido"`) desde la fase 4a (2026-11-24); la vista previa `/pedido/modulo` se borró. El paso 2 tiene un checkbox de consentimiento desmarcado y obligatorio: `consent` viaja con su valor real. Valores cerrados en `QUOTE_TABS`, `QUOTE_MODULE_PLACEMENTS` y `QUOTE_CHIPS` (`lib/analytics/events.ts`). Solo Taller registra un pedido; el `flow` sigue siendo `page` (mismo body y misma route que el form de `/pedido`), y `tab` + `placement` son lo que lo separa.
 
 | Botón / momento                                                         | Evento PostHog          | Props                                                                     | Meta                                                    | Cuándo |
 | ----------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------- | ------ |
@@ -117,7 +120,6 @@ Pestañas Taller / Auxilio / Multas / Seguro. Lo van a montar el Home (`placemen
 | Pedido registrado                                                       | `quote_submitted`       | server, ver [sección 4](#4-quote_submitted-en-el-server) (con `tab` y `placement`) | `Lead {lead_source: "form"}` + `eventID` compartido | Solo con OK del backend |
 | Envío fallido                                                           | `quote_failed`          | `flow: "page"`, `tab`, `placement`, `reason`, `status?`                   | —                                                       | Error |
 | "Pedilo por WhatsApp" (Taller)                                          | `whatsapp_clicked`      | `placement`, `tab: "taller"`, `lead_source: "whatsapp"` solo en `modulo_pedido` | `Lead` en `modulo_pedido`; `Contact` en `modulo_home` | Click |
-| "Cotizá por WhatsApp" (Seguro: no hay endpoint de seguros)              | `whatsapp_clicked`      | `placement`, `tab: "seguro"`, `lead_source` igual que arriba              | Igual que arriba                                        | Click |
 | "Pedí auxilio" (Asistir24) / "Consultá tu caso" (Sin Fotomultas)        | `quote_partner_clicked` | `tab: "auxilio"` / `"multas"`, `placement`                                | —                                                       | Click. Es el "inicio del pedido" de esas pestañas |
 | "Bajar la app" del enviado                                              | (sin evento propio)     |                                                                           |                                                         | Se ve el `$pageview` de `/descarga` |
 

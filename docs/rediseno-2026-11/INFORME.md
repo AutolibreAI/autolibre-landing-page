@@ -574,3 +574,130 @@ Chunk propio de la ruta (lo que no comparte con `/sobre-nosotros`): **módulo 45
 - Visual con Chrome headless (CDP) sobre `next start --port 3100`, a 1440 y 390 px, contra `capturas/ModuloPedido.webp`, `Pedido.webp` y `Pedido-celular.webp`: paso 1, paso 1 con errores, paso 2, paso 2 con error de WhatsApp, error del servidor, enviado y los paneles de Auxilio y Seguro.
 - Flujo con teclado y mouse reales por CDP. **Ningún pedido salió**: `/api/presupuesto` se interceptó con `Fetch.requestPaused` (primero un 502 simulado, después un OK con `AL-9999`), y `/api/vehicle-lookup` y `maps.googleapis.com` se bloquearon. El body interceptado trae `quoteTab: "taller"` y `quotePlacement: "modulo_pedido"`.
 - `/pedido` después del refactor de `PedidoForm`: mismo flujo a 1440 px con la red interceptada (envío vacío marca problema, zona y WhatsApp con foco en el primero; 502 simulado muestra el error; el OK simulado muestra la confirmación con #AL-9998). El body sigue igual (sin `quoteTab` ni `quotePlacement`), el lookup de la patente sale al salir del campo y Google Maps recién al enfocar la zona.
+
+## Fase 4a: Home y /pedido
+
+Rama `feat/rediseno-2026-11`, 2026-11-24. El Home y `/pedido` pasan al diseño nuevo (`Main`/`Home-celular`, `Pedido`/`Pedido-celular`) con el `ModuloPedido` como formulario. Medido con build de producción local (`next start --port 3100`), igual que la fase 0.
+
+### Decisiones de producto incorporadas (2026-11-24, decisión de producto)
+
+1. **Sin seguros por ahora**: se sacó la pestaña Seguro del módulo (quedan Taller, Auxilio y Multas). `QUOTE_TABS` ya no tiene `seguro` (el listener de `data-analytics-tab` y la route de `/api/presupuesto` descartan ese valor); se borraron `public/images/pedido/seguro.webp`, el panel y su copy. Tabs: el patrón APG no depende de la cantidad (roving tabindex, ←/→ en círculo, Inicio/Fin), verificado con 3 pestañas. Alineado: `public/llms.txt` ya no lista seguros entre lo que se puede pedir y `PRODUCT.md` lo anota. Queda en el Home el **beneficio** del aliado Intēgrity Seguros (es un descuento de un aliado, no un pedido): si producto quiere sacarlo también, es borrar un ítem de `homeContent.allies`.
+2. **Auxilio y Multas** siguen llevando a Asistir24 y Sin Fotomultas.
+3. **Consentimiento real** en el paso 2 del módulo: checkbox nativo visible, **desmarcado** por defecto, con `label` asociado que ocupa todo el renglón (116 px de alto a 390, 56 px a 1440: objetivo táctil de 44 px o más). Texto: "Acepto que AutoLibre comparta mi consulta y mi WhatsApp con proveedores de su red para que me respondan, según los Términos y Condiciones y la Política de Privacidad." (links a `/terminos` y `/privacidad`, en otra pestaña para no perder lo cargado; copy en `lib/content/modulo-pedido.ts`, basado en el del modal). Si no está marcado, el envío se bloquea: error visible con `aria-invalid` + `aria-describedby` y foco en el checkbox (verificado por CDP: 0 llamadas a `/api/presupuesto` y foco en `pedido-modulo-consentimiento`). `consent` viaja con el valor real del checkbox. Se sacó la frase de la fase 3 ("Al enviarlo aceptás…"); queda "Tu WhatsApp lo usamos solo para avisarte de este pedido.". El error aparece por interacción (CLS 0 en todo el flujo). Revisión con `rg consent`: `PedidoForm` (forzaba `true`) se borró con el form viejo; `components/quote-flow` (el modal, hoy sin importadores) ya usaba un checkbox real desmarcado y obligatorio; la route exige `consent === true`.
+4. **Backend sin cambios**: la pestaña sigue yendo solo a PostHog.
+5. **Avisar a marketing de `PedidoPaso`**: `quote_step_viewed` (`step: 2`) ahora lo manda el módulo en el Home y en `/pedido` (antes solo el modal). Anotado también en `analytics.md`.
+
+### Qué cambió
+
+- **Home** (`app/page.tsx`): hero centrado con el `<h1>` y el módulo (Taller por defecto, `placement: "modulo_home"`), cifras (+150 proveedores, 700+ vehículos, "En el día"), "Todo lo que podés pedir" (6 servicios con ícono 3D + "También…", todo enlaza a `/pedido`), "Un pedido, varias respuestas.", beneficios de aliados (scroll horizontal nativo en celular), panel oscuro de la app (con `id="descargar"`: el ancla `/#descargar` sigue viva), guías del blog, FAQ y tarjeta para negocios. Todo Server Component; las únicas islas son las del módulo. Se borraron 13 secciones viejas (hero animado, presupuestos, problema, funciones, marketplace, historial, cómo funciona, diagnóstico, FAQ con pestañas client, carrusel de aliados client, pantallas, últimas guías). `ClosingCtaSection` y `ProviderBandSection` se conservaron porque las usan `/blog`, `/sobre-nosotros`, `/proveedores` y los perfiles.
+- **`/pedido`** (`app/pedido/page.tsx` + `components/pedido/pedido-sections.tsx`): migas "Inicio / Pedir propuestas", sello, `<h1>` "Presupuestos para tu auto, de proveedores en tu zona." (mantiene "presupuesto"), módulo (`placement: "modulo_pedido"`), tres checks, "Así te llega la respuesta", "Cómo funciona", FAQ + "Guías que te pueden servir" y banda de cierre ("Hacé tu pedido" sube al módulo; WhatsApp con borde y `lead_source: "whatsapp"`). Barra fija de celular: la compartida (`MobileActionBar`), con "Hacé tu pedido" → `#pedido` y el WhatsApp como `Lead`.
+- **Borrado** (verificado con `rg`, sin importadores): `PedidoForm`, `PedidoHero`, `PedidoStickyBar`, `OpenFormButton`, `WhatsappLink`, `components/pedido/shared.ts`, la vista previa `app/pedido/modulo/page.tsx` y su copy, el QR de WhatsApp de `/pedido` (`qr-code.tsx`) y `presupuestoContent.section`. `pedido-client.ts` se queda (lo usa el módulo).
+- **Lo que el form viejo hacía y se conservó**: `lead_source: "form"` en el `Lead` del pedido y `"whatsapp"` en los WhatsApp de `/pedido` (módulo, barra y cierre); `quote_started`, `quote_step_viewed` (`PedidoPaso`), `quote_submitted` con `metaEventId` compartido con la Conversions API y `quote_failed`; lookup de patente y Google Places diferido. **No se conservó** el botón "Mandanos un mensaje ahora" de la confirmación (`whatsapp_clicked` `confirmation`, era opcional): el enviado del módulo ofrece "Bajar la app" y "Hacer otro pedido", como el diseño.
+- **Piezas nuevas**: `components/marketing/` (`styles.ts`, `numbered-steps.tsx`, `faq-list.tsx` con `<details>`, `guide-links.tsx`), `lib/blog/picks.ts` (notas de Hygraph por fecha y por slug, con el mismo `getPosts` cacheado: `revalidate` + tag `hygraph`), variante de botón `outlineDark` (borde `on-dark-subtle` 4.86:1, texto blanco), tonos `card` y `canvas` en `Section` y props de `MobileActionBar` (`quoteHref`, `label`, `whatsappLead`) vía `PageShell`. Íconos de servicios: 6 WebP de 128 px (3,7 a 6,1 KB) en `public/images/servicios/`, desde los PNG de `autolibre-mobile`.
+- **Eventos nuevos** (detalle en `analytics.md`): `quote_cta_clicked` `home_services` y `pedido_cta_band`; `app_store_clicked` `home_app`; `whatsapp_clicked` `home_faq`; `partner_register_started` `home_band`.
+- **Arreglo de paso**: la fecha de `PostCard` pasa de `text-ink/60` a `fg-subtle` (era el `color-contrast` que fallaba en `/` y en `/blog`).
+
+### Title y description del Home (la decisión final es del equipo)
+
+| | Title | Description |
+|---|---|---|
+| **A (aplicada)** | AutoLibre · Pedí propuestas de talleres cerca tuyo, gratis | Contá qué le pasa a tu auto y recibí propuestas de talleres y proveedores de tu zona por WhatsApp, en el día. Gratis y sin compromiso. +150 proveedores en AMBA. |
+| B | Talleres y servicios para tu auto en AMBA · AutoLibre | Pedí propuestas gratis de talleres, gomerías y servicios de tu zona en AMBA. Contá qué le pasa a tu auto y te respondemos por WhatsApp en el día. |
+
+Se aplicó A: arranca con la acción (la conversión principal según `PRODUCT.md`), usa el vocabulario confirmado ("Pedí propuestas") y solo afirma lo que ya se publica (gratis, en el día, AMBA, +150). B apunta más a la keyword ("talleres AMBA") pero pierde la marca al principio. Viven en `homeContent.meta`. El Home no recibe el template del layout, por eso la marca va escrita.
+
+**Titular**: se aplicó el eslogan actual "Todo tu auto, en un solo lugar." (lo conservador). La otra opción del lienzo es "¿Qué necesita tu auto?". Las palabras rotativas del hero viejo no están en el diseño y se fueron: la excepción `motion-exempt` de `AGENTS.md` §3 para esas palabras queda sin uso (la de `VerticalsBandSection` tampoco aplica: esa franja ya no está en el Home). No se tocó `AGENTS.md`; conviene actualizar ese párrafo.
+
+### Inventario SEO antes / después (HTML del server)
+
+| | `/` antes | `/` después | `/pedido` antes | `/pedido` después |
+|---|---|---|---|---|
+| title | AutoLibre · Todo tu auto, en un solo lugar | AutoLibre · Pedí propuestas de talleres cerca tuyo, gratis | Presupuestos gratis para tu auto, por WhatsApp · AutoLibre | igual |
+| description | "Documentación, vencimientos… Descargala gratis…" | opción A (arriba) | "…te pasamos Presupuestos de proveedores…" | "…recibí presupuestos de proveedores de tu zona en AMBA por WhatsApp…" (se corrigió la mayúscula) |
+| canonical · robots | `https://autolibre.ai` · index, follow | igual | `https://autolibre.ai/pedido` · index, follow | igual |
+| H1 | Todo tu auto, en un solo lugar. (1) | igual (1) | Presupuestos de proveedores en tu zona, por WhatsApp. (1) | Presupuestos para tu auto, de proveedores en tu zona. (1) |
+| Saltos de heading | ninguno | ninguno | ninguno | ninguno |
+| JSON-LD | Organization, WebSite, WebPage, SoftwareApplication, FAQPage | + **BreadcrumbList** (faltaba) | Organization, WebPage, BreadcrumbList, FAQPage | igual (miga "Pedir propuestas") |
+| Clerk (HTML y chunks) | 0 | 0 | 0 | 0 |
+
+Outline del Home después: h1 → h2 "¿Te quedaste en el camino?" y "¿Tenés multas?" (paneles del módulo, ocultos pero en el HTML) → "Todo lo que podés pedir" → "Un pedido, varias respuestas." (3 h3) → "Beneficios de nuestros aliados" (3 h3) → "Todo lo que necesitás, en una app" (3 h3) → "Guías para tener tu auto en regla" (3 h3 de notas + "Más guías") → "Preguntas frecuentes" (h3 "Sobre la app") → "¿Tenés un taller o prestás un servicio?". `/pedido`: h1 → h2 de los paneles del módulo → "Así te llega la respuesta" → "Cómo funciona" (3 h3) → "Preguntas frecuentes" → "Guías que te pueden servir" → "Contanos qué le pasa a tu vehículo".
+
+Contenido indexable que se mantuvo de otra forma: la FAQ de la app (`lib/content/faq.ts`, unas 30 preguntas de documentación, diagnóstico, OBD2, talleres e historial) sigue en el Home debajo de las 5 del pedido, agrupada por tema en `<details>` (todo en el HTML y en el `FAQPage`; solo se saca "¿En qué zonas…?", que repite "¿Dónde funciona?"). "Cada service suma…" y "Entendé qué le pasa…" pasaron a `h3` del panel de la app. Se pierde el texto de "Ahora sabés qué necesita tu auto", "Empezás en dos minutos" y el ejemplo de historial (el diseño los saca). En `/pedido` las preguntas pasan de `h3` a `<summary>` (siguen en el `FAQPage`).
+
+Enlazado interno del Home: `/pedido` (header, 6 tarjetas y 9 links de servicios), 3 notas nuevas + 3 elegidas ("Más guías"), `/blog`, `/proveedores` ("Ver la red"), `/proveedores/registro` y `/proveedores/planes`. `/pedido` enlaza 3 notas, `/blog`, `/descarga`, `/terminos` y `/privacidad`.
+
+`app/sitemap.ts`: `lastModified` de `/` y `/pedido` = 2026-11-24. `public/llms.txt`: Inicio y Pedir presupuesto reescritos (módulo, consentimiento, +150, sin seguros). `/pedido/modulo` devuelve 404.
+
+### Lighthouse 12 antes / después
+
+Mismo método que la fase 0. Móvil: una corrida suelta variaba mucho en esta máquina (tareas largas "Unattributable" de 2 s que aparecían al azar), así que se hicieron 3 corridas por ruta y se guardó la **mediana** como `<ruta>-movil.json`; las tres están en `despues/<ruta>-movil-corrida{1,2,3}.json` (`/`: Performance 72 / 78 / 59; `/pedido`: 60 / 86 / 82).
+
+| Ruta | Modo | Medición | Perf | A11y | BP | SEO | LCP (s) | CLS | TBT (ms) | FCP (s) | Elemento LCP | Bloqueo de Facebook |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `/` | Móvil | Antes | 55 | 96 | 75 | 100 | 4.72 | 0 | 2046 | 1.22 | `h1#hero-title` | 546 ms |
+| `/` | Móvil | Después | 72 | 97 | 96 | 100 | 3.56 | 0 | 743 | 1.34 | `h1#hero-title` | no cargó |
+| `/` | Escritorio | Antes | 84 | 96 | 74 | 100 | 1.07 | 0 | 327 | 0.45 | `img` (pantalla del hero) | 85 ms |
+| `/` | Escritorio | Después | 90 | 100 | 96 | 100 | 1.06 | 0 | 235 | 0.34 | `h1#hero-title` | no cargó |
+| `/pedido` | Móvil | Antes | 53 | 100 | 75 | 100 | 6.28 | 0 | 1224 | 1.16 | `h1#pedido-titulo` | 583 ms |
+| `/pedido` | Móvil | Después | 82 | 100 | 96 | 100 | 3.46 | 0 | 369 | 1.09 | `h1#pedido-titulo` | no cargó |
+| `/pedido` | Escritorio | Antes | 77 | 100 | 74 | 100 | 1.35 | 0 | 446 | 0.33 | `h1#pedido-titulo` | 85 ms |
+| `/pedido` | Escritorio | Después | 99 | 100 | 96 | 100 | 0.85 | 0 | 78 | 0.30 | `h1#pedido-titulo` | no cargó |
+
+Lectura:
+
+- **LCP**: en las dos páginas y en los dos anchos el LCP es el `<h1>` (texto del server, sin animación, `next/font` con `swap` y fallback métrico). No hay imagen LCP, así que ninguna imagen lleva `preload`. En la traza, el LCP **observado es igual al FCP** (1,23 s y 1,08 s en las corridas móviles): el h1 se pinta en el primer frame. Los 3,5 s móviles son la simulación de Lantern, que le carga al LCP todo el JS pedido antes (el "Render Delay" es el 85 %). Para bajar de 2,5 s en la simulación hay que achicar el JS compartido de la plataforma (el chunk más pesado es el mismo en todas las rutas), fuera del alcance de esta fase. En producción (compresión y CDN de Vercel) la fase 0 ya medía mejor que en local.
+- **CLS 0** en todo: carga a 390 y 1440 y el flujo completo del módulo con mouse y teclado reales (PerformanceObserver).
+- **Buenas prácticas 74-75 → 96**: una parte es real (sin las advertencias del Pixel), pero en buena medida es porque el Pixel no llega a cargar durante la medición (ver abajo). Los 404 de `/_vercel/*` siguen siendo un artefacto local.
+- **Accesibilidad**: `/` móvil da 97 por `target-size` en dos chips ("Alineación y balanceo", "Frenos"): miden 44 px, pero en el viewport de Lighthouse (412 × 823) quedan debajo de la barra fija inferior al cargar. Es la barra del diseño; al scrollear quedan libres.
+
+### JS por ruta (suma de los `<script src>` del HTML, gzip local)
+
+| Ruta | Antes (fase 0) | Fase 3 | Después |
+|---|---|---|---|
+| `/` | 13 · 720.0 KB · 220.6 KB gzip · HTML 221.0 KB | 13 · 713.1 KB · 217.4 KB gzip | **12 · 713.4 KB · 215.9 KB gzip** · HTML 217.2 KB |
+| `/pedido` | 13 · 735.8 KB · 225.4 KB gzip · HTML 108.1 KB | 13 · 729.6 KB · 222.5 KB gzip | **12 · 713.4 KB · 215.9 KB gzip** · HTML 123.5 KB |
+
+Las dos rutas cargan ahora exactamente el mismo JS: el de la plataforma más las dos islas del módulo. Se fueron del Home la FAQ con pestañas y el carrusel de aliados (client), y de `/pedido` el form viejo (57,8 KB / 20,6 KB gzip de islas) y la barra fija con su `IntersectionObserver`.
+
+### Meta Pixel y PostHog
+
+- **Meta Pixel**: ya tenía el stub `fbq` inline en el `<head>` (cola de eventos) y `fbevents.js` con `next/script` `lazyOnload`, y aun así sumaba 520-590 ms de bloqueo en celular (`fbevents.js` + su `signals/config`, unos 260 KB). Ahora `fbevents.js` lo inyecta un loader inline (`metaPixelLoader` en `app/layout.tsx`) con la **primera interacción** (`pointerdown`, `keydown`, `scroll` o `touchstart`) o, si no la hay, **3,5 s después del `load`** y en `requestIdleCallback` (tope de 2 s). La cola del stub conserva todo lo encolado antes (`init`, `PageView` y cualquier `QuoteStart` o `Lead` temprano), así que no se pierden eventos de quien interactúa. Verificado por CDP: sin interacción, la primera petición a `connect.facebook.net` sale a los ~3,7 s; en Lighthouse ya no aparece (bloqueo de Facebook: 0). **Costo**: quien se va antes de ~3,5 s después del `load` sin tocar ni scrollear no registra su `PageView` en Meta. El Pixel no se sacó.
+- **PostHog**: ya estaba fuera del camino crítico (`instrumentation-client.ts` → `schedulePostHogLoad()`: `import()` de `posthog-js` después del `load` y en idle, con cola de eventos y el proxy `/ingest` del rewrite). Además solo carga en el deploy de Production de Vercel, así que en local no aparece en las mediciones. No se cambió.
+
+### Diferencias con el diseño y por qué
+
+- **Ejemplo de propuestas del Home** ("Service · Toyota Corolla 2013 · Tigre" con "[Proveedor A]" y "$ [precio]"): marcadores sin dato real, no se muestra.
+- **Chat de ejemplo de `/pedido`**: el lienzo usa "[Proveedor A]", "$ [precio]" y "[dirección]". Se mantuvieron los valores que ya estaban publicados (Host Garage $ 100.000 y HyG Garage $ 125.000, con direcciones), rotulados "Ejemplo ilustrativo", sin los teléfonos que mostraba antes. Ojo: son nombres de negocios reales de la red con precios inventados (ver dudas).
+- **La Esquina del Neumático** ("20% OFF" en el lienzo): sigue afuera (pendiente en DECISIONES).
+- **Cifras del hero**: "+150" (DECISIONES) y "700+" vehículos (`traction` de `about.ts`, publicable según `PRODUCT.md`).
+- **Botones de tienda**: se reusó `StoreLinks` (radio `field`, no píldora como el lienzo) para no duplicar la medición.
+- **Paso 2 del módulo**: "Enviar pedido" bajó debajo del consentimiento (el lienzo lo pone en la fila de los inputs): el checkbox tiene que ir antes del botón en el orden de tabulación.
+- **Captura del teléfono** del panel de la app: `IMG_0577.PNG` (la misma del hero viejo), con bisel `ink` (el lienzo usa `#0B130D`).
+- **FAQ del Home**: el lienzo tiene 5 preguntas; se sumó "Sobre la app" debajo para no perder unas 30 preguntas indexables.
+- **Header de `/pedido`**: sigue sin "Hacé tu pedido" (`cta={false}`, decisión de la fase 2).
+- **"Ver la red"**: `outline` con borde `control-line`, como el lienzo (1.46:1: el botón se identifica por su texto).
+- **Ancho**: `Container size="wide"` (regla de `AGENTS.md`) en lugar de 1200 px.
+- **Bug encontrado y corregido**: en celular, los `sr-only` (posición absoluta) de la fila deslizable de aliados se escapaban del scroll y ensanchaban la página a 750 px (el navegador achicaba todo). La fila ahora es `relative`.
+
+### Marcadores sin dato real
+
+- "[Proveedor A/B/C]", "$ [precio]" y "[dirección]" (Home y `/pedido`): ver arriba.
+- "Foto de portada actual" de las guías: se usan las portadas reales de Hygraph.
+
+### Dudas abiertas
+
+- ¿El chat de ejemplo de `/pedido` puede seguir usando nombres reales (Host Garage, HyG Garage) con precios inventados, o se cambian por nombres genéricos?
+- ¿Se saca también el beneficio de Intēgrity Seguros del Home, ahora que no se ofrecen seguros?
+- Title y description del Home: A aplicada, B alternativa. Titular: eslogan aplicado, "¿Qué necesita tu auto?" como alternativa.
+- `AGENTS.md` §3 menciona las palabras rotativas del hero y `VerticalsBandSection`: ya no están en el Home; conviene actualizar ese párrafo.
+- Sin la confirmación vieja ya no hay "Mandanos un mensaje ahora" después de pedir (`whatsapp_clicked` `confirmation`). Si se quiere, se suma al enviado del módulo como `Contact`.
+- `PhoneFrame` y `DownloadCta` (`components/ui/`) y los keyframes `hero-word`/`hero-screen` de `globals.css` quedaron sin uso; no se borraron (primitivas y CSS compartidos): se pueden limpiar en la fase de cierre.
+
+### Verificación
+
+- `npm run lint`: 0 errores, 282 warnings (los mismos preexistentes de `.agents/`, `.claude/` y `.cursor/`).
+- `npx tsc --noEmit`: sin errores.
+- `npm run build`: OK; `/` y `/pedido` son estáticas con revalidación de 5 min (la del fetch de Hygraph).
+- Tests: `test:blog` 86, `test:provider-profile` 44, `test:proveedores` 58, `test:partner-claims` 16 y `test:partner-billing` 70: todos pasan. Ninguno cubre el módulo.
+- Visual a 390 y 1440 con Chrome headless (CDP) contra `Main.webp`, `Home-celular.webp`, `Pedido.webp` y `Pedido-celular.webp`. Flujo del módulo en `/pedido` con la red interceptada (**ningún pedido real**: `/api/presupuesto` respondido por CDP con `AL-9999`; `vehicle-lookup` y Google Maps bloqueados): el envío sin consentimiento se bloquea, Espacio marca el checkbox y el body enviado lleva `consent: true`, `quoteTab: "taller"` y `quotePlacement: "modulo_pedido"`.
+- `curl`: un solo h1, sin saltos, canonical, JSON-LD y cero Clerk en el HTML y en los chunks (tabla de arriba).

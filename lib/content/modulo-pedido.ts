@@ -1,6 +1,5 @@
 import { QUOTE_CHIPS, QUOTE_TABS, type QuoteChip, type QuoteTab } from "@/lib/analytics/events";
 import { homeContent } from "@/lib/content/home";
-import { whatsappUrl } from "@/lib/whatsapp";
 
 /**
  * Copy del módulo de pedido (`components/modulo-pedido`): la pieza de
@@ -10,8 +9,8 @@ import { whatsappUrl } from "@/lib/whatsapp";
  * solo en el H1 y el title de `/pedido`, por SEO.
  *
  * Nada inventado: Auxilio y Multas llevan a los aliados que ya están en el
- * Home (`homeContent.allies`, con sus mismas URLs). Seguro no tiene endpoint
- * en el backend: en lugar del form del prototipo lleva a WhatsApp.
+ * Home (`homeContent.allies`, con sus mismas URLs). Sin pestaña Seguro:
+ * decisión de producto del 2026-11-24 (no se ofrecen seguros por ahora).
  */
 
 /** Ícono 3D de la app (WebP en `public/images/pedido/`, al doble del tamaño de uso). */
@@ -21,7 +20,7 @@ type ModuloIcon = {
   readonly height: number;
 };
 
-const [asistir24, sinfotomultas] = homeContent.allies.slides;
+const [asistir24, sinfotomultas] = homeContent.allies.items;
 
 export const moduloPedidoContent = {
   /** Nombre del `tablist` (no se ve). */
@@ -42,11 +41,6 @@ export const moduloPedidoContent = {
       id: QUOTE_TABS.multas,
       label: "Multas",
       icon: { src: "/images/pedido/multas.webp", width: 104, height: 104 },
-    },
-    {
-      id: QUOTE_TABS.seguro,
-      label: "Seguro",
-      icon: { src: "/images/pedido/seguro.webp", width: 104, height: 104 },
     },
   ] as const satisfies readonly {
     readonly id: QuoteTab;
@@ -139,9 +133,21 @@ export const moduloPedidoContent = {
       },
       submit: "Enviar pedido",
       submitting: "Enviando…",
-      legal:
-        "Tu WhatsApp lo usamos solo para avisarte de este pedido. Al enviarlo aceptás que compartamos tu consulta con proveedores de nuestra red.",
-      privacyLink: "Cómo cuidamos tus datos",
+      /**
+       * Consentimiento explícito (decisión de producto, 2026-11-24): checkbox
+       * visible, desmarcado por defecto y obligatorio para enviar. El texto va
+       * partido para meter los dos links (los arma el server).
+       */
+      consent: {
+        prefix:
+          "Acepto que AutoLibre comparta mi consulta y mi WhatsApp con proveedores de su red para que me respondan, según los ",
+        termsLink: "Términos y Condiciones",
+        middle: " y la ",
+        privacyLink: "Política de Privacidad",
+        suffix: ".",
+        error: "Para enviar el pedido tenés que aceptar que compartamos tu consulta con los proveedores.",
+      },
+      note: "Tu WhatsApp lo usamos solo para avisarte de este pedido.",
       genericError: "No pudimos mandar tu pedido. Probá de nuevo o escribinos por WhatsApp.",
     },
 
@@ -159,7 +165,7 @@ export const moduloPedidoContent = {
   auxilio: {
     title: "¿Te quedaste en el camino?",
     body: "La grúa de Asistir24 te lleva directo a un taller de la red AutoLibre. Atención las 24 horas.",
-    cta: { label: asistir24.badgeCta.label, href: asistir24.badgeCta.href },
+    cta: { label: asistir24.cta.label, href: asistir24.cta.href },
   },
 
   multas: {
@@ -168,33 +174,4 @@ export const moduloPedidoContent = {
     cta: { label: sinfotomultas.cta.label, href: sinfotomultas.cta.href },
   },
 
-  /**
-   * El prototipo trae un form (patente, WhatsApp y cobertura) que el backend
-   * no tiene dónde recibir: hasta que exista ese endpoint, el pedido de
-   * cotización va por el WhatsApp de AutoLibre con un mensaje precargado.
-   */
-  seguro: {
-    title: "¿Se te vence la póliza?",
-    body: "Escribinos por WhatsApp con la patente y la cobertura que buscás, y te mandamos una cotización para que compares.",
-    cta: {
-      label: "Cotizá por WhatsApp",
-      href: whatsappUrl("¡Hola! Quiero cotizar el seguro de mi auto."),
-    },
-  },
-} as const;
-
-/**
- * Página de prueba del módulo (`/pedido/modulo`, fase 3). No se indexa y no
- * está en el sitemap: existe para revisar el módulo con el build real hasta
- * que la fase 4 lo monte en el Home y en `/pedido`. Se borra en esa fase.
- */
-export const moduloPedidoPreviewContent = {
-  meta: {
-    title: "Módulo de pedido (vista previa)",
-    description:
-      "Vista previa interna del módulo de pedido de AutoLibre: pedí propuestas de proveedores en tu zona.",
-  },
-  badge: "Gratis · Proveedores en AMBA",
-  title: "Presupuestos para tu auto, de proveedores en tu zona.",
-  subtitle: "Contanos qué le pasa a tu auto y te respondemos en el día. Gratis y sin compromiso.",
 } as const;

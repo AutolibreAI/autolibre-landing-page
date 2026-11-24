@@ -3,7 +3,7 @@ import { Container } from "@/components/ui/container";
 import { homeContent } from "@/lib/content/home";
 
 export function ProviderBandSection() {
-  const { title, subtitle, cta } = homeContent.providerBand;
+  const { title, subtitle, register: cta } = homeContent.providerBand;
 
   return (
     <section id="proveedor" className="bg-ink py-11">

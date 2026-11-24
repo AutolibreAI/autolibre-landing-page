@@ -132,6 +132,12 @@ proveedores en el marketplace (fuente: la constante `traction` de
 arriba ni se reformulan, y se actualizan en los dos lugares (esa constante y
 este archivo) cuando cambien.
 
+Rediseño 2026-11 (decisiones del 2026-11-24): en textos de marketing la cifra
+de proveedores es "+150" (`MARKETING_PROVIDERS_COUNT` en `lib/content/home.ts`);
+el directorio muestra el conteo real. Seguros no se ofrecen por ahora como
+pedido desde la web (el módulo de pedido no tiene pestaña Seguro); el beneficio
+del aliado Intēgrity sigue en el Home.
+
 Actualización de producto para `/proveedores` (2026-10-27): la ficha publica
 100+ negocios en la red y cobertura en todo el país. Estos datos viven en
 `lib/content/providers-directory.ts`; las cifras de septiembre de

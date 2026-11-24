@@ -18,7 +18,8 @@
  * - `Contact`: `whatsapp_clicked` sin `lead_source` (home, y la confirmación
  *   de un pedido con `pedido: true`: esa persona ya contó como `Lead`).
  * - `QuoteStart` (custom): `quote_started`.
- * - `PedidoPaso` (custom): `quote_step_viewed`, sólo en el modal.
+ * - `PedidoPaso` (custom): `quote_step_viewed`. Desde la fase 4a del rediseño
+ *   lo manda el módulo de pedido (Home y `/pedido`, `step: 2`); antes, solo el modal.
  *
  * Sin `NEXT_PUBLIC_META_PIXEL_ID` no se carga nada y todo es no-op: en dev
  * sin la variable no se ensucian los datos del Pixel real.

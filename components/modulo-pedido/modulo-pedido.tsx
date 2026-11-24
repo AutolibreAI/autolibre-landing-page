@@ -34,7 +34,7 @@ type ModuloPedidoProps = {
 
 /**
  * Módulo de pedido (rediseño 2026-11, fase 3): pestañas Taller / Auxilio /
- * Multas / Seguro, la barra "¿Qué le pasa?" + "¿Dónde estás?" + "Pedir
+ * Multas (sin Seguro desde el 2026-11-24, decisión de producto), la barra "¿Qué le pasa?" + "¿Dónde estás?" + "Pedir
  * propuestas", los chips de "Lo más pedido" y, en un segundo paso, WhatsApp
  * y patente. Lo montan el Home y `/pedido`.
  *
@@ -47,8 +47,7 @@ type ModuloPedidoProps = {
  *
  * Mapeo con el backend: solo Taller registra un pedido (`/api/presupuesto`).
  * Auxilio y Multas llevan a los aliados del Home (Asistir24 y Sin
- * Fotomultas); Seguro, al WhatsApp de AutoLibre (no hay endpoint de
- * cotización de seguros).
+ * Fotomultas).
  */
 export function ModuloPedido({
   placement,
@@ -95,9 +94,6 @@ export function ModuloPedido({
           className="max-sm:w-full max-sm:whitespace-normal"
           {...ctaProps}
         >
-          {tab === QUOTE_TABS.seguro ? (
-            <Icon name="whatsapp" size={20} strokeWidth={1.8} />
-          ) : null}
           {panel.cta.label}
           {externalHint}
         </ButtonAnchor>
@@ -155,14 +151,29 @@ export function ModuloPedido({
           </ButtonAnchor>
         </p>
       }
-      privacyLink={
-        <Link
-          href="/privacidad"
-          className="font-semibold text-fg underline underline-offset-4 hover:text-brand-hover"
-        >
-          {taller.contact.privacyLink}
-        </Link>
-      }
+      consentLinks={{
+        // En otra pestaña: salir de acá perdería lo que la persona cargó.
+        terms: (
+          <Link
+            href="/terminos"
+            target="_blank"
+            className="font-semibold text-fg underline underline-offset-4 hover:text-brand-hover"
+          >
+            {taller.contact.consent.termsLink}
+            {externalHint}
+          </Link>
+        ),
+        privacy: (
+          <Link
+            href="/privacidad"
+            target="_blank"
+            className="font-semibold text-fg underline underline-offset-4 hover:text-brand-hover"
+          >
+            {taller.contact.consent.privacyLink}
+            {externalHint}
+          </Link>
+        ),
+      }}
       sentIcon={
         <span
           aria-hidden="true"
@@ -183,7 +194,6 @@ export function ModuloPedido({
     taller: tallerPanel,
     auxilio: partnerPanel(QUOTE_TABS.auxilio, copy.auxilio, partnerCtaProps(QUOTE_TABS.auxilio)),
     multas: partnerPanel(QUOTE_TABS.multas, copy.multas, partnerCtaProps(QUOTE_TABS.multas)),
-    seguro: partnerPanel(QUOTE_TABS.seguro, copy.seguro, whatsappProps(QUOTE_TABS.seguro)),
   };
 
   return (

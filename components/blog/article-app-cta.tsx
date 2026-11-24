@@ -13,7 +13,7 @@ import { homeContent } from "@/lib/content/home";
  * hero de la home) y carga lazy: está debajo del pliegue.
  */
 export function ArticleAppCta() {
-  const screen = homeContent.hero.screens[2]!;
+  const screen = homeContent.appScreens[2]!;
   const { appCta } = blogContent;
 
   return (

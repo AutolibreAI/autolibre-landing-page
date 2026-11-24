@@ -66,8 +66,8 @@ type ModuloFormProps = {
   readonly chips: readonly ModuloChip[];
   /** "¿Preferís chatear?" + WhatsApp (server, medido por `data-analytics-*`). */
   readonly whatsapp: React.ReactNode;
-  /** Link a `/privacidad` (server). */
-  readonly privacyLink: React.ReactNode;
+  /** Links a `/terminos` y `/privacidad` del consentimiento (server). */
+  readonly consentLinks: { readonly terms: React.ReactNode; readonly privacy: React.ReactNode };
   /** Ícono del estado enviado (server). */
   readonly sentIcon: React.ReactNode;
   /** "Bajar la app" (server). */
@@ -76,7 +76,7 @@ type ModuloFormProps = {
 
 type FieldName = "problema" | "zona" | "whatsapp" | "patente";
 type Values = Record<FieldName, string>;
-type Errors = Partial<Record<FieldName, string>>;
+type Errors = Partial<Record<FieldName | "consent", string>>;
 
 const EMPTY_VALUES: Values = { problema: "", zona: "", whatsapp: "", patente: "" };
 const STEP_1_FIELDS: readonly FieldName[] = ["problema", "zona"];
@@ -97,10 +97,12 @@ type Status =
  *
  * 1. "¿Qué le pasa?" + "¿Dónde estás?" + "Pedir propuestas", con los chips
  *    de "Lo más pedido" y la salida por WhatsApp.
- * 2. Resumen + WhatsApp + patente opcional (recomendada) + "Enviar pedido".
+ * 2. Resumen + WhatsApp + patente opcional (recomendada) + consentimiento
+ *    (checkbox desmarcado y obligatorio, decisión de producto del
+ *    2026-11-24) + "Enviar pedido".
  * 3. Enviado.
  *
- * Reglas y lógica de `PedidoForm`, compartidas en `pedido-client.ts`: misma
+ * Reglas y lógica del form viejo de `/pedido`, en `pedido-client.ts`: misma
  * validación del WhatsApp (`parseArWhatsapp`) y de la patente
  * (`isValidPlate`), lookup de la patente en clasific.ar al salir del campo
  * (nunca bloquea el envío), Google Places recién al enfocar "¿Dónde estás?".
@@ -112,7 +114,7 @@ export function ModuloForm({
   copy,
   chips,
   whatsapp,
-  privacyLink,
+  consentLinks,
   sentIcon,
   appLink,
 }: ModuloFormProps) {
@@ -123,11 +125,14 @@ export function ModuloForm({
   const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [publicCode, setPublicCode] = useState<string | null>(null);
+  // Consentimiento real: arranca desmarcado y viaja con su valor.
+  const [consent, setConsent] = useState(false);
 
   const problemaRef = useRef<HTMLInputElement>(null);
   const zonaRef = useRef<HTMLInputElement>(null);
   const whatsappRef = useRef<HTMLInputElement>(null);
   const patenteRef = useRef<HTMLInputElement>(null);
+  const consentRef = useRef<HTMLInputElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const startedRef = useRef(false);
   const step2TrackedRef = useRef(false);
@@ -139,6 +144,7 @@ export function ModuloForm({
     zona: `${idPrefix}-zona`,
     whatsapp: `${idPrefix}-whatsapp`,
     patente: `${idPrefix}-patente`,
+    consent: `${idPrefix}-consentimiento`,
     chips: `${idPrefix}-chips`,
     heading: `${idPrefix}-paso`,
   };
@@ -175,6 +181,7 @@ export function ModuloForm({
   if (values.patente && !isValidPlate(values.patente)) {
     allErrors.patente = copy.contact.patente.error;
   }
+  if (!consent) allErrors.consent = copy.contact.consent.error;
   // Un error se ve después del primer intento de su paso o, en WhatsApp y
   // patente, después de salir del campo. Desde ahí se corrige en vivo.
   const errors: Errors = {};
@@ -184,6 +191,9 @@ export function ModuloForm({
   for (const name of STEP_2_FIELDS) {
     if (allErrors[name] && (attempted[2] || touched[name])) errors[name] = allErrors[name];
   }
+  // El del consentimiento, solo después de intentar enviar (aparece por
+  // interacción: no cuenta como CLS).
+  if (allErrors.consent && attempted[2]) errors.consent = allErrors.consent;
 
   // ── Medición ───────────────────────────────────────────────────────────
 
@@ -256,6 +266,10 @@ export function ModuloForm({
       fieldRefs[firstInvalid].current?.focus();
       return;
     }
+    if (!consent) {
+      consentRef.current?.focus();
+      return;
+    }
 
     setStatus({ kind: "submitting" });
     // Mismo ID para el `Lead` del Pixel y el de la Conversions API.
@@ -277,8 +291,8 @@ export function ModuloForm({
       longitude: geo.longitude,
       locality: geo.locality,
       province: geo.province,
-      // Sin checkbox: enviar es aceptar (lo dice el texto legal del paso 2).
-      consent: true,
+      // El valor real del checkbox (acá siempre `true`: sin él no se llega).
+      consent,
       metaEventId,
       // Solo para PostHog (los consume la route; al backend no llegan).
       quoteFlow: QUOTE_FLOWS.page,
@@ -325,11 +339,12 @@ export function ModuloForm({
     setAttempted({ 1: false, 2: false });
     setTouched({});
     setPublicCode(null);
+    setConsent(false);
     focusAfterRef.current = "problema";
     setStep(1);
   }
 
-  const describedBy = (name: FieldName, ...extra: (string | false | undefined)[]) =>
+  const describedBy = (name: FieldName | "consent", ...extra: (string | false | undefined)[]) =>
     [...extra, errors[name] ? `${ids[name]}-error` : null].filter(Boolean).join(" ") ||
     undefined;
 
@@ -506,28 +521,46 @@ export function ModuloForm({
               ) : null}
             </div>
 
-            {/* El botón se alinea con los inputs: arriba, un renglón del alto del label. */}
-            <div className="flex flex-col gap-1.5 md:flex-none">
-              <span aria-hidden="true" className="hidden text-label md:block">
-                &nbsp;
-              </span>
-              <Button
-                type="submit"
-                variant="primary"
-                size="56"
-                block
-                disabled={submitting}
-                aria-busy={submitting || undefined}
-              >
-                {submitting ? c.submitting : c.submit}
-              </Button>
-            </div>
           </div>
 
           <p id={`${ids.patente}-hint`} className="text-label text-fg-muted">
             {c.patente.hint}
           </p>
           <PlateStatus id={`${ids.patente}-status`} check={plateCheck} plate={values.patente} copy={c.patente.status} />
+
+          {/* Consentimiento: checkbox nativo desmarcado y obligatorio. Todo el
+              renglón es el label (objetivo táctil de 44px o más). Los links
+              abren en otra pestaña y no marcan el checkbox. */}
+          <div className="flex flex-col gap-1">
+            <label
+              htmlFor={ids.consent}
+              className="flex min-h-11 cursor-pointer items-start gap-3 py-2 text-sm text-fg-muted"
+            >
+              <input
+                id={ids.consent}
+                ref={consentRef}
+                type="checkbox"
+                checked={consent}
+                onChange={(event) => setConsent(event.target.checked)}
+                required
+                aria-invalid={errors.consent ? true : undefined}
+                aria-describedby={describedBy("consent")}
+                className="mt-0.5 size-5 shrink-0 cursor-pointer accent-action"
+              />
+              <span>
+                {c.consent.prefix}
+                {consentLinks.terms}
+                {c.consent.middle}
+                {consentLinks.privacy}
+                {c.consent.suffix}
+              </span>
+            </label>
+            {errors.consent ? (
+              <p id={`${ids.consent}-error`} className="pl-8 text-label font-medium text-status-alert">
+                {errors.consent}
+              </p>
+            ) : null}
+          </div>
 
           {/* Siempre en el DOM (vacía en reposo): si se montara junto con el
               texto, el lector de pantalla no anunciaría el error. */}
@@ -537,9 +570,19 @@ export function ModuloForm({
             ) : null}
           </div>
 
-          <p className="text-label text-fg-muted">
-            {c.legal} {privacyLink}
-          </p>
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <p className="text-label text-fg-muted">{c.note}</p>
+            <Button
+              type="submit"
+              variant="primary"
+              size="56"
+              className="max-md:w-full md:shrink-0"
+              disabled={submitting}
+              aria-busy={submitting || undefined}
+            >
+              {submitting ? c.submitting : c.submit}
+            </Button>
+          </div>
         </form>
       </div>
     );

@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { DM_Sans, Outfit } from "next/font/google";
-import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { AnalyticsEvents } from "@/components/analytics/analytics-events";
@@ -118,8 +117,15 @@ const revealScript = `(function(){try{if(!("IntersectionObserver"in window)||!El
  * 1. Stub inline en el `<head>`: el `fbq` oficial de Meta SIN la parte que
  *    inyecta `fbevents.js`. Sólo encola llamadas, así que `init` + `PageView`
  *    (y cualquier evento temprano) quedan registrados por unos bytes.
- * 2. `fbevents.js` (~90KB) con `next/script` `lazyOnload`: baja en idle,
- *    después de todo lo demás, y al cargar vacía la cola del stub.
+ * 2. `fbevents.js` (~90KB, más su config de ~170KB) lo inyecta
+ *    `metaPixelLoader` recién con la primera interacción (toque, tecla o
+ *    scroll) o, si no la hay, unos segundos después del `load` y en idle.
+ *    Al cargar vacía la cola del stub: no se pierde ningún evento de los que
+ *    se encolaron antes. Antes iba con `next/script` `lazyOnload` (idle
+ *    apenas después del `load`) y igual sumaba 520-590 ms de bloqueo del
+ *    hilo principal en celular (Lighthouse, fase 0 del rediseño). El costo:
+ *    quien se va antes de interactuar y antes de ese plazo no registra su
+ *    `PageView` (rebote de pocos segundos sin tocar nada).
  *
  * `set autoConfig false` va ANTES de `init`: apagamos la configuración
  * automática (clics en botones y metadatos que Meta trackea por su cuenta)
@@ -134,6 +140,13 @@ const revealScript = `(function(){try{if(!("IntersectionObserver"in window)||!El
  */
 const metaPixelScript = META_PIXEL_ID
   ? `!function(f){if(f.fbq)return;var n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[]}(window);fbq("set","autoConfig",false,${JSON.stringify(META_PIXEL_ID)});fbq("init",${JSON.stringify(META_PIXEL_ID)});fbq("track","PageView");`
+  : null;
+
+/** Segundos después del `load` en que el Pixel baja igual si nadie interactuó. */
+const META_PIXEL_DELAY_MS = 3500;
+
+const metaPixelLoader = META_PIXEL_ID
+  ? `(function(){var done=false,evs=["pointerdown","keydown","scroll","touchstart"];function load(){if(done)return;done=true;var s=document.createElement("script");s.async=true;s.src="https://connect.facebook.net/en_US/fbevents.js";document.head.appendChild(s)}evs.forEach(function(e){addEventListener(e,load,{once:true,passive:true})});function later(){setTimeout(function(){"requestIdleCallback"in window?requestIdleCallback(load,{timeout:2000}):load()},${META_PIXEL_DELAY_MS})}document.readyState==="complete"?later():addEventListener("load",later,{once:true})})()`
   : null;
 
 /**
@@ -172,9 +185,7 @@ export default function RootLayout({
         {/* Una sola vez acá: queda en todas las páginas (home incluida). */}
         <WhatsappFab />
         <script dangerouslySetInnerHTML={{ __html: revealScript }} />
-        {metaPixelScript && (
-          <Script src="https://connect.facebook.net/en_US/fbevents.js" strategy="lazyOnload" />
-        )}
+        {metaPixelLoader && <script dangerouslySetInnerHTML={{ __html: metaPixelLoader }} />}
         {(metaPixelScript || POSTHOG_ENABLED) && <AnalyticsEvents />}
         <Analytics />
         <SpeedInsights />

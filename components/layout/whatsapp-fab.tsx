@@ -41,7 +41,7 @@ export function WhatsappFab() {
         "flex size-14 items-center justify-center rounded-full border-2 border-surface bg-whatsapp text-surface shadow-fab md:size-16",
         "hover:bg-whatsapp-hover hover:shadow-fab-hover motion-safe:transition motion-safe:duration-200 motion-safe:hover:-translate-y-0.5",
         // Variantes arbitrarias: no hay utility para "un ancestro tiene tal
-        // descendiente" (mismo recurso que `PedidoStickyBar`).
+        // descendiente" (recurso que usaba la vieja barra fija de `/pedido`).
         "[html:has(#menu-del-encabezado)_&]:invisible max-lg:[html:has([data-bottom-bar])_&]:hidden",
       )}
     >

@@ -16,16 +16,36 @@ type PageShellProps = {
    * (`MobileActionBar`). Solo en las páginas que la tienen en el diseño.
    */
   readonly actionBar?: boolean;
+  /** Destino de "Hacé tu pedido" en la barra (ver `MobileActionBar`). */
+  readonly actionBarQuoteHref?: string;
+  /** Nombre del landmark de la barra (ver `MobileActionBar`). */
+  readonly actionBarLabel?: string;
+  /** El WhatsApp de la barra cuenta como `Lead` (solo `/pedido`). */
+  readonly actionBarWhatsappLead?: boolean;
 };
 
 /** Header + main + footer (+ la barra fija en celular, si la página la pide). */
-export function PageShell({ children, cta, currentPath, actionBar = false }: PageShellProps) {
+export function PageShell({
+  children,
+  cta,
+  currentPath,
+  actionBar = false,
+  actionBarQuoteHref,
+  actionBarLabel,
+  actionBarWhatsappLead,
+}: PageShellProps) {
   return (
     <>
       <SiteHeader cta={cta} currentPath={currentPath} />
       <main>{children}</main>
       <SiteFooter />
-      {actionBar ? <MobileActionBar /> : null}
+      {actionBar ? (
+        <MobileActionBar
+          quoteHref={actionBarQuoteHref}
+          label={actionBarLabel}
+          whatsappLead={actionBarWhatsappLead}
+        />
+      ) : null}
     </>
   );
 }

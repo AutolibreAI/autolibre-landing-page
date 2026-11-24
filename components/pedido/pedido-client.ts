@@ -14,11 +14,10 @@ import {
 } from "@/lib/vehicle-lookup-client";
 
 /**
- * Lógica de cliente compartida por los dos forms de pedido que pegan a
- * `/api/presupuesto` con patente opcional: `PedidoForm` (`/pedido`) y el
- * módulo de pedido (`components/modulo-pedido`). Sin JSX y sin estilos: cada
- * form pinta lo suyo. Salió tal cual de `pedido-form.tsx` (mismo
- * comportamiento); solo se movió para no duplicarla.
+ * Lógica de cliente del módulo de pedido (`components/modulo-pedido`), que
+ * pega a `/api/presupuesto` con patente opcional. Sin JSX y sin estilos.
+ * Salió de `pedido-form.tsx` (el form viejo de `/pedido`, borrado en la fase
+ * 4a del rediseño).
  */
 
 /**

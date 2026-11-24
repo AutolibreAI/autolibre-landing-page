@@ -3,6 +3,7 @@ import { Icon } from "@/components/ui/icon";
 import {
   ANALYTICS_EVENTS,
   LAYOUT_PLACEMENTS,
+  LEAD_SOURCES,
   QUOTE_CTA_PLACEMENTS,
 } from "@/lib/analytics/events";
 import { siteContent } from "@/lib/content/site";
@@ -22,13 +23,25 @@ import { whatsappUrl } from "@/lib/whatsapp";
  * `data-bottom-bar`: esconde el botón flotante de WhatsApp debajo de `lg`
  * (ver `WhatsappFab`): la barra ya trae WhatsApp y no se duplica.
  *
- * La usan las páginas que la tienen en el diseño con estas dos acciones: la
- * home y el directorio (`PageShell actionBar`). `/pedido`, el perfil de un
- * proveedor y el blog tienen su propia barra hasta que se rehagan.
+ * La usan las páginas que la tienen en el diseño con estas dos acciones: el
+ * Home, `/pedido` y el directorio (`PageShell actionBar`). En el Home y en
+ * `/pedido` "Hacé tu pedido" sube al módulo de la misma página (`#pedido`)
+ * en lugar de navegar; en `/pedido` el WhatsApp es un `Lead` (lleva
+ * `lead_source`, como todo WhatsApp de esa página).
  */
-export function MobileActionBar() {
+export function MobileActionBar({
+  quoteHref,
+  label: labelOverride,
+  whatsappLead = false,
+}: {
+  /** Default: `/pedido`. Un ancla (`#pedido`) si la página ya tiene el módulo. */
+  readonly quoteHref?: string;
+  readonly label?: string;
+  readonly whatsappLead?: boolean;
+} = {}) {
   const { quoteLink, externalHint } = siteContent.nav;
-  const { label, whatsapp } = siteContent.mobileActionBar;
+  const { label: defaultLabel, whatsapp } = siteContent.mobileActionBar;
+  const label = labelOverride ?? defaultLabel;
 
   return (
     <aside
@@ -39,7 +52,7 @@ export function MobileActionBar() {
       className="sticky bottom-0 z-40 flex gap-2.5 border-t border-control-line bg-card px-[6%] pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] lg:hidden"
     >
       <ButtonLink
-        href={quoteLink.href}
+        href={quoteHref ?? quoteLink.href}
         variant="primary"
         size="52"
         className="flex-3 px-3"
@@ -57,6 +70,7 @@ export function MobileActionBar() {
         className="flex-2 px-3"
         data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
         data-analytics-placement={LAYOUT_PLACEMENTS.mobileBar}
+        data-analytics-lead-source={whatsappLead ? LEAD_SOURCES.whatsapp : undefined}
       >
         <Icon name="whatsapp" size={20} strokeWidth={2} className="text-status-ok" />
         {whatsapp.label}

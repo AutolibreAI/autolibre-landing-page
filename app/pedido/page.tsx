@@ -1,17 +1,14 @@
 import type { Metadata } from "next";
 import { PageShell } from "@/components/layout/page-shell";
-import { OpenFormButton } from "@/components/pedido/open-form-button";
-import { PedidoHero } from "@/components/pedido/pedido-hero";
 import {
+  PEDIDO_ID,
   PedidoCtaBand,
   PedidoExample,
-  PedidoFaq,
+  PedidoFaqAndGuides,
+  PedidoHero,
   PedidoSteps,
 } from "@/components/pedido/pedido-sections";
-import { PedidoStickyBar } from "@/components/pedido/pedido-sticky-bar";
-import { WhatsappLink } from "@/components/pedido/whatsapp-link";
 import { JsonLd } from "@/components/seo/json-ld";
-import { Container } from "@/components/ui/container";
 import { presupuestoContent } from "@/lib/content/presupuesto";
 import { createMetadata } from "@/lib/seo/metadata";
 import {
@@ -22,7 +19,7 @@ import {
   webPageSchema,
 } from "@/lib/seo/schema";
 
-const { meta, faq, stickyBar } = presupuestoContent.pedidoPage;
+const { meta, faq, mobileBarLabel } = presupuestoContent.pedidoPage;
 
 const PATH = "/pedido";
 
@@ -52,54 +49,34 @@ const schema = graph(
 );
 
 /**
- * `/pedido`: presupuestos de proveedores de la zona, por WhatsApp.
+ * `/pedido` (rediseño 2026-11, fase 4a): el módulo de pedido es el
+ * formulario. Server Component; las únicas islas de cliente son las del
+ * módulo (pestañas y form de Taller).
  *
- * Server Component. Todo el contenido indexable (hero, cómo funciona, el
- * ejemplo de respuesta, la FAQ y la banda de cierre) sale en el HTML del
- * server. Islas de cliente, solo dos: `PedidoForm` (form + vista mobile +
- * confirmación) y `PedidoStickyBar` (cuándo mostrar la barra fija mobile).
+ * El header va SIN "Hacé tu pedido" (`cta={false}`): sería un link a la
+ * misma página. En celular, la barra fija lleva "Hacé tu pedido" (sube al
+ * módulo) y WhatsApp como `Lead`.
  *
- * Usa `PageShell` como el resto del sitio: header y footer compartidos, con
- * el link "Pedir presupuesto" marcado como página actual. El header va SIN
- * botón (`cta={false}`): la única conversión de esta página es el WhatsApp
- * (hero, barra fija, banda de cierre), y "Descargar la app" competiría con él.
- *
- * Outline: h1 (hero) → h2 del form → h2 por sección → h3 por paso y por
- * pregunta.
+ * Outline: h1 → h2 de los paneles del módulo → h2 por sección (y el de las
+ * guías relacionadas) → h3 por paso.
  */
 export default function PedidoPage() {
   return (
     <>
-      <PageShell cta={false} currentPath={PATH}>
-        {/* El fondo va en un wrapper y no en `<main>` (lo pone `PageShell`):
-            las secciones viven dentro de `Container` y el lavado verde tiene
-            que llegar de borde a borde. */}
-        <div className="bg-surface-muted text-ink">
-          <PedidoHero />
-
-          {/* Cada `Section` trae su `Container` (ancho `wide`, el del header
-              y el footer). Ejemplo y FAQ comparten fila en desktop: la
-              grilla es el contenedor y ellas van con `container={false}`,
-              así los bordes externos de la fila siguen alineados. */}
-          <PedidoSteps />
-          <Container
-            size="wide"
-            className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-16"
-          >
-            <PedidoExample />
-            <PedidoFaq />
-          </Container>
-          <PedidoCtaBand />
-        </div>
+      <PageShell
+        cta={false}
+        currentPath={PATH}
+        actionBar
+        actionBarQuoteHref={`#${PEDIDO_ID}`}
+        actionBarLabel={mobileBarLabel}
+        actionBarWhatsappLead
+      >
+        <PedidoHero />
+        <PedidoExample />
+        <PedidoSteps />
+        <PedidoFaqAndGuides />
+        <PedidoCtaBand />
       </PageShell>
-
-      <PedidoStickyBar label={stickyBar.label}>
-        <WhatsappLink placement="sticky_bar" size="lg" block />
-        <OpenFormButton className="inline-flex min-h-11 items-center self-center text-sm font-medium text-ink/70 underline-offset-4 transition-colors hover:text-brand hover:underline">
-          {stickyBar.formCta}
-        </OpenFormButton>
-      </PedidoStickyBar>
-
       <JsonLd schema={schema} />
     </>
   );

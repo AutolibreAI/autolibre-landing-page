@@ -35,7 +35,7 @@ type ModuloTabsProps = {
  *   `aria-labelledby` cruzados.
  * - Roving tabindex: solo la pestaña elegida entra al orden de Tab; ←/→ se
  *   mueven (y eligen) en círculo, Inicio/Fin van a la primera/última.
- * - Los cuatro paneles salen en el HTML del server; los no elegidos con
+ * - Todos los paneles (Taller, Auxilio, Multas) salen en el HTML del server; los no elegidos con
  *   `hidden`. Nada aparece recién al hidratar, y el estado inicial (Taller)
  *   es el mismo en el server y en el cliente: sin CLS.
  *

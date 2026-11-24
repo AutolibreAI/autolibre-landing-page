@@ -166,8 +166,12 @@ export const QUOTE_CTA_PLACEMENTS = {
   headerMenu: "header_menu",
   homeQuotes: "home_quotes",
   footer: "footer",
-  /** Barra fija inferior en celular (home y directorio). */
+  /** Barra fija inferior en celular (home, `/pedido` y directorio). */
   mobileBar: "mobile_bar",
+  /** Tarjetas de "Todo lo que podés pedir" del Home (llevan a `/pedido`). */
+  homeServices: "home_services",
+  /** "Hacé tu pedido" de la banda de cierre de `/pedido` (sube al módulo). */
+  pedidoCtaBand: "pedido_cta_band",
 } as const;
 
 export type QuoteCtaPlacement =
@@ -197,13 +201,14 @@ export const LAYOUT_PLACEMENTS = {
  * Pestañas del módulo de pedido (`components/modulo-pedido`). Viaja como
  * `tab`; el listener de `data-analytics-tab` y la route de
  * `/api/presupuesto` descartan cualquier otro valor. Solo `taller` manda un
- * pedido al backend; las demás llevan a un aliado o a WhatsApp.
+ * pedido al backend; Auxilio y Multas llevan a un aliado. Sin `seguro`
+ * desde el 2026-11-24 (decisión de producto: no se ofrecen seguros por
+ * ahora); los eventos viejos con `tab: "seguro"` quedan en el histórico.
  */
 export const QUOTE_TABS = {
   taller: "taller",
   auxilio: "auxilio",
   multas: "multas",
-  seguro: "seguro",
 } as const;
 
 export type QuoteTab = (typeof QUOTE_TABS)[keyof typeof QUOTE_TABS];

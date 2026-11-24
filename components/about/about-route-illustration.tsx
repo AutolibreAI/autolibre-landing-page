@@ -40,7 +40,7 @@ const scatteredIsotypes: readonly ScatteredIsotype[] = [
  * este uso y al hilo de la línea de tiempo (ver `DESIGN.md`).
  *
  * - La ruta copia el trazo de la ruta del hero de la home
- *   (`components/sections/home/hero.tsx`): `stroke-brand/60`, 2px, punteado
+ *   (el hero anterior del Home, retirado en la fase 4a del rediseño): `stroke-brand/60`, 2px, punteado
  *   `0.5 9` con puntas redondas y `non-scaling-stroke`.
  * - El pin es HTML encima del SVG, como en la home, para que no se deforme
  *   ni engorde con el escalado: es el ícono `pin` del sistema, con la punta
