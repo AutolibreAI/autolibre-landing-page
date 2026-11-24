@@ -22,6 +22,7 @@ import {
 import "@/components/quote-flow/places-autocomplete.css";
 import {
   ANALYTICS_EVENTS,
+  DOWNLOAD_SECTIONS,
   LEAD_SOURCES,
   QUOTE_FLOWS,
   QUOTE_TABS,
@@ -71,8 +72,14 @@ type ModuloFormProps = {
   readonly consentLinks: { readonly terms: React.ReactNode; readonly privacy: React.ReactNode };
   /** Ícono del estado enviado (server). */
   readonly sentIcon: React.ReactNode;
-  /** "Bajar la app" (server). */
-  readonly appLink: React.ReactNode;
+  /**
+   * Bloque de la app del estado enviado (`ModuloAppPromo`, server): capturas,
+   * QR y tiendas. Se monta recién al enviar; hasta ahí sus imágenes no se
+   * piden.
+   */
+  readonly appPromo: React.ReactNode;
+  /** Valor de `APP_VINCULADA` (viaja como `app_linked` en `pedido_app_promo_view`). */
+  readonly appLinked: boolean;
 };
 
 type FieldName = "problema" | "zona" | "whatsapp" | "patente";
@@ -117,7 +124,8 @@ export function ModuloForm({
   whatsapp,
   consentLinks,
   sentIcon,
-  appLink,
+  appPromo,
+  appLinked,
 }: ModuloFormProps) {
   const [step, setStep] = useState<1 | 2 | "sent">(1);
   const [values, setValues] = useState<Values>(EMPTY_VALUES);
@@ -135,6 +143,7 @@ export function ModuloForm({
   const patenteRef = useRef<HTMLInputElement>(null);
   const consentRef = useRef<HTMLInputElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const sentRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
   const step2TrackedRef = useRef(false);
   // A dónde va el foco después del próximo cambio de paso.
@@ -184,6 +193,27 @@ export function ModuloForm({
     if (target === "heading") headingRef.current?.focus();
     if (target === "problema") problemaRef.current?.focus();
   }, [step]);
+
+  // Enviado: `pedido_app_promo_view` al aparecer el bloque de la app y
+  // `qr_view` cuando el QR entra en pantalla (solo existe desde `lg`: con
+  // `display: none` el observer nunca lo ve, así que en celular no sale).
+  // Una vez por envío: "Hacer otro pedido" desmonta el bloque.
+  useEffect(() => {
+    if (step !== "sent") return;
+    track(ANALYTICS_EVENTS.pedidoAppPromoView, { placement, app_linked: appLinked });
+    const qr = sentRef.current?.querySelector("[data-qr-view]");
+    if (!qr || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        track(ANALYTICS_EVENTS.qrView, { section: DOWNLOAD_SECTIONS.pedidoEnviado, placement });
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(qr);
+    return () => observer.disconnect();
+  }, [step, placement, appLinked]);
 
   // ── Validación (misma regla que `/pedido`) ─────────────────────────────
 
@@ -365,35 +395,50 @@ export function ModuloForm({
   // ── Enviado ────────────────────────────────────────────────────────────
 
   if (step === "sent") {
+    const { code } = copy.sent;
     return (
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-4 rounded-panel border border-control-line bg-card p-5 text-left md:p-7">
-        {sentIcon}
-        <div className="min-w-0 flex-1 basis-72">
-          <Heading
-            id={ids.heading}
-            ref={headingRef}
-            tabIndex={-1}
-            className="font-display text-xl font-bold text-fg outline-none md:text-2xl"
-          >
-            {copy.sent.title}
-          </Heading>
-          <p className="mt-1 text-base text-fg-muted">{copy.sent.body}</p>
-          {publicCode ? (
-            <p className="mt-1 text-base font-semibold text-fg tabular-nums">
-              {copy.sent.code.replace("{code}", publicCode)}
+      // `overflow-clip` y no `overflow-hidden` (PRODUCT.md): recorta las
+      // esquinas del bloque de la app sin crear un contenedor de scroll.
+      <div
+        ref={sentRef}
+        className="overflow-clip rounded-panel border border-control-line bg-card text-left"
+      >
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-3.5 p-5 md:p-7">
+          {sentIcon}
+          {/* La confirmación es la región de estado; el foco va a su título. */}
+          <div role="status" className="min-w-0 flex-1 basis-80">
+            <Heading
+              id={ids.heading}
+              ref={headingRef}
+              tabIndex={-1}
+              className="font-display text-xl leading-tight font-bold text-fg outline-none md:text-2xl"
+            >
+              {copy.sent.title}
+            </Heading>
+            <p className="mt-1.5 text-base text-fg-muted">
+              {/* Solo el código real que devolvió el envío; sin él, no va. */}
+              {publicCode ? (
+                <>
+                  {code.before}
+                  <strong className="font-semibold text-fg tabular-nums">
+                    {code.prefix}
+                    {publicCode}
+                  </strong>
+                  {code.after}
+                </>
+              ) : null}
+              {copy.sent.body}
             </p>
-          ) : null}
-        </div>
-        <div className="flex flex-wrap items-center gap-2.5">
-          {appLink}
+          </div>
           <button
             type="button"
             onClick={reset}
-            className="min-h-12 px-1 text-sm font-semibold text-fg-muted underline underline-offset-4 hover:text-fg"
+            className="min-h-11 shrink-0 px-1 text-sm font-semibold text-fg-muted underline underline-offset-4 hover:text-fg"
           >
             {copy.sent.again}
           </button>
         </div>
+        {appPromo}
       </div>
     );
   }

@@ -1,4 +1,4 @@
-import { ANALYTICS_EVENTS, APP_STORES } from "@/lib/analytics/events";
+import { ANALYTICS_EVENTS, APP_STORES, type DownloadSection } from "@/lib/analytics/events";
 import { cn } from "@/lib/utils";
 import { siteContent } from "@/lib/content/site";
 import type { StoreId } from "@/lib/content/types";
@@ -44,7 +44,25 @@ type StoreLinksProps = {
    * vuelven a su ancho propio, uno al lado del otro.
    */
   readonly align?: "start" | "center";
+  /**
+   * Superficie de descarga. Con esto el click manda, además de
+   * `app_store_clicked`, `cta_download_click` con `store` y `section`.
+   */
+  readonly section?: DownloadSection;
+  /**
+   * En un iPhone muestra solo App Store y en un Android solo Google Play,
+   * con el `data-platform` que el script inline del layout pone en `<html>`
+   * antes del primer paint (como `DownloadCta`): sin JS después de montar y
+   * sin salto. En la compu, o sin JS, quedan los dos.
+   */
+  readonly platformAware?: boolean;
   readonly className?: string;
+};
+
+/** Qué tienda se esconde en cada plataforma (`platformAware`). */
+const hiddenOnOtherPlatform: Record<StoreId, string> = {
+  appStore: "platform-android:hidden",
+  playStore: "platform-ios:hidden",
 };
 
 /**
@@ -66,6 +84,8 @@ export function StoreLinks({
   placement,
   id,
   align = "start",
+  section,
+  platformAware = false,
   className,
 }: StoreLinksProps) {
   const onDark = tone !== "light";
@@ -84,11 +104,17 @@ export function StoreLinks({
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`${store.label} — ${store.name}`}
-            data-analytics-event={ANALYTICS_EVENTS.appStoreClicked}
+            data-analytics-event={
+              section
+                ? `${ANALYTICS_EVENTS.appStoreClicked} ${ANALYTICS_EVENTS.ctaDownloadClick}`
+                : ANALYTICS_EVENTS.appStoreClicked
+            }
             data-analytics-store={APP_STORES[store.id]}
             data-analytics-placement={placement}
+            data-analytics-section={section}
             className={cn(
               "inline-flex items-center gap-3 rounded-field px-5 py-3 transition-colors",
+              platformAware && hiddenOnOtherPlatform[store.id],
               centered && "w-full justify-center sm:w-auto",
               onDark
                 ? "bg-white text-ink hover:bg-white/90"

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ButtonAnchor, ButtonLink } from "@/components/ui/button";
+import { ButtonAnchor } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import {
   ANALYTICS_EVENTS,
@@ -10,10 +10,11 @@ import {
   type QuoteModulePlacement,
   type QuoteTab,
 } from "@/lib/analytics/events";
-import { moduloPedidoContent } from "@/lib/content/modulo-pedido";
+import { APP_VINCULADA, moduloPedidoContent } from "@/lib/content/modulo-pedido";
 import { siteContent } from "@/lib/content/site";
 import { cn } from "@/lib/utils";
 import { whatsappUrl } from "@/lib/whatsapp";
+import { ModuloAppPromo } from "./modulo-app-promo";
 import { ModuloForm } from "./modulo-form";
 import { ModuloTabs } from "./modulo-tabs";
 
@@ -44,6 +45,8 @@ type ModuloPedidoProps = {
  *
  * - `ModuloTabs`: qué pestaña está elegida (recibe íconos y paneles hechos).
  * - `ModuloForm`: el form de Taller (estado, validación, Places, envío).
+ *   El bloque de la app del enviado (`ModuloAppPromo`: capturas, QR,
+ *   tiendas) se arma acá y la isla solo lo monta al enviar.
  *
  * Mapeo con el backend: solo Taller registra un pedido (`/api/presupuesto`).
  * Auxilio y Multas llevan a los aliados del Home (Asistir24 y Sin
@@ -177,15 +180,17 @@ export function ModuloPedido({
       sentIcon={
         <span
           aria-hidden="true"
-          className="flex size-14 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand"
+          className="flex size-13 shrink-0 items-center justify-center rounded-full bg-brand-50 text-action"
         >
-          <Icon name="check" size={28} strokeWidth={2.2} />
+          <Icon name="check" size={26} strokeWidth={2.4} />
         </span>
       }
-      appLink={
-        <ButtonLink href="/descarga" variant="outline" size="48">
-          {taller.sent.app}
-        </ButtonLink>
+      appLinked={APP_VINCULADA}
+      appPromo={
+        <ModuloAppPromo
+          placement={placement}
+          headingLevel={headingLevel === "h2" ? "h3" : "h4"}
+        />
       }
     />
   );

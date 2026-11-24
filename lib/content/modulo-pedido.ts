@@ -22,6 +22,23 @@ type ModuloIcon = {
 
 const [asistir24, sinfotomultas] = homeContent.allies.items;
 
+/**
+ * ¿El pedido hecho en la web ya aparece en la app? HOY NO: los pedidos de la
+ * web no quedan asociados a ninguna cuenta (0 de 31 pedidos web con
+ * `user_id`, 2026-11-24). Mientras esté en `false`, el estado enviado dice
+ * "Así se ve en la app" y NUNCA "Tu pedido ya está en la app" ni "Seguí este
+ * pedido desde el celular". Se prende (y se revisa el copy de `linked`)
+ * cuando el backend vincule el pedido a la cuenta por el WhatsApp.
+ */
+export const APP_VINCULADA = false;
+
+/** Ilustración del bloque de la app: captura real (WebP 432x600, el doble del uso). */
+type AppScreen = {
+  readonly src: string;
+  readonly width: number;
+  readonly height: number;
+};
+
 export const moduloPedidoContent = {
   /** Nombre del `tablist` (no se ve). */
   tablistLabel: "Qué necesitás",
@@ -151,14 +168,72 @@ export const moduloPedidoContent = {
       genericError: "No pudimos mandar tu pedido. Probá de nuevo o escribinos por WhatsApp.",
     },
 
-    /** Estado enviado: reemplaza al form en el mismo lugar. */
+    /**
+     * Estado enviado: reemplaza al form en el mismo lugar. Arriba la
+     * confirmación; abajo, el bloque de la app (`appPromo`).
+     */
     sent: {
       title: "¡Listo! Ya tenemos tu pedido",
-      body: "Te escribimos por WhatsApp en el día con las propuestas. Para seguirlo desde el celular, la app es gratis.",
-      /** `{code}` = código público del pedido (`AL-1042`). */
-      code: "Tu pedido es el #{code}.",
-      app: "Bajar la app",
+      /**
+       * Código público que devuelve el envío (`AL-1042`), en negrita entre
+       * `before` y `after`. Si el backend no lo devuelve, la oración no va:
+       * nunca se inventa un número.
+       */
+      code: { before: "Tu pedido es el ", prefix: "#", after: ". " },
+      body: "Te escribimos por WhatsApp en el día con las propuestas.",
       again: "Hacer otro pedido",
+    },
+
+    /**
+     * Bloque "Así se ve en la app" del estado enviado (ajuste del
+     * 2026-11-24). Copy honesto según `APP_VINCULADA`: con el flag apagado
+     * muestra cómo se ve un pedido en la app, sin decir que ESTE pedido ya
+     * está ahí.
+     */
+    appPromo: {
+      unlinked: {
+        eyebrow: "Así se ve en la app",
+        title: "Con la app ves las propuestas apenas llegan",
+        body: "Comparás precio, distancia y qué incluye cada una, y elegís el taller en un toque.",
+        next: "Tus próximos pedidos los hacés y los seguís desde ahí.",
+      },
+      /** Solo con `APP_VINCULADA`. Revisar antes de prenderlo. */
+      linked: {
+        eyebrow: "Tu pedido ya está en la app",
+        title: "Seguí este pedido desde el celular",
+        body: "Entrá con el mismo WhatsApp y vas a encontrar tu pedido con cada propuesta que llegue.",
+        next: "Entrá con el WhatsApp que pusiste en el pedido.",
+      },
+      /** Nombre de la fila de pasos (no se ve; la fila es navegable con teclado). */
+      stepsLabel: "Cómo se ve un pedido en la app",
+      steps: [
+        {
+          title: "Te avisamos con cada respuesta",
+          body: "Ves cuántas propuestas llegaron sin esperar el mensaje.",
+          screen: { src: "/images/app/app-propuestas.webp", width: 432, height: 600 },
+        },
+        {
+          title: "Las comparás lado a lado",
+          body: "Precio, distancia y qué incluye cada una, con la recomendada marcada.",
+          screen: { src: "/images/app/app-elegir.webp", width: 432, height: 600 },
+        },
+        {
+          title: "Elegís y coordinás",
+          body: "Te abrimos WhatsApp con el mensaje listo para el taller.",
+          screen: { src: "/images/app/app-elegiste.webp", width: 432, height: 600 },
+        },
+      ] as const satisfies readonly {
+        readonly title: string;
+        readonly body: string;
+        readonly screen: AppScreen;
+      }[],
+      download: {
+        title: "Bajá la app gratis",
+        /** Solo desde `lg`, junto al QR. */
+        scan: "Escaneá el código con la cámara del celular.",
+        qrAlt: "Código QR para bajar la app de AutoLibre",
+      },
+      whatsappFallback: "¿Preferís no bajarla? No pasa nada: te mandamos todo por WhatsApp.",
     },
   },
 

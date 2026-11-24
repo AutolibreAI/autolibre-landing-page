@@ -73,6 +73,25 @@ export const ANALYTICS_EVENTS = {
   /** El envío del pedido falló (red o respuesta de error). Sólo PostHog. */
   quoteFailed: "quote_failed",
   /**
+   * Se mostró el bloque "Así se ve en la app" del estado enviado del módulo de
+   * pedido (una vez por envío, al aparecer). Sólo PostHog.
+   */
+  pedidoAppPromoView: "pedido_app_promo_view",
+  /**
+   * Click en un botón de tienda de una superficie de descarga con `section`
+   * (hoy solo el estado enviado del módulo de pedido). Lo pidió la
+   * especificación del ajuste "pedido enviado" (2026-11-24). Viaja JUNTO con
+   * `app_store_clicked` en el mismo click (`data-analytics-event` con los
+   * dos nombres): ese sigue siendo el conteo de clicks a tienda de todo el
+   * sitio y no se corta. Sólo PostHog.
+   */
+  ctaDownloadClick: "cta_download_click",
+  /**
+   * El QR de descarga entró en pantalla (solo existe desde `lg`: en celular
+   * no se dibuja y no se manda). Una vez por envío. Sólo PostHog.
+   */
+  qrView: "qr_view",
+  /**
    * Click en "Pedir presupuesto" del estado vacío del directorio de
    * proveedores (una búsqueda o un filtro sin negocios). Mide cuántas
    * búsquedas sin resultados se rescatan. Sólo PostHog. Los props dicen QUÉ
@@ -273,6 +292,18 @@ export const APP_STORES = {
 export type AppStore = (typeof APP_STORES)[keyof typeof APP_STORES];
 
 /**
+ * Superficie de descarga de `cta_download_click` y `qr_view`. Viaja como
+ * `section`; el listener de `data-analytics-section` descarta cualquier otro
+ * valor.
+ */
+export const DOWNLOAD_SECTIONS = {
+  /** Bloque de la app del estado enviado del módulo de pedido. */
+  pedidoEnviado: "pedido_enviado",
+} as const;
+
+export type DownloadSection = (typeof DOWNLOAD_SECTIONS)[keyof typeof DOWNLOAD_SECTIONS];
+
+/**
  * Planes pagos de proveedores: los `code` del backend (`GET /billing/plans`).
  * Viaja como `plan`; el listener de `data-analytics-plan` descarta cualquier
  * otro valor.
@@ -307,6 +338,8 @@ export type AnalyticsEventProps = {
   app_store_clicked: {
     store: AppStore;
     placement?: string;
+    /** Superficie de descarga, si la tiene (ver `cta_download_click`). */
+    section?: DownloadSection;
   };
   quote_cta_clicked: { placement: QuoteCtaPlacement };
   quote_started: { flow: QuoteFlow } & QuoteModuleProps;
@@ -319,6 +352,18 @@ export type AnalyticsEventProps = {
     status?: number;
   } & QuoteModuleProps;
   quote_tab_selected: { tab: QuoteTab; placement: QuoteModulePlacement };
+  pedido_app_promo_view: {
+    placement: QuoteModulePlacement;
+    /** Copy con el pedido ya en la app (`APP_VINCULADA`). Hoy siempre `false`. */
+    app_linked: boolean;
+  };
+  cta_download_click: {
+    store: AppStore;
+    section: DownloadSection;
+    /** Dónde está montado el módulo (`modulo_home` o `modulo_pedido`). */
+    placement?: string;
+  };
+  qr_view: { section: DownloadSection; placement?: QuoteModulePlacement };
   quote_chip_clicked: {
     chip: QuoteChip;
     placement: QuoteModulePlacement;
@@ -457,6 +502,21 @@ export const ANALYTICS_CATALOG: Record<AnalyticsEventName, CatalogEntry> = {
     clickable: false,
   },
   quote_tab_selected: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  pedido_app_promo_view: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  cta_download_click: {
+    posthog: "client",
+    meta: () => null,
+    clickable: true,
+  },
+  qr_view: {
     posthog: "client",
     meta: () => null,
     clickable: false,

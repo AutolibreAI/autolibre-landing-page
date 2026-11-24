@@ -839,3 +839,65 @@ Islas client nuevas, todas hoja: `FiltersToggle`, `QuotePrefillForm`, `Directory
 - CDP: CLS 0 en la carga de las dos rutas a 390 y 1440 px; la imagen del mapa no se pide sin interacción y sí después de un scroll; 17 marcadores en la página base; el texto de la banda llega a "¿Qué le pasa?" en `/pedido`; la barra del Home entra al scrollear.
 - `curl`: un h1, sin saltos, canonical, `index, follow` en el perfil, JSON-LD, 430 perfiles en el sitemap con `lastmod`, `?pagina=999` 404, `Disallow: /proveedores-filtros`, cero Clerk.
 - Backend local (de prueba): respondió toda la sesión; durante una ráfaga de pruebas dio 429 (ver "Mapa"), lo que llevó al cambio de estrategia.
+
+## Ajuste: pedido enviado con recomendación de la app
+
+Rama `feat/rediseno-2026-11`, 2026-11-24. Especificación: `docs/rediseno-2026-11/pedido-enviado/PROMPT.md` (más las capturas y `ModuloPedido.dc.html` de esa carpeta). Cambia el estado enviado del módulo de pedido (Home y `/pedido`).
+
+### Qué se hizo
+
+- **Confirmación** (arriba): check en círculo `brand-50`, "¡Listo! Ya tenemos tu pedido", "Tu pedido es el **#AL-…**." solo si el backend devolvió `publicCode` (si no, la oración no va: no se inventa), "Te escribimos por WhatsApp en el día con las propuestas." y "Hacer otro pedido" (44 px). `role="status"` en el bloque de la confirmación y foco al título (`tabIndex=-1`), como antes. Se fue "Bajar la app" (lo reemplaza el bloque de abajo).
+- **Bloque de la app** (`components/modulo-pedido/modulo-app-promo.tsx`, Server Component), sobre `bg-canvas` debajo de una línea `card-line`: eyebrow, título (`h3`, un nivel debajo del título del enviado), bajada, tres pasos con capturas reales de la app en un marco de teléfono recortado, descarga y cierre por WhatsApp. En celular los pasos van en una fila con `overflow-x-auto` y `scroll-snap` (`snap-x snap-mandatory`, sin `scroll-behavior: smooth`); la fila es un `<ol>` con `aria-label` y `tabIndex=0` (verificado: la flecha derecha la desplaza 260 px a 390).
+- **Capturas**: `public/images/app/app-propuestas.webp`, `app-elegir.webp`, `app-elegiste.webp` (432x600 reales, el doble del uso), `next/image` con `width`/`height` reales, `sizes="228px"` (la tarjeta es de 240 con bordes de 6, así que se dibujan a 228 y no a 216 como dice la especificación: mismo candidato del `srcset`), `loading="lazy"` y `alt=""` (cada paso tiene su texto). El marco tiene alto fijo (300 px): no hay salto cuando bajan.
+- **Descarga**: desde `lg`, QR (SVG inline, `QrCode code="pedidoEnviado"`) a `https://autolibre.ai/descarga?utm_source=web&utm_medium=pedido_enviado` más "Escaneá el código con la cámara del celular."; siempre, los botones de tienda (`StoreLinks`). En un iPhone se ve solo App Store y en un Android solo Google Play, con el `data-platform` que el script inline del layout pone antes del primer paint (las variantes `platform-ios`/`platform-android` que ya usaba `DownloadCta`): sin JS después de montar y sin salto. En la compu o sin JS, los dos. (`/descarga` muestra los dos siempre; no se tocó.)
+- **QR**: generado una vez con `qrcode` (npm) instalado FUERA del proyecto, versión 5, corrección M (con Q la URL larga pedía versión 6), pegado como path en `components/ui/qr-code.tsx`. Verificado decodificando con `jsQR` el PNG dibujado desde el path tal como quedó en el archivo: devuelve la URL exacta. Falta escanearlo con un teléfono real.
+- **Server / client**: el bloque se arma en el server y llega a la isla `ModuloForm` como prop `appPromo: ReactNode`; la isla solo lo monta al enviar. El QR no usa librería en el cliente.
+
+### Flag `appVinculada`
+
+`APP_VINCULADA = false` en `lib/content/modulo-pedido.ts`, documentado: hoy los pedidos de la web no quedan asociados a ninguna cuenta (0 de 31 con `user_id`). Apagado, el bloque dice "Así se ve en la app" / "Con la app ves las propuestas apenas llegan" y nunca "Tu pedido ya está en la app" ni "Seguí este pedido desde el celular". La variante `linked` está escrita en `appPromo.linked` para cuando el backend vincule el pedido a la cuenta por el WhatsApp. Diferencia con el prototipo: su bajada vinculada nombra el número de pedido; acá dice "tu pedido", porque el bloque se arma en el server y el número recién se conoce en el cliente.
+
+### Eventos (detalle en `analytics.md`)
+
+| Evento | Props | Cuándo |
+|---|---|---|
+| `pedido_app_promo_view` (nuevo) | `placement`, `app_linked` | Una vez por envío, al montarse el bloque |
+| `qr_view` (nuevo) | `section: "pedido_enviado"`, `placement` | Una vez por envío, cuando el QR entra en pantalla (`IntersectionObserver`, umbral 0,5). En celular el QR tiene `display: none` y el observer nunca lo ve: solo escritorio (verificado por CDP: `true` a 1440, nunca a 390) |
+| `cta_download_click` (nuevo, clickable) | `store`, `section: "pedido_enviado"`, `placement` | Click en una tienda del enviado |
+| `app_store_clicked` (existente) | `store`, `placement` (`modulo_home`/`modulo_pedido`), `section` | Mismo click |
+
+**Por qué los dos en el click a tienda**: `cta_download_click` lo pide la especificación, pero `app_store_clicked` es el conteo histórico de clicks a tienda de todo el sitio (insights por `placement`); mandar solo el nuevo cortaría esa serie. El listener delegado ahora acepta varios nombres en `data-analytics-event` separados por espacio y el atributo nuevo `data-analytics-section` (valores cerrados en `DOWNLOAD_SECTIONS`). Ningún evento existente se renombró. Si producto prefiere uno solo, es sacar un nombre en `StoreLinks`. En local PostHog no carga (solo Production), así que el envío real de los eventos no se pudo ver: se verificaron los atributos `data-analytics-*` y que el observer del QR dispara solo a 1440.
+
+### JS por ruta (suma de los `<script src>` del HTML, gzip local, build de producción)
+
+| Ruta | Antes (HEAD `9640bd8`) | Después |
+|---|---|---|
+| `/` | 12 · 714.1 KB · 216.1 KB gzip · HTML 217.3 KB | 12 · 715.1 KB · 216.5 KB gzip · HTML 229.5 KB (40.3 KB gzip) |
+| `/pedido` | 12 · 714.1 KB · 216.1 KB gzip · HTML 123.6 KB | 12 · 715.1 KB · 216.5 KB gzip · HTML 136.4 KB (25.2 KB gzip) |
+
+Chunk de la isla del módulo: 47.6 KB / 16.1 KB gzip → 48.2 KB / 16.4 KB gzip (el efecto de los dos eventos). El HTML sube unos 12 KB sin comprimir porque el bloque viaja en el payload RSC (el path del QR es ~5 KB) aunque no se dibuja hasta enviar. Las capturas **no se piden antes de enviar** (0 requests a `/images/app/` durante la carga, interceptando la red por CDP) y no hay `<img>` ni `preload` de ellas en el HTML.
+
+### CLS
+
+0 en la carga inicial (PerformanceObserver de `layout-shift`, 390 y 1440, Home y `/pedido`). El estado enviado aparece por la acción de enviar.
+
+### Diferencias con la referencia
+
+- **Botones de tienda**: `StoreLinks` (los oficiales del sitio, radio `field`, decisión de la 4a para no duplicar la medición) en lugar de las píldoras de texto del prototipo. A 390 no entran dos en una fila y quedan apilados (en un celular real se ve uno solo, el de su sistema).
+- **Pestaña Seguro**: las capturas de referencia la muestran; se mantiene la decisión de producto del 2026-11-24 (sin Seguro).
+- **Radio de la tarjeta**: `rounded-panel` (20 px) como el resto de los estados del módulo, no 24. Marco del teléfono: `rounded-t-3xl` (24) en lugar de 28 (sin valor arbitrario).
+- **QR**: 144 px (no 112) por la densidad de la versión 5: 3,2 px por módulo, el mismo criterio de `/descarga`.
+- **`role="status"`**: va en la confirmación (título + texto), no en toda la tarjeta: así el lector no anuncia el bloque de la app entero.
+- **`PhoneFrame`** no se reusó: es un iPhone completo de 320 px con isla dinámica; la referencia es un marco recortado de 240. Sigue sin uso.
+
+### Verificación
+
+- `npm run lint`: 0 errores, 282 warnings (los mismos preexistentes). `npx tsc --noEmit`: sin errores. `npm run build`: OK.
+- Tests: `test:blog` 86, `test:provider-profile` 44, `test:proveedores` 72, `test:partner-claims` 16, `test:partner-billing` 70: todos pasan. Ninguno cubre el módulo.
+- Flujo por CDP sobre `next start --port 3100`, Home y `/pedido` a 390 y 1440: chip, zona, Enter, WhatsApp, consentimiento, enviar. **Ningún pedido real**: `/api/presupuesto` respondido por CDP con `AL-22123`; `vehicle-lookup` y Google Maps bloqueados. Foco en el `h2` del enviado, outline `h2 → h3`, "Hacer otro pedido" de 44 px, tiendas de 56 px, con UA de Android solo Google Play. Capturas comparadas contra `captura-escritorio.png` y `captura-celular.png`.
+
+### Dudas abiertas
+
+- ¿Mandar `cta_download_click` y `app_store_clicked` juntos (hoy) o solo uno?
+- Escanear el QR nuevo con un teléfono real antes del deploy.
+- "Tus próximos pedidos los hacés y los seguís desde ahí" y "Te abrimos WhatsApp con el mensaje listo para el taller" vienen del prototipo y coinciden con las capturas de la app; confirmar con producto que siguen vigentes.
