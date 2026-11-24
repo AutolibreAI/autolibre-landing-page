@@ -133,7 +133,9 @@ arriba ni se reformulan, y se actualizan en los dos lugares (esa constante y
 este archivo) cuando cambien.
 
 Rediseño 2026-11 (decisiones del 2026-11-24): en textos de marketing la cifra
-de proveedores es "+150" (`MARKETING_PROVIDERS_COUNT` en `lib/content/home.ts`);
+de proveedores es "+150" (`MARKETING_PROVIDERS_COUNT`, en `lib/content/about.ts`
+junto a `traction` y re-exportada desde `home.ts`; reemplaza al "100+" en el
+hero y el hito "Tracción" de `/sobre-nosotros`, ahora con corte Oct 2026);
 el directorio muestra el conteo real. Seguros no se ofrecen por ahora como
 pedido desde la web (el módulo de pedido no tiene pestaña Seguro); el beneficio
 del aliado Intēgrity sigue en el Home.

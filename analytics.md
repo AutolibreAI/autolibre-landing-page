@@ -153,6 +153,18 @@ Desde el 2026-11-24 (rediseño, fase 4b). El directorio usa la barra fija compar
 
 Ya no llegan: el "Pedir presupuesto" del estado vacío cambió de texto ("Pedir propuestas"), mismo evento. La barra fija vieja del perfil (solo WhatsApp, sin evento) se reemplazó por la compartida.
 
+### 📰 Blog y `/sobre-nosotros` (rediseño, fase 4c)
+
+Desde el 2026-11-24. Los `placement` de las tiendas se conservan: `closing_cta` (cierre del listado, las categorías y `/sobre-nosotros`) y `blog_article` (panel de descarga de la nota, que pasó del final del cuerpo al final de la página). La barra fija de celular del blog ("Descargar la app gratis", a `/descarga`) sigue sin evento propio: es navegación interna.
+
+| Botón / zona                                                        | Evento PostHog             | Props                                                       | Meta | Cuándo |
+| ------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------------- | ---- | ------ |
+| "Hacé tu pedido" del llamado dentro de la nota ("Pedí propuestas…") | `quote_cta_clicked`        | `placement: "blog_article"` (nuevo valor de `QUOTE_CTA_PLACEMENTS`) | —    | Click (lleva a `/pedido`) |
+| Tiendas del panel de descarga del blog                              | `app_store_clicked`        | `store`, `placement: "closing_cta"` / `"blog_article"`      | —    | Click  |
+| "Hacé tu pedido" del cierre de `/sobre-nosotros`                    | `quote_cta_clicked`        | `placement: "about_closing"` (nuevo valor)                  | —    | Click  |
+| "Sumá tu negocio" del cierre de `/sobre-nosotros`                   | `partner_register_started` | `placement: "about_closing"`                                | —    | Click  |
+| Links "App Store" / "Google Play" del cierre de `/sobre-nosotros`    | `app_store_clicked`        | `store`, `placement: "closing_cta"`                         | —    | Click  |
+
 ### 🧾 Talleres: registro, reclamo y contratación de planes (specs 211 y 212)
 
 Embudo de contratación: `plan_checkout_started` → `plan_checkout_redirected` → `plan_checkout_confirmed`. Ninguno lleva datos personales: ni email, ni código de reclamo, ni taller. Hoy ninguno va a Meta; si marketing quiere optimizar sobre la suscripción, el candidato es `plan_checkout_confirmed`.

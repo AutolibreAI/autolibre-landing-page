@@ -41,7 +41,7 @@ const routes = [
   },
   {
     path: "/blog",
-    lastModified: "2026-09-23",
+    lastModified: "2026-11-24",
     changeFrequency: "weekly",
     priority: 0.7,
   },
@@ -65,7 +65,7 @@ const routes = [
   },
   {
     path: "/sobre-nosotros",
-    lastModified: "2026-11-19",
+    lastModified: "2026-11-24",
     changeFrequency: "monthly",
     priority: 0.6,
   },

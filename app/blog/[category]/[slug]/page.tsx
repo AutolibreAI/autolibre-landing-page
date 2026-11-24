@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArticleAppCta } from "@/components/blog/article-app-cta";
+import { ArticleQuoteCallout } from "@/components/blog/article-quote-callout";
 import { ArticleTocDesktop, ArticleTocMobile } from "@/components/blog/article-toc";
 import { authorInitials } from "@/components/blog/author-initials";
-import { Breadcrumbs } from "@/components/blog/breadcrumbs";
 import { formatPostDate } from "@/components/blog/format-date";
+import { BlogAppBand } from "@/components/blog/blog-app-band";
 import { MobileDownloadBar } from "@/components/blog/mobile-download-bar";
+import { Breadcrumbs } from "@/components/marketing/breadcrumbs";
+import { sectionTitle } from "@/components/marketing/styles";
 import { PostCard } from "@/components/blog/post-card";
 import { RichText } from "@/components/blog/rich-text";
 import { PageShell } from "@/components/layout/page-shell";
@@ -15,7 +17,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { Container } from "@/components/ui/container";
 import { Icon } from "@/components/ui/icon";
 import { Section } from "@/components/ui/section";
-import { extractFaq } from "@/lib/blog/faq";
+import { extractFaq, faqSectionIndex } from "@/lib/blog/faq";
 import { categoryPath } from "@/lib/blog/query";
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
 import { blogContent } from "@/lib/content/blog";
@@ -44,9 +46,9 @@ const RELATED_COUNT = 3;
 
 /**
  * La portada ocupa la columna del cuerpo (`max-w-180` = 720px) desde `md`;
- * debajo, el ancho de la pantalla.
+ * debajo, el ancho del contenedor (88vw: 6% de gutter por lado).
  */
-const COVER_SIZES = "(min-width: 768px) 720px, 100vw";
+const COVER_SIZES = "(min-width: 768px) 720px, 88vw";
 
 type PageProps = {
   readonly params: Promise<{ category: string; slug: string }>;
@@ -172,30 +174,30 @@ export default async function PostPage({ params }: PageProps) {
 
   return (
     <>
-      <PageShell currentPath="/blog">
-        <article>
+      <PageShell currentPath="/blog" bottomBar={<MobileDownloadBar />}>
+        <article className="bg-card">
           {/* Encabezado a todo el ancho del contenedor, cerrado por una
               línea: el título manda y el índice arranca recién con el cuerpo. */}
           <header>
             <Container size="wide">
-              <div className="flex flex-col gap-5 border-b border-line pt-10 pb-10 md:pt-14 md:pb-12">
-                <Breadcrumbs items={trail} endsAtCurrent={false} />
+              <div className="flex flex-col gap-5 border-b border-card-line pt-10 pb-10 md:pt-14 md:pb-12">
+                <Breadcrumbs items={trail} label={blogContent.breadcrumb.label} endsAtCurrent={false} />
 
                 <Link
                   href={categoryPath(post.category.slug)}
-                  className="inline-flex min-h-8 w-fit items-center rounded-full bg-surface-muted px-3.5 text-label font-semibold text-brand-hover hover:text-ink"
+                  className="inline-flex min-h-8 w-fit items-center rounded-full bg-brand-50 px-3.5 text-label font-semibold text-fg transition-colors hover:bg-brand-200 motion-reduce:transition-none"
                 >
                   {post.category.name}
                 </Link>
 
                 {/* Line-height propio y no el del token display (1.05): es un
                     título de 2-3 líneas en mobile, más largo que un eslogan. */}
-                <h1 className="max-w-220 text-4xl leading-[1.1] text-ink md:text-5xl lg:text-display-md lg:leading-[1.05]">
+                <h1 className="max-w-220 text-4xl leading-[1.1] text-fg md:text-5xl lg:text-display-md lg:leading-[1.05]">
                   {post.title}
                 </h1>
 
                 {post.excerpt ? (
-                  <p className="max-w-190 text-lead-lg leading-relaxed text-ink/70 md:text-xl">
+                  <p className="max-w-190 text-lead-lg leading-relaxed text-fg-muted md:text-xl">
                     {post.excerpt}
                   </p>
                 ) : null}
@@ -204,25 +206,25 @@ export default async function PostPage({ params }: PageProps) {
                   <div className="flex items-center gap-3">
                     <span
                       aria-hidden="true"
-                      className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ink font-display text-sm font-bold text-white"
+                      className="flex size-11 shrink-0 items-center justify-center rounded-full bg-action font-display text-sm font-bold text-white"
                     >
                       {authorInitials(post.authorName)}
                     </span>
-                    <p className="text-[0.9375rem] font-semibold text-ink">
+                    <p className="text-control font-semibold text-fg">
                       {copy.byline(post.authorName)}
                     </p>
                   </div>
                   {dateLabel ? (
-                    <p className="text-sm text-ink/60">
+                    <p className="text-sm text-fg-muted">
                       <time dateTime={shownDate}>{dateLabel}</time>
                     </p>
                   ) : null}
                   {reviewedLabel ? (
-                    <p className="text-sm text-ink/60">
+                    <p className="text-sm text-fg-muted">
                       <time dateTime={post.reviewedAt}>{reviewedLabel}</time>
                     </p>
                   ) : null}
-                  <p className="flex items-center gap-1.5 text-sm text-ink/60">
+                  <p className="flex items-center gap-1.5 text-sm text-fg-muted">
                     <Icon name="clock" size={16} />
                     {copy.readingTime(readingMinutes)}
                   </p>
@@ -235,20 +237,21 @@ export default async function PostPage({ params }: PageProps) {
             <div className="grid gap-12 pt-10 pb-16 md:pt-14 md:pb-24 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:gap-12 xl:gap-24">
               <div className="flex max-w-180 min-w-0 flex-col">
                 {/* Portada arriba del cuerpo, al ancho de la columna y en
-                    16:9 (el marco reserva el alto: sin CLS). `eager` y no
-                    `preload`: en desktop es la LCP, pero en mobile queda
-                    debajo del pliegue y la LCP es el `h1`, y un `preload`
-                    en el <head> competiría con las fuentes del título. La
-                    doc de `next/image` y AGENTS.md piden `eager` para una
-                    LCP que cambia según el viewport. */}
+                    16:9 (el marco reserva el alto: sin CLS). `eager` +
+                    `fetchPriority="high"` y no `preload`: en desktop es la
+                    LCP, pero en mobile queda debajo del pliegue y la LCP es
+                    texto, y un `preload` en el <head> competiría con las
+                    fuentes del título. La doc de `next/image` y AGENTS.md
+                    piden eso para una LCP que cambia según el viewport. */}
                 {post.coverImage ? (
-                  <div className="relative mb-8 aspect-video overflow-clip rounded-card bg-surface-muted lg:mb-10">
+                  <div className="relative mb-8 aspect-video overflow-clip rounded-card bg-card-muted lg:mb-10">
                     <Image
                       src={post.coverImage.url}
                       alt={post.coverAlt}
                       fill
                       sizes={COVER_SIZES}
                       loading="eager"
+                      fetchPriority="high"
                       className="object-cover"
                     />
                   </div>
@@ -261,7 +264,14 @@ export default async function PostPage({ params }: PageProps) {
                 {/* El primer bloque del cuerpo no suma margen arriba: el aire
                     ya lo da el contenedor. */}
                 <div className=":first:mt-0 max-lg:mt-8">
-                  <RichText content={post.content} references={post.references} />
+                  <RichText
+                    content={post.content}
+                    references={post.references}
+                    insert={{
+                      index: faqSectionIndex(post.content, copy.faqHeading),
+                      node: <ArticleQuoteCallout categorySlug={post.category.slug} />,
+                    }}
+                  />
                 </div>
 
                 {/* Tags como texto, sin link: todavía no hay páginas de tag. */}
@@ -270,28 +280,26 @@ export default async function PostPage({ params }: PageProps) {
                     {post.tags.map((tag) => (
                       <li
                         key={tag.slug}
-                        className="inline-flex min-h-9 items-center rounded-full border border-line bg-surface-subtle px-4 text-sm font-medium text-ink"
+                        className="inline-flex min-h-9 items-center rounded-full border border-card-line bg-canvas px-4 text-sm font-medium text-fg"
                       >
                         {tag.name}
                       </li>
                     ))}
                   </ul>
                 ) : null}
-
-                <ArticleAppCta />
               </div>
 
               <aside className="hidden flex-col gap-10 lg:sticky lg:top-24 lg:flex lg:w-64 xl:w-75">
                 <ArticleTocDesktop items={toc} />
 
                 {sameTopic.length > 0 ? (
-                  <div className="flex flex-col gap-3 border-t border-line pt-6">
-                    <p className="text-label font-semibold text-ink">{copy.sameTopic}</p>
+                  <div className="flex flex-col gap-1 border-t border-card-line pt-6">
+                    <p className="text-label font-semibold text-fg">{copy.sameTopic}</p>
                     {sameTopic.map((item) => (
                       <Link
                         key={item.id}
                         href={postPath(item)}
-                        className="text-[0.9375rem] leading-snug font-medium text-brand-hover hover:text-brand"
+                        className="flex min-h-11 items-center text-control leading-snug font-medium text-brand-hover transition-colors hover:text-fg motion-reduce:transition-none"
                       >
                         {item.title}
                       </Link>
@@ -304,8 +312,8 @@ export default async function PostPage({ params }: PageProps) {
         </article>
 
         {related.length > 0 ? (
-          <Section tone="subtle" spacing="md" aria-labelledby="relacionadas">
-            <h2 id="relacionadas" className="text-3xl leading-tight text-ink md:text-4xl">
+          <Section tone="canvas" spacing="md" aria-labelledby="relacionadas">
+            <h2 id="relacionadas" className={sectionTitle}>
               {copy.related}
             </h2>
             <ul className="mt-10 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
@@ -317,12 +325,9 @@ export default async function PostPage({ params }: PageProps) {
             </ul>
           </Section>
         ) : null}
-      </PageShell>
 
-      {/* Reserva el alto de la barra fija de mobile DESPUÉS del footer: así
-          el final de la página (footer incluido) no queda tapado por ella. */}
-      <div aria-hidden="true" className="h-24 lg:hidden" />
-      <MobileDownloadBar />
+        <BlogAppBand placement="blog_article" />
+      </PageShell>
 
       <JsonLd schema={schema} />
     </>

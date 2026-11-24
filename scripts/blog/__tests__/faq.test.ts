@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { extractFaq, normalizeHeading } from "../../../lib/blog/faq.ts";
+import { extractFaq, faqSectionIndex, normalizeHeading } from "../../../lib/blog/faq.ts";
 
 const h2 = (text: string) => ({ type: "heading-two", children: [{ text }] });
 const h3 = (text: string) => ({ type: "heading-three", children: [{ text }] });
@@ -70,5 +70,18 @@ describe("extractFaq", () => {
     assert.deepEqual(extractFaq([h2("Preguntas frecuentes"), h3("¿T?"), table], "Preguntas frecuentes"), [
       { question: "¿T?", answer: "A | B\n1 | 2" },
     ]);
+  });
+});
+
+describe("faqSectionIndex", () => {
+  it("devuelve la posición del h2 de la FAQ (sin importar tildes ni mayúsculas)", () => {
+    const content = { children: [h2("Intro"), p({ text: "x" }), h2("PREGUNTAS  FRECUENTES"), h3("¿Uno?")] };
+    assert.equal(faqSectionIndex(content, "Preguntas frecuentes"), 2);
+  });
+
+  it("devuelve -1 si la nota no tiene FAQ (un h3 con ese texto no cuenta)", () => {
+    const content = { children: [h2("Intro"), h3("Preguntas frecuentes")] };
+    assert.equal(faqSectionIndex(content, "Preguntas frecuentes"), -1);
+    assert.equal(faqSectionIndex(null, "Preguntas frecuentes"), -1);
   });
 });

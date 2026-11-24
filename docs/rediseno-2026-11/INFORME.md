@@ -901,3 +901,119 @@ Chunk de la isla del módulo: 47.6 KB / 16.1 KB gzip → 48.2 KB / 16.4 KB gzip 
 - ¿Mandar `cta_download_click` y `app_store_clicked` juntos (hoy) o solo uno?
 - Escanear el QR nuevo con un teléfono real antes del deploy.
 - "Tus próximos pedidos los hacés y los seguís desde ahí" y "Te abrimos WhatsApp con el mensaje listo para el taller" vienen del prototipo y coinciden con las capturas de la app; confirmar con producto que siguen vigentes.
+
+## Fase 4c: blog y sobre nosotros
+
+Rama `feat/rediseno-2026-11`, 2026-11-24. `/blog`, las categorías y la nota pasan al sistema nuevo con cambios mínimos (`Blog`/`Blog-celular`, `BlogNota`/`BlogNota-celular`); `/sobre-nosotros` se rehízo completa (`Nosotros`/`Nosotros-celular`). Medido con build de producción local (`next start --port 3100`), como las fases anteriores.
+
+### Qué cambió
+
+**Blog (listado, categorías y nota): misma composición, sistema nuevo.**
+
+- Tokens: `ink`/`ink/60`/`ink/70` → `fg`/`fg-muted`; `bg-ink` → `bg-action`; filetes `card-line`; fondos `card` (contenido) y `canvas` ("Guías por tema", "Seguí leyendo"). Buscador en píldora de 52 px (16 px de texto, borde `control-line-strong`); temas como chips de 44 px (`action` el elegido, `control-line` el resto); paginación en píldora. `h1` del listado con la escala del rediseño (`display-xs` → `display-md`).
+- **Contraste** (lo que la línea base marcaba en `/blog` y la nota): fechas `<time>` de tarjetas, "Últimas notas", destacada y cabecera de la nota, migas, bajadas e índice pasan de `ink/60`-`ink/70` a `fg-muted` (9.18:1 sobre `canvas`, 10.21:1 sobre `card`). La fecha de `PostCard` estaba en `fg-subtle`, que sobre `canvas` da 4.30:1: también pasó a `fg-muted`.
+- **Migas**: se borró `components/blog/breadcrumbs.tsx` (fallaba contraste) y el blog usa `components/marketing/breadcrumbs.tsx` (4b), que suma `endsAtCurrent` para la nota (las migas terminan en la categoría y son todas links). Visibles en las categorías y en la nota, como el lienzo; el listado no las muestra (tampoco el lienzo) y conserva su `BreadcrumbList`.
+- **LCP**: la portada destacada de `/blog` pasa de `preload` a `fetchPriority="high"` + `loading="eager"` (en celular queda al borde del primer viewport, así que según la pantalla la LCP es ella o texto: es el caso que AGENTS.md y la doc de `next/image` resuelven con prioridad en el `<img>`), con `sizes` del ancho real (`(min-width: 1640px) 940px, (min-width: 1024px) calc(88vw - 500px), 88vw`; antes `60vw, 100vw`). La portada de la nota suma `fetchPriority="high"` a su `eager` y su `sizes` pasa a `88vw` en celular. Ningún `priority`. React 19 igual emite el `<link rel=preload>` de la imagen con prioridad alta, así que el descubrimiento queda resuelto (`lcp-discovery-insight`: `fetchpriority=high` pasa de "no" a "sí").
+- **Llamado a `/pedido` en la nota** (`ArticleQuoteCallout`): "¿Tu auto necesita un arreglo? Pedí propuestas." (en Seguros: "¿Chocaste o te chocaron? Pedí propuestas para el arreglo."), bajada y "Hacé tu pedido" (`primary` 52 px, `quote_cta_clicked` `blog_article`). Va antes del `h2` "Preguntas frecuentes" (o al final del cuerpo si la nota no tiene FAQ): `RichText` acepta `insert` y parte el AST en dos con los mismos renderers, así los `id` de los `h2` siguen coincidiendo con el índice. Nueva función pura `faqSectionIndex` en `lib/blog/faq.ts`, con tests.
+- **Cierre**: la banda verde (`ClosingCtaSection`) del listado y las categorías, y el bloque de descarga dentro del cuerpo de la nota (`ArticleAppCta`, borrado), pasan a un panel oscuro `action` al final (`BlogAppBand`), como el lienzo, con los mismos `placement` de siempre (`closing_cta` y `blog_article`).
+- **Barra fija de celular**: el lienzo del blog NO usa la `MobileActionBar` (pedido + WhatsApp) sino "Descargar la app gratis". Se mantuvo esa barra, restilada (`primary` 52, `card` con filete) y con la mecánica de la fase 2 (`sticky bottom-0` después del footer, sin espacio de reserva), ahora también en el listado y las categorías como el lienzo. Lleva a `/descarga` (antes a `/#descargar`). `PageShell` suma `bottomBar` para eso.
+
+**`/sobre-nosotros`: rediseño completo.** Todo Server Component, cero islas.
+
+- Hero tipográfico: "Feb 2026 —— Buenos Aires", `h1` grande (44 → 96 px), definición canónica y ficha `<dl>` con filetes (Fundada, Cofundadores, Disponible en, Vehículos 700+, Proveedores +150). Se fueron la ilustración de la ruta y los íconos de la ficha (el lienzo no los tiene).
+- Misión (`action`) y visión (`brand-50`) en dos tarjetas; `h2` "Misión y visión" en `sr-only` (el lienzo no lo muestra) y un `h3` por tarjeta con aspecto de eyebrow.
+- Historia sobre `canvas`: "Lo que aprendimos" grande y centrado en un `<figure>` (es nuestra frase: `<p>` + `<figcaption>`, no `<blockquote>`) y el relato en tres columnas.
+- Hitos: título fijo a la izquierda desde `lg`, `<ol>` sobre una línea con fecha (`<time>`), `h3` y texto; el último con "Hoy".
+- Equipo: retrato 4:5 con `next/image` (lazy, `sizes` por columnas, `alt` con nombre y rol), `h3` con el nombre y el rol debajo. Fotos verificadas contra `main` (`git diff main -- public/images/about` vacío: son las del commit `8208970`, no se movieron).
+- Cierre: "Tu auto siempre supo qué tenía. Ahora vos también.", links de texto a las tiendas (`app_store_clicked` `closing_cta`, lo que medía la banda vieja), "Hacé tu pedido" (`quote_cta_clicked` `about_closing`) y "Sumá tu negocio" (`partner_register_started` `about_closing`).
+- Sin migas visibles ni barra fija (el lienzo no las tiene).
+- Cifras: `MARKETING_PROVIDERS_COUNT` ("+150") se mudó a `lib/content/about.ts` junto a `traction` (el Home la re-exporta desde `home.ts`, sin cambiar sus imports) y reemplaza al "100+" de la ficha y del hito "Tracción". El hito pasa a `Oct 2026` también en su `dateTime` (decía `2026-09` con el rótulo "Oct 2026"). `PRODUCT.md` lo anota.
+
+### Inventario SEO antes / después (HTML del server)
+
+| | `/blog` antes | `/blog` después | nota antes | nota después | `/sobre-nosotros` antes | después |
+|---|---|---|---|---|---|---|
+| title · description · canonical · robots | — | iguales | — | iguales | — | iguales |
+| H1 | 1 | 1 | 1 | 1 | 1 | 1 |
+| Saltos de heading | ninguno | ninguno | ninguno | ninguno | ninguno | ninguno |
+| JSON-LD | Organization, CollectionPage, BreadcrumbList | igual | Organization, WebPage, BlogPosting, BreadcrumbList, FAQPage | igual | Organization, AboutPage, BreadcrumbList, Person ×5 | igual |
+| Migas visibles | no | no (como el lienzo) | sí (fallaban contraste) | sí (`fg-muted`, 44 px) | no | no |
+| Clerk (HTML) | 0 | 0 | 0 | 0 | 0 | 0 |
+
+Outlines después:
+
+- `/blog`: h1 → h2 "Nota destacada" (`sr-only`, h3 de la nota) → h2 "Últimas notas" (4 h3) → h2 "Guías por tema" (h3 por tarjeta) → h2 "Tus papeles y vencimientos, en el teléfono." (reemplaza a "Tu auto siempre supo qué tenía…" de la banda vieja).
+- Nota: h1 → los h2 del cuerpo (con "Preguntas frecuentes" y sus h3, y "Fuentes oficiales") → h2 "Seguí leyendo" (3 h3) → h2 del panel de la app. El llamado al pedido no entra en el outline (su título es un `<p>`, ver diferencias).
+- `/sobre-nosotros`: h1 → h2 "Misión y visión" (h3 Misión, Visión) → h2 "Nuestra historia" → h2 "Cómo llegamos hasta acá" (10 h3) → h2 "Equipo" (5 h3) → h2 "Tu auto siempre supo qué tenía. Ahora vos también.". Mismo contenido indexable que antes (misión, visión, historia, 10 hitos, 5 personas).
+
+`app/sitemap.ts`: `/sobre-nosotros` y la fecha fija de `/blog` (solo se usa si no hay notas; si hay, manda la nota más nueva) = 2026-11-24. `public/llms.txt`: la línea de Sobre nosotros suma qué es AutoLibre, Buenos Aires y las cifras.
+
+### Lighthouse 12 antes / después
+
+Mismo método que la 4b: 3 corridas por ruta y modo, la **mediana** como `<ruta>-{movil,escritorio}.json` y las tres en `despues/<ruta>-{movil,escritorio}-corrida{1,2,3}.json`. Corridas (Performance): `/blog` móvil 55 / 61 / 61, escritorio 78 / 86 / 68; nota móvil 60 / 80 / 61, escritorio 69 / 80 / 73; `/sobre-nosotros` móvil 68 / 77 / 69, escritorio 100 / 98 / 75.
+
+| Ruta | Modo | Medición | Perf | A11y | BP | SEO | LCP (s) | CLS | TBT (ms) | FCP (s) | Elemento LCP | `fetchpriority` en la LCP | A11y que fallan |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `/blog` | Móvil | Antes | 48 | 96 | 75 | 100 | 6.47 | 0.000 | 3450 | 1.16 | `img` (portada destacada) | no | color-contrast |
+| `/blog` | Móvil | Después | 61 | 100 | 96 | 100 | 3.77 | 0.000 | 2007 | 0.94 | `img` (portada destacada) | sí | — |
+| `/blog` | Escritorio | Antes | 95 | 96 | 74 | 100 | 0.83 | 0.000 | 163 | 0.28 | `img` (portada destacada) | no | color-contrast |
+| `/blog` | Escritorio | Después | 78 | 100 | 96 | 100 | 0.82 | 0.000 | 502 | 0.32 | `img` (portada destacada) | sí | — |
+| `/blog/seguros/que-hacer-si-chocas` | Móvil | Antes | 60 | 96 | 75 | 100 | 3.58 | 0.000 | 3535 | 1.01 | `p` (bajada) | — | color-contrast |
+| `/blog/seguros/que-hacer-si-chocas` | Móvil | Después | 61 | 100 | 96 | 100 | 3.47 | 0.000 | 3354 | 1.01 | `p` (bajada) | — | — |
+| `/blog/seguros/que-hacer-si-chocas` | Escritorio | Antes | 79 | 96 | 74 | 100 | 0.96 | 0.000 | 435 | 0.38 | `img` (portada) | no | color-contrast |
+| `/blog/seguros/que-hacer-si-chocas` | Escritorio | Después | 73 | 100 | 96 | 100 | 0.71 | 0.000 | 702 | 0.45 | `img` (portada) | sí | — |
+| `/sobre-nosotros` | Móvil | Antes | 69 | 100 | 75 | 100 | 3.48 | 0.000 | 965 | 1.14 | `p` (bajada) | — | — |
+| `/sobre-nosotros` | Móvil | Después | 69 | 100 | 96 | 100 | 3.16 | 0.000 | 1309 | 1.04 | `p` (definición) | — | — |
+| `/sobre-nosotros` | Escritorio | Antes | 81 | 100 | 74 | 100 | 0.87 | 0.000 | 410 | 0.41 | `h1` | — | — |
+| `/sobre-nosotros` | Escritorio | Después | 98 | 100 | 96 | 100 | 0.79 | 0.000 | 126 | 0.42 | `h1` | — | — |
+
+Lectura:
+
+- **`/blog` móvil**: LCP 6,47 → 3,77 s y TBT 3.450 → 2.007 ms; accesibilidad 96 → 100. Lo que queda del LCP simulado es "Render Delay" del JS compartido de la plataforma (igual que en la 4a y la 4b). Observado por CDP a 390 px, la portada se pinta a los 816 ms.
+- **Contraste**: `color-contrast` resuelto en `/blog` y en la nota (accesibilidad 96 → 100 en los dos modos).
+- **Escritorio del blog y de la nota**: la mediana baja, pero no por la página: las tres corridas de `/blog` dieron TBT 502 / 315 / 1.195 ms, con una tarea "Unattributable" de 300 a 600 ms y, en dos, el Pixel de Meta cargando dentro de la traza (632 ms de bloqueo en la tercera). Es la misma variabilidad documentada en la 4a y la 4b. El LCP queda igual o mejor (0,83 → 0,82 s; nota 0,96 → 0,71 s) y las páginas cargan menos JS que antes (tabla de abajo).
+- **CLS 0** en las tres rutas a 390 y 1440 (PerformanceObserver por CDP), sin desborde horizontal.
+
+### JS por ruta (suma de los `<script src>` del HTML, gzip local)
+
+| Ruta | Antes (fase 0) | Después |
+|---|---|---|
+| `/blog` | 13 · 700.1 KB · 213.0 KB gzip · HTML 120.9 KB | **12 · 687.8 KB · 207.7 KB gzip** · HTML 126.7 KB |
+| `/blog/seguros/que-hacer-si-chocas` | 13 · 700.7 KB · 213.3 KB gzip · HTML 143.5 KB | **12 · 688.4 KB · 208.0 KB gzip** · HTML 149.5 KB |
+| `/sobre-nosotros` | 13 · 700.1 KB · 213.0 KB gzip · HTML 137.1 KB | **12 · 687.8 KB · 207.7 KB gzip** · HTML 107.4 KB |
+
+Sin islas nuevas: la única del blog sigue siendo `ArticleTocActive` (marcador del índice). `/sobre-nosotros` no tiene ninguna.
+
+### Diferencias con el diseño y por qué
+
+- **Título del llamado de la nota**: `<p>` y no `h3`. El llamado cae donde termine el cuerpo (antes de la FAQ o al final) y en una nota sin `h2` previo haría saltar `h1 → h3`; además es un llamado, no una sección. El `<aside>` lleva su nombre por `aria-labelledby`.
+- **Texto del llamado**: el lienzo lo escribe para la nota de la VTV ("¿Te la dieron condicional?"). Hygraph no tiene un campo para eso: va un texto genérico y uno por categoría donde el caso es claro (Seguros). Se ubica antes de la FAQ y no en un punto exacto del texto.
+- **Sin campo "¿Qué le pasa?"** en el llamado: el lienzo muestra solo el botón.
+- **Barra fija del blog**: la de descarga del lienzo, no la `MobileActionBar`. Ahora también en el listado y las categorías (antes solo en la nota).
+- **Retrato de Matías Vidal**: el lienzo dice "Foto pendiente". No hay foto: va el mismo marco con sus iniciales ("MV", decorativas), sin texto de marcador.
+- **Hito de hoy**: el lienzo dice "Más de 700 vehículos únicos y más de 150 proveedores"; acá sale de las constantes: "700+ vehículos únicos y +150 proveedores en el marketplace."
+- **Botones de tienda del panel del blog**: `StoreLinks` (radio `field`), como en la 4a, en lugar de las píldoras de texto del lienzo.
+- **`h1` de `/sobre-nosotros`**: 96 px desde `xl` (escala de Tailwind) en lugar de 116 px, acotado a `max-w-240` para que parta en dos renglones como el lienzo. En celular, 44 px como el lienzo.
+- **Línea de los hitos**: `control-line-strong` (4.79:1) en lugar de `#9CA3AF`.
+- **Ancho y breakpoints**: `Container size="wide"` en lugar de 1200 px (AGENTS.md §9) y los breakpoints del repo (`md`/`lg`) en lugar de 861 px.
+
+### Marcadores sin dato real
+
+- "Foto pendiente" de Matías Vidal: iniciales en su lugar. Falta la foto (4:5, `public/images/about/equipo-matias-vidal.webp`).
+- "Foto de portada actual" del blog: se usan las portadas reales de Hygraph.
+- "[La nota sigue igual que hoy…]" del lienzo de la nota: no es contenido; la nota queda como está.
+
+### Dudas abiertas
+
+- ¿Texto del llamado por categoría (hoy solo Seguros tiene uno propio) o un campo en Hygraph para escribirlo por nota, como en el lienzo?
+- `/blog` sigue siendo dinámica (`ƒ`: lee `searchParams` para la búsqueda y la paginación). Con el mismo rewrite de la 4b (`/proveedores-filtros`) la página base saldría del CDN; no se hizo por ser "cambios mínimos".
+- `ClosingCtaSection` (`components/sections/home/closing-cta.tsx`) ya no la usa ninguna página: se puede borrar en la fase de cierre.
+- La barra del blog ahora lleva a `/descarga` (antes `/#descargar`, el panel del Home). Si se prefiere el ancla, es cambiar `blogContent.mobileBar.href`.
+
+### Verificación
+
+- `npm run lint`: 0 errores. Los warnings suben a 846 porque ESLint también recorre `.claude/worktrees/` (copias sin trackear de otras sesiones); todos son de scripts vendorizados de skills, ninguno del sitio.
+- `npx tsc --noEmit`: sin errores. `npm run build`: OK.
+- Tests: `test:blog` 88 (suma 2 de `faqSectionIndex`), `test:provider-profile` 44, `test:proveedores` 72, `test:partner-claims` 16, `test:partner-billing` 70; los cuatro `typecheck:*` OK.
+- Visual con Chrome headless (CDP) a 390 y 1440 contra `Blog*.webp`, `BlogNota*.webp` y `Nosotros*.webp`: página completa, equipo con los retratos cargados y el llamado de la nota en celular.
+- `curl`: un h1, sin saltos, canonical, robots, JSON-LD y cero Clerk en las tres rutas (y en `/blog/seguros`). La portada LCP sale con `fetchpriority="high"` en el HTML.

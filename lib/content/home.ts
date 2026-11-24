@@ -1,4 +1,4 @@
-import { traction } from "@/lib/content/about";
+import { MARKETING_PROVIDERS_COUNT, traction } from "@/lib/content/about";
 import {
   PROVEEDORES_PATH,
   PROVEEDORES_PLANES_PATH,
@@ -10,7 +10,9 @@ import { siteConfig } from "@/lib/seo/config";
  * Cifra de proveedores para textos de marketing (DECISIONES del rediseño,
  * 24-11-2026: "+150"). El directorio (`/proveedores`) muestra el conteo real.
  */
-export const MARKETING_PROVIDERS_COUNT = "+150";
+export { MARKETING_PROVIDERS_COUNT };
+// Vive en `about.ts` (junto a `traction`) para que `/sobre-nosotros` la use
+// sin importar este archivo (`home.ts` ya importa `about.ts`).
 
 /** Ícono 3D de la app (WebP en `public/images/servicios/`, al doble del tamaño de uso). */
 type ServiceIcon = { readonly src: string; readonly width: number; readonly height: number };

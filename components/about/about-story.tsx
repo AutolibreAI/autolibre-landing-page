@@ -1,49 +1,37 @@
-import { SectionHeading } from "@/components/ui/heading";
 import { Section } from "@/components/ui/section";
 import { aboutContent } from "@/lib/content/about";
 
 /**
- * La historia: a la izquierda el título y lo que aprendimos (el principio que
- * dejó el primer diagnóstico), a la derecha el relato; en mobile, uno debajo
- * del otro. El principio es una frase nuestra, no una cita de terceros: va en
- * un `<p>` con acento de marca, ni heading ni `<blockquote>`.
+ * "Nuestra historia" sobre `canvas` (referencia Teak): arriba, lo que
+ * aprendimos en grande y centrado; debajo, el relato en tres columnas desde
+ * `md`.
  *
- * Desde `lg` la columna izquierda queda `sticky` mientras se leen los
- * párrafos: `top-28` (7rem) deja libre el header sticky de `h-18` (4.5rem)
- * con aire. `self-start` hace falta para que el ítem de la grilla no se
- * estire al alto de la fila (estirado, no tendría dónde pegarse).
- *
- * Los párrafos se cortan en ~37rem para que la línea no se escape del ojo.
- *
- * Banda `surface-muted` a todo el ancho (decisión 2026-10-02): separa la
- * historia de la banda de tinta de arriba y de la línea de tiempo en blanco
- * de abajo. Ni `Section` ni nada entre la banda y la columna lleva
- * `overflow`, así que el `sticky` sigue pegándose al scroll del documento.
- * Los verdes sobre el lavado siguen pasando AA: `brand-hover` ~5:1.
+ * La frase es nuestra (no una cita de terceros): va en un `<figure>` con su
+ * rótulo en `<figcaption>`, como `<p>` y no como `<blockquote>`. Queda antes
+ * del `h2` como en el lienzo, pero dentro de la sección que ese `h2` nombra.
  */
 export function AboutStory() {
   const { title, paragraphs, principle } = aboutContent.story;
 
   return (
-    <Section tone="muted" spacing="md" aria-labelledby="nuestra-historia">
-      <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
-        <div className="reveal lg:sticky lg:top-28 lg:col-span-5 lg:self-start">
-          <SectionHeading as="h2" size="md" id="nuestra-historia" title={title} />
-          <div className="mt-8 border-l-2 border-brand pl-5 md:mt-10 md:pl-6">
-            <p className="text-label font-semibold tracking-wider text-brand-hover uppercase">
-              {principle.label}
-            </p>
-            <p className="mt-3 font-display text-2xl leading-snug font-semibold text-balance text-ink md:text-3xl">
-              {principle.statement}
-            </p>
-          </div>
-        </div>
+    <Section tone="canvas" spacing="md" aria-labelledby="nuestra-historia">
+      <figure className="mx-auto flex max-w-225 flex-col gap-4.5 text-center">
+        <p className="font-display text-3xl leading-tight font-bold tracking-tight text-balance text-fg md:text-4xl lg:text-5xl">
+          {principle.quoted}
+        </p>
+        <figcaption className="text-control text-fg-muted">{principle.label}</figcaption>
+      </figure>
 
-        <div className="reveal-group flex max-w-150 flex-col gap-6 lg:col-span-7 lg:pt-3">
+      <div className="mt-8 md:mt-14">
+        <h2
+          id="nuestra-historia"
+          className="mb-5 border-t border-fg pt-5 font-display text-2xl font-bold text-fg md:text-3xl"
+        >
+          {title}
+        </h2>
+        <div className="grid gap-x-10 gap-y-5 text-lead text-fg md:grid-cols-3">
           {paragraphs.map((paragraph) => (
-            <p key={paragraph} className="text-lead leading-relaxed text-ink/80 md:text-lead-lg">
-              {paragraph}
-            </p>
+            <p key={paragraph.slice(0, 32)}>{paragraph}</p>
           ))}
         </div>
       </div>

@@ -1,49 +1,52 @@
+import { eyebrowOnDark } from "@/components/marketing/styles";
 import { Section } from "@/components/ui/section";
 import { aboutContent } from "@/lib/content/about";
 
 /**
- * Misión y visión como un libro de registro (el mismo lenguaje que "Últimas
- * notas" del blog): regla bajo el `h2` y dos renglones separados por un
- * hairline. El `h2` se ve chico, como rótulo, pero es el nivel que le toca
- * en el outline.
+ * Misión y visión: dos tarjetas de color pleno, una al lado de la otra desde
+ * `md` (referencia Coda). El `h2` de la sección no se ve (el lienzo no lo
+ * muestra) pero está en el outline; cada tarjeta lleva su `h3` con aspecto de
+ * eyebrow (el nivel sale del outline, no del tamaño).
  *
- * Banda de tinta a todo el ancho (decisión 2026-10-02): `Section tone="ink"`
- * ya pinta el fondo de borde a borde y deja el contenido en el `Container`
- * de siempre, alineado con el header. Sobre tinta, con la paleta de la ruta
- * oscura `/descarga`: texto blanco, rótulos en `brand-soft` (5.01:1 sobre
- * tinta; `brand-hover` no llega), divisores `white/12` y la regla del `h2`
- * en `white/30`, un escalón más fuerte que los divisores como lo era la
- * tinta frente al hairline. El anillo de foco se acota a `brand-soft` (el
- * verde global mide 3.47:1 sobre tinta): hoy la banda no tiene links, pero
- * el que se sume ya nace con el anillo correcto.
+ * Contraste: misión sobre `action` (texto blanco 14.88:1, rótulo `brand-200`
+ * 9.81:1); visión sobre `brand-50` (`fg` 15.76:1, rótulo `brand-hover`
+ * 5.10:1).
  */
 export function AboutPurpose() {
   const { title, mission, vision } = aboutContent.purpose;
+  const statement = "font-display text-xl leading-snug font-semibold md:text-2xl";
 
   return (
     <Section
-      tone="ink"
-      spacing="md"
-      className="[&_a:focus-visible]:outline-brand-soft"
+      spacing="sm"
       aria-labelledby="mision-vision"
+      className="bg-card pt-0 pb-10 md:pt-0 md:pb-18"
     >
-      <h2 id="mision-vision" className="border-b border-white/30 pb-4 text-2xl text-white">
+      <h2 id="mision-vision" className="sr-only">
         {title}
       </h2>
-      <div className="reveal-group">
-        {[mission, vision].map((item) => (
-          <div
-            key={item.label}
-            className="grid gap-3 border-b border-white/12 py-8 last:border-b-0 md:py-10 lg:grid-cols-12 lg:gap-8"
+      <div className="grid gap-4 md:grid-cols-2">
+        <article
+          aria-labelledby="mision"
+          className="flex flex-col gap-5 rounded-3xl bg-action p-6 text-white md:p-11"
+        >
+          <h3 id="mision" className={eyebrowOnDark}>
+            {mission.label}
+          </h3>
+          <p className={statement}>{mission.statement}</p>
+        </article>
+        <article
+          aria-labelledby="vision"
+          className="flex flex-col gap-5 rounded-3xl bg-brand-50 p-6 text-fg md:p-11"
+        >
+          <h3
+            id="vision"
+            className="text-label font-semibold tracking-wider text-brand-hover uppercase"
           >
-            <h3 className="text-label font-semibold tracking-wider text-brand-soft uppercase lg:col-span-3 lg:pt-2">
-              {item.label}
-            </h3>
-            <p className="max-w-240 font-display text-2xl leading-snug font-semibold text-balance text-white md:text-3xl lg:col-span-9">
-              {item.statement}
-            </p>
-          </div>
-        ))}
+            {vision.label}
+          </h3>
+          <p className={statement}>{vision.statement}</p>
+        </article>
       </div>
     </Section>
   );

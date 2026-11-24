@@ -196,6 +196,10 @@ export const QUOTE_CTA_PLACEMENTS = {
    * (`/proveedores`): lleva a `/pedido` con el texto ya cargado.
    */
   directoryBand: "directory_band",
+  /** Llamado "Pedí propuestas" dentro de una nota del blog (lleva a `/pedido`). */
+  blogArticle: "blog_article",
+  /** "Hacé tu pedido" del cierre de `/sobre-nosotros`. */
+  aboutClosing: "about_closing",
 } as const;
 
 export type QuoteCtaPlacement =

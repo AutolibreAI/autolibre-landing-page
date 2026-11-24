@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
+import { AboutClosing } from "@/components/about/about-closing";
 import { AboutHero } from "@/components/about/about-hero";
 import { AboutPurpose } from "@/components/about/about-purpose";
 import { AboutStory } from "@/components/about/about-story";
 import { AboutTeam } from "@/components/about/about-team";
 import { AboutTimeline } from "@/components/about/about-timeline";
 import { PageShell } from "@/components/layout/page-shell";
-import { ClosingCtaSection } from "@/components/sections/home/closing-cta";
 import { JsonLd } from "@/components/seo/json-ld";
 import { ABOUT_COPY_READY, aboutContent } from "@/lib/content/about";
 import { createMetadata } from "@/lib/seo/metadata";
@@ -56,10 +56,10 @@ const schema = graph(
 );
 
 /**
- * "Sobre nosotros": todo Server Component, sin una sola isla client. Misma
- * cáscara que las demás páginas y la misma banda de descarga que el blog
- * antes del footer. Sin migas visibles: ninguna página de primer nivel las
- * lleva (quedan en el JSON-LD).
+ * "Sobre nosotros" (rediseño 2026-11, lienzo `Nosotros`): todo Server
+ * Component, sin una sola isla client. Hero tipográfico, misión y visión,
+ * historia, hitos, equipo y cierre con el pedido. Sin migas visibles (el
+ * lienzo no las muestra; quedan en el JSON-LD) y sin barra fija en celular.
  */
 export default function SobreNosotrosPage() {
   return (
@@ -70,7 +70,7 @@ export default function SobreNosotrosPage() {
         <AboutStory />
         <AboutTimeline />
         <AboutTeam />
-        <ClosingCtaSection />
+        <AboutClosing />
       </PageShell>
 
       <JsonLd schema={schema} />

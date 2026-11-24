@@ -1,8 +1,10 @@
+import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { RichText as HygraphRichText } from "@graphcms/rich-text-react-renderer";
 import type { NodeRendererType } from "@graphcms/rich-text-react-renderer";
 import type {
+  ElementNode,
   EmbedReferences,
   RichTextContent,
 } from "@graphcms/rich-text-types";
@@ -24,11 +26,11 @@ import type {
  * pleno y no atenuado: es texto largo y el contraste importa más que en una
  * bajada.
  */
-const bodyText = "text-lead leading-relaxed text-ink md:text-lead-lg";
+const bodyText = "text-lead leading-relaxed text-fg md:text-lead-lg";
 
-const h2Class = "mt-14 mb-4 text-2xl leading-tight text-ink md:text-3xl";
-const h3Class = "mt-10 mb-3 text-xl leading-snug text-ink md:text-2xl";
-const h4Class = "mt-8 mb-2 text-lg text-ink";
+const h2Class = "mt-14 mb-4 text-2xl leading-tight text-fg md:text-3xl";
+const h3Class = "mt-10 mb-3 text-xl leading-snug text-fg md:text-2xl";
+const h4Class = "mt-8 mb-2 text-lg text-fg";
 
 /**
  * Headings de un rich text anidado bajo el `h2` de una sección (el texto
@@ -82,27 +84,27 @@ function buildRenderers(nested: boolean): NodeRendererType {
         {children}
       </ol>
     ),
-    bold: ({ children }) => <strong className="font-semibold text-ink">{children}</strong>,
+    bold: ({ children }) => <strong className="font-semibold text-fg">{children}</strong>,
     // Panel en verde pálido y no una barra lateral: el sistema separa por
     // tono, no por bordes de color.
     blockquote: ({ children }) => (
-      <blockquote className="my-8 rounded-card bg-surface-muted px-6 py-5 text-ink [&_p]:my-2">
+      <blockquote className="my-8 rounded-card bg-brand-50 px-6 py-5 text-fg [&_p]:my-2">
         {children}
       </blockquote>
     ),
     code: ({ children }) => (
-      <code className="rounded bg-surface-muted px-1.5 py-0.5 font-mono text-[0.9em] text-ink">
+      <code className="rounded bg-canvas px-1.5 py-0.5 font-mono text-[0.9em] text-fg">
         {children}
       </code>
     ),
     code_block: ({ children }) => (
-      <pre className="my-6 overflow-x-auto rounded-card bg-ink p-5 font-mono text-sm leading-relaxed text-white">
+      <pre className="my-6 overflow-x-auto rounded-card bg-action p-5 font-mono text-sm leading-relaxed text-white">
         {children}
       </pre>
     ),
     a: ({ href, children, openInNewTab }) => {
       const className =
-        "font-medium text-brand-hover underline underline-offset-2 transition-colors hover:text-brand";
+        "font-medium text-brand-hover underline underline-offset-2 transition-colors hover:text-fg";
 
       if (href?.startsWith("/")) {
         return (
@@ -125,20 +127,20 @@ function buildRenderers(nested: boolean): NodeRendererType {
     // El scroll horizontal queda DENTRO del marco: una tabla ancha en mobile
     // no empuja la página de costado.
     table: ({ children }) => (
-      <div className="my-8 overflow-x-auto rounded-card border border-line">
+      <div className="my-8 overflow-x-auto rounded-card border border-card-line">
         <table className="w-full border-collapse text-left text-base">{children}</table>
       </div>
     ),
     table_header_cell: ({ children }) => (
       <th
         scope="col"
-        className="border-b border-line bg-surface-subtle px-5 py-3 text-label font-semibold text-ink/70 [&_p]:m-0"
+        className="border-b border-card-line bg-canvas px-5 py-3 text-label font-semibold text-fg-muted [&_p]:m-0"
       >
         {children}
       </th>
     ),
     table_cell: ({ children }) => (
-      <td className="border-b border-line px-5 py-4 align-top text-ink [&_p]:m-0 [&_p]:text-base">
+      <td className="border-b border-card-line px-5 py-4 align-top text-fg [&_p]:m-0 [&_p]:text-base">
         {children}
       </td>
     ),
@@ -170,15 +172,41 @@ type RichTextProps = {
    * directo del `h1`.
    */
   readonly nested?: boolean;
+  /**
+   * Un bloque nuestro intercalado en el cuerpo (el llamado a `/pedido` de la
+   * nota), antes del bloque de primer nivel número `index`. Con `index` -1 o
+   * fuera de rango va al final.
+   */
+  readonly insert?: { readonly index: number; readonly node: ReactNode };
 };
 
+function topLevelNodes(content: RichTextContent): readonly ElementNode[] {
+  return Array.isArray(content) ? content : content.children;
+}
+
 /** Rich text de Hygraph (el AST `raw`) renderizado con los tokens del sitio. */
-export function RichText({ content, references, nested = false }: RichTextProps) {
+export function RichText({ content, references, nested = false, insert }: RichTextProps) {
+  // Un solo juego de renderers para las dos mitades: el contador de los
+  // `id` de los `h2` sigue de una a la otra (`section-N` coincide con
+  // `extractToc`). React renderiza los hermanos en orden.
+  const renderers = buildRenderers(nested);
+
+  if (!insert) {
+    return <HygraphRichText content={content} references={references} renderers={renderers} />;
+  }
+
+  const nodes = topLevelNodes(content);
+  const at = insert.index >= 0 && insert.index < nodes.length ? insert.index : nodes.length;
+  const before: RichTextContent = nodes.slice(0, at);
+  const after: RichTextContent = nodes.slice(at);
+
   return (
-    <HygraphRichText
-      content={content}
-      references={references}
-      renderers={buildRenderers(nested)}
-    />
+    <>
+      <HygraphRichText content={before} references={references} renderers={renderers} />
+      {insert.node}
+      {at < nodes.length ? (
+        <HygraphRichText content={after} references={references} renderers={renderers} />
+      ) : null}
+    </>
   );
 }

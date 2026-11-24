@@ -114,3 +114,16 @@ export function extractFaq(content: unknown, heading: string): FaqItem[] {
 
   return items;
 }
+
+/**
+ * Posición (en los bloques de primer nivel) del `heading-two` que abre las
+ * preguntas frecuentes, o `-1` si la nota no las tiene. La nota la usa para
+ * insertar el llamado a `/pedido` justo antes de la FAQ: después de la
+ * respuesta principal y antes de las dudas sueltas.
+ */
+export function faqSectionIndex(content: unknown, heading: string): number {
+  const target = normalizeHeading(heading);
+  return topLevel(content).findIndex(
+    (node) => typeOf(node) === "heading-two" && normalizeHeading(textOf(node)) === target,
+  );
+}

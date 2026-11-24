@@ -2,20 +2,31 @@ import { ButtonLink } from "@/components/ui/button";
 import { blogContent } from "@/lib/content/blog";
 
 /**
- * Barra fija al pie en mobile. Sólo en el artículo (no en el listado): es la
- * pantalla donde alguien pasa más tiempo leyendo, así que vale la pena un
- * CTA siempre a mano sin que tape contenido en desktop, donde el header ya
- * cumple ese rol.
+ * Barra fija inferior en celular del blog (listado, categorías y nota):
+ * "Descargar la app gratis", como en el lienzo (`Blog`, `BlogNota`). No es
+ * la `MobileActionBar` del resto del sitio: el diseño del blog la mantiene
+ * como descarga, y el pedido va en el llamado de cada nota.
+ *
+ * Misma mecánica que `MobileActionBar`: va DESPUÉS del footer y es `sticky
+ * bottom-0`, así nunca tapa el footer ni el último contenido (sin espacio de
+ * reserva). Lleva a `/descarga`, la página que resuelve la tienda según el
+ * teléfono. `data-bottom-bar` esconde el botón flotante de WhatsApp en
+ * celular (ver `WhatsappFab`).
  */
 export function MobileDownloadBar() {
+  const { label, cta, href } = blogContent.mobileBar;
+
   return (
-    // `data-bottom-bar`: oculta el botón flotante de WhatsApp (ver `WhatsappFab`).
-    <div
+    <aside
+      aria-label={label}
       data-bottom-bar
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 px-[6%] py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md lg:hidden">
-      <ButtonLink href="/#descargar" block size="lg">
-        {blogContent.mobileBar.cta}
+      // `calc` con `env()`: no hay utility canónica para sumar el área segura.
+      // `px-[6%]`: el gutter de `Container`, alineado con el header y el footer.
+      className="sticky bottom-0 z-40 border-t border-control-line bg-card px-[6%] pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] lg:hidden"
+    >
+      <ButtonLink href={href} variant="primary" size="52" block>
+        {cta}
       </ButtonLink>
-    </div>
+    </aside>
   );
 }

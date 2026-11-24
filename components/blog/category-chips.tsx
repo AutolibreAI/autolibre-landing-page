@@ -11,9 +11,11 @@ type CategoryChipsProps = {
 };
 
 const chip =
-  "inline-flex min-h-11 items-center rounded-full border px-4 text-[0.9375rem] font-medium whitespace-nowrap transition-colors";
-const chipOn = "border-ink bg-ink text-white";
-const chipOff = "border-line bg-surface-subtle text-ink hover:border-brand-soft";
+  "inline-flex h-11 items-center rounded-full border px-4.5 text-control whitespace-nowrap transition-colors motion-reduce:transition-none";
+/** Elegido: `action` con texto blanco (14.88:1). */
+const chipOn = "border-action bg-action font-semibold text-white";
+/** En reposo: `card` con borde `control-line`, como los chips del módulo de pedido. */
+const chipOff = "border-control-line bg-card font-medium text-fg hover:border-action";
 
 /**
  * Temas del blog. Son links, no botones con estado de cliente: cada chip es

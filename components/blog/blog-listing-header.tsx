@@ -1,7 +1,8 @@
 import { BlogSearchForm } from "@/components/blog/blog-search-form";
 import { CategoryChips } from "@/components/blog/category-chips";
-import { Breadcrumbs, type Crumb } from "@/components/blog/breadcrumbs";
+import { Breadcrumbs, type Crumb } from "@/components/marketing/breadcrumbs";
 import { Section } from "@/components/ui/section";
+import { blogContent } from "@/lib/content/blog";
 import type { BlogCategory } from "@/lib/hygraph/posts";
 
 type BlogListingHeaderProps = {
@@ -20,9 +21,8 @@ type BlogListingHeaderProps = {
 
 /**
  * Encabezado de un listado del blog (`/blog` y `/blog/[category]`): título y
- * bajada a la izquierda, buscador a la derecha y, abajo, los temas. La línea
- * divisoria cierra el bloque DESPUÉS de los chips: separa la navegación del
- * contenido, no el título de sus propios filtros.
+ * bajada a la izquierda, buscador a la derecha y, abajo, los temas. Misma
+ * composición que antes del rediseño; cambian tokens, píldoras y contraste.
  */
 export function BlogListingHeader({
   eyebrow,
@@ -34,24 +34,24 @@ export function BlogListingHeader({
   q,
 }: BlogListingHeaderProps) {
   return (
-    <Section spacing="sm" className="md:pt-20">
-      <div className="flex flex-col gap-10 border-b border-line pb-8">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-12 xl:gap-20">
-          <div className="flex flex-col gap-4">
-            {breadcrumbs ? <Breadcrumbs items={breadcrumbs} /> : null}
+    <Section spacing="sm" className="bg-card pb-6 md:pt-16 md:pb-9">
+      <div className="flex flex-col gap-7">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-16">
+          <div className="flex flex-col gap-3">
+            {breadcrumbs ? (
+              <Breadcrumbs items={breadcrumbs} label={blogContent.breadcrumb.label} />
+            ) : null}
             {eyebrow ? (
               <p className="text-label font-semibold tracking-wider text-brand-hover uppercase">
                 {eyebrow}
               </p>
             ) : null}
-            <h1 className="max-w-190 text-display-xs text-ink sm:text-display-sm md:text-display-md">
+            <h1 className="max-w-155 font-display text-display-xs font-bold tracking-tight text-balance text-fg sm:text-display-sm md:text-display-md">
               {heading}
             </h1>
-            <p className="max-w-150 text-lead leading-relaxed text-ink/70 md:text-lead-lg">
-              {description}
-            </p>
+            <p className="max-w-140 text-lead text-fg-muted">{description}</p>
           </div>
-          <BlogSearchForm defaultValue={q} category={activeCategory} className="lg:w-90 xl:w-105" />
+          <BlogSearchForm defaultValue={q} category={activeCategory} className="lg:w-105" />
         </div>
 
         <CategoryChips categories={categories} active={activeCategory} />

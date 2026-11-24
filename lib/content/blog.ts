@@ -90,13 +90,27 @@ export const blogContent = {
     tags: "Temas de esta nota",
   },
 
-  /** Bloque de descarga al final de cada nota. */
+  /** Panel de descarga al final del listado, de las categorías y de cada nota. */
   appCta: {
+    /** Eyebrow: un `<p>`, no un heading. */
     label: "Descargá AutoLibre",
     title: "Tus papeles y vencimientos, en el teléfono.",
     text: "AutoLibre te avisa antes de que venzan la VTV, el seguro y el service. Gratis, para iPhone y Android.",
-    screenshotAlt:
-      "Ficha de un auto en AutoLibre con sus alertas activas y los documentos vigentes.",
+  },
+
+  /**
+   * Llamado a `/pedido` dentro de cada nota, antes de las preguntas
+   * frecuentes (o al final del cuerpo si no hay). El título cambia por
+   * categoría cuando hay un caso claro; si no, el genérico. Vocabulario del
+   * rediseño: "Pedí propuestas".
+   */
+  quoteCallout: {
+    title: "¿Tu auto necesita un arreglo? Pedí propuestas.",
+    titleByCategory: {
+      seguros: "¿Chocaste o te chocaron? Pedí propuestas para el arreglo.",
+    } as Readonly<Record<string, string>>,
+    text: "Contanos qué le pasa y te responden proveedores de tu zona, en el día. Gratis y sin compromiso.",
+    cta: "Hacé tu pedido",
   },
 
   /** Feed RSS del blog (`/blog/rss.xml`). */
@@ -106,7 +120,11 @@ export const blogContent = {
       "Guías claras para tener tu auto en regla: vencimientos, papeles, mantenimiento y diagnóstico.",
   },
 
+  /** Barra fija inferior en celular (listado, categorías y nota). */
   mobileBar: {
+    /** Nombre del landmark. */
+    label: "Descargar la app",
     cta: "Descargar la app gratis",
+    href: "/descarga",
   },
 } as const;

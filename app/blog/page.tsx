@@ -4,7 +4,8 @@ import { BlogListingHeader } from "@/components/blog/blog-listing-header";
 import { FeaturedPost } from "@/components/blog/featured-post";
 import { LatestList } from "@/components/blog/latest-list";
 import { PostGridSection } from "@/components/blog/post-grid-section";
-import { ClosingCtaSection } from "@/components/sections/home/closing-cta";
+import { BlogAppBand } from "@/components/blog/blog-app-band";
+import { MobileDownloadBar } from "@/components/blog/mobile-download-bar";
 import { PageShell } from "@/components/layout/page-shell";
 import { JsonLd } from "@/components/seo/json-ld";
 import { Section } from "@/components/ui/section";
@@ -101,7 +102,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
 
   return (
     <>
-      <PageShell currentPath={PATH}>
+      <PageShell currentPath={PATH} bottomBar={<MobileDownloadBar />}>
         <BlogListingHeader
           eyebrow={EYEBROW}
           heading={HEADING}
@@ -112,7 +113,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
         />
 
         {featured ? (
-          <Section spacing="md" aria-labelledby="destacada">
+          <Section spacing="md" aria-labelledby="destacada" className="bg-card pt-6 md:pt-10">
             <h2 id="destacada" className="sr-only">
               {blogContent.featured.srHeading}
             </h2>
@@ -142,13 +143,13 @@ export default async function BlogPage({ searchParams }: PageProps) {
 
         {!featured && !isSearch && gridPosts.length === 0 ? (
           <Section spacing="md">
-            <p className="rounded-card bg-surface-subtle p-10 text-center text-ink/70">
+            <p className="rounded-card bg-canvas p-10 text-center text-fg-muted">
               {blogContent.grid.emptyAll}
             </p>
           </Section>
         ) : null}
 
-        <ClosingCtaSection />
+        <BlogAppBand placement="closing_cta" />
       </PageShell>
 
       <JsonLd schema={schema} />

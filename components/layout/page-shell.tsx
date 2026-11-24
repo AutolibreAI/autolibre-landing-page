@@ -24,9 +24,14 @@ type PageShellProps = {
   readonly actionBarWhatsappLead?: boolean;
   /** Resto de las opciones de la barra (perfil de proveedor, entrada al scrollear). */
   readonly actionBarOptions?: Pick<MobileActionBarProps, "quoteLabel" | "provider" | "revealOnScroll">;
+  /**
+   * Otra barra fija inferior en lugar de `MobileActionBar` (el blog lleva la
+   * de descarga). Va en el mismo lugar: después del footer.
+   */
+  readonly bottomBar?: React.ReactNode;
 };
 
-/** Header + main + footer (+ la barra fija en celular, si la página la pide). */
+/** Header + main + footer (+ una barra fija en celular, si la página la pide). */
 export function PageShell({
   children,
   cta,
@@ -36,6 +41,7 @@ export function PageShell({
   actionBarLabel,
   actionBarWhatsappLead,
   actionBarOptions,
+  bottomBar,
 }: PageShellProps) {
   return (
     <>
@@ -49,7 +55,9 @@ export function PageShell({
           whatsappLead={actionBarWhatsappLead}
           {...actionBarOptions}
         />
-      ) : null}
+      ) : (
+        bottomBar
+      )}
     </>
   );
 }
