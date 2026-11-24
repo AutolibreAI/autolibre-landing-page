@@ -64,13 +64,13 @@ export function ShareProfileButton({
         onClick={share}
         aria-label={label}
         title={label}
-        className="flex size-12 items-center justify-center rounded-field border border-ink/30 text-ink transition-colors hover:border-brand hover:text-brand"
+        className="flex size-13 items-center justify-center rounded-full border border-control-line-strong bg-card text-fg transition-colors hover:border-action motion-reduce:transition-none"
       >
         <Icon name="share" size={20} strokeWidth={1.8} />
       </button>
       <p
         aria-live="polite"
-        className="absolute top-full right-0 mt-2 text-sm whitespace-nowrap text-ink/70"
+        className="absolute top-full right-0 mt-2 text-sm whitespace-nowrap text-fg-muted"
       >
         {message}
       </p>

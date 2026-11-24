@@ -42,6 +42,11 @@ const buttonVariants = cva(
          */
         outlineDark:
           "rounded-full border border-on-dark-subtle font-display text-white hover:bg-action-hover",
+        /**
+         * Principal sobre fondos oscuros (`action`): `brand-200` con texto `fg`
+         * (11.70:1). Bandas "¿No sabés a quién elegir?" y "Sumate a AutoLibre".
+         */
+        accent: "rounded-full bg-brand-200 font-display text-fg hover:bg-brand-50",
 
         // ── Sistema anterior (deprecado) ──
         /**

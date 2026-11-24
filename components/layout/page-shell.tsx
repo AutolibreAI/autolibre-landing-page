@@ -1,4 +1,4 @@
-import { MobileActionBar } from "@/components/layout/mobile-action-bar";
+import { MobileActionBar, type MobileActionBarProps } from "@/components/layout/mobile-action-bar";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 
@@ -22,6 +22,8 @@ type PageShellProps = {
   readonly actionBarLabel?: string;
   /** El WhatsApp de la barra cuenta como `Lead` (solo `/pedido`). */
   readonly actionBarWhatsappLead?: boolean;
+  /** Resto de las opciones de la barra (perfil de proveedor, entrada al scrollear). */
+  readonly actionBarOptions?: Pick<MobileActionBarProps, "quoteLabel" | "provider" | "revealOnScroll">;
 };
 
 /** Header + main + footer (+ la barra fija en celular, si la página la pide). */
@@ -33,6 +35,7 @@ export function PageShell({
   actionBarQuoteHref,
   actionBarLabel,
   actionBarWhatsappLead,
+  actionBarOptions,
 }: PageShellProps) {
   return (
     <>
@@ -44,6 +47,7 @@ export function PageShell({
           quoteHref={actionBarQuoteHref}
           label={actionBarLabel}
           whatsappLead={actionBarWhatsappLead}
+          {...actionBarOptions}
         />
       ) : null}
     </>

@@ -34,6 +34,7 @@ import { track } from "@/lib/analytics/track";
 import type { moduloPedidoContent } from "@/lib/content/modulo-pedido";
 import { whatsappErrorMessage } from "@/lib/content/whatsapp-errors";
 import { EMPTY_GEO, type PlaceGeo } from "@/lib/google-places";
+import { takePedidoPrefill } from "@/lib/pedido-prefill";
 import { parseArWhatsapp } from "@/lib/phone";
 import { isValidPlate, normalizePlateInput } from "@/lib/plate";
 import { cn } from "@/lib/utils";
@@ -161,6 +162,19 @@ export function ModuloForm({
   });
   const { plateCheck, startPlateLookup, snapshotForSubmit, abortPlateLookup } =
     usePlateLookup(values.patente);
+
+  // Lo que la persona escribió en la banda del directorio o en el perfil de
+  // un proveedor (`lib/pedido-prefill.ts`). Solo completa el campo: no mueve
+  // el foco ni cuenta como `quote_started` (eso es la primera interacción
+  // acá). Mismo alto antes y después: no hay CLS.
+  useEffect(() => {
+    const prefill = takePedidoPrefill();
+    // Sincroniza con un sistema externo (`sessionStorage`) una sola vez,
+    // DESPUÉS de hidratar: leerlo en el estado inicial haría que el HTML del
+    // server y el primer render del cliente no coincidan.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (prefill) setValues((current) => (current.problema ? current : { ...current, problema: prefill }));
+  }, []);
 
   // Foco después de cambiar de paso: el título nuevo (que se lee) o, al
   // volver, "¿Qué le pasa?".

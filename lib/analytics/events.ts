@@ -172,6 +172,11 @@ export const QUOTE_CTA_PLACEMENTS = {
   homeServices: "home_services",
   /** "Hacé tu pedido" de la banda de cierre de `/pedido` (sube al módulo). */
   pedidoCtaBand: "pedido_cta_band",
+  /**
+   * "Pedir propuestas" de la banda "¿No sabés a quién elegir?" del directorio
+   * (`/proveedores`): lleva a `/pedido` con el texto ya cargado.
+   */
+  directoryBand: "directory_band",
 } as const;
 
 export type QuoteCtaPlacement =

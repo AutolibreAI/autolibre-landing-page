@@ -701,3 +701,141 @@ Las dos rutas cargan ahora exactamente el mismo JS: el de la plataforma más las
 - Tests: `test:blog` 86, `test:provider-profile` 44, `test:proveedores` 58, `test:partner-claims` 16 y `test:partner-billing` 70: todos pasan. Ninguno cubre el módulo.
 - Visual a 390 y 1440 con Chrome headless (CDP) contra `Main.webp`, `Home-celular.webp`, `Pedido.webp` y `Pedido-celular.webp`. Flujo del módulo en `/pedido` con la red interceptada (**ningún pedido real**: `/api/presupuesto` respondido por CDP con `AL-9999`; `vehicle-lookup` y Google Maps bloqueados): el envío sin consentimiento se bloquea, Espacio marca el checkbox y el body enviado lleva `consent: true`, `quoteTab: "taller"` y `quotePlacement: "modulo_pedido"`.
 - `curl`: un solo h1, sin saltos, canonical, JSON-LD y cero Clerk en el HTML y en los chunks (tabla de arriba).
+
+## Fase 4b: directorio y perfil
+
+Rama `feat/rediseno-2026-11`, 2026-11-24. `/proveedores` y `/proveedores/[slug]` pasan al diseño nuevo (`Proveedores`/`Proveedores-celular`, `Proveedor`/`Proveedor-celular`; el perfil parte del de la spec 209). Medido con build de producción local (`next start --port 3100`) contra el backend de prueba (430 negocios de test; respondió durante toda la medición).
+
+### Decisiones aplicadas
+
+- **Todos los perfiles indexados** (decisión de producto): `index: true` para todo perfil encontrado, sin mirar `partner.indexable`. **Pendiente de backend**: hoy `indexable` es `true` solo con horarios estructurados (0 de los 26 negocios con dueño los tienen); conviene alinearlo (o sacarlo del contrato) en autolibre-backend-hex. La landing lo sigue parseando pero no lo usa.
+- **Todos los perfiles al sitemap**: 430 URLs `/proveedores/{slug}` (antes 0), del mismo `fetchAllPartners` que usa el directorio (cacheado 1 h). `lastModified` = `updatedAt` del listado (el backend ya lo manda: `partners.updated_at`); si falta, la fecha fija 2026-11-24. Backend caído: el sitemap sale igual, sin perfiles. Se siguen salteando los slugs reservados. `/proveedores` con `lastModified` 2026-11-24.
+- **Conteo real**: "430 negocios · 13 rubros · En todo el país" sale del directorio completo (y de las familias con al menos un negocio). Sin el dato, ese tramo no se muestra. "+150" queda solo en el marketing del Home.
+- **Vocabulario**: "Pedir propuestas" / "Pedile una propuesta" en el directorio, el perfil, su 404, la meta description ("…Pedí propuestas gratis por AutoLibre.") y la FAQ del perfil ("¿Cómo le pido una propuesta a X?").
+
+### Estrategia de render y caché
+
+| Ruta | Antes | Después |
+|---|---|---|
+| `/proveedores` (sin query) | `ƒ` dinámica (leía `searchParams`) | **`○` estática con ISR 1 h** (`export const revalidate = 3600`): sale del CDN |
+| `/proveedores?rubro=…&zona=…&q=…&pagina=…` | la misma ruta dinámica | rewrite `beforeFiles` de `next.config.ts` a `app/proveedores-filtros` (`ƒ`, dinámica, fetches en Data Cache; `q` sin caché como antes). La URL visible no cambia |
+| `/proveedores/[slug]` | ISR on-demand (`generateStaticParams` → `[]`) | igual: el build no depende del backend; cada perfil se genera en su primer request y se revalida (1 h) |
+
+Por qué así: según `page.md`, leer `searchParams` vuelve dinámica la página entera. Los filtros son links y un form GET (funcionan sin JS, se comparten y llevan canonical a `/proveedores`), y no quería pasarlos a una isla con fetch en el cliente. Separar la base (estática) de las variantes (dinámicas) con un rewrite por parámetro mantiene las dos cosas: la URL principal, la que se indexa y comparte, sale del CDN, y las variantes siguen siendo HTML del server con 404 real para `?pagina=` fuera de rango. `/proveedores-filtros` lleva la misma metadata (canonical `/proveedores`) y `robots.ts` la excluye; nadie la enlaza por ese nombre.
+
+- Backend caído al regenerar la base: `connection()` (mismo recurso que `/proveedores/registro`) hace fallar la regeneración y Next sigue sirviendo la última versión buena; en el build, la ruta queda dinámica para ese deploy.
+- Cache tags: los `fetch` de perfiles y directorio ahora llevan `provider-profiles` y `provider:{slug}`, las etiquetas que ya invalidaba `POST /api/revalidate/provider`. Antes ese webhook no vaciaba nada (los fetch no tenían tags).
+- Verificado: `/proveedores` 200 (`x-nextjs-cache: HIT`), `?pagina=2`, `?rubro=motor`, `?q=garage` 200, `?pagina=999` 404, slug inexistente 404, `/proveedores-filtros` responde pero está en `Disallow`.
+
+### Mapa
+
+- **Sin librería de mapas.** Una imagen de Google Static Maps sin marcadores, con centro y zoom calculados en el server (`lib/proveedores/map.ts`, proyección Web Mercator, con tests) y los marcadores en HTML encima, en su posición real. Cero JS de terceros; los marcadores son botones (`aria-pressed`) y la tarjeta del elegido lleva al perfil.
+- **Carga**: la imagen se pide con `IntersectionObserver` **y** después de la primera interacción (scroll, toque, tecla). Así nunca es candidata a LCP (el navegador deja de medirlo con la primera interacción): en la línea base el mapa del perfil, `loading="lazy"`, era el LCP de escritorio. Antes de la imagen se ve el fondo de referencia (calles dibujadas en SVG) con los marcadores ya en su lugar, en un contenedor de medidas fijas: CLS 0. Si Google rechaza la key, queda el fondo.
+- **Directorio**: el listado del backend no trae coordenadas. Leer el perfil de cada negocio de la página (24 lecturas) en cada vista filtrada se comió el límite del backend (**60 pedidos por minuto por IP**: con unas pocas páginas filtradas seguidas el backend respondió 429 y un perfil no cacheado dio 500). Quedó así: las lecturas de perfiles se hacen **solo para la página base**, que es estática y se regenera a lo sumo una vez por hora, de a 4 en paralelo; las páginas con filtros muestran el mapa solo si el listado trae coordenadas (hoy no: sin mapa, grilla de 3 columnas). La landing ya parsea `address.latitude/longitude` del listado si llegan. **Pendiente de backend**: coordenadas en `GET /partner-profiles` (el read model ya las tiene).
+- **Perfil**: mapa centrado en el negocio (zoom 15) con el marcador "monograma + localidad" del lienzo, solo con coordenadas y key.
+- Sin distancias ("1,1 km" del lienzo): la web no conoce la ubicación de la persona.
+
+### Otras piezas
+
+- **Buscador**: una píldora (nombre · zona · rubro · Buscar) desde `md`; en celular, el nombre + botón "Filtros" (isla hoja `FiltersToggle`, `aria-expanded`) que muestra zona, rubro y Buscar. Sigue siendo un form GET. El rubro pasó de fila de links a desplegable, como el lienzo.
+- **"¿No sabés a quién elegir?"** (directorio) y **"Pedile una propuesta"** (costado del perfil): `QuotePrefillForm`, isla hoja que guarda el texto en `sessionStorage` (nunca en la URL: no termina en `$pageview`, Meta ni logs) y navega a `/pedido`, donde el módulo lo carga en "¿Qué le pasa?" (sin mover el foco ni contar como `quote_started`). Sin JS es un GET a `/pedido` con el campo vacío. Verificado por CDP: escribir "hace ruido al frenar" en el directorio y enviar deja `/pedido` con ese texto en el campo.
+- **Perfil**: banda `brand-50`, "Pedile una propuesta" (principal, a `/pedido`) + WhatsApp del negocio (`outline`) + compartir; cuerpo en `card`; costado con pedir propuesta, horarios, ubicación y redes; "Más proveedores de {familia}" (hasta 3 del mismo rubro con `GET /partner-profiles?category=`, datos reales) con "Ver toda la red"; banda oscura "Sumate a AutoLibre".
+- **Barra fija del perfil**: la vieja `PartnerStickyBar` (solo WhatsApp, `fixed`) se borró; ahora es la `MobileActionBar` compartida con "Pedir propuesta" + el WhatsApp del negocio (o el de AutoLibre si no tiene), con la medición del perfil.
+- **Migas**: componente nuevo `components/marketing/breadcrumbs.tsx` (`fg-muted`, links de 44 px). El del blog usa `ink/60` y falla contraste; no se reusó.
+- **Tarjeta de negocio** (`PartnerCard`) y **paginación** (1 2 3 … N, `paginationItems` con tests) al estilo del lienzo.
+- Botón: variante nueva `accent` (`brand-200` con texto `fg`, 11.70:1) para las acciones sobre `action`. `Section`: tonos `mint` (`brand-50`) y `action`.
+
+### Pendiente heredado de la 4a: `target-size` del Home
+
+La barra fija tapaba dos chips del módulo al cargar. Ahora, en el Home y en `/pedido` (`revealOnScroll`), la barra arranca fuera de la pantalla y con `visibility: hidden` (no se enfoca ni tapa nada) y entra en los primeros 12rem de scroll, con `animation-timeline: scroll()` (CSS, sin JS). Ahí el módulo ya es la acción a la vista, así que la barra no hace falta. Sin soporte o con `prefers-reduced-motion`, la barra está desde la carga como antes. Verificado por CDP a 412 × 823: al cargar `visibility: hidden` y `top` 823; con 400 px de scroll, visible.
+
+### `prefers-reduced-motion` (AGENTS.md §3)
+
+`rg` confirmó que ya no queda ningún uso de `motion-exempt`, `hero-word`, `hero-screen`, `marquee` ni `VerticalsBandSection` en el código (la 4a sacó esas secciones). Se reescribió el párrafo de `AGENTS.md` §3: hoy no hay excepciones aprobadas y cualquier animación nueva que no respete la preferencia necesita una decisión explícita de producto. Se borraron de `app/globals.css` los tokens `--animate-hero-word`, `--animate-hero-word-fade`, `--animate-hero-screen` y `--animate-marquee` con sus `@keyframes`, y la regla de reduced motion ya no exceptúa `.motion-exempt`. `DESIGN.md` todavía menciona `motion-exempt` (líneas ~253 y ~507): no se tocó.
+
+### Inventario SEO antes / después (HTML del server)
+
+| | `/proveedores` antes | `/proveedores` después | `/proveedores/asistir24` antes | después |
+|---|---|---|---|---|
+| title | Proveedores · AutoLibre | igual | Asistir24 · AutoLibre | igual |
+| description | "…reciben pedidos de presupuesto desde la app." | "…Buscá por nombre, zona o rubro y pedí propuestas gratis." | "Asistir24: Asistencia y emergencias. Pedí presupuesto por AutoLibre." | "…Pedí propuestas gratis por AutoLibre." |
+| canonical | `/proveedores` | igual (también en las variantes con filtros) | `/proveedores/asistir24` | igual |
+| robots | index, follow | igual | **noindex, nofollow** | **index, follow** |
+| H1 | 1 | 1 | 1 | 1 |
+| Saltos de heading | ninguno | ninguno | ninguno | ninguno |
+| JSON-LD | Organization, CollectionPage, BreadcrumbList, ItemList | igual | Organization, WebPage, BreadcrumbList, LocalBusiness (+ FAQPage si hay FAQ visible) | igual (`FAQPage` solo con la FAQ visible; el backend de prueba no da FAQ para este perfil) |
+| Migas visibles | no | **sí** ("Inicio / Proveedores") | sí | sí (estilo nuevo, contraste AA) |
+| En el sitemap | sí (2026-10-27) | sí (2026-11-24) | **no** (ningún perfil) | **sí: 430 perfiles** |
+| Clerk (HTML y chunks) | 0 | 0 | 0 | 0 |
+
+Outline del directorio: h1 → h2 "¿No sabés a quién elegir?" → h2 "Toda la red" (24 h3, uno por negocio) → h2 "¿Tenés un taller o prestás un servicio?". Perfil: h1 → h2 "Sobre X" → h2 "Servicios" (h3 por familia) → [h2 "Preguntas frecuentes"] → h2 del costado (Pedile una propuesta, Horarios, Ubicación, Contacto y redes) → h2 "Más proveedores de {familia}" (h3 por negocio) → h2 de la banda. El 404 del perfil (`notFound()`) sigue respondiendo 404 real con `noindex`.
+
+### Lighthouse 12.8.2 antes / después
+
+Mismo método que la 4a: móvil con 3 corridas y la **mediana** como `<ruta>-movil.json` (las tres en `despues/<ruta>-movil-corrida{1,2,3}.json`); escritorio también con 3 corridas esta vez (`-escritorio-corrida{1,2,3}.json`), porque la primera salió con una tarea larga "Unattributable" de 760 ms. Corridas (Performance): `/proveedores` móvil 62 / 62 / 62, escritorio 72 / 95 / 73; perfil móvil 66 / 70 / 63, escritorio 76 / 90 / 93; Home móvil 84 / 65 / 59 (`home-movil-fase4b*.json`, para no pisar las de la 4a).
+
+| Ruta | Modo | Medición | Perf | A11y | BP | SEO | LCP (s) | CLS | TBT (ms) | FCP (s) | Elemento LCP | A11y que fallan |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `/proveedores` | Móvil | Antes | 64 | 100 | 75 | 100 | 3.68 | 0.000 | 1441 | 1.28 | `h1#proveedores-titulo` | — |
+| `/proveedores` | Móvil | Después | 62 | 100 | 96 | 100 | 3.88 | 0.000 | 1356 | 1.49 | `h1#proveedores-titulo` | — |
+| `/proveedores` | Escritorio | Antes | 88 | 100 | 74 | 100 | 0.93 | 0.000 | 281 | 0.46 | `h1#proveedores-titulo` | — |
+| `/proveedores` | Escritorio | Después | 73 | 100 | 74 | 100 | 0.86 | 0.000 | 753 | 0.33 | `h1#proveedores-titulo` | — |
+| `/proveedores/asistir24` | Móvil | Antes | 48 | 96 | 75 | 69 | 6.60 | 0.000 | 2573 | 1.05 | `p` (descripción) | color-contrast |
+| `/proveedores/asistir24` | Móvil | Después | 66 | 100 | 96 | 100 | 3.49 | 0.000 | 1398 | 0.92 | `p` (descripción) | — |
+| `/proveedores/asistir24` | Escritorio | Antes | 83 | 96 | 74 | 69 | 1.84 | 0.000 | 244 | 0.29 | `img` (mapa `lazy`) | color-contrast |
+| `/proveedores/asistir24` | Escritorio | Después | 90 | 100 | 96 | 100 | 0.76 | 0.000 | 254 | 0.32 | `p` (costado "Pedile una propuesta") | — |
+| `/` | Móvil | 4a | 72 | 97 | 96 | 100 | 3.56 | 0.000 | 743 | 1.34 | `h1#hero-title` | target-size |
+| `/` | Móvil | 4b | 65 | 100 | 96 | 100 | 3.70 | 0.000 | 1180 | 1.34 | `h1#hero-title` | — |
+
+Lectura:
+
+- **Perfil**: SEO 69 → 100 (ya no es `noindex`), accesibilidad 96 → 100 (contraste de las migas), LCP móvil 6,60 → 3,49 s y escritorio 1,84 → 0,76 s. El LCP es texto del server en los dos anchos (la descripción en celular; en escritorio el párrafo de la tarjeta "Pedile una propuesta", que ocupa más que el `h1` corto "Asistir24"): se pinta en el primer frame (LCP observado por CDP: 104 ms en escritorio). El mapa ya no es candidato.
+- **Home**: `target-size` resuelto (accesibilidad 97 → 100). El Performance móvil bajó en la mediana, pero las corridas fueron 84 / 65 / 59: es la misma variabilidad de la 4a (tareas "Unattributable" al azar). El Home solo sumó un atributo y CSS.
+- **Directorio**: LCP y CLS iguales o mejores. Performance en la línea de base en móvil (62 contra 64, dentro del ruido) y más bajo en la mediana de escritorio (73 contra 88). En escritorio, dos de las tres corridas tuvieron una tarea "Unattributable" de 600-750 ms y cargaron el Pixel de Meta dentro de la traza (3,5 s después del `load`; por eso BP 74 en esa corrida); la tercera dio 95 con TBT 152. El HTML pasó de 185 a 201 KB (los 17 marcadores del mapa viajan en el payload). Lo que más pesa sigue siendo el JS compartido de la plataforma, como en la 4a.
+- En producción el directorio base sale del CDN (estático), cosa que esta medición local no refleja.
+
+### JS por ruta (suma de los `<script src>` del HTML, gzip local)
+
+| Ruta | Antes (fase 0) | Después |
+|---|---|---|
+| `/proveedores` | 13 · 700.1 KB · 213.0 KB gzip · HTML 185.2 KB | **12 · 692.5 KB · 209.3 KB gzip** · HTML 200.6 KB |
+| `/proveedores/asistir24` | 13 · 701.2 KB · 213.5 KB gzip · HTML 110.9 KB | **12 · 691.3 KB · 209.0 KB gzip** · HTML 127.2 KB |
+
+Islas client nuevas, todas hoja: `FiltersToggle`, `QuotePrefillForm`, `DirectoryMapMarkers` y `LazyMapImage` (más `ShareProfileButton`, que ya estaba). Cero librerías de mapas: Static Maps es una imagen.
+
+### Diferencias con el diseño y por qué
+
+- **Distancias del mapa** ("1,1 km"): no se muestran (la web no conoce la ubicación de la persona).
+- **Mapa del directorio en las páginas con filtros**: no aparece mientras el listado del backend no traiga coordenadas (límite de 60 pedidos por minuto, ver "Mapa"). En la página base sí.
+- **"Todas las marcas" en las tarjetas**: el listado no trae marcas; mostrarlo sería inventarlo. Va solo en el perfil, donde el dato existe.
+- **Búsqueda en celular**: el lienzo dice "Negocio o zona" en un solo campo; el backend busca solo por nombre (`q`), así que el placeholder dice "Nombre del negocio" y la zona está en "Filtros".
+- **Orden en celular**: el DOM sigue el orden de escritorio (la banda de pedido primero, que es la conversión) y en celular se reordena con `order` como el lienzo (mapa arriba de la lista, banda después). Con teclado o lector, en celular la banda llega antes de la lista.
+- **Mapa cuadrado** (el lienzo usa 460 × 640 en escritorio): imagen y contenedor necesitan la misma proporción para que los marcadores caigan en su lugar; el cuadrado sirve en los dos anchos.
+- **Breakpoint** `lg` (1024 px) para lista + mapa en columnas, como el resto del rediseño (el lienzo cambia en 861 px).
+- **Ancho**: `Container size="wide"` en lugar de 1200 px (regla de `AGENTS.md`).
+- **Compartir**: borde `control-line-strong` (4.79:1) en lugar de `#D1D5DB` (1.46:1, no llega a 3:1).
+- **Rubro**: de fila de links a desplegable dentro del buscador, como el lienzo. Los links filtrados llevaban canonical a `/proveedores`; los perfiles ahora se descubren por el sitemap y la paginación.
+- **Botón flotante de WhatsApp**: sigue visible desde `lg` (decisión de la fase 2); en celular, en el perfil, se esconde porque hay barra.
+
+### Endpoints o datos que faltan (backend)
+
+- **`partner.indexable`**: alinearlo con la decisión de indexar todos los perfiles (hoy `true` solo con horarios estructurados). La landing ya no lo usa.
+- **Coordenadas en el listado** (`GET /partner-profiles`): `address.latitude`/`longitude` como en el perfil. Con eso el mapa sale en todas las páginas del directorio sin leer perfiles; la landing ya las parsea si llegan.
+- **Límite de 60 pedidos por minuto por IP**: la landing (server) sale de pocas IPs de Vercel. Si el sitemap, el directorio y los perfiles se regeneran juntos, conviene un balde propio para la landing (como el del admin) o un token de servicio.
+- Ya existía y ahora se usa: `updatedAt` del listado (sitemap).
+
+### Dudas abiertas
+
+- ¿Producto prefiere que el mapa del directorio no aparezca hasta tener coordenadas en el listado (hoy sale solo en la página base), o está bien así?
+- ¿WhatsApp del negocio en la barra fija del perfil (como el lienzo) o el de AutoLibre (como el resto de la barra)? Hoy: el del negocio, y el de AutoLibre si el negocio no tiene.
+- `DESIGN.md` todavía describe `motion-exempt`; conviene actualizarlo junto con `AGENTS.md`.
+- Los componentes de la spec 209 que no usa ninguna página (`components/sections/provider-profile/*`, `components/ui/profile-card.tsx`, `lib/provider-profile/*` salvo lo que usa el webhook) siguen en el repo: se pueden limpiar en la fase de cierre.
+
+### Verificación
+
+- `npm run lint`: 0 errores, 282 warnings (los mismos preexistentes). `npx tsc --noEmit`: sin errores. `npm run build`: OK (`/proveedores` estática con revalidación de 1 h; `/proveedores-filtros` dinámica).
+- Tests: `test:proveedores` 72 (suma `map.test.ts` y `paginationItems`), `test:provider-profile` 44, `test:blog` 86, `test:partner-claims` 16, `test:partner-billing` 70; los cuatro `typecheck:*` OK.
+- Visual con Chrome headless (CDP) a 390 y 1440 px contra `Proveedores*.webp` y `Proveedor*.webp`: cabecera, buscador (con "Filtros" abierto y cerrado), banda, grilla, mapa (antes y después de la imagen), paginación, perfil completo y barra fija.
+- CDP: CLS 0 en la carga de las dos rutas a 390 y 1440 px; la imagen del mapa no se pide sin interacción y sí después de un scroll; 17 marcadores en la página base; el texto de la banda llega a "¿Qué le pasa?" en `/pedido`; la barra del Home entra al scrollear.
+- `curl`: un h1, sin saltos, canonical, `index, follow` en el perfil, JSON-LD, 430 perfiles en el sitemap con `lastmod`, `?pagina=999` 404, `Disallow: /proveedores-filtros`, cero Clerk.
+- Backend local (de prueba): respondió toda la sesión; durante una ráfaga de pruebas dio 429 (ver "Mapa"), lo que llevó al cambio de estrategia.

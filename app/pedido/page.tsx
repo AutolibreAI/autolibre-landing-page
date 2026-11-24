@@ -70,6 +70,7 @@ export default function PedidoPage() {
         actionBarQuoteHref={`#${PEDIDO_ID}`}
         actionBarLabel={mobileBarLabel}
         actionBarWhatsappLead
+        actionBarOptions={{ revealOnScroll: true }}
       >
         <PedidoHero />
         <PedidoExample />

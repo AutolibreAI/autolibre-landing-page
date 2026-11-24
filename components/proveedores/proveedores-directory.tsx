@@ -1,166 +1,113 @@
 import Link from "next/link";
+import { DirectoryMapMarkers } from "@/components/proveedores/directory-map-markers";
+import { LazyMapImage } from "@/components/proveedores/lazy-map-image";
+import { MapBackdrop } from "@/components/proveedores/map-backdrop";
 import { PartnerCard } from "@/components/proveedores/partner-card";
-import { ProveedoresSearch } from "@/components/proveedores/proveedores-search";
+import { partnerMonogram } from "@/components/proveedores/partner-monogram";
+import { QuotePrefillForm } from "@/components/pedido/quote-prefill-form";
 import { ButtonLink } from "@/components/ui/button";
-import { SectionHeading } from "@/components/ui/heading";
 import { Icon } from "@/components/ui/icon";
 import { Section } from "@/components/ui/section";
-import type { PartnerZone, PartnersPage } from "@/lib/autolibre-api";
+import { ANALYTICS_EVENTS, QUOTE_CTA_PLACEMENTS } from "@/lib/analytics/events";
+import { providersDirectoryContent } from "@/lib/content/providers-directory";
+import type { CategoryOption, DirectoryMapPoint } from "@/lib/proveedores/directory";
+import { fitMapView, staticMapUrl } from "@/lib/proveedores/map";
 import {
   hasActiveFilters,
+  paginationItems,
+  partnerPath,
   PROVEEDORES_PAGE_SIZE,
   proveedoresHref,
   type ProveedoresFilters,
 } from "@/lib/proveedores/query";
-import { providersDirectoryContent } from "@/lib/content/providers-directory";
+import type { PartnerZone, PartnersPage } from "@/lib/autolibre-api";
 import { cn } from "@/lib/utils";
-
-type CategoryOption = { readonly slug: string; readonly name: string };
 
 type ProveedoresDirectoryProps = {
   readonly filters: ProveedoresFilters;
-  /** Familias del catálogo, en su orden. Vacío si el catálogo no cargó. */
   readonly categories: readonly CategoryOption[];
-  /** Zonas con negocios. Vacío si no se pudieron leer: no se ofrece el filtro. */
+  readonly categoryNames: ReadonlyMap<string, string>;
   readonly zones: readonly PartnerZone[];
   /** `null`: el backend falló y no había nada en caché. */
   readonly result: PartnersPage | null;
+  readonly mapPoints: readonly DirectoryMapPoint[];
 };
 
-const { directory } = providersDirectoryContent;
+const { directory, quoteBand, partnerCard, map } = providersDirectoryContent;
 const HEADING_ID = "red-titulo";
 
-// 15px (`text-[0.9375rem]`): el mismo tamaño que los chips del blog y el
-// botón `md`; la escala de Tailwind no tiene un paso entre 14 y 16px.
-const pill =
-  "inline-flex min-h-11 items-center rounded-full border px-4 text-[0.9375rem] font-medium whitespace-nowrap text-ink transition-colors";
-const pillOn = "border-brand bg-brand/8";
-const pillOff = "border-line bg-surface-subtle hover:border-brand-soft";
-
-/**
- * Rubros como links (`?rubro=`), no como estado de cliente: cada filtro es
- * una URL que funciona sin JS y se comparte. Cambiar de rubro conserva los
- * demás filtros (búsqueda, zona) y vuelve a la página 1. En mobile la fila
- * scrollea de costado dentro del gutter; desde `lg` hace wrap.
- */
-function CategoryFilter({
-  categories,
-  filters,
-}: {
-  readonly categories: readonly CategoryOption[];
-  readonly filters: ProveedoresFilters;
-}) {
-  const active = filters.rubro;
-
-  return (
-    <nav aria-label={directory.filter.label} className="overflow-x-auto pb-1 lg:overflow-visible">
-      <ul className="flex w-max gap-2.5 lg:w-auto lg:flex-wrap">
-        <li>
-          <Link
-            href={proveedoresHref({ ...filters, rubro: "", pagina: 1 }, directory.id)}
-            aria-current={active === "" ? "page" : undefined}
-            className={cn(pill, active === "" ? pillOn : pillOff)}
-          >
-            {directory.filter.all}
-          </Link>
-        </li>
-        {categories.map((category) => (
-          <li key={category.slug}>
-            <Link
-              href={proveedoresHref({ ...filters, rubro: category.slug, pagina: 1 }, directory.id)}
-              aria-current={active === category.slug ? "page" : undefined}
-              className={cn(pill, active === category.slug ? pillOn : pillOff)}
-            >
-              {category.name}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  );
-}
+/** Imagen del mapa (px CSS; Static Maps la devuelve al doble). Cuadrada: el contenedor también. */
+const MAP_SIZE = 640;
 
 const pageLink =
-  "inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-field border px-3 text-[0.9375rem] font-semibold transition-colors";
+  "inline-flex h-11 min-w-11 items-center justify-center rounded-full px-3 text-control font-medium text-fg transition-colors hover:bg-card motion-reduce:transition-none";
 
 /**
- * Links numerados (`?pagina=n`, conservando todos los filtros) y no "cargar
- * más": un crawler sigue un `<a href>`, no aprieta un botón. Anterior/Siguiente
- * quedan a la vista pero apagados en los bordes (no son links: no hay a dónde ir).
+ * Links numerados (`?pagina=n`, con todos los filtros) y no "cargar más": un
+ * crawler sigue un `<a href>`, no aprieta un botón. Ventana de páginas
+ * (`paginationItems`): 1 2 3 … 18, como el lienzo. "Anterior" y "Siguiente"
+ * solo cuando hay a dónde ir.
  */
 function Pagination({
   page,
   totalPages,
   filters,
+  className,
 }: {
   readonly page: number;
   readonly totalPages: number;
   readonly filters: ProveedoresFilters;
+  readonly className?: string;
 }) {
   if (totalPages <= 1) return null;
-
   const { pagination } = directory;
-  const edge = (label: string, icon: "arrow-left" | "arrow-right", target: number | null) => {
-    const content =
-      icon === "arrow-left" ? (
-        <>
-          <Icon name={icon} size={16} />
-          {label}
-        </>
-      ) : (
-        <>
-          {label}
-          <Icon name={icon} size={16} />
-        </>
-      );
-
-    return target === null ? (
-      <span aria-disabled="true" className={cn(pageLink, "border-line px-4 text-ink/40")}>
-        {content}
-      </span>
-    ) : (
-      <Link
-        href={proveedoresHref({ ...filters, pagina: target }, directory.id)}
-        rel={icon === "arrow-left" ? "prev" : "next"}
-        className={cn(pageLink, "border-line px-4 text-ink hover:border-brand-soft")}
-      >
-        {content}
-      </Link>
-    );
-  };
+  const edge = "inline-flex h-11 items-center gap-1.5 rounded-full border border-action px-4.5 font-display text-control font-semibold text-fg transition-colors hover:bg-brand-50 motion-reduce:transition-none";
 
   return (
-    <nav aria-label={pagination.label} className="mt-12 flex justify-center">
-      <ul className="flex flex-wrap items-center justify-center gap-2">
-        <li>{edge(pagination.previous, "arrow-left", page > 1 ? page - 1 : null)}</li>
-        {Array.from({ length: totalPages }, (_, index) => index + 1).map((n) => (
-          <li key={n}>
-            <Link
-              href={proveedoresHref({ ...filters, pagina: n }, directory.id)}
-              aria-current={n === page ? "page" : undefined}
-              aria-label={pagination.page(n)}
-              className={cn(
-                pageLink,
-                n === page
-                  ? "border-ink bg-ink text-white"
-                  : "border-line text-ink hover:border-brand-soft",
-              )}
-            >
-              {n}
+    <nav aria-label={pagination.label} className={className}>
+      <ul className="flex flex-wrap items-center justify-center gap-1.5">
+        {page > 1 ? (
+          <li>
+            <Link href={proveedoresHref({ ...filters, pagina: page - 1 }, directory.id)} rel="prev" className={edge}>
+              <Icon name="arrow-left" size={16} strokeWidth={2} />
+              {pagination.previous}
             </Link>
           </li>
-        ))}
-        <li>{edge(pagination.next, "arrow-right", page < totalPages ? page + 1 : null)}</li>
+        ) : null}
+        {paginationItems(page, totalPages).map((item, index) =>
+          item === "gap" ? (
+            <li key={`gap-${index}`} aria-hidden="true" className="px-1 text-fg-muted">
+              …
+            </li>
+          ) : (
+            <li key={item}>
+              <Link
+                href={proveedoresHref({ ...filters, pagina: item }, directory.id)}
+                aria-current={item === page ? "page" : undefined}
+                aria-label={pagination.page(item)}
+                className={cn(pageLink, item === page && "bg-action font-semibold text-white hover:bg-action")}
+              >
+                {item}
+              </Link>
+            </li>
+          ),
+        )}
+        {page < totalPages ? (
+          <li>
+            <Link href={proveedoresHref({ ...filters, pagina: page + 1 }, directory.id)} rel="next" className={edge}>
+              {pagination.next}
+              <Icon name="arrow-right" size={16} strokeWidth={2} />
+            </Link>
+          </li>
+        ) : null}
       </ul>
     </nav>
   );
 }
 
 /**
- * Filtros sin negocios: la salida es pedir igual, o quitar los filtros. Un
- * rubro solo (sin búsqueda) conserva su mensaje de siempre, que habla de la
- * red; con una búsqueda se nombra lo buscado. Es el "no hay resultados" de
- * verdad: una falla del servicio es `ErrorState`, nunca esto.
+ * Filtros sin negocios: la salida es pedir igual, o quitar los filtros. Es el
+ * "no hay resultados" de verdad: una falla del servicio es `ErrorState`.
  */
 function EmptyState({
   filters,
@@ -168,9 +115,7 @@ function EmptyState({
   zoneName,
 }: {
   readonly filters: ProveedoresFilters;
-  /** Nombre del rubro activo; `undefined` si el catálogo no lo trajo. */
   readonly categoryName: string | undefined;
-  /** Nombre de la zona activa; `undefined` sin zona. */
   readonly zoneName: string | undefined;
 }) {
   const { empty } = directory;
@@ -181,25 +126,23 @@ function EmptyState({
   const secondaryCta = onlyCategory ? empty.secondaryCta : empty.clearFilters;
 
   return (
-    <div className="flex flex-col items-center gap-4 rounded-card border border-dashed border-ink/20 px-6 py-12 text-center">
-      <h3 className="font-display text-xl font-bold text-balance text-ink">{title}</h3>
-      <p className="max-w-120 text-ink/70">{empty.body}</p>
+    <div className="flex flex-col items-center gap-4 rounded-card border border-dashed border-control-line bg-card px-6 py-12 text-center">
+      <h3 className="font-display text-xl font-bold text-balance text-fg">{title}</h3>
+      <p className="max-w-120 text-fg-muted">{empty.body}</p>
       <div className="mt-2 flex flex-wrap justify-center gap-3">
-        {/* `/pedido` pelado: sus valores de `?servicio=` son verticales
-            (talleres, seguros…), no familias del catálogo. */}
-        {/* La medición dice QUÉ filtros había (presencia), nunca su valor: ni
-            el texto buscado ni la zona (ver `lib/analytics/events.ts`). */}
+        {/* La medición dice QUÉ filtros había (presencia), nunca su valor. */}
         <ButtonLink
           href={empty.primaryCta.href}
-          className="min-h-11"
-          data-analytics-event="directory_empty_quote_clicked"
+          variant="primary"
+          size="48"
+          data-analytics-event={ANALYTICS_EVENTS.directoryEmptyQuoteClicked}
           data-analytics-has-query={filters.q ? "" : undefined}
           data-analytics-has-zone={filters.zona ? "" : undefined}
           data-analytics-has-category={filters.rubro ? "" : undefined}
         >
           {empty.primaryCta.label}
         </ButtonLink>
-        <ButtonLink href={`${secondaryCta.href}#${directory.id}`} variant="brandOutline" className="min-h-11">
+        <ButtonLink href={`${secondaryCta.href}#${directory.id}`} variant="outline" size="48">
           {secondaryCta.label}
         </ButtonLink>
       </div>
@@ -207,22 +150,19 @@ function EmptyState({
   );
 }
 
-/**
- * El backend no contestó y no había respuesta en caché. Es un aviso de la
- * sección, no de la página: el hero y la banda de abajo siguen ahí.
- */
+/** El backend no contestó y no había respuesta en caché: aviso de la sección. */
 function ErrorState({ retryHref }: { readonly retryHref: string }) {
   const { error } = directory;
 
   return (
-    <div role="status" className="flex items-start gap-4 rounded-card bg-alert-bg p-6">
-      <Icon name="alert" size={24} strokeWidth={1.8} className="mt-0.5 shrink-0 text-alert-fg" />
+    <div role="status" className="flex items-start gap-4 rounded-card border border-card-line bg-card p-6">
+      <Icon name="alert" size={24} strokeWidth={1.8} className="mt-0.5 shrink-0 text-status-alert" />
       <div className="flex flex-col gap-2">
-        <h3 className="font-display text-lg font-bold text-ink">{error.title}</h3>
-        <p className="text-ink/80">{error.body}</p>
+        <h3 className="font-display text-lg font-bold text-fg">{error.title}</h3>
+        <p className="text-fg-muted">{error.body}</p>
         <Link
           href={retryHref}
-          className="inline-flex min-h-11 items-center self-start font-semibold text-ink underline decoration-2 underline-offset-4 hover:text-brand-hover"
+          className="inline-flex min-h-11 items-center self-start font-semibold text-fg underline underline-offset-4 hover:text-brand-hover"
         >
           {error.retry}
         </Link>
@@ -232,70 +172,177 @@ function ErrorState({ retryHref }: { readonly retryHref: string }) {
 }
 
 /**
- * "Toda la red": filtro por rubro, grilla de negocios y paginación. Server
- * Component: todo el directorio va en el HTML inicial.
+ * Mapa de los negocios de la página: imagen de Static Maps (sin librería de
+ * mapas) que se pide al estar en pantalla y después de la primera
+ * interacción (`LazyMapImage`), con los marcadores en HTML encima. Antes de
+ * la imagen se ve el fondo de referencia con los marcadores ya en su lugar:
+ * mismas medidas (cuadrado), CLS 0. Sin key de Google o sin negocios con
+ * ubicación, no hay mapa (no se dibuja uno inventado).
+ */
+function DirectoryMap({
+  points,
+  pageCount,
+  categoryNames,
+  className,
+}: {
+  readonly points: readonly DirectoryMapPoint[];
+  readonly pageCount: number;
+  readonly categoryNames: ReadonlyMap<string, string>;
+  readonly className?: string;
+}) {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim();
+  const view = fitMapView(
+    points.map((point) => point.geo),
+    { width: MAP_SIZE, height: MAP_SIZE, padding: 0.1, insetBottom: 0.2 },
+  );
+  if (!apiKey || !view) return null;
+
+  const markers = points.map(({ partner }, index) => ({
+    slug: partner.slug,
+    name: partner.name,
+    monogram: partnerMonogram(partner.name),
+    label: map.marker(partner.name),
+    href: partnerPath(partner.slug),
+    category: partner.categories[0] ? (categoryNames.get(partner.categories[0]) ?? null) : null,
+    locality: partner.coverageZone || null,
+    x: view.positions[index].x,
+    y: view.positions[index].y,
+  }));
+
+  return (
+    <aside aria-label={map.label} className={className}>
+      <div className="relative aspect-square overflow-hidden rounded-panel border border-card-line bg-brand-50">
+        <MapBackdrop />
+        <LazyMapImage
+          src={staticMapUrl({ center: view.center, zoom: view.zoom, width: MAP_SIZE, height: MAP_SIZE, apiKey })}
+          width={MAP_SIZE}
+          height={MAP_SIZE}
+        />
+        <p className="absolute top-3 right-3 z-30 rounded-lg bg-card px-2 py-1 text-xs text-fg-muted">{map.badge}</p>
+        <DirectoryMapMarkers markers={markers} viewProfile={map.viewProfile} />
+      </div>
+      <p className="mt-2 text-sm text-fg-muted">{map.note(points.length, pageCount)}</p>
+    </aside>
+  );
+}
+
+/**
+ * "Toda la red": banda de pedido, conteo, grilla de negocios con el mapa al
+ * costado, paginación y tarjeta para negocios. Server Component: todo el
+ * directorio va en el HTML inicial; las islas son el formulario de la banda y
+ * los marcadores del mapa.
+ *
+ * Orden: el del lienzo de escritorio en el DOM (la banda de pedido primero:
+ * es la conversión). En celular el lienzo pone el mapa antes de la lista y la
+ * banda después: se reordena con `order` solo debajo de `lg`.
  */
 export function ProveedoresDirectory({
   filters,
   categories,
+  categoryNames,
   zones,
   result,
+  mapPoints,
 }: ProveedoresDirectoryProps) {
   const activeCategory = categories.find((category) => category.slug === filters.rubro);
   const activeZone = zones.find((zone) => zone.slug === filters.zona);
   const partners = result?.data ?? [];
-  const categoryNames = new Map(categories.map((category) => [category.slug, category.name]));
 
   const from = (filters.pagina - 1) * (result?.pageSize || PROVEEDORES_PAGE_SIZE) + 1;
   const count =
     result && result.total > 0
       ? directory.count({ from, to: from + partners.length - 1, total: result.total })
       : null;
+  const hasMap = partners.length > 0 && mapPoints.length > 0 && !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim();
 
   return (
-    <Section id={directory.id} tone="surface" spacing="md" aria-labelledby={HEADING_ID}>
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-8">
-        <SectionHeading
-          as="h2"
-          id={HEADING_ID}
-          title={directory.title}
-          subtitle={directory.subtitle}
-          className="max-w-160"
+    <Section
+      id={directory.id}
+      tone="canvas"
+      spacing="sm"
+      aria-labelledby={HEADING_ID}
+      className="scroll-mt-17 pt-6 md:pt-9"
+      containerClassName="flex flex-col gap-6"
+    >
+      {/* Referencia del lienzo: Base44, "contanos qué necesitás": el pedido adentro del directorio. */}
+      <div className="flex flex-wrap items-center gap-x-8 gap-y-4 rounded-panel bg-action p-5 text-white max-lg:order-2 md:p-7">
+        <div className="min-w-0 flex-[1_1_18.75rem]">
+          <h2 className="font-display text-xl font-bold md:text-2xl">{quoteBand.title}</h2>
+          <p className="mt-1 text-on-dark">{quoteBand.body}</p>
+        </div>
+        <QuotePrefillForm
+          id="directorio-pedido"
+          label={quoteBand.inputLabel}
+          placeholder={quoteBand.placeholder}
+          submitLabel={quoteBand.submit}
+          tone="dark"
+          className="min-w-0 flex-[1.2_1_22.5rem]"
+          submitAttributes={{
+            "data-analytics-event": ANALYTICS_EVENTS.quoteCtaClicked,
+            "data-analytics-quote-placement": QUOTE_CTA_PLACEMENTS.directoryBand,
+          }}
         />
-        {count ? <p className="shrink-0 text-sm font-medium text-ink/70 tabular-nums">{count}</p> : null}
       </div>
 
-      <div className="mt-8 max-w-160">
-        <ProveedoresSearch filters={filters} zones={zones} categoryName={activeCategory?.name} />
+      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1.5">
+        <h2 id={HEADING_ID} className="font-display text-2xl font-bold text-fg md:text-3xl">
+          {directory.title}
+        </h2>
+        {count ? <p className="text-control text-fg-muted tabular-nums">{count}</p> : null}
       </div>
 
-      {categories.length > 0 ? (
-        <div className="mt-6">
-          <CategoryFilter categories={categories} filters={filters} />
+      {result === null ? (
+        <ErrorState retryHref={proveedoresHref(filters, directory.id)} />
+      ) : partners.length === 0 && hasActiveFilters(filters) ? (
+        <EmptyState filters={filters} categoryName={activeCategory?.name} zoneName={activeZone?.name} />
+      ) : partners.length > 0 ? (
+        <div className="flex flex-wrap items-start gap-5">
+          <ul
+            className={cn(
+              "grid min-w-0 gap-3.5 sm:grid-cols-2",
+              hasMap ? "flex-[1.5_1_30rem]" : "w-full lg:grid-cols-3",
+            )}
+          >
+            {partners.map((partner) => (
+              <PartnerCard key={partner.id} partner={partner} categoryNames={categoryNames} />
+            ))}
+          </ul>
+          {hasMap ? (
+            <DirectoryMap
+              points={mapPoints}
+              pageCount={partners.length}
+              categoryNames={categoryNames}
+              className="min-w-0 flex-[1_1_21.25rem] max-lg:order-first max-lg:mx-auto max-lg:max-w-120 max-lg:basis-full lg:sticky lg:top-21"
+            />
+          ) : null}
         </div>
       ) : null}
 
-      <div className="mt-10">
-        {result === null ? (
-          <ErrorState retryHref={proveedoresHref(filters, directory.id)} />
-        ) : partners.length === 0 && hasActiveFilters(filters) ? (
-          <EmptyState
-            filters={filters}
-            categoryName={activeCategory?.name}
-            zoneName={activeZone?.name}
-          />
-        ) : (
-          <>
-            {partners.length > 0 ? (
-              <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {partners.map((partner) => (
-                  <PartnerCard key={partner.id} partner={partner} categoryNames={categoryNames} />
-                ))}
-              </ul>
-            ) : null}
-            <Pagination page={filters.pagina} totalPages={result.totalPages} filters={filters} />
-          </>
-        )}
+      {result ? (
+        <Pagination page={filters.pagina} totalPages={result.totalPages} filters={filters} className="max-lg:order-3" />
+      ) : null}
+
+      <div className="flex flex-wrap items-center justify-between gap-6 rounded-3xl border border-card-line bg-card p-6 max-lg:order-4 md:p-10">
+        <div className="min-w-0 flex-[1_1_26rem]">
+          <h2 className="font-display text-2xl font-bold text-balance text-fg md:text-3xl">{partnerCard.title}</h2>
+          <p className="mt-2 text-fg-muted">{partnerCard.body}</p>
+        </div>
+        <div className="flex flex-wrap gap-2.5">
+          {/* El alta carga Clerk: sin prefetch. */}
+          <ButtonLink
+            href={partnerCard.register.href}
+            prefetch={false}
+            variant="primary"
+            size="48"
+            data-analytics-event={ANALYTICS_EVENTS.partnerRegisterStarted}
+            data-analytics-placement="directory_card"
+          >
+            {partnerCard.register.label}
+          </ButtonLink>
+          <ButtonLink href={partnerCard.plans.href} variant="outline" size="48">
+            {partnerCard.plans.label}
+          </ButtonLink>
+        </div>
       </div>
     </Section>
   );

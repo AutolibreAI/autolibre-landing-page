@@ -5,7 +5,6 @@ import { safeHttpUrl } from "@/components/proveedores/partner-monogram";
 import { PartnerProfileBody } from "@/components/proveedores/profile/partner-profile-body";
 import { PartnerProfileHead } from "@/components/proveedores/profile/partner-profile-head";
 import { PartnerRelated } from "@/components/proveedores/profile/partner-related";
-import { PartnerStickyBar } from "@/components/proveedores/profile/partner-sticky-bar";
 import { PageShell } from "@/components/layout/page-shell";
 import { ProviderBandSection } from "@/components/sections/home/provider-band";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -100,9 +99,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: partner.name,
     description: profileDescription(partner, families),
     path: partnerPath(partner.slug),
-    // El backend solo da por indexables los perfiles con horarios
-    // estructurados; el resto sale con `noindex` (y fuera del sitemap).
-    index: partner.indexable,
+    // TODOS los perfiles encontrados se indexan (decisión de producto del
+    // 2026-11-24), sin depender de `partner.indexable`: el backend hoy lo da
+    // `true` solo con horarios cargados (0 de 26 negocios con dueño los
+    // tienen), y eso dejaba la red entera con `noindex`. Pendiente: alinear
+    // el backend. Todos van también al sitemap (`app/sitemap.ts`).
+    index: true,
     // Medidas declaradas del logo: no se conocen (URL libre), así que se
     // declara el cuadrado en que se muestra. Sin logo, la OG del sitio.
     image: logoUrl ? { url: logoUrl, width: 512, height: 512, alt: partner.name } : undefined,
@@ -175,7 +177,15 @@ export default async function PartnerProfilePage({ params }: PageProps) {
     <>
       {/* `currentPath` es el perfil y no `/proveedores`: el link "Proveedores" del
           header no es esta página, así que no lleva `aria-current="page"`. */}
-      <PageShell currentPath={path}>
+      <PageShell
+        currentPath={path}
+        actionBar
+        actionBarLabel={partnerProfileContent.stickyBar.label}
+        actionBarOptions={{
+          quoteLabel: partnerProfileContent.stickyBar.quote,
+          provider: { slug: partner.slug, whatsappHref: safeHttpUrl(partner.redirectLink) },
+        }}
+      >
         <PartnerProfileHead partner={partner} breadcrumbs={crumbs} familyNames={familyNames} />
         {/* Sin invitación al dueño ("¿Es tu taller?"): decisión de producto
             del 2026-11-05, el perfil no ofrece reclamarlo ni administrarlo.
@@ -185,10 +195,9 @@ export default async function PartnerProfilePage({ params }: PageProps) {
         {firstFamily && related.length > 0 ? (
           <PartnerRelated family={firstFamily} partners={related} categoryNames={categoryNames} />
         ) : null}
-        <ProviderBandSection />
+        <ProviderBandSection placement="profile_band" />
       </PageShell>
 
-      <PartnerStickyBar whatsappHref={safeHttpUrl(partner.redirectLink)} />
       <JsonLd schema={schema} />
     </>
   );

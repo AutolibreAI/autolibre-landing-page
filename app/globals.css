@@ -134,98 +134,6 @@
   --text-label: 0.8125rem; /* 13px — notas, hints, labels */
   --text-control: 0.9375rem; /* 15px — botones y chips de 44-48px (AutoLibre AI) */
 
-  /* ── Animación del hero ──
-     Dos ciclos INDEPENDIENTES (palabras 20s, pantallas 24s: distintos a
-     propósito para que no cambien juntas). Los % de cada keyframe asumen una cantidad fija de
-     pasos: si cambia el largo de `homeContent.hero.words` o `.screens`,
-     cambian estos %. Cada elemento arranca con un `animation-delay`
-     negativo (paso × duración − ciclo): la animación ya corre al cargar,
-     sin estado inicial vacío. */
-
-  /* Palabras: 8 pasos de 2,5s → cada una ocupa el 12,5% del ciclo.
-     Solo `transform` y `opacity`: corren en el compositor, sin repintar. */
-  --animate-hero-word: hero-word 20s infinite;
-  /* Variante para `prefers-reduced-motion`: mismas ventanas que `hero-word`,
-     solo `opacity`, sin desplazamiento. */
-  --animate-hero-word-fade: hero-word-fade 20s linear infinite;
-  /* Pantallas: 8 pasos de 3s → cada una es visible el 12,5% del ciclo. */
-  --animate-hero-screen: hero-screen 24s linear infinite;
-
-  /* Entra desde abajo pasándose un poco (0–2,4%), rebota a su lugar
-     (2,4–3,4%), queda (hasta 10,5%) y sale hacia arriba (10,5–12,5%)
-     mientras la siguiente ya viene subiendo. */
-  @keyframes hero-word {
-    0% {
-      opacity: 0;
-      transform: translateY(100%);
-      animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    2.4% {
-      opacity: 1;
-      transform: translateY(-12%);
-      animation-timing-function: ease-in-out;
-    }
-    3.4%,
-    10.5% {
-      opacity: 1;
-      transform: translateY(0);
-      animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
-    }
-    12.5%,
-    100% {
-      opacity: 0;
-      transform: translateY(-100%);
-    }
-  }
-
-  @keyframes hero-word-fade {
-    0% {
-      opacity: 0;
-    }
-    2%,
-    10.5% {
-      opacity: 1;
-    }
-    12.5%,
-    100% {
-      opacity: 0;
-    }
-  }
-
-  /* Fundido cruzado de 0,4s entre pantallas (1,7% de 24s). */
-  @keyframes hero-screen {
-    0%,
-    10.8% {
-      opacity: 1;
-    }
-    12.5%,
-    98.3% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  /* ── Franja de verticales (home) ──
-     Ticker infinito, CSS puro: el track lleva la lista DOS veces y se corre
-     de 0 a -50% (exactamente una copia), así el final empalma con el
-     principio sin salto. Lineal y sin pausa entre vueltas. 85s por copia:
-     ~60px/s con el texto de desktop, ~30px/s en mobile (lento, se lee
-     como textura).
-     Excepción de `prefers-reduced-motion` aprobada por producto (ver
-     `motion-exempt`). */
-  --animate-marquee: marquee 85s linear infinite;
-
-  @keyframes marquee {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
-  }
-
   /* Celulares angostos (< 384px, p. ej. 360px): el titular del hero baja a
      `display-xs` para que "Mantenimientos" no se coma el margen lateral. */
   --breakpoint-xs: 24rem;
@@ -286,6 +194,33 @@
   @apply reveal-stagger;
 }
 
+
+/* ── Barra fija que entra al scrollear (`MobileActionBar revealOnScroll`) ──
+   Home y `/pedido`: el módulo de pedido está arriba de todo y la barra repite
+   su acción. Al cargar queda fuera de la pantalla (y `visibility: hidden`:
+   no se puede enfocar ni tapa nada) y entra en los primeros 12rem de scroll,
+   atada al scroll y sin JS (`animation-timeline: scroll()`). Sin soporte, o
+   con `prefers-reduced-motion`, la barra está desde la carga como siempre. */
+@keyframes bar-reveal {
+  from {
+    transform: translateY(100%);
+    visibility: hidden;
+  }
+  to {
+    transform: none;
+    visibility: visible;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    [data-reveal-on-scroll] {
+      animation: bar-reveal linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 12rem;
+    }
+  }
+}
 
 @layer base {
   html {
@@ -365,17 +300,12 @@
       scroll-behavior: auto;
     }
 
-    /* `motion-exempt` = excepción de producto explícita. Son DOS, y no se
-       suman otras sin decisión de producto:
-       - Palabras del hero (2026-09-23). Con esta preferencia NO suben ni
-         rebotan: cambian con un fundido en el lugar (`hero-word-fade`), sin
-         desplazamiento, que es lo que marea.
-       - Track de la franja de verticales de la home (2026-10-03): sigue
-         corriendo igual (`marquee`). Es texto informativo, sin nada
-         interactivo adentro.
-       La clase va SOLO en el elemento animado: sus hijos no la heredan y
-       quedan frenados como todo lo demás. */
-    *:not(.motion-exempt),
+    /* Sin excepciones: con esta preferencia no corre ninguna animación ni
+       transición. Hasta la fase 4a del rediseño (2026-11-24) había dos
+       (`motion-exempt`: palabras del hero y franja de verticales); las dos
+       secciones se fueron del Home. Una animación nueva que no respete esta
+       preferencia necesita una decisión explícita de producto (AGENTS.md §3). */
+    *,
     *::before,
     *::after {
       animation-duration: 0.01ms !important;

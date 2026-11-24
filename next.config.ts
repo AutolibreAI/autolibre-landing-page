@@ -80,20 +80,37 @@ const nextConfig: NextConfig = {
    * no está en el sitemap y `robots.ts` la excluye.
    */
   async rewrites() {
-    return [
-      {
-        source: "/ingest/static/:path*",
-        destination: `${POSTHOG_ASSETS_HOST}/static/:path*`,
-      },
-      {
-        source: "/ingest/array/:path*",
-        destination: `${POSTHOG_ASSETS_HOST}/array/:path*`,
-      },
-      {
-        source: "/ingest/:path*",
-        destination: `${POSTHOG_HOST}/:path*`,
-      },
-    ];
+    return {
+      /**
+       * `/proveedores` con filtros o paginado → `app/proveedores-filtros`
+       * (la URL visible no cambia). La página base es estática (ISR) y leer
+       * `searchParams` la volvería dinámica: las variantes van a una ruta
+       * aparte que sí los lee. `beforeFiles` porque `/proveedores` existe
+       * como página y los rewrites comunes se miran después del filesystem.
+       * Un rewrite por parámetro: dentro de un `has`, las condiciones son Y.
+       * La query pasa sola al destino.
+       */
+      beforeFiles: ["rubro", "zona", "q", "pagina"].map((key) => ({
+        source: "/proveedores",
+        has: [{ type: "query" as const, key }],
+        destination: "/proveedores-filtros",
+      })),
+      afterFiles: [
+        {
+          source: "/ingest/static/:path*",
+          destination: `${POSTHOG_ASSETS_HOST}/static/:path*`,
+        },
+        {
+          source: "/ingest/array/:path*",
+          destination: `${POSTHOG_ASSETS_HOST}/array/:path*`,
+        },
+        {
+          source: "/ingest/:path*",
+          destination: `${POSTHOG_HOST}/:path*`,
+        },
+      ],
+      fallback: [],
+    };
   },
   // PostHog llama a endpoints con barra final (`/e/`, `/flags/`): sin esto,
   // Next los redirige (308) y se pierden los eventos.

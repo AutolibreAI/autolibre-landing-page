@@ -1,7 +1,7 @@
 import { Container, type ContainerSize } from "@/components/ui/container";
 import { cn } from "@/lib/utils";
 
-type SectionTone = "surface" | "subtle" | "muted" | "ink" | "brand" | "card" | "canvas";
+type SectionTone = "surface" | "subtle" | "muted" | "ink" | "brand" | "card" | "canvas" | "mint" | "action";
 type SectionSpacing = "sm" | "md" | "lg";
 
 type SectionProps = {
@@ -41,6 +41,10 @@ const tones: Record<SectionTone, string> = {
   card: "border-y border-card-line bg-card text-fg",
   /** Lienzo de la página: entre dos bandas `card`. */
   canvas: "bg-canvas text-fg",
+  /** Banda verde suave (`brand-50`): cabecera del perfil de proveedor. */
+  mint: "bg-brand-50 text-fg",
+  /** Banda oscura (`action`): "Sumate a AutoLibre" del perfil. */
+  action: "bg-action text-white",
 };
 
 const spacings: Record<SectionSpacing, string> = {

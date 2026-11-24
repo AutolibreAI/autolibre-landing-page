@@ -56,7 +56,14 @@ const schema = graph(
 export default function HomePage() {
   return (
     <>
-      <PageShell currentPath="/" actionBar actionBarQuoteHref={`#${HOME_PEDIDO_ID}`}>
+      <PageShell
+        currentPath="/"
+        actionBar
+        actionBarQuoteHref={`#${HOME_PEDIDO_ID}`}
+        // La barra entra al scrollear: al cargar, el módulo ya es la acción
+        // y la barra tapaba sus chips (pendiente `target-size` de la 4a).
+        actionBarOptions={{ revealOnScroll: true }}
+      >
         <HomeHero />
         <ServicesSection />
         <HowItWorksSection />

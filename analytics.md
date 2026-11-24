@@ -131,11 +131,23 @@ Pestañas Taller / Auxilio / Multas (Seguro se sacó el 2026-11-24, decisión de
 | ----------------- | ------------------- | -------------------------------- | ---- | ------ |
 | Botones de tienda | `app_store_clicked` | `store`, `placement: "descarga"` | —    | Click  |
 
-### 🏪 `/proveedores`
+### 🏪 `/proveedores` y perfiles `/proveedores/[slug]`
+
+Desde el 2026-11-24 (rediseño, fase 4b). El directorio usa la barra fija compartida (`quote_cta_clicked` / `whatsapp_clicked` `mobile_bar`, ver Layout). Los eventos del perfil (`provider_action_clicked` y el WhatsApp con `provider`) ya estaban en el catálogo desde la spec 209 pero el perfil vigente no los mandaba: desde esta fecha llegan. Ningún prop lleva lo que escribe la persona: el texto de "¿Qué le pasa?" viaja a `/pedido` por `sessionStorage`, nunca por la URL.
 
 | Botón / zona                                                                            | Evento PostHog                  | Props                                               | Meta | Cuándo                                                                                                                                                             |
 | --------------------------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| "Pedir presupuesto" del estado vacío (búsqueda, zona o rubro sin negocios, no un error) | `directory_empty_quote_clicked` | `has_query?`, `has_zone?`, `has_category?` (`true`) | —    | Click. Dice qué filtros había, nunca su valor: ni el texto buscado ni la zona. Sirve para medir cuántas búsquedas sin resultados se rescatan pidiendo presupuesto |
+| "Pedir propuestas" de la banda "¿No sabés a quién elegir?" (directorio)                  | `quote_cta_clicked`             | `placement: "directory_band"` (nuevo valor de `QUOTE_CTA_PLACEMENTS`) | — | Click (o Enter en el campo). Lleva a `/pedido` con el texto cargado en el módulo |
+| "Sumar mi negocio" de la tarjeta para negocios (directorio)                              | `partner_register_started`      | `placement: "directory_card"`                       | —    | Click |
+| "Pedir propuestas" del estado vacío (búsqueda, zona o rubro sin negocios, no un error) | `directory_empty_quote_clicked` | `has_query?`, `has_zone?`, `has_category?` (`true`) | —    | Click. Dice qué filtros había, nunca su valor: ni el texto buscado ni la zona. Sirve para medir cuántas búsquedas sin resultados se rescatan pidiendo propuestas |
+| "Pedile una propuesta" de la cabecera del perfil                                         | `provider_action_clicked`       | `action: "proposal"`, `provider` (slug), `placement: "profile_head"` | — | Click. Lleva a `/pedido` |
+| "Pedir propuesta" de la tarjeta del costado del perfil                                   | `provider_action_clicked`       | `action: "proposal"`, `provider`, `placement: "profile_aside"` | — | Click (o Enter). Lleva a `/pedido` con el texto cargado |
+| "Pedir propuesta" de la barra fija del perfil (celular)                                  | `provider_action_clicked`       | `action: "proposal"`, `provider`, `placement: "mobile_bar"` | — | Click |
+| WhatsApp del negocio (cabecera o barra fija del perfil)                                  | `whatsapp_clicked`              | `provider`, `placement: "profile_head"` / `"mobile_bar"` | `Contact` | Click. Sin `lead_source`: es el WhatsApp del negocio, no un pedido a AutoLibre. Si el negocio no tiene WhatsApp, la barra lleva el de AutoLibre (sin `provider`) |
+| "Cómo llegar" (Google Maps)                                                              | `provider_action_clicked`       | `action: "directions"`, `provider`                  | —    | Click |
+| "Sumate a AutoLibre" de la banda oscura del perfil                                       | `partner_register_started`      | `placement: "profile_band"`                         | —    | Click |
+
+Ya no llegan: el "Pedir presupuesto" del estado vacío cambió de texto ("Pedir propuestas"), mismo evento. La barra fija vieja del perfil (solo WhatsApp, sin evento) se reemplazó por la compartida.
 
 ### 🧾 Talleres: registro, reclamo y contratación de planes (specs 211 y 212)
 

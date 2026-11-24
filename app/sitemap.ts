@@ -59,7 +59,7 @@ const routes = [
   },
   {
     path: PROVEEDORES_PATH,
-    lastModified: "2026-10-27",
+    lastModified: "2026-11-24",
     changeFrequency: "weekly",
     priority: 0.7,
   },
@@ -99,6 +99,9 @@ const routes = [
   changeFrequency: NonNullable<MetadataRoute.Sitemap[number]["changeFrequency"]>;
   priority: number;
 }[];
+
+/** `lastModified` de un perfil cuando el backend no manda `updatedAt`: el rediseño (fase 4b). */
+const PARTNER_PROFILES_FALLBACK_DATE = "2026-11-24";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Mientras el blog no es público (`lib/blog/visibility.ts`), ni el listado
@@ -145,21 +148,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  // Perfiles de los negocios de la red (`/proveedores/[slug]`), del directorio
-  // completo (cacheado 1 h). SIN `lastModified`: el backend no expone una
-  // fecha de última edición del perfil, y la del build le diría a Google que
-  // todos cambiaron en cada deploy (mismo motivo que las fechas fijas de
-  // arriba). Si el backend falla, el sitemap sale igual sin ellos. Los slugs
-  // reservados (ej. `registro`) no son perfiles: esa URL es otra página. Los perfiles
-  // que el backend no marca como indexables van con `noindex` y tampoco entran.
+  // Perfiles de los negocios de la red (`/proveedores/[slug]`): TODOS los del
+  // directorio (decisión de producto del 2026-11-24: todos los perfiles se
+  // indexan, sin depender de `indexable` del backend). Salen del directorio
+  // completo (cacheado 1 h, el mismo que usa `/proveedores`). `lastModified`:
+  // la última edición del negocio que manda el backend (`updatedAt`), estable
+  // entre deploys; si no viene, la fecha fija del rediseño (nunca la del
+  // build: le diría a Google que todos cambiaron en cada deploy). Si el
+  // backend falla, el sitemap sale igual sin ellos. Los slugs reservados (ej.
+  // `registro`) no son perfiles: esa URL es otra página.
   const partners = await fetchAllPartners().catch((error: unknown) => {
     console.error("[sitemap] no se pudieron leer los proveedores:", error);
     return [];
   });
   const partnerPages = partners
-    .filter((partner) => partner.indexable && !RESERVED_PROFILE_SLUGS.includes(partner.slug))
+    .filter((partner) => !RESERVED_PROFILE_SLUGS.includes(partner.slug))
     .map((partner) => ({
       url: `${siteConfig.url}${partnerPath(partner.slug)}`,
+      lastModified: partner.updatedAt ?? PARTNER_PROFILES_FALLBACK_DATE,
       changeFrequency: "monthly" as const,
       priority: 0.5,
     }));
