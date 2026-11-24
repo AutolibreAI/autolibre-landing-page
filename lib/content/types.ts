@@ -88,7 +88,10 @@ export type IconName =
   | "users"
   | "smartphone"
   | "wrench"
-  | "user";
+  | "user"
+  | "chart"
+  | "lock"
+  | "plus";
 
 /** Tiendas donde está publicada la app. */
 export type StoreId = "appStore" | "playStore";

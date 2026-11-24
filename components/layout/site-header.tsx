@@ -46,10 +46,13 @@ type SiteHeaderProps = {
   readonly currentPath?: string;
 };
 
-/** Rutas que cargan Clerk: sus links van sin prefetch desde las páginas públicas. */
+/**
+ * Rutas que cargan Clerk: sus links van sin prefetch desde las páginas
+ * públicas. `/proveedores/registro` ya no está: desde la fase 5 es una
+ * landing estática sin Clerk (el flujo del alta lo carga recién con `?alta=1`).
+ */
 const CLERK_ROUTES = [
   ACCOUNT_PATH,
-  PROVEEDORES_REGISTRO_PATH,
   PROVEEDORES_RECLAMAR_PATH,
   PROVEEDORES_CONTRATAR_PATH,
 ];

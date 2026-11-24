@@ -26,25 +26,20 @@ const errorMessages: Record<RedeemFailureKind, string> = {
 
 export const partnerClaimContent = {
   meta: {
-    title: "Reclamá tu taller",
+    title: "Reclamá tu negocio",
     description:
-      "Canjeá el código que te mandó el equipo de AutoLibre para administrar el perfil de tu taller en la red.",
+      "Canjeá el código que te mandó el equipo de AutoLibre para administrar el perfil de tu negocio en la red.",
   },
 
-  eyebrow: "Talleres",
-  title: "Reclamá tu taller",
+  eyebrow: "Talleres y servicios",
+  title: "Reclamá tu negocio",
   intro:
-    "Si el equipo de AutoLibre te mandó un código, canjealo acá para administrar el perfil de tu taller. Usá la misma cuenta que en la app.",
-
-  /** Columna de contexto del login: qué viene después de entrar. */
-  steps: {
-    label: "Cómo es el reclamo",
-    items: [
-      { id: "cuenta", label: "Entrá o creá tu cuenta", description: "La misma de la app de AutoLibre." },
-      { id: "codigo", label: "Escribí tu código", description: "El que te mandó el equipo de AutoLibre." },
-      { id: "administrar", label: "Administrá tu taller", description: "Elegí un plan y completá tu perfil." },
-    ],
-  },
+    "Si el equipo de AutoLibre te mandó un código, canjealo acá para administrar el perfil de tu negocio.",
+  /** Bajada del panel de login. */
+  signInIntro: "Para reclamar tu negocio necesitás una cuenta de AutoLibre. Es la misma de la app.",
+  /** Con qué cuenta queda vinculado (fila debajo del formulario). */
+  linkedTo: "Lo vas a vincular a la cuenta de",
+  switchAccount: "Usar otra cuenta",
 
   /** Contexto al costado del paso (arriba en mobile): qué es el código. */
   about: {
@@ -52,11 +47,11 @@ export const partnerClaimContent = {
     items: [
       {
         term: "Qué es",
-        description: "Una clave que te manda el equipo de AutoLibre para vincular tu taller a tu cuenta.",
+        description: "Una clave que te manda el equipo de AutoLibre para vincular tu negocio a tu cuenta.",
       },
       {
         term: "Cómo se pide",
-        description: "Escribile al equipo de AutoLibre por WhatsApp: verificamos que sos el dueño y te lo mandamos.",
+        description: "Escribile al equipo por WhatsApp: verificamos que sos el dueño y te lo mandamos.",
       },
       {
         term: "Cuánto dura",
@@ -64,12 +59,15 @@ export const partnerClaimContent = {
       },
     ],
     requestCta: "Pedir mi código por WhatsApp",
+    registerPrefix: "¿Tu negocio todavía no está en AutoLibre?",
+    registerCta: "Registralo gratis",
     whatsappMessage: "Hola! Quiero reclamar mi taller en AutoLibre. ¿Me pasan el código?",
   },
 
   form: {
     title: "Escribí tu código",
     label: "Código de reclamo",
+    placeholder: "Ej: AL-7K3P-Q9",
     hint: "Escribilo tal como te llegó. No importan las mayúsculas ni los guiones.",
     submit: "Canjear código",
     submitting: "Canjeando…",
@@ -89,7 +87,7 @@ export const partnerClaimContent = {
    */
   invalidCode: {
     causes:
-      "Puede que haya vencido (duran 7 días), que ya se haya usado o que el taller ya tenga dueño. Si sos el dueño, pedí un código nuevo.",
+      "Puede que haya vencido (duran 7 días), que ya se haya usado o que el negocio ya tenga dueño. Si sos el dueño, pedí un código nuevo.",
     requestNew: "Pedir un código nuevo",
     whatsappMessage:
       "Hola! Quiero reclamar mi taller en AutoLibre y el código que tengo no funciona. ¿Me pasan uno nuevo?",
@@ -100,13 +98,18 @@ export const partnerClaimContent = {
 
   success: {
     title: (partnerName: string) => `¡Listo! Ya administrás ${partnerName}`,
-    titleWithoutName: "¡Listo! Ya administrás tu taller",
-    body: "Desde ahora figurás como dueño del taller en AutoLibre.",
+    titleWithoutName: "¡Listo! Ya administrás tu negocio",
+    body: "Desde ahora figurás como dueño del negocio en AutoLibre.",
+    /** Supuesto de DECISIONES: el próximo paso lleva a "Mi negocio" (`/cuenta`). */
+    profile: {
+      title: "Revisá tu perfil",
+      body: "Mirá cómo te ven en la app y completá lo que falte.",
+    },
     nextTitle: "Próximos pasos",
     plans: {
       title: "Elegí tu plan",
-      body: "Con el plan Gratis tu taller ya aparece en la red. Con un plan pago recibís más pedidos por WhatsApp.",
-      cta: "Elegí tu plan",
+      body: "Con el plan Gratis ya aparecés en la red. Con un plan pago recibís más pedidos por WhatsApp.",
+      cta: "Ver los planes",
       href: PROVEEDORES_PLANES_PATH,
     },
     /**

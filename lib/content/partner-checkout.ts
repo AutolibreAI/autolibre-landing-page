@@ -65,14 +65,10 @@ export const partnerCheckoutContent = {
 
   eyebrow: "Planes para talleres",
   title: (planName: string) => `Contratá el plan ${planName}`,
-  intro: "Son tres pasos: confirmás qué taller, revisás el plan y lo pagás en Mercado Pago.",
-
-  /** Columna de contexto del login: los mismos tres pasos, explicados. */
-  signInSteps: [
-    { id: "taller", label: "Tu taller", description: "Entrás y elegís a qué taller le aplicás el plan." },
-    { id: "plan", label: "Plan", description: "Revisás el plan y su precio." },
-    { id: "pago", label: "Pago", description: "Lo pagás en Mercado Pago." },
-  ],
+  intro: "Confirmás qué taller, revisás el plan y lo pagás en Mercado Pago.",
+  /** Bajada del panel de login. */
+  signInIntro: (planName: string) =>
+    `Para contratar el plan ${planName} necesitás tu cuenta de AutoLibre, la misma con la que administrás tu taller.`,
 
   /** `?plan=` que no es un plan pago (o es el gratis). */
   invalidPlan: {
@@ -135,10 +131,24 @@ export const partnerCheckoutContent = {
   partnerPicker: {
     legend: "¿A qué taller le aplicás el plan?",
     required: "Elegí el taller al que le aplicás el plan.",
+    /** Lo que se sabe del taller según `GET /partners/{id}/subscription`. */
+    status: {
+      loading: "Consultando su plan…",
+      free: "Plan Gratis",
+      freeWithTrial: (trialDays: number) => `Plan Gratis · Le corresponde la prueba de ${trialDays} días`,
+      active: (planName: string | null) => (planName ? `Ya tiene el plan ${planName}` : "Ya tiene un plan pago"),
+      trialing: (planName: string | null) =>
+        planName ? `Ya tiene el plan ${planName} en prueba` : "Ya tiene un plan pago en prueba",
+      unknown: "No pudimos consultar su plan",
+    },
   },
 
   summary: {
     title: "Revisá el plan",
+    planTitle: (planName: string) => `Plan ${planName}`,
+    todayLabel: "Hoy pagás",
+    todayAmount: "ARS 0",
+    footnote: "Precio fijo mensual, sin comisión por trabajo. Lo cancelás cuando quieras desde tu cuenta.",
     plan: "Plan",
     price: "Precio",
     partner: "Taller",
@@ -161,6 +171,7 @@ export const partnerCheckoutContent = {
 
   payerEmail: {
     label: "Email de tu cuenta de Mercado Pago",
+    placeholder: "nombre@correo.com",
     hint: "Tiene que ser el email de la cuenta de Mercado Pago con la que vas a pagar. Si no coincide, Mercado Pago rechaza el pago.",
     empty: "Escribí el email de tu cuenta de Mercado Pago.",
     invalid: "Revisá el email: no parece válido.",
@@ -235,9 +246,15 @@ export const partnerCheckoutContent = {
           title: "Administrá tu taller desde la app",
           body: "Entrá a la app de AutoLibre con esta misma cuenta para completar tu perfil y responder pedidos.",
         },
+        /** Supuesto de DECISIONES: el próximo paso lleva a "Mi negocio" (`/cuenta`). */
+        profile: {
+          title: "Completá tu perfil",
+          body: "Con logo y horarios, quien recibe tu propuesta sabe más de vos.",
+        },
         help: {
           title: "¿Dudas con tu plan?",
           body: "Escribinos por WhatsApp y lo vemos con vos.",
+          cta: "Escribinos",
         },
       },
     },
@@ -250,7 +267,7 @@ export const partnerCheckoutContent = {
       title: "Todavía no tenemos la confirmación del pago",
       body: "Puede ser que Mercado Pago todavía no nos haya avisado, o que el pago no se haya completado.",
       paid: {
-        title: "Si completaste el pago en Mercado Pago",
+        title: "Si completaste el pago",
         body: "La confirmación puede demorar unos minutos. No vuelvas a pagar: consultá de nuevo en un rato.",
         cta: "Consultar de nuevo",
       },

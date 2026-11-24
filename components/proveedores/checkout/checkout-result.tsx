@@ -1,21 +1,20 @@
 "use client";
 
-import { useAuth, useClerk } from "@clerk/nextjs";
-import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
 import { useEffect, useRef, useState } from "react";
-import { AccountBar } from "@/components/proveedores/account/account-bar";
 import { PartnerSignIn } from "@/components/proveedores/account/partner-sign-in";
-import { PrivateFlowHead } from "@/components/proveedores/account/private-flow";
-import { FlowLayout } from "@/components/proveedores/flow/flow-layout";
-import { FlowSteps } from "@/components/proveedores/flow/flow-steps";
-import { PlanSummaryCard } from "@/components/proveedores/flow/plan-summary-card";
-import { Button, ButtonLink } from "@/components/ui/button";
-import { Icon } from "@/components/ui/icon";
-import { StoreLinks } from "@/components/ui/store-links";
+import {
+  CheckingView,
+  ConfirmedView,
+  MessageView,
+  PendingView,
+} from "@/components/proveedores/checkout/checkout-result-views";
+import { FlowMain, FlowShell } from "@/components/proveedores/flow/flow-shell";
+import { useFlowSignOut } from "@/components/proveedores/flow/use-flow-sign-out";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
-import { accountContent } from "@/lib/content/account";
-import { partnerCheckoutContent, planContent, planDisplayName } from "@/lib/content/partner-checkout";
+import { syncRoleHint } from "@/lib/auth/role-hint";
+import { partnerCheckoutContent, planDisplayName } from "@/lib/content/partner-checkout";
 import { formatDate, isPaidPlanCode } from "@/lib/partner-billing/checkout";
 import {
   clearPendingCheckout,
@@ -31,8 +30,7 @@ import {
   type SubscriptionView,
 } from "@/lib/partner-billing/subscription";
 import type { GetToken } from "@/lib/partner-claims/client";
-import { PROVEEDORES_CONTRATAR_PATH } from "@/lib/proveedores/query";
-import { whatsappUrl } from "@/lib/whatsapp";
+import { PROVEEDORES_CONTRATAR_PATH, PROVEEDORES_PLANES_PATH } from "@/lib/proveedores/query";
 
 const { result: content, steps } = partnerCheckoutContent;
 
@@ -45,43 +43,9 @@ type CheckoutResultProps = {
   readonly partnerIdFromQuery: string | null;
   /** Esta misma URL: vuelta del login. */
   readonly selfPath: string;
+  /** Cookie `__client_uat` de la instancia (para la pista de rol del header). */
+  readonly sessionCookie: string | null;
 };
-
-function ResultSteps({ current }: { readonly current: number }) {
-  return <FlowSteps label={steps.label} steps={steps.items} current={current} />;
-}
-
-/**
- * Isla client de `/proveedores/contratar/resultado` (spec 212, FR-008,
- * FR-018): la vuelta de Mercado Pago. El estado sale SOLO de
- * `GET /partners/{partnerId}/subscription`; los query params que agrega MP
- * no se leen nunca.
- *
- * Mismo armazón que `/contratar`: indicador de progreso (con "Pago" en curso
- * hasta que el backend confirma) y la tarjeta del plan, si se sabe cuál es.
- */
-export function CheckoutResult({ partnerIdFromQuery, selfPath }: CheckoutResultProps) {
-  const { isLoaded, isSignedIn } = useAuth();
-  const head = { eyebrow: partnerCheckoutContent.eyebrow, title: content.title };
-
-  if (!isLoaded || !isSignedIn) {
-    return (
-      <PartnerSignIn
-        head={{ ...head, intro: content.signInIntro }}
-        context={<ResultSteps current={PAYMENT_STEP} />}
-        redirectUrl={selfPath}
-        loading={!isLoaded}
-      />
-    );
-  }
-
-  return (
-    <div className="flex max-w-280 flex-col gap-8">
-      <PrivateFlowHead head={{ ...head, intro: content.intro }} />
-      <SignedInResult partnerIdFromQuery={partnerIdFromQuery} selfPath={selfPath} />
-    </div>
-  );
-}
 
 type ResultState =
   | { readonly kind: "checking" }
@@ -91,6 +55,42 @@ type ResultState =
   | { readonly kind: "free"; readonly retryHref: string }
   | { readonly kind: "unconfirmed" }
   | { readonly kind: "error"; readonly reason: "unauthenticated" | "unknown" };
+
+/**
+ * Isla client de `/proveedores/contratar/resultado` (spec 212, FR-008,
+ * FR-018): la vuelta de Mercado Pago. El estado sale SOLO de
+ * `GET /partners/{partnerId}/subscription`; los query params que agrega MP
+ * no se leen nunca. Misma pantalla de foco que `/contratar`, con "Pago" en
+ * curso hasta que el backend confirma.
+ */
+export function CheckoutResult({ partnerIdFromQuery, selfPath, sessionCookie }: CheckoutResultProps) {
+  const { isLoaded, isSignedIn } = useAuth();
+  const session = useFlowSignOut();
+  const [confirmed, setConfirmed] = useState(false);
+  const signedIn = isLoaded && isSignedIn;
+
+  return (
+    <FlowShell
+      steps={{ label: steps.label, items: steps.items, current: confirmed ? ALL_DONE : PAYMENT_STEP }}
+      helpMessage={content.help.whatsappMessage}
+      helpPlacement="contratar_resultado_encabezado"
+      signOut={signedIn ? { onClick: () => void session.leave(PROVEEDORES_PLANES_PATH), pending: session.pending } : null}
+    >
+      <FlowMain>
+        {signedIn ? (
+          <SignedInResult
+            partnerIdFromQuery={partnerIdFromQuery}
+            sessionCookie={sessionCookie}
+            onConfirmed={setConfirmed}
+            onReauth={() => void session.leave(selfPath)}
+          />
+        ) : (
+          <PartnerSignIn intro={content.signInIntro} showJoin={false} redirectUrl={selfPath} loading={!isLoaded} />
+        )}
+      </FlowMain>
+    </FlowShell>
+  );
+}
 
 /**
  * Qué taller consultar (research D7): `?partnerId` ⇒ el checkout guardado en
@@ -116,14 +116,21 @@ function retryHrefFor(planCode: string | null): string | null {
   return planCode && isPaidPlanCode(planCode) ? checkoutHref(PROVEEDORES_CONTRATAR_PATH, planCode) : null;
 }
 
-function SignedInResult({ partnerIdFromQuery, selfPath }: CheckoutResultProps) {
+function SignedInResult({
+  partnerIdFromQuery,
+  sessionCookie,
+  onConfirmed,
+  onReauth,
+}: {
+  readonly partnerIdFromQuery: string | null;
+  readonly sessionCookie: string | null;
+  /** Setter de estado (estable): no reinicia la consulta en cada render. */
+  readonly onConfirmed: (confirmed: boolean) => void;
+  readonly onReauth: () => void;
+}) {
   const { getToken } = useAuth();
-  const { signOut } = useClerk();
   const [state, setState] = useState<ResultState>({ kind: "checking" });
   const [attempt, setAttempt] = useState(0);
-  // Este componente nunca se renderiza en el server (espera a que Clerk
-  // cargue), así que leer `sessionStorage` acá no rompe la hidratación.
-  const [planCode, setPlanCode] = useState<string | null>(pendingPlanCode);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -140,15 +147,15 @@ function SignedInResult({ partnerIdFromQuery, selfPath }: CheckoutResultProps) {
         return;
       }
 
-      // El plan del backend manda sobre el guardado en la pestaña.
-      if (isPaidPlanCode(result.view.planCode)) setPlanCode(result.view.planCode);
-
       const classification = classifySubscription(result.view);
       if (classification === "pending") {
         if (shouldKeepPolling(classification, Date.now() - startedAt)) {
           timer = setTimeout(() => void poll(partnerId), POLL_INTERVAL_MS);
         } else {
-          setState({ kind: "pending-timeout", retryHref: retryHrefFor(result.view.planCode) ?? retryHrefFor(pendingPlanCode()) });
+          setState({
+            kind: "pending-timeout",
+            retryHref: retryHrefFor(result.view.planCode) ?? retryHrefFor(pendingPlanCode()),
+          });
         }
         return;
       }
@@ -162,7 +169,10 @@ function SignedInResult({ partnerIdFromQuery, selfPath }: CheckoutResultProps) {
           });
         }
         clearPendingCheckout();
+        // Es dueño de un negocio con plan: el header público muestra "Ir a mi negocio".
+        syncRoleHint(sessionCookie, true);
         setState({ kind: "confirmed", view: result.view });
+        onConfirmed(true);
         return;
       }
       if (classification === "free") {
@@ -182,7 +192,7 @@ function SignedInResult({ partnerIdFromQuery, selfPath }: CheckoutResultProps) {
       active = false;
       if (timer) clearTimeout(timer);
     };
-  }, [getToken, partnerIdFromQuery, attempt]);
+  }, [getToken, partnerIdFromQuery, attempt, sessionCookie, onConfirmed]);
 
   // Foco al título de cada resultado final (no mientras consulta).
   useEffect(() => {
@@ -194,224 +204,48 @@ function SignedInResult({ partnerIdFromQuery, selfPath }: CheckoutResultProps) {
     setAttempt((value) => value + 1);
   }
 
-  async function reauth() {
-    await signOut({ redirectUrl: selfPath });
-  }
-
-  const plan = planCode ? planContent(planCode) : null;
-
+  // Región viva SIEMPRE montada: cada cambio de estado se anuncia.
   return (
-    <FlowLayout aside={plan ? <PlanSummaryCard plan={plan} showChange={false} note={null} /> : undefined}>
-      <AccountBar selfPath={selfPath} />
-      <ResultSteps current={state.kind === "confirmed" ? ALL_DONE : PAYMENT_STEP} />
-
-      {/* Región viva SIEMPRE montada: cada cambio de estado se anuncia. */}
-      <div aria-live="polite" aria-atomic="true">
-        <div className="flex flex-col items-start gap-4 rounded-card border border-line bg-surface p-6 sm:p-8">
-          {state.kind === "checking" ? (
-            <>
-              <span
-                aria-hidden="true"
-                className="flex size-12 items-center justify-center rounded-full bg-surface-muted text-brand-hover"
-              >
-                <Icon name="spinner" size={24} strokeWidth={2} className="motion-safe:animate-spin" />
-              </span>
-              <h2 className="font-display text-xl font-bold text-ink">{content.checking.title}</h2>
-              <p className="text-ink/70">{content.checking.body}</p>
-            </>
-          ) : state.kind === "confirmed" ? (
-            <ConfirmedResult headingRef={headingRef} view={state.view} />
-          ) : state.kind === "pending-timeout" ? (
-            <PendingResult headingRef={headingRef} retryHref={state.retryHref} onCheckAgain={checkAgain} />
-          ) : (
-            <>
-              <h2 ref={headingRef} tabIndex={-1} className="font-display text-xl font-bold text-ink">
-                {state.kind === "free"
-                  ? content.free.title
-                  : state.kind === "unconfirmed"
-                    ? content.unconfirmed.title
-                    : state.kind === "no-checkout"
-                      ? content.noCheckout.title
-                      : content.error.title}
-              </h2>
-              <p className="text-ink/70">
-                {state.kind === "free"
-                  ? content.free.body
-                  : state.kind === "unconfirmed"
-                    ? content.unconfirmed.body
-                    : state.kind === "no-checkout"
-                      ? content.noCheckout.body
-                      : state.reason === "unauthenticated"
-                        ? content.unauthenticated
-                        : content.error.body}
-              </p>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
-                {state.kind === "free" ? (
-                  <ButtonLink href={state.retryHref} prefetch={false}>
-                    {content.free.retry}
-                  </ButtonLink>
-                ) : state.kind === "no-checkout" ? (
-                  <ButtonLink href={content.noCheckout.cta.href}>{content.noCheckout.cta.label}</ButtonLink>
-                ) : state.kind === "error" ? (
-                  state.reason === "unauthenticated" ? (
-                    <Button type="button" onClick={reauth}>
-                      {partnerCheckoutContent.reauth}
-                    </Button>
-                  ) : (
-                    <Button type="button" onClick={checkAgain}>
-                      {content.error.retry}
-                    </Button>
-                  )
-                ) : null}
-                {state.kind === "no-checkout" ? null : <HelpLink />}
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    </FlowLayout>
-  );
-}
-
-function HelpLink() {
-  return (
-    <a
-      href={whatsappUrl(content.help.whatsappMessage)}
-      target="_blank"
-      rel="noopener noreferrer"
-      data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
-      data-analytics-placement="contratar_resultado"
-      className="inline-flex min-h-11 items-center font-semibold text-brand-hover underline-offset-4 hover:underline"
-    >
-      {content.help.label}
-    </a>
-  );
-}
-
-/**
- * `pending` después de 30 s: puede ser un pago que MP todavía no avisó o un
- * checkout abandonado (no vence). La pantalla no sabe cuál, así que les
- * habla a los dos con una acción cada uno: consultar de nuevo o reintentar.
- */
-function PendingResult({
-  headingRef,
-  retryHref,
-  onCheckAgain,
-}: {
-  readonly headingRef: React.RefObject<HTMLHeadingElement | null>;
-  readonly retryHref: string | null;
-  readonly onCheckAgain: () => void;
-}) {
-  const { pendingTimeout } = content;
-
-  return (
-    <>
-      <span
-        aria-hidden="true"
-        className="flex size-12 items-center justify-center rounded-full bg-surface-muted text-brand-hover"
-      >
-        <Icon name="clock" size={24} strokeWidth={1.8} />
-      </span>
-      <div className="flex flex-col gap-2">
-        <h2 ref={headingRef} tabIndex={-1} className="font-display text-xl font-bold text-ink">
-          {pendingTimeout.title}
-        </h2>
-        <p className="text-ink/70">{pendingTimeout.body}</p>
-      </div>
-
-      <div className="mt-2 flex w-full flex-col divide-y divide-line border-y border-line">
-        <div className="flex flex-col items-start gap-3 py-5">
-          <div>
-            <h3 className="font-display text-lg font-bold text-ink">{pendingTimeout.paid.title}</h3>
-            <p className="mt-1 text-[0.9375rem] leading-relaxed text-ink/70">{pendingTimeout.paid.body}</p>
-          </div>
-          <Button type="button" onClick={onCheckAgain}>
-            {pendingTimeout.paid.cta}
-          </Button>
-        </div>
-        <div className="flex flex-col items-start gap-3 py-5">
-          <div>
-            <h3 className="font-display text-lg font-bold text-ink">{pendingTimeout.notPaid.title}</h3>
-            <p className="mt-1 text-[0.9375rem] leading-relaxed text-ink/70">{pendingTimeout.notPaid.body}</p>
-          </div>
-          {/* Sin prefetch: `/contratar` es otra pantalla privada con su Clerk. */}
-          <ButtonLink href={retryHref ?? content.plansLink.href} prefetch={false} variant="brandOutline">
-            {retryHref ? pendingTimeout.notPaid.cta : pendingTimeout.choosePlan}
-          </ButtonLink>
-        </div>
-      </div>
-
-      <div className="flex flex-col sm:flex-row sm:gap-6">
-        <HelpLink />
-        <AccountLink />
-      </div>
-    </>
-  );
-}
-
-/** "Ir a mi cuenta": el estado de todos los talleres de la cuenta. */
-function AccountLink() {
-  return (
-    <Link
-      href={accountContent.link.href}
-      prefetch={false}
-      className="inline-flex min-h-11 items-center gap-2 font-semibold text-brand-hover underline-offset-4 hover:underline"
-    >
-      <Icon name="user" size={18} strokeWidth={1.8} />
-      {accountContent.link.label}
-    </Link>
-  );
-}
-
-/**
- * El backend confirmó el plan: celebración sobria (el check en un disco
- * verde, sin animación) y los próximos pasos reales: la app para administrar
- * el taller y ayuda si hay dudas.
- */
-function ConfirmedResult({
-  headingRef,
-  view,
-}: {
-  readonly headingRef: React.RefObject<HTMLHeadingElement | null>;
-  readonly view: SubscriptionView;
-}) {
-  const { confirmed } = content;
-  const planName = planDisplayName(view.planCode);
-  const trialEnd = view.status === "trialing" ? formatDate(view.trialEndsAt) : null;
-
-  return (
-    <>
-      <span
-        aria-hidden="true"
-        className="flex size-14 items-center justify-center rounded-full bg-brand-hover text-white ring-8 ring-brand/10"
-      >
-        <Icon name="check" size={28} strokeWidth={2.2} />
-      </span>
-      <div className="mt-1 flex flex-col gap-2">
-        <h2 ref={headingRef} tabIndex={-1} className="font-display text-2xl font-bold text-ink">
-          {planName ? confirmed.title(planName) : confirmed.titleWithoutName}
-        </h2>
-        {trialEnd ? <p className="text-ink/75">{confirmed.trialUntil(trialEnd)}</p> : null}
-      </div>
-
-      <div className="mt-2 flex w-full flex-col gap-5 border-t border-line pt-6">
-        <h3 className="font-display text-lg font-bold text-ink">{confirmed.nextTitle}</h3>
-        <div className="flex flex-col gap-3">
-          <div>
-            <p className="font-semibold text-ink">{confirmed.next.app.title}</p>
-            <p className="mt-1 text-[0.9375rem] leading-relaxed text-ink/70">{confirmed.next.app.body}</p>
-          </div>
-          <StoreLinks placement="contratar_resultado" />
-        </div>
-        <div>
-          <p className="font-semibold text-ink">{confirmed.next.help.title}</p>
-          <p className="mt-1 text-[0.9375rem] leading-relaxed text-ink/70">{confirmed.next.help.body}</p>
-          <div className="flex flex-col sm:flex-row sm:gap-6">
-            <HelpLink />
-            <AccountLink />
-          </div>
-        </div>
-      </div>
-    </>
+    <div aria-live="polite" aria-atomic="true">
+      {state.kind === "checking" ? (
+        <CheckingView />
+      ) : state.kind === "confirmed" ? (
+        <ConfirmedView
+          headingRef={headingRef}
+          planName={planDisplayName(state.view.planCode)}
+          trialEnd={state.view.status === "trialing" ? formatDate(state.view.trialEndsAt) : null}
+        />
+      ) : state.kind === "pending-timeout" ? (
+        <PendingView headingRef={headingRef} retryHref={state.retryHref} onCheckAgain={checkAgain} />
+      ) : state.kind === "free" ? (
+        <MessageView
+          headingRef={headingRef}
+          title={content.free.title}
+          body={content.free.body}
+          action={{ kind: "link", href: state.retryHref, label: content.free.retry, primary: true }}
+        />
+      ) : state.kind === "unconfirmed" ? (
+        <MessageView headingRef={headingRef} title={content.unconfirmed.title} body={content.unconfirmed.body} action={null} />
+      ) : state.kind === "no-checkout" ? (
+        <MessageView
+          headingRef={headingRef}
+          title={content.noCheckout.title}
+          body={content.noCheckout.body}
+          action={{ kind: "link", href: content.noCheckout.cta.href, label: content.noCheckout.cta.label, primary: true }}
+          showHelp={false}
+        />
+      ) : (
+        <MessageView
+          headingRef={headingRef}
+          title={content.error.title}
+          body={state.reason === "unauthenticated" ? content.unauthenticated : content.error.body}
+          action={
+            state.reason === "unauthenticated"
+              ? { kind: "button", onClick: onReauth, label: partnerCheckoutContent.reauth, primary: true }
+              : { kind: "button", onClick: checkAgain, label: content.error.retry, primary: true }
+          }
+        />
+      )}
+    </div>
   );
 }

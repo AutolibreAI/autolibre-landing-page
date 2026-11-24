@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { PageShell } from "@/components/layout/page-shell";
-import { PRIVATE_FLOW_TITLE_ID } from "@/components/proveedores/account/private-flow";
 import { CheckoutResult } from "@/components/proveedores/checkout/checkout-result";
-import { Section } from "@/components/ui/section";
+import { clerkClientUatCookieName } from "@/lib/auth/session-cookie";
 import { partnerCheckoutContent } from "@/lib/content/partner-checkout";
 import { parsePartnerIdParam } from "@/lib/partner-billing/subscription";
 import { PROVEEDORES_CONTRATAR_RESULTADO_PATH } from "@/lib/proveedores/query";
@@ -27,19 +25,14 @@ type ResultadoPageProps = {
  * `/proveedores/contratar/resultado`: la `back_url` de Mercado Pago. De la
  * URL solo se toma un `?partnerId` (validado como UUID) para saber QUÉ taller
  * consultar; el estado lo confirma el backend (FR-008). Los demás params que
- * agrega MP se ignoran.
+ * agrega MP se ignoran. La isla pinta la pantalla entera (encabezado de foco
+ * con los pasos y el estado: confirmando, listo o sin confirmar).
  */
 export default async function ProveedoresContratarResultadoPage({ searchParams }: ResultadoPageProps) {
   const partnerId = parsePartnerIdParam((await searchParams).partnerId);
   const selfPath = partnerId ? `${PATH}?${new URLSearchParams({ partnerId }).toString()}` : PATH;
 
   return (
-    <PageShell currentPath={PATH}>
-      {/* Contenedor `wide`, como `/contratar`: la isla pinta el `<h1>` y el
-          mismo armazón de flujo (paso en curso + tarjeta del plan). */}
-      <Section tone="muted" spacing="md" aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
-        <CheckoutResult partnerIdFromQuery={partnerId} selfPath={selfPath} />
-      </Section>
-    </PageShell>
+    <CheckoutResult partnerIdFromQuery={partnerId} selfPath={selfPath} sessionCookie={clerkClientUatCookieName()} />
   );
 }

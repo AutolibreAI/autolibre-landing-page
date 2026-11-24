@@ -17,25 +17,36 @@
  *   la tarjeta es la nuestra (`SignInLayout`). Su encabezado (logo +
  *   "Continuar a …") va oculto: el título es el nuestro, uno solo.
  *
+ * Rediseño 2026-11 (lienzo `Ingresar`, sistema AutoLibre AI): inputs y
+ * botones en píldora, el principal en `action` (blanco encima, 14.88:1), los
+ * de Google/Apple/Facebook en contorno, y los botones sociales DEBAJO del
+ * email (`options.socialButtonsPlacement: "bottom"`), como el lienzo. Borde
+ * de los inputs `control-line-strong` (4.79:1, WCAG 1.4.11).
+ *
  * API verificada en los tipos de `@clerk/react` (`Variables`, `Elements`,
- * `GlobalAppearanceOptions.cssLayerName`) de la versión instalada.
+ * `Options`, `GlobalAppearanceOptions.cssLayerName`) de la versión instalada.
  */
 export const clerkAppearance = {
   cssLayerName: "clerk",
+  options: {
+    socialButtonsPlacement: "bottom",
+    socialButtonsVariant: "blockButton",
+  },
   variables: {
-    colorPrimary: "var(--color-brand-hover)",
-    colorPrimaryForeground: "var(--color-surface)",
-    colorForeground: "var(--color-ink)",
-    colorBackground: "var(--color-surface)",
-    colorInput: "var(--color-surface-subtle)",
-    colorInputForeground: "var(--color-ink)",
+    colorPrimary: "var(--color-action)",
+    colorPrimaryForeground: "var(--color-card)",
+    colorForeground: "var(--color-fg)",
+    colorMutedForeground: "var(--color-fg-muted)",
+    colorBackground: "var(--color-card)",
+    colorInput: "var(--color-card)",
+    colorInputForeground: "var(--color-fg)",
     colorRing: "var(--color-brand)",
-    colorDanger: "var(--color-danger)",
+    colorDanger: "var(--color-status-alert)",
     fontFamily: "inherit",
-    fontFamilyButtons: "inherit",
+    fontFamilyButtons: "var(--font-display)",
     // 16px: menos dispara el zoom de iOS en los inputs.
     fontSize: "1rem",
-    borderRadius: "var(--radius-field)",
+    borderRadius: "1.75rem",
   },
   elements: {
     rootBox: "w-full",
@@ -44,24 +55,25 @@ export const clerkAppearance = {
     // `p-0` eso recortaba el borde derecho de los botones y el badge
     // "Último usado", que sobresale de la esquina del botón de Google.
     cardBox: "w-full max-w-none overflow-visible rounded-none border-0 bg-transparent shadow-none",
-    card: "m-0 w-full gap-6 overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none",
+    card: "m-0 w-full gap-5 overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none",
     header: "hidden",
     logoBox: "hidden",
+    socialButtons: "gap-2.5",
     socialButtonsBlockButton:
-      "min-h-12 rounded-field border border-ink/20 bg-surface text-base text-ink shadow-none transition-colors hover:border-brand hover:bg-surface",
-    socialButtonsBlockButtonText: "font-semibold text-ink",
-    dividerLine: "bg-line",
-    dividerText: "text-label text-ink/60",
-    formFieldLabel: "text-label font-semibold text-ink/70",
+      "h-13 rounded-full border border-action bg-card text-base text-fg shadow-none transition-colors hover:bg-brand-50",
+    socialButtonsBlockButtonText: "font-display font-semibold text-fg",
+    dividerLine: "bg-card-line",
+    dividerText: "text-sm text-fg-muted",
+    formFieldLabel: "text-label font-semibold text-fg",
     formFieldInput:
-      "min-h-12 rounded-field border border-line bg-surface-subtle text-base text-ink shadow-none focus:border-brand",
+      "h-13 rounded-full border border-control-line-strong bg-card px-5 text-base text-fg shadow-none hover:border-fg-muted focus:border-action",
     formButtonPrimary:
-      "min-h-12 rounded-field bg-brand-hover text-base font-semibold text-white normal-case shadow-none transition-colors hover:bg-brand",
+      "h-13 rounded-full bg-action font-display text-base font-semibold text-white normal-case shadow-none transition-colors hover:bg-action-hover",
     footer: "bg-none bg-transparent px-0 pt-2 pb-0",
     footerAction: "justify-center",
-    footerActionText: "text-sm text-ink/70",
-    footerActionLink: "text-sm font-semibold text-brand-hover hover:text-brand",
-    formFieldAction: "font-semibold text-brand-hover",
-    identityPreviewEditButton: "text-brand-hover",
+    footerActionText: "text-sm text-fg-muted",
+    footerActionLink: "text-sm font-semibold text-fg underline underline-offset-4 hover:text-brand-hover",
+    formFieldAction: "font-semibold text-fg underline underline-offset-4",
+    identityPreviewEditButton: "text-fg underline",
   },
 } as const;

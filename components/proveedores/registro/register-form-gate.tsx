@@ -1,39 +1,39 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
-import { useSearchParams } from "next/navigation";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { useState } from "react";
-import { ProviderForm } from "@/components/forms/provider-form";
-import { AccountBar } from "@/components/proveedores/account/account-bar";
+import { PROVIDER_FORM_STEPS, ProviderForm } from "@/components/forms/provider-form";
 import { PartnerSignIn } from "@/components/proveedores/account/partner-sign-in";
+import { FlowMain, FlowShell } from "@/components/proveedores/flow/flow-shell";
+import { FlowSteps } from "@/components/proveedores/flow/flow-steps";
+import { useFlowSignOut } from "@/components/proveedores/flow/use-flow-sign-out";
+import { AltaLayout } from "@/components/proveedores/registro/alta-layout";
 import type { ServiceFamilyOption } from "@/lib/autolibre-api";
 import { planDisplayName } from "@/lib/content/partner-checkout";
+import { providersContent } from "@/lib/content/providers";
 import { parsePlanParam } from "@/lib/partner-billing/checkout";
 import { safeContinuePath, withReturnHref } from "@/lib/partner-billing/return-path";
-import { PROVEEDORES_CONTRATAR_PATH } from "@/lib/proveedores/query";
+import {
+  PROVEEDORES_CONTRATAR_PATH,
+  PROVEEDORES_REGISTRO_ALTA_PATH,
+  PROVEEDORES_REGISTRO_PATH,
+} from "@/lib/proveedores/query";
+
+const { flow } = providersContent;
 
 type RegisterFormGateProps = {
   readonly serviceFamilies: readonly ServiceFamilyOption[];
-  /** Esta misma URL: vuelta del login y link para volver a entrar. */
-  readonly selfPath: string;
-  /**
-   * Encabezado de la página (rótulo, `<h1>`, bajada y aviso para los talleres
-   * que ya aparecen), armado en el SERVER: la página es indexable y así el
-   * `<h1>` está en el HTML inicial en todos los estados. Sin sesión va en la
-   * columna izquierda del login; con sesión, arriba del formulario.
-   */
-  readonly head: React.ReactNode;
-  /** Contexto del login: los pasos del registro. */
-  readonly context: React.ReactNode;
+  /** `?next=` tal cual vino en la URL (se valida acá). */
+  readonly next: string | null;
 };
 
 /** Origen ficticio para leer la query de una ruta relativa ya validada. */
 const PLACEHOLDER_ORIGIN = "https://autolibre.invalid";
 
 /**
- * `?next=` del formulario: la contratación de la que vino la persona (desde
- * el panel "sin taller" de `/proveedores/contratar`). Se valida igual que en
- * el reclamo (solo rutas bajo `/proveedores/contratar`, research D10) y se
+ * `?next=` del alta: la contratación de la que vino la persona (desde el
+ * panel "sin taller" de `/proveedores/contratar`). Se valida igual que en el
+ * reclamo (solo rutas bajo `/proveedores/contratar`, research D10) y se
  * descarta si no trae un plan pago reconocible.
  */
 function checkoutFromNext(raw: string | null): { readonly href: string; readonly planName: string } | null {
@@ -44,51 +44,83 @@ function checkoutFromNext(raw: string | null): { readonly href: string; readonly
   return planName ? { href, planName } : null;
 }
 
+/** `/proveedores/registro?alta=1`, con el `?next` de la contratación si lo hay. */
+function flowPath(checkout: { readonly href: string } | null): string {
+  return checkout ? `${withReturnHref(PROVEEDORES_REGISTRO_PATH, checkout.href)}&alta=1` : PROVEEDORES_REGISTRO_ALTA_PATH;
+}
+
 /**
- * Isla client de `/proveedores/registro` (spec 212, US3). El encabezado
- * (`<h1>` y bajada) NO es de la isla: lo arma la página en el server (es
- * indexable) y llega como `head`, ya renderizado. Sin sesión muestra el login
- * compartido (dos columnas: encabezado y pasos del registro a la izquierda,
- * tarjeta de login a la derecha; vuelta forzada a esta URL con su `?next`);
- * con sesión, el encabezado arriba y debajo la fila de sesión y el formulario
- * de alta, que manda el token de Clerk en cada envío.
- *
- * Lee `?next` con `useSearchParams`: la página es estática (ISR), así que la
- * isla va adentro de un `<Suspense>` (ver la página).
+ * El flujo del alta (lienzos `IngresarNegocio` y `Alta`), dentro del
+ * `ScopedClerkProvider` que monta `RegistroFlow` recién cuando la persona
+ * abre el flujo (la landing no carga Clerk). Pantalla de foco (`FlowShell`):
+ * sin sesión, los tres pasos y el panel "Ingresá o creá tu cuenta" (vuelta
+ * forzada a esta URL); con sesión, el formulario en pasos, que manda el
+ * token de Clerk en cada envío.
  *
  * Una vez que el formulario apareció, NO se desmonta aunque Clerk pase a "sin
  * sesión" (la sesión venció o se cerró en otra pestaña): desmontarlo borraría
  * todo lo escrito. En ese caso `getToken` no da token, el envío no sale (nunca
  * se manda anónimo) y el formulario pide volver a entrar en otra pestaña.
  */
-export function RegisterFormGate({ serviceFamilies, selfPath, head, context }: RegisterFormGateProps) {
+export function RegisterFormGate({ serviceFamilies, next }: RegisterFormGateProps) {
   const { isLoaded, isSignedIn, getToken } = useAuth();
+  const { user } = useUser();
+  const session = useFlowSignOut();
   const [formShown, setFormShown] = useState(false);
-  const checkout = checkoutFromNext(useSearchParams().get("next"));
-  const returnPath = checkout ? withReturnHref(selfPath, checkout.href) : selfPath;
+  const [step, setStep] = useState(0);
+  const [done, setDone] = useState(false);
+  const checkout = checkoutFromNext(next);
+  const returnPath = flowPath(checkout);
 
   // Estado derivado en el render (patrón de React para "recordar" un valor
   // previo): sin efecto ni render extra.
   if (isSignedIn && !formShown) setFormShown(true);
 
   if (!formShown && !isSignedIn) {
-    return <PartnerSignIn headSlot={head} context={context} redirectUrl={returnPath} loading={!isLoaded} />;
+    return (
+      <FlowShell helpMessage={flow.help.whatsappMessage} helpPlacement="registro_encabezado">
+        <FlowMain>
+          <PartnerSignIn
+            intro={flow.signInIntro}
+            showJoin={false}
+            redirectUrl={returnPath}
+            loading={!isLoaded}
+            context={
+              <FlowSteps label={flow.signInSteps.label} steps={flow.signInSteps.items} current={0} className="flex-wrap" />
+            }
+          />
+        </FlowMain>
+      </FlowShell>
+    );
   }
 
-  // El formulario es una sola columna de lectura: ancho `narrow` (720px),
-  // alineado a la izquierda con el header como el resto de la página.
   return (
-    <div className="flex flex-col gap-10">
-      {head}
-      <div className="flex max-w-180 flex-col gap-8">
-        <AccountBar selfPath={returnPath} />
-        <ProviderForm
-          serviceFamilies={serviceFamilies}
-          getToken={getToken}
-          reauthHref={returnPath}
-          checkout={checkout}
-        />
-      </div>
-    </div>
+    <FlowShell
+      helpMessage={flow.help.whatsappMessage}
+      helpPlacement="registro_encabezado"
+      progress={{ current: done ? PROVIDER_FORM_STEPS : step + 1, total: PROVIDER_FORM_STEPS }}
+      signOut={isSignedIn ? { onClick: () => void session.leave(PROVEEDORES_REGISTRO_PATH), pending: session.pending } : null}
+    >
+      <FlowMain>
+        <AltaLayout
+          step={step}
+          totalSteps={PROVIDER_FORM_STEPS}
+          done={done}
+          accountName={user?.primaryEmailAddress?.emailAddress ?? user?.fullName ?? null}
+          onSwitchAccount={() => void session.leave(returnPath)}
+          switching={session.pending}
+        >
+          <ProviderForm
+            serviceFamilies={serviceFamilies}
+            getToken={getToken}
+            reauthHref={returnPath}
+            checkout={checkout}
+            step={step}
+            onStepChange={setStep}
+            onDone={() => setDone(true)}
+          />
+        </AltaLayout>
+      </FlowMain>
+    </FlowShell>
   );
 }
