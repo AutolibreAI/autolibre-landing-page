@@ -126,6 +126,25 @@ export const partnerCheckoutContent = {
           : "Canjealo y el taller queda vinculado a tu cuenta. Después lo ves acá.",
       cta: "Canjear mi código",
     },
+    /**
+     * En `/cuenta` (cuenta de proveedor sin negocio): las dos salidas, con
+     * "tu negocio". La contratación sigue mostrando solo el código (decisión
+     * del 2026-11-06).
+     */
+    account: {
+      title: "Elegí cómo sumarlo",
+      body: "Depende de si tu negocio ya aparece en AutoLibre o no.",
+      register: {
+        title: "Cargar mi negocio",
+        body: "Si tu negocio todavía no aparece. Completás los datos y el equipo lo revisa antes de publicarlo.",
+        cta: "Registrar mi negocio",
+      },
+      claim: {
+        title: "Mi negocio ya aparece",
+        body: "Si te dimos un código de reclamo, canjealo y tu negocio queda vinculado a tu cuenta.",
+        cta: "Canjear mi código",
+      },
+    },
   },
 
   partnerPicker: {

@@ -1,5 +1,6 @@
 import { esUY } from "@clerk/localizations";
 import { ClerkProvider } from "@clerk/nextjs";
+import { SignupIntentSync } from "@/components/auth/signup-intent-sync";
 import { clerkAppearance } from "@/lib/auth/clerk-appearance";
 
 type ScopedClerkProviderProps = {
@@ -24,10 +25,14 @@ type ScopedClerkProviderProps = {
  * resto del sitio; `esES` y `esMX` tutean.
  *
  * Apariencia: UNA sola, centralizada en `lib/auth/clerk-appearance.ts`.
+ *
+ * `SignupIntentSync`: guarda en Clerk la elección "cliente / taller" de una
+ * cuenta nueva apenas hay sesión (`lib/auth/signup-intent.ts`).
  */
 export function ScopedClerkProvider({ afterSignOutUrl, children }: ScopedClerkProviderProps) {
   return (
     <ClerkProvider localization={esUY} afterSignOutUrl={afterSignOutUrl} appearance={clerkAppearance}>
+      <SignupIntentSync />
       {children}
     </ClerkProvider>
   );

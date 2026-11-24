@@ -31,8 +31,10 @@ type AccountPanelProps = {
 
 /**
  * Isla client de `/cuenta`. Sin sesión, el login compartido de los flujos de
- * talleres (`PartnerSignIn`, sin tocar); con sesión, "Mi negocio"
- * (`BusinessAccount`).
+ * talleres (`PartnerSignIn`) con "Ingresar" / "Crear cuenta", y "Crear
+ * cuenta" pregunta cliente o taller (`signupIntent="ask"`); con sesión,
+ * `BusinessAccount`: "Mi negocio" si hay membresía, y si no, el onboarding de
+ * proveedor o la cuenta de cliente según el intent.
  *
  * `?salir=1` (el header no carga Clerk y no puede cerrar la sesión él mismo):
  * - Con sesión: una CONFIRMACIÓN ("¿Cerrar sesión?"). La sesión se cierra
@@ -63,6 +65,7 @@ export function AccountPanel({
           head={{ eyebrow: page.eyebrow, title: page.title, intro: page.signInIntro }}
           redirectUrl={signOutRequested ? selfPath : currentPath}
           loading={!isLoaded}
+          signupIntent="ask"
         />
       </Section>
     );

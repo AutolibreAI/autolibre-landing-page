@@ -154,6 +154,20 @@ export const ANALYTICS_EVENTS = {
    * datos del negocio. Sólo PostHog.
    */
   partnerRegisterSubmitted: "partner_register_submitted",
+  /**
+   * Eligió "Soy cliente" o "Tengo un taller o negocio" (registro, decisión
+   * del 2026-11-24). `placement`: `cuenta_crear` (antes del `<SignUp>` en
+   * `/cuenta`) o `cuenta_nueva` (cuenta recién creada desde "Ingresar", sin
+   * elección). Los flujos de proveedor fijan `partner` sin preguntar y no lo
+   * mandan. Sólo PostHog.
+   */
+  signupIntentSelected: "signup_intent_selected",
+  /**
+   * Resultado de guardar el intent en Clerk (`POST /api/account/intent`):
+   * `saved`, `existing` (ya tenía uno), `rejected` (cuenta vieja) o `failed`
+   * (se reintenta en la próxima carga). Sólo PostHog. Nunca datos personales.
+   */
+  signupIntentSaved: "signup_intent_saved",
 } as const;
 
 export type AnalyticsEventName =
@@ -213,6 +227,8 @@ export const QUOTE_CTA_PLACEMENTS = {
   blogArticle: "blog_article",
   /** "Hacé tu pedido" del cierre de `/sobre-nosotros`. */
   aboutClosing: "about_closing",
+  /** "Hacé tu pedido" de la cuenta de cliente en `/cuenta`. */
+  accountCustomer: "cuenta_cliente",
 } as const;
 
 export type QuoteCtaPlacement =
@@ -332,6 +348,17 @@ export const PARTNER_PLANS = {
 
 export type PartnerPlan = (typeof PARTNER_PLANS)[keyof typeof PARTNER_PLANS];
 
+/** Dónde se eligió el intent del registro (`signup_intent_selected`). */
+export const SIGNUP_INTENT_PLACEMENTS = {
+  /** "Crear cuenta" de `/cuenta`, antes del `<SignUp>`. */
+  accountCreate: "cuenta_crear",
+  /** Cuenta recién creada desde "Ingresar" (Google o email nuevo), sin elección. */
+  accountNew: "cuenta_nueva",
+} as const;
+
+export type SignupIntentPlacement =
+  (typeof SIGNUP_INTENT_PLACEMENTS)[keyof typeof SIGNUP_INTENT_PLACEMENTS];
+
 /** Props de cada evento. Tipados para que un typo no abra una columna nueva. */
 export type AnalyticsEventProps = {
   whatsapp_clicked: {
@@ -435,6 +462,14 @@ export type AnalyticsEventProps = {
   partner_register_submitted: {
     already_registered?: true;
     from_checkout?: true;
+  };
+  signup_intent_selected: {
+    intent: "partner" | "customer";
+    placement: SignupIntentPlacement;
+  };
+  signup_intent_saved: {
+    intent: "partner" | "customer";
+    result: "saved" | "existing" | "rejected" | "failed";
   };
 };
 
@@ -611,6 +646,16 @@ export const ANALYTICS_CATALOG: Record<AnalyticsEventName, CatalogEntry> = {
     clickable: false,
   },
   partner_register_submitted: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  signup_intent_selected: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  signup_intent_saved: {
     posthog: "client",
     meta: () => null,
     clickable: false,

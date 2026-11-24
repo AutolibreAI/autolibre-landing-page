@@ -1017,3 +1017,59 @@ Sin islas nuevas: la única del blog sigue siendo `ArticleTocActive` (marcador d
 - Tests: `test:blog` 88 (suma 2 de `faqSectionIndex`), `test:provider-profile` 44, `test:proveedores` 72, `test:partner-claims` 16, `test:partner-billing` 70; los cuatro `typecheck:*` OK.
 - Visual con Chrome headless (CDP) a 390 y 1440 contra `Blog*.webp`, `BlogNota*.webp` y `Nosotros*.webp`: página completa, equipo con los retratos cargados y el llamado de la nota en celular.
 - `curl`: un h1, sin saltos, canonical, robots, JSON-LD y cero Clerk en las tres rutas (y en `/blog/seguros`). La portada LCP sale con `fetchpriority="high"` en el HTML.
+
+## Registro: cliente o taller
+
+Decisión de producto del 2026-11-24: al crear una cuenta en la web, la persona elige si es **cliente** o **proveedor/taller**, para que no se confunda un cliente registrándose como taller ni al revés. Una cuenta vieja, sin elección y sin taller, es **cliente**. Los permisos sobre un taller siguen saliendo de la membresía (`GET /partners/me/memberships`): **la membresía siempre manda** para mostrar "Mi negocio".
+
+### Contrato con el backend
+
+- La elección vive en **Clerk `publicMetadata.signupIntent`**: `"partner"` | `"customer"`. Clave y valores en una sola constante, `lib/auth/signup-intent.ts` (`SIGNUP_INTENT_KEY`, `SIGNUP_INTENTS`). Nunca en `unsafeMetadata`.
+- `users.role = 'partner'` en el backend significa "se registró como proveedor". **El backend aceptó el contrato tal cual** (confirmado el 2026-11-24): el webhook de Clerk sube `user → partner` cuando llega `signupIntent = "partner"`, nunca toca a un admin ni baja el rol, y hace el **backfill de los owners actuales**.
+- La escribe **solo el server de la landing**: `POST /api/account/intent` (`app/api/account/intent/route.ts`; la lógica pura está en `handleSignupIntentRequest`):
+  1. Valida `intent` contra los dos valores (400 `invalid_intent`).
+  2. Verifica el `Authorization: Bearer <token de sesión>` con `verifyToken` de `@clerk/backend` (vía `@clerk/nextjs/server`) y `CLERK_SECRET_KEY`: firma contra el JWKS de la instancia, vencimiento y emisor. La landing no tiene `clerkMiddleware`, así que `auth()` no sirve. El `userId` sale del `sub` del token verificado, nunca del cuerpo (401 `unauthenticated`).
+  3. Si la cuenta ya tiene intent, lo devuelve sin pisarlo (200, `saved: false`).
+  4. Si la cuenta tiene más de 30 minutos (`user.createdAt`), no escribe (403 `window_closed`): una cuenta vieja no puede autoasignarse el intent.
+  5. Escribe con `users.updateUserMetadata` (merge) y devuelve el intent (200, `saved: true`). Un error de Clerk es 502 `unavailable`; el log solo lleva el tipo de error, nunca el token, el email ni el `userId`.
+- El front **no** llama a `GET /auth/me`: necesitaría CORS en el backend y, justo después del alta, puede devolver `user` hasta que llegue el webhook. La pantalla sale de `publicMetadata.signupIntent` (`useUser`) y de la membresía.
+
+### Flujo
+
+- **`/cuenta`** ("Ingresar o crear cuenta" del header): el panel ofrece "Ingresar" / "Crear cuenta" (dos botones con `aria-pressed`). "Ingresar" es el `<SignIn withSignUp>` de siempre. "Crear cuenta" muestra primero "¿Cómo vas a usar AutoLibre?" con dos tarjetas de radio (`fieldset`/`legend`, radios nativos, foco visible en la tarjeta, 44 px o más): **"Soy cliente"** y **"Tengo un taller o negocio"**. Recién con "Continuar" aparece el `<SignUp>` de Clerk, con "Creando tu cuenta … · Cambiar" arriba. El "Registrate"/"Ingresá" del pie de Clerk va oculto: lo reemplazan esos dos botones.
+- **Flujos de proveedor** (alta `?alta=1`, reclamo, contratar y su resultado): `PartnerSignIn` tiene la prop nueva `signupIntent` (`"partner"` por defecto, `"customer"` o `"ask"`). Ahí es `partner` sin preguntar y el login no cambia.
+- **Cómo viaja el intent**: en `sessionStorage` (`al_signup_intent`, `lib/auth/pending-signup-intent.ts`), que sobrevive a la ida y vuelta de Google, al código por email y a las recargas de la pestaña. `SignupIntentSync` (montado en `ScopedClerkProvider`, así cubre `/cuenta` y los flujos) lo manda una vez por carga apenas hay sesión. `saved`/`existing`: recarga el usuario de Clerk y borra el pendiente. `rejected` (cuenta vieja): lo borra. `failed`: lo deja y reintenta en la próxima carga. Nunca bloquea.
+- **Google con una cuenta nueva desde "Crear cuenta"**: el pendiente ya está y el server lo acepta (cuenta de minutos). Al volver de Google, si la pestaña estaba en "Crear cuenta" (`al_signup_entry`), se monta el `<SignUp>` para que procese `#/sso-callback`.
+- **Cuenta nueva creada desde "Ingresar"** (Google o un email nuevo en el `<SignIn withSignUp>`): no hubo elección. Si no tiene negocio, ni intent, ni pendiente, y tiene menos de 30 minutos, `/cuenta` pregunta una vez ("Te damos la bienvenida a AutoLibre", mismas tarjetas, "Guardar").
+- **Pista del header (`al_role`)**: dice "proveedor" si hay membresía **o** `signupIntent = "partner"` (guardado o pendiente). El formato de la cookie no cambió.
+- Clerk sigue solo en `/cuenta` y en los flujos privados. Verificado con el HTML y los chunks de `/`, `/pedido`, `/proveedores`, `/proveedores/registro`, `/proveedores/planes`, `/blog` y `/sobre-nosotros`: ninguno menciona Clerk (control: `/cuenta` sí).
+
+### Pantallas de "Mi cuenta"
+
+| Caso | Pantalla |
+| --- | --- |
+| Tiene membresía | "Mi negocio", sin cambios |
+| Sin negocio, `signupIntent = "partner"` | "Sumá tu negocio a AutoLibre": `NoPartnerOptions` con `withRegister`, dos tarjetas: "Registrar mi negocio" (`/proveedores/registro?alta=1`) y "Canjear mi código" (`/proveedores/reclamar`). La contratación sigue con el código solo |
+| Sin negocio, sin intent, cuenta de menos de 30 minutos | La pregunta "¿Cómo vas a usar AutoLibre?" |
+| `signupIntent = "customer"`, o sin intent y cuenta vieja | **Cuenta de cliente** (`components/cuenta/customer-account.tsx`): "Hola, {nombre}", "Hacé tu pedido" (`primary` a `/pedido`), "Tus pedidos los seguís en la app" con `StoreLinks`, WhatsApp de ayuda y "¿Tenés un taller? Sumá tu negocio". No promete ver los pedidos en la web ni en la app (los pedidos web no quedan asociados a la cuenta: 0 de 31 tienen `user_id`) |
+
+El copy está en `lib/content/account.ts` (`customer`, `onboarding`, `newAccount`), `lib/content/partner-account.ts` (`entry`, `intentChoice`) y `lib/content/partner-checkout.ts` (`noPartner.account`). La meta de `/cuenta` pasó a "Mi cuenta".
+
+### Eventos
+
+`signup_intent_selected` (`intent`, `placement`: `cuenta_crear` | `cuenta_nueva`; los flujos de proveedor no lo mandan) y `signup_intent_saved` (`intent`, `result`: `saved` | `existing` | `rejected` | `failed`). Los placements nuevos de la cuenta de cliente y del onboarding están en `analytics.md`. Nada de datos personales.
+
+### Verificación
+
+- `scripts/signup-intent/route.test.ts` (`npm run test:signup-intent`, `typecheck:signup-intent`): validación del intent, token ausente/mal formado/inválido, `userId` del token y no del cuerpo, idempotencia, cuenta vieja rechazada, límite exacto de 30 minutos y errores de Clerk sin datos en el log. Clerk mockeado.
+- La ruta en vivo (`next start`): intent inválido 400, sin token 401, token falso 401.
+- Capturas a 390 y 1440 del panel, la elección, el `<SignUp>` con la elección, el onboarding de proveedor, la cuenta de cliente y la pregunta de una cuenta nueva (con una ruta de vista previa que se borró antes del commit; sin cuentas reales ni metadata real).
+- `eslint.config.mjs` ignora `.claude/**` (worktrees de otros agentes con su propio `.next`).
+
+### Pendientes
+
+- **Backend**: el webhook que sube el rol a `partner` y el backfill (confirmados por la otra sesión). Si algún día cambia el nombre de la clave, se cambia solo en `lib/auth/signup-intent.ts`.
+- **App móvil**: no pregunta cliente o taller. Una cuenta creada en la app queda sin intent (cliente) salvo que tenga membresía.
+- **Pedidos web asociados a la cuenta**: hasta que existan, la cuenta de cliente no lista pedidos.
+- `.env.example`: no se pudo revisar ni editar desde esta sesión (regla de permisos). Si no lista `CLERK_SECRET_KEY`, hay que sumar el nombre sin valor.
+- Clerk: el placeholder de contraseña del `<SignUp>` sale en inglés ("Create a password") con `esUY`, y "Facebook" se corta a 390 px en los botones sociales. Las dos cosas ya pasaban antes y no son de este cambio.

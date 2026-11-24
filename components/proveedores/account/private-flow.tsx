@@ -64,9 +64,10 @@ type IngresarPanelProps = {
 /**
  * Panel único "Ingresá o creá tu cuenta" (lienzo `Ingresar`): el estado sin
  * sesión de `/cuenta` y de los flujos privados. Una sola columna centrada de
- * 440px: no hay que elegir entre ingresar y registrarse, ni entre cliente y
- * proveedor. Debajo, "Con una sola cuenta" refuerza que no existe una cuenta
- * "de proveedor" aparte.
+ * 440px. En los flujos de proveedor no hay que elegir nada; en `/cuenta`,
+ * "Crear cuenta" pregunta cliente o taller (registro del 2026-11-24, ver
+ * `PartnerSignIn`), solo para ordenar "Mi cuenta". Debajo, "Con una sola
+ * cuenta" refuerza que la cuenta es la misma para las dos cosas.
  *
  * Sin estado ni Clerk: sirve en el server y en las islas. El `<SignIn>` (o su
  * "cargando", del mismo alto) llega como `children`.

@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "coverage/**",
     "next-env.d.ts",
     "AutoLibre_ComingSoon_Template.jsx",
+    // Copias del repo de otros agentes (git worktrees), con su propio `.next`.
+    ".claude/**",
   ]),
 ]);
 

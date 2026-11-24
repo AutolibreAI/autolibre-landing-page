@@ -304,13 +304,13 @@ export const accountContent = {
 
   page: {
     meta: {
-      title: "Mi negocio",
-      description: "Mi negocio en AutoLibre: el resumen de tu taller, su perfil y cómo lo ven en la app, y el estado de tu plan.",
+      title: "Mi cuenta",
+      description: "Tu cuenta de AutoLibre: pedí propuestas para tu auto o administrá tu negocio, su perfil y el estado de tu plan.",
     },
     eyebrow: "Talleres",
     title: "Mi cuenta",
     intro: "Tus talleres en AutoLibre y el estado de sus planes.",
-    signInIntro: "Entrá para ver tus talleres y el estado de sus planes.",
+    signInIntro: "Entrá para pedir propuestas para tu auto o administrar tu negocio.",
 
     partners: {
       title: "Tus talleres",
@@ -384,6 +384,59 @@ export const accountContent = {
       /** Con la sesión vencida: cierra la sesión y vuelve al login de `/cuenta`. */
       reauth: "Volver a iniciar sesión",
     },
+  },
+
+  /**
+   * Cuenta de cliente en `/cuenta` (sin taller y con intent `customer`, o
+   * cuenta vieja sin intent). Opción conservadora, sin diseño propio: los
+   * pedidos web NO quedan asociados a la cuenta, así que no se promete
+   * verlos ni en la web ni en la app.
+   */
+  customer: {
+    eyebrow: "Mi cuenta",
+    greeting: (firstName: string | null) => (firstName ? `Hola, ${firstName}` : "Hola"),
+    intro: "Desde acá pedís propuestas de talleres y servicios para tu auto.",
+    order: {
+      title: "¿Qué necesita tu auto?",
+      body: "Contanos qué le pasa y te llegan propuestas de talleres de la red.",
+      cta: "Hacé tu pedido",
+      href: "/pedido",
+    },
+    app: {
+      title: "Tus pedidos los seguís en la app",
+      body: "Bajate la app de AutoLibre e ingresá con esta misma cuenta.",
+    },
+    help: {
+      title: "¿Necesitás una mano?",
+      cta: "Escribinos por WhatsApp",
+      message: "Hola! Tengo una cuenta en AutoLibre y necesito ayuda.",
+    },
+    join: {
+      prefix: "¿Tenés un taller?",
+      label: "Sumá tu negocio",
+      href: PROVEEDORES_REGISTRO_PATH,
+    },
+  },
+
+  /**
+   * `/cuenta` de una cuenta registrada como proveedor (`signupIntent =
+   * "partner"`) que todavía no administra ningún negocio.
+   */
+  onboarding: {
+    eyebrow: "Mi negocio",
+    title: "Sumá tu negocio a AutoLibre",
+    intro: "Tu cuenta ya está lista. Falta el último paso: cargar tu negocio, o reclamarlo si ya aparece en la red.",
+  },
+
+  /**
+   * Cuenta recién creada desde "Ingresar" (Google o un email nuevo), sin
+   * elección: se pregunta una vez, en los primeros 30 minutos.
+   */
+  newAccount: {
+    eyebrow: "Tu cuenta nueva",
+    title: "Te damos la bienvenida a AutoLibre",
+    intro: "Antes de seguir, contanos cómo vas a usar tu cuenta.",
+    save: "Guardar",
   },
 
   /**

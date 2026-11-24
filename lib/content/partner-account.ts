@@ -38,6 +38,46 @@ export const partnerAccountContent = {
     join: "Sumá tu negocio",
   },
 
+  /**
+   * "Ingresar" / "Crear cuenta" del panel de `/cuenta` (registro: cliente o
+   * taller, decisión del 2026-11-24). Solo en `/cuenta`: los flujos de
+   * proveedor (alta, reclamo, contratar) no preguntan, la cuenta es de
+   * proveedor.
+   */
+  entry: {
+    label: "¿Ya tenés cuenta?",
+    signIn: "Ingresar",
+    signUp: "Crear cuenta",
+  },
+
+  /**
+   * Elección antes del `<SignUp>` de Clerk (y, en una cuenta recién creada
+   * desde "Ingresar", después). La cuenta es una sola: la elección solo
+   * ordena lo que ve primero en "Mi cuenta".
+   */
+  intentChoice: {
+    legend: "¿Cómo vas a usar AutoLibre?",
+    hint: "Es la misma cuenta para las dos cosas: esto solo ordena lo que ves primero.",
+    options: {
+      customer: {
+        title: "Soy cliente",
+        body: "Quiero pedir propuestas para mi auto.",
+      },
+      partner: {
+        title: "Tengo un taller o negocio",
+        body: "Quiero recibir pedidos de clientes.",
+      },
+    },
+    required: "Elegí una de las dos opciones para seguir.",
+    continue: "Continuar",
+    /** Arriba del `<SignUp>`: qué eligió y cómo cambiarlo. */
+    chosen: {
+      customer: "Creando tu cuenta de cliente",
+      partner: "Creando tu cuenta para tu negocio",
+    },
+    change: "Cambiar",
+  },
+
   /** Encabezado de foco de los flujos privados (contratar, resultado, reclamar). */
   flowHeader: {
     home: "AutoLibre, ir al inicio",

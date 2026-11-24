@@ -190,6 +190,23 @@ Embudo de contratación: `plan_checkout_started` → `plan_checkout_redirected` 
 
 La pista de rol del header (`al_role`, ver `lib/auth/role-hint.ts`) ahora también la escriben el canje de un código (`partner_claim_redeemed`) y la confirmación de un plan (`plan_checkout_confirmed`): en los dos casos la persona ya es dueña de un negocio. El alta NO la escribe: la solicitud queda en revisión y el negocio todavía no es suyo. No es un evento: es solo lo que pinta el header.
 
+### 👤 Registro: cliente o taller, y "Mi cuenta" del cliente (2026-11-24)
+
+Al crear una cuenta en `/cuenta`, la persona elige "Soy cliente" o "Tengo un taller o negocio". La elección se guarda en Clerk (`publicMetadata.signupIntent`) desde el server de la landing (`POST /api/account/intent`). Los flujos de proveedor (alta, reclamo, contratar) fijan `partner` sin preguntar y no mandan `signup_intent_selected`. Ninguno lleva datos personales.
+
+| Botón / momento | Evento PostHog | Props | Meta | Cuándo |
+| --- | --- | --- | --- | --- |
+| "Continuar" después de elegir cliente o taller, antes del registro de Clerk | `signup_intent_selected` | `intent: partner\|customer`, `placement: "cuenta_crear"` | — | Click en "Continuar" (no al mover la selección) |
+| "Guardar" en la elección de una cuenta recién creada desde "Ingresar" (Google o email nuevo) | `signup_intent_selected` | `intent`, `placement: "cuenta_nueva"` | — | Click. Solo se ofrece en los primeros 30 minutos de la cuenta |
+| El server respondió al guardar el intent | `signup_intent_saved` | `intent`, `result: saved\|existing\|rejected\|failed` | — | Una vez por intento. `failed` se reintenta en la próxima carga de una pantalla con Clerk; `existing` trae el intent vigente, no el pedido |
+| "Hacé tu pedido" de la cuenta de cliente | `quote_cta_clicked` | `placement: "cuenta_cliente"` | — | Click |
+| App Store / Google Play de la cuenta de cliente | `app_store_clicked` | `store`, `placement: "cuenta_cliente"` | — | Click |
+| WhatsApp "Escribinos" de la cuenta de cliente | `whatsapp_clicked` | `placement: "cuenta_cliente_ayuda"` | `Contact {placement}` | Click |
+| "Sumá tu negocio" de la cuenta de cliente | `partner_register_started` | `placement: "cuenta_cliente_sumar"` | — | Click |
+| "Registrar mi negocio" / "Canjear mi código" del alta pendiente de proveedor (`/cuenta` sin taller, intent `partner`) | `partner_register_started` / `partner_claim_started` | `placement: "cuenta_onboarding_registrar"` / `"cuenta_onboarding_reclamar"` | — | Click |
+
+La pista de rol del header (`al_role`) también dice "proveedor" si la cuenta se registró como proveedor (`signupIntent = "partner"`), aunque todavía no tenga un taller aprobado: así el header muestra "Ir a mi negocio".
+
 ---
 
 ## 4. `quote_submitted` en el server
