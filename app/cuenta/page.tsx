@@ -4,6 +4,7 @@ import { AccountPanel } from "@/components/proveedores/account/account-panel";
 import { PRIVATE_FLOW_TITLE_ID } from "@/components/proveedores/account/private-flow";
 import { Section } from "@/components/ui/section";
 import { ACCOUNT_PATH } from "@/lib/account/paths";
+import { clerkClientUatCookieName } from "@/lib/auth/session-cookie";
 import { accountContent } from "@/lib/content/account";
 import { createMetadata } from "@/lib/seo/metadata";
 
@@ -33,7 +34,7 @@ export default function CuentaPage() {
   return (
     <PageShell currentPath={PATH}>
       <Section tone="muted" spacing="md" aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
-        <AccountPanel selfPath={PATH} />
+        <AccountPanel selfPath={PATH} sessionCookie={clerkClientUatCookieName()} />
       </Section>
     </PageShell>
   );

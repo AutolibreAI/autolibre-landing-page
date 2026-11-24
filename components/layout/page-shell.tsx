@@ -1,24 +1,31 @@
+import { MobileActionBar } from "@/components/layout/mobile-action-bar";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 
 type PageShellProps = {
   readonly children: React.ReactNode;
   /**
-   * `false`: header sin CTA (ver `SiteHeader`). Sin la prop, "Descargar la
-   * app" como en todo el sitio.
+   * `false`: header sin la acción principal "Hacé tu pedido" (ver
+   * `SiteHeader`).
    */
   readonly cta?: false;
   /** Ruta de la página: marca su link del header con `aria-current`. */
   readonly currentPath?: string;
+  /**
+   * Barra fija inferior en celular con "Hacé tu pedido" y WhatsApp
+   * (`MobileActionBar`). Solo en las páginas que la tienen en el diseño.
+   */
+  readonly actionBar?: boolean;
 };
 
-/** Header + main + footer. El header es el mismo en todas las páginas. */
-export function PageShell({ children, cta, currentPath }: PageShellProps) {
+/** Header + main + footer (+ la barra fija en celular, si la página la pide). */
+export function PageShell({ children, cta, currentPath, actionBar = false }: PageShellProps) {
   return (
     <>
       <SiteHeader cta={cta} currentPath={currentPath} />
       <main>{children}</main>
       <SiteFooter />
+      {actionBar ? <MobileActionBar /> : null}
     </>
   );
 }

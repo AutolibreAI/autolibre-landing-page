@@ -28,7 +28,7 @@ export function PartnerStickyBar({ whatsappHref }: PartnerStickyBarProps) {
         data-bottom-bar
         // `calc` con `env()`: no hay utility canónica para sumar el área segura
         // del iPhone. `px-[6%]`: el gutter de `Container`.
-        className="fixed inset-x-0 bottom-0 z-40 flex gap-3 border-t border-line bg-surface/95 px-[6%] pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md md:hidden [html:has(#mobile-nav-panel)_&]:invisible"
+        className="fixed inset-x-0 bottom-0 z-40 flex gap-3 border-t border-line bg-surface/95 px-[6%] pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md md:hidden [html:has(#menu-del-encabezado)_&]:invisible"
       >
         <ButtonLink
           href={whatsappHref}

@@ -2,6 +2,7 @@
 
 import { useAuth, useClerk, useUser } from "@clerk/nextjs";
 import { useState } from "react";
+import { clearRoleHint } from "@/lib/auth/role-hint";
 import { accountContent } from "@/lib/content/account";
 import { PROVEEDORES_REGISTRO_PATH } from "@/lib/proveedores/query";
 import { cn } from "@/lib/utils";
@@ -50,6 +51,8 @@ export function AccountBar({ selfPath, signOutUrl = PROVEEDORES_REGISTRO_PATH, c
 
   async function leave(redirectUrl: string) {
     setLeaving(true);
+    // La pista de rol del header público (ver `lib/auth/role-hint.ts`).
+    clearRoleHint();
     await signOut({ redirectUrl });
   }
 

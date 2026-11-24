@@ -87,7 +87,8 @@ export const ANALYTICS_EVENTS = {
   subscriptionCancelFailed: "subscription_cancel_failed",
   /**
    * Click en un link al alta de talleres desde otra pantalla (clickable, con
-   * `data-analytics-placement`, ej. `cuenta_otro_taller_cargar`). Sólo
+   * `data-analytics-placement`, ej. `cuenta_otro_taller_cargar`, o los
+   * "Sumá tu negocio" del layout: `header`, `account_menu`, `footer`). Sólo
    * PostHog. Hasta el 2026-11-05 lo mandaba también el botón "Registrar mi
    * taller" de `/proveedores/registro` (sin `placement`), que ya no existe:
    * la página es el formulario.
@@ -145,10 +146,32 @@ export const QUOTE_CTA_PLACEMENTS = {
   headerMenu: "header_menu",
   homeQuotes: "home_quotes",
   footer: "footer",
+  /** Barra fija inferior en celular (home y directorio). */
+  mobileBar: "mobile_bar",
 } as const;
 
 export type QuoteCtaPlacement =
   (typeof QUOTE_CTA_PLACEMENTS)[keyof typeof QUOTE_CTA_PLACEMENTS];
+
+/**
+ * Ubicaciones del layout compartido (header, menú de cuenta, barra fija,
+ * footer y botón flotante). Viajan como `placement` de `whatsapp_clicked`
+ * (WhatsApp de AutoLibre, sin `lead_source`: en Meta es `Contact`) y de
+ * `partner_register_started` ("Sumá tu negocio"). Son strings libres en el
+ * listener; esta lista es la referencia para no inventar variantes.
+ */
+export const LAYOUT_PLACEMENTS = {
+  /** "Sumá tu negocio" del header (desde `lg`). */
+  header: "header",
+  /** "Sumá tu negocio" dentro del menú de cuenta (o del menú mobile). */
+  accountMenu: "account_menu",
+  /** Barra fija inferior en celular. */
+  mobileBar: "mobile_bar",
+  /** Links del footer. */
+  footer: "footer",
+  /** Botón flotante de WhatsApp. */
+  fab: "fab",
+} as const;
 
 /**
  * Qué flujo de pedido: el form de `/pedido` (`page`) o el modal de la home

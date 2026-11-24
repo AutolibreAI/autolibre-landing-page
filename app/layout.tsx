@@ -164,7 +164,10 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: platformScript }} />
         {metaPixelScript && <script dangerouslySetInnerHTML={{ __html: metaPixelScript }} />}
       </head>
-      <body className="min-h-dvh bg-surface text-ink">
+      {/* Fondo `canvas` (sistema "AutoLibre AI"): el header va sobre `card` y
+          cada `Section` pinta su propio fondo, así que el lienzo solo asoma
+          donde una página no lo cubre. */}
+      <body className="min-h-dvh bg-canvas text-ink">
         {children}
         {/* Una sola vez acá: queda en todas las páginas (home incluida). */}
         <WhatsappFab />

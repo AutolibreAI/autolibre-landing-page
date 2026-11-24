@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
  *   en `action`. No se suprime el outline.
  */
 const pillInputVariants = cva(
-  "w-full rounded-full border border-control-line-strong bg-card px-5 text-base text-fg transition-colors motion-reduce:transition-none placeholder:text-fg-subtle hover:border-fg-subtle focus-visible:border-action disabled:cursor-not-allowed disabled:opacity-60 aria-invalid:border-status-alert",
+  "w-full rounded-full border border-control-line-strong bg-card px-5 text-base text-fg transition-colors motion-reduce:transition-none placeholder:text-fg-subtle hover:border-fg-muted focus-visible:border-action disabled:cursor-not-allowed disabled:opacity-60 aria-invalid:border-status-alert",
   {
     variants: {
       size: {

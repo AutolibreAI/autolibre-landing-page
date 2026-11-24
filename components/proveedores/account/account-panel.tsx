@@ -10,6 +10,8 @@ import { PartnerSignIn } from "@/components/proveedores/account/partner-sign-in"
 import { PrivateFlowHead } from "@/components/proveedores/account/private-flow";
 import { Button, ButtonLink, buttonVariants } from "@/components/ui/button";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { ACCOUNT_SIGN_OUT_PARAM } from "@/lib/account/paths";
+import { clearRoleHint, syncRoleHint } from "@/lib/auth/role-hint";
 import { accountContent } from "@/lib/content/account";
 import { partnerAccountContent } from "@/lib/content/partner-account";
 import { planDisplayName } from "@/lib/content/partner-checkout";
@@ -30,6 +32,11 @@ const linkClass =
 type AccountPanelProps = {
   /** `/cuenta`: vuelta del login y de "Usar otra cuenta". */
   readonly selfPath: string;
+  /**
+   * Nombre de la cookie `__client_uat` de la instancia (calculado en el
+   * server): ata la pista de rol del header a esta sesión.
+   */
+  readonly sessionCookie: string | null;
 };
 
 /**
@@ -38,9 +45,21 @@ type AccountPanelProps = {
  * sesión) y tus talleres con el estado de su plan. Sin talleres, los mismos
  * caminos que el panel "sin taller" de la contratación.
  */
-export function AccountPanel({ selfPath }: AccountPanelProps) {
+export function AccountPanel({ selfPath, sessionCookie }: AccountPanelProps) {
   const { isLoaded, isSignedIn } = useAuth();
+  const { signOut } = useClerk();
   const head = { eyebrow: page.eyebrow, title: page.title };
+
+  // "Cerrar sesión" del menú de cuenta del header público (que no carga
+  // Clerk): llega como `?salir=1`. Con sesión, la cierra y vuelve al inicio;
+  // sin sesión, solo limpia la URL. En los dos casos borra la pista de rol.
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!new URLSearchParams(window.location.search).has(ACCOUNT_SIGN_OUT_PARAM)) return;
+    clearRoleHint();
+    if (isSignedIn) void signOut({ redirectUrl: "/" });
+    else window.history.replaceState(null, "", selfPath);
+  }, [isLoaded, isSignedIn, signOut, selfPath]);
 
   if (!isLoaded || !isSignedIn) {
     return (
@@ -51,7 +70,7 @@ export function AccountPanel({ selfPath }: AccountPanelProps) {
   return (
     <div className="flex max-w-180 flex-col gap-8">
       <PrivateFlowHead head={{ ...head, intro: page.intro }} />
-      <SignedInAccount selfPath={selfPath} />
+      <SignedInAccount selfPath={selfPath} sessionCookie={sessionCookie} />
     </div>
   );
 }
@@ -61,7 +80,7 @@ type PartnersState =
   | { readonly kind: "error"; readonly reason: "unauthenticated" | "unknown" }
   | { readonly kind: "ready"; readonly owners: readonly Membership[] };
 
-function SignedInAccount({ selfPath }: AccountPanelProps) {
+function SignedInAccount({ selfPath, sessionCookie }: AccountPanelProps) {
   const { getToken } = useAuth();
   const { signOut } = useClerk();
   const [partners, setPartners] = useState<PartnersState>({ kind: "loading" });
@@ -72,12 +91,15 @@ function SignedInAccount({ selfPath }: AccountPanelProps) {
     let active = true;
     void fetchOwnerPartners(getToken).then((result) => {
       if (!active) return;
+      // Pista de rol para el header público: dueño de al menos un negocio.
+      // Solo UI (nunca autoriza nada); con error no se toca.
+      if (result.kind === "ok") syncRoleHint(sessionCookie, result.owners.length > 0);
       setPartners(result.kind === "ok" ? { kind: "ready", owners: result.owners } : { kind: "error", reason: result.kind });
     });
     return () => {
       active = false;
     };
-  }, [getToken, attempt]);
+  }, [getToken, attempt, sessionCookie]);
 
   function retry() {
     setPartners({ kind: "loading" });

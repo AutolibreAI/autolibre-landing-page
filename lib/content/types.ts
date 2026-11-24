@@ -5,6 +5,23 @@ export type NavLink = {
   readonly href: string;
 };
 
+/**
+ * Opción del menú de cuenta del header: un link (con bajada opcional), un
+ * separador o el título de un grupo (no es un heading: es un rótulo).
+ */
+export type AccountMenuEntry =
+  | {
+      readonly kind: "link";
+      readonly label: string;
+      readonly href: string;
+      /** Bajada chica debajo del label. */
+      readonly sub?: string;
+      /** La opción principal del estado: en semibold. */
+      readonly strong?: boolean;
+    }
+  | { readonly kind: "rule" }
+  | { readonly kind: "group"; readonly label: string };
+
 export type FaqItem = {
   readonly id: string;
   readonly question: string;

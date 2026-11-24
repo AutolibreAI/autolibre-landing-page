@@ -387,3 +387,89 @@ No se acotaron pesos, a propósito: se midió contra la API de Google Fonts que 
 ### Verificación
 
 `npm run lint`: 0 errores (282 warnings, todos preexistentes en scripts de skills vendorizados en `.agents/`, `.claude/` y `.cursor/`; el mismo número que antes del cambio). `npx tsc --noEmit`: sin errores. `npm run build`: OK (56 páginas estáticas). En el CSS compilado salen las utilities nuevas (`bg-action`, `text-control`, `h-13`, `border-control-line-strong`, etc.).
+
+## Fase 2: estructura compartida
+
+Encabezado, menú de cuenta, pie, barra fija inferior en celular y fondo de página del sistema "AutoLibre AI". Las páginas en sí no se tocaron (van en la fase 4): conviven el header y el pie nuevos con secciones del sistema anterior.
+
+### Qué cambió
+
+- **Corrección de la fase 1**: `control-line-strong` pasa de `#9ca3af` (2.52:1) a `#6b7280` (4.79:1 sobre `card`, 4.30:1 sobre `canvas`): el borde del `PillInput` cumple WCAG 1.4.11. El hover del input pasa a `fg-muted`. Es una diferencia con el diseño, a propósito.
+- **`SiteHeader`** (Server Component): logo, Proveedores · Blog · Sobre nosotros, enlace "Sumá tu negocio" / "Ir a mi negocio", botón de cuenta (hamburguesa + avatar) y "Hacé tu pedido" (`ButtonLink` `primary` `"44"` → `/pedido`). Se fueron "Descargar la app", "Soy proveedor" y las anclas de la home (Producto, Cómo funciona, Aliados, FAQ). Debajo de `lg` (1024 px): logo + botón "Menú y cuenta". Sticky, 68 px, `card` sólido sin blur.
+  - Dos islas client hoja: `HeaderBusinessLink` (el texto del enlace de negocio) y `HeaderAccountMenu` (botón + panel). Se borraron `HeaderAccountSwap` y `MobileNav`.
+  - Prop `cta={false}`: ahora saca "Hacé tu pedido" (header y menú mobile). La siguen pidiendo `/pedido` (la página ES el pedido: el botón sería un link a sí misma), `/proveedores/planes` y `/proveedores/registro` (le hablan al negocio; mandarlo a pedir para su auto lo distrae). Documentado en `site-header.tsx`.
+  - Links a rutas con Clerk (`/cuenta`, alta, reclamo, contratar) con `prefetch={false}`: el header los resuelve en el server (`loadsClerk`).
+- **`SiteFooter`** (Server Component): fondo `action`, logo + "Todo tu auto, en un solo lugar.", grupos Servicios / La app / Empresa / Ayuda y fila de copyright con redes. Todo desde `siteContent.footer` (que arma los links con `siteConfig`). Links externos con `target="_blank"` y aviso `sr-only`; en celular, 44 px de alto por link.
+- **`MobileActionBar`** (Server Component, sin JS): "Hacé tu pedido" (`primary` `"52"`) + WhatsApp (`outline` `"52"`, mensaje "¡Hola! Quiero pedir propuestas para mi auto.") debajo de `lg`, en la home y en `/proveedores` (`PageShell actionBar`). Es `sticky bottom-0` y va DESPUÉS del footer (como en el prototipo): mientras se scrollea queda al pie de la pantalla y al final ocupa su propio lugar debajo del footer, así nunca lo tapa y no hace falta padding de reserva en `<main>`. Respeta `env(safe-area-inset-bottom)`.
+- **Fondo de página**: `body` pasa de `surface` a `canvas`. Cada `Section` pinta su propio fondo, así que en las páginas actuales casi no asoma (revisado en `/`, `/support`, `/proveedores` y `/pedido` a 390 y 1440 px). Nada quedó ilegible: el texto de las secciones viejas sigue sobre sus propios fondos.
+- **`/cuenta`**: escribe y borra la pista de rol y atiende `?salir=1` (ver abajo). `AccountBar` borra la pista al cerrar sesión.
+
+### Patrón ARIA del menú: disclosure
+
+Botón con `aria-expanded` + `aria-controls` que muestra un panel con `<nav>` de links (no `role="menu"`). Son links de navegación, no comandos: `menu` obliga a manejar el foco con flechas, saca los links del modo de lectura normal y los anuncia como "elemento de menú". La APG de la W3C recomienda disclosure para la navegación de sitios. Comportamiento:
+
+- Tab recorre los links en orden (sin trampa de foco).
+- Escape cierra y devuelve el foco al botón (verificado con CDP: `aria-expanded` vuelve a `false`, el panel se desmonta y `document.activeElement` es el botón).
+- Click o toque afuera cierra; si el foco sale del botón y del panel (Tab después del último link), también.
+- Elegir un link cierra. En celular el panel es de pantalla completa y bloquea el scroll del fondo (en `<html>`); en desktop no.
+- Nombre accesible por ancho: "Menú y cuenta" debajo de `lg`, "Cuenta" desde `lg` (dos `sr-only` con `display: none` alternado). Foco visible: el anillo global.
+- Landmarks dentro del panel: `<nav aria-label="Secciones">` (solo celular) y `<nav aria-label="Tu cuenta">`.
+
+### Sesión y rol sin Clerk
+
+- **Sesión**: la misma pista de antes, la cookie `__client_uat` de Clerk (`useSessionHint`).
+- **Rol (nuevo)**: cookie `al_role` de primer partido, legible por JS, sin datos personales: `proveedor.<valor de __client_uat>` (`lib/auth/role-hint.ts`). La escribe `/cuenta` cuando `GET /partners/me/memberships` devuelve al menos un negocio y la borra si devuelve cero; con error no se toca. Vale solo si su `__client_uat` coincide con el actual: si se cierra sesión (`"0"`) o entra otra cuenta (otro timestamp), el header vuelve solo a "sin sesión" o "cliente" (verificado con una pista vieja: se ve como cliente). Igual se borra al cerrar sesión desde `/cuenta`. 30 días de vida. Nunca autoriza nada: es solo para elegir qué se pinta.
+- `useAccountHint` devuelve `anon` / `cliente` / `proveedor`; en el server y en la hidratación, siempre `anon`. Sin CLS: el avatar cambia de color en el mismo lugar y tamaño; el enlace de negocio reserva el ancho del texto más largo (los dos en la misma celda de una grilla, el que no se ve `invisible`); las opciones solo se ven con el panel abierto.
+- **Cerrar sesión** desde el menú: el header no puede cerrarla (no tiene Clerk), así que lleva a `/cuenta?salir=1`; `AccountPanel` (que sí tiene Clerk) borra la pista, cierra la sesión y vuelve al inicio. Sin sesión, solo limpia la URL.
+- **Cero Clerk en páginas públicas**: verificado con `curl` sobre el build (`/`, `/pedido`, `/proveedores`, `/blog`, `/sobre-nosotros`, `/support`, `/proveedores/planes`, `/descarga`, `/terminos`): ninguna menciona Clerk en el HTML ni en los chunks de JS que referencian.
+- Limitación: un proveedor que nunca pasó por `/cuenta` en ese browser (o cuyo `__client_uat` cambió) se ve como "cliente" hasta entrar a `/cuenta`. El alta y el reclamo no escriben la pista (no se tocó más flujo privado del necesario).
+
+### Eventos nuevos (sin renombrar nada)
+
+Placements nuevos, en `LAYOUT_PLACEMENTS` y `QUOTE_CTA_PLACEMENTS` de `lib/analytics/events.ts`, con el patrón de siempre (`data-analytics-*` + el listener delegado de `AnalyticsEvents`), documentados en `analytics.md`:
+
+| Botón | Evento | `placement` |
+|---|---|---|
+| "Hacé tu pedido" de la barra fija | `quote_cta_clicked` | `mobile_bar` (nuevo valor de `QUOTE_CTA_PLACEMENTS`) |
+| WhatsApp de la barra fija | `whatsapp_clicked` | `mobile_bar` |
+| WhatsApp del footer (antes sin evento) | `whatsapp_clicked` | `footer` |
+| Botón flotante de WhatsApp (antes sin evento) | `whatsapp_clicked` | `fab` |
+| "Sumá tu negocio" del header | `partner_register_started` | `header` |
+| "Sumá tu negocio" del menú de cuenta / mobile | `partner_register_started` | `account_menu` |
+| "Sumate como proveedor" del footer (antes sin evento) | `partner_register_started` | `footer` |
+
+Los `quote_cta_clicked` `header`, `header_menu` y `footer` siguen igual. Dejan de llegar `app_store_clicked` `header` y `header_menu` (el header ya no ofrece la descarga). Los WhatsApp del layout van sin `lead_source`: en Meta son `Contact`, no `Lead`.
+
+### `WhatsappFab`
+
+Se queda, con dos cambios: se mide (`fab`) y en celular se esconde en las páginas con barra fija (`data-bottom-bar`, mecanismo que ya existía), porque la barra trae WhatsApp y no se duplica. Desde `lg`, y en celular en las páginas sin barra, sigue visible: el prototipo no lo dibuja, pero DECISIONES pide que WhatsApp "quede visible como segunda opción" y en desktop no hay otro acceso fijo. Si producto prefiere sacarlo en desktop, es borrar una línea en `app/layout.tsx`.
+
+### Diferencias con el diseño y por qué
+
+- **Borde del input** `#6b7280` en lugar de `#9ca3af` (accesibilidad, ver arriba).
+- **Ancho del contenido**: el prototipo usa `max-width: 1200px` con padding `clamp(16px, 4vw, 40px)`; el repo usa `Container size="wide"` (1440 px + 6 %) para que header, secciones y footer compartan bordes (regla de `AGENTS.md`). Lo mismo en la barra fija (`px-[6%]` en lugar de 16 px).
+- **Breakpoint**: el prototipo cambia a celular en 860 px; acá es `lg` (1024 px), porque entre 861 y 1023 px el header completo no entra con el gutter del 6 %.
+- **Avatar sin inicial**: con sesión el prototipo muestra "R". El header no sabe el nombre (no carga Clerk y la pista no guarda datos personales): va el ícono de persona sobre `action`.
+- **Opciones del menú**:
+  - Sin "Mis pedidos" ni "Mis autos" (cliente y sin sesión) ni "Mis pedidos · Los que hiciste para tu auto" (proveedor): la cuenta del usuario final no existe todavía en la web (pendiente en DECISIONES). Un link a `/cuenta` con ese nombre llevaría a la cuenta de talleres.
+  - Cliente: "Mi cuenta" pasa a ser la opción principal.
+  - Proveedor: "Pedidos recibidos", "Perfil del negocio" y "Plan" se reemplazan por "Mi negocio · Tus negocios y el estado de su plan" (`/cuenta`, que hoy no tiene pestañas) + "Planes para proveedores". Cuando la fase de la cuenta sume pestañas, se vuelven a separar.
+  - "Ingresar o crear cuenta" lleva a `/cuenta` (hoy, el login de talleres); se ajusta cuando se haga la pantalla `Ingresar`.
+  - "Ayuda" lleva a `/support`.
+- **Menú mobile**: el prototipo lo despliega dentro del header empujando la página; acá es un panel de pantalla completa debajo del header (sin salto de layout y con scroll propio).
+- **`/pedido`**: el prototipo muestra "Hacé tu pedido" en el header también ahí; se mantiene `cta={false}` (sería un link a la misma página). La barra fija de `/pedido`, la del perfil de proveedor y la del blog son las actuales hasta que se rehagan esas páginas (fase 4); la barra compartida solo va en la home y el directorio.
+- **Footer**: "Sumate como proveedor" lleva al alta (`/proveedores/registro`, mismo texto que ya usaba el sitio), "Descargar la app" a `/descarga` y WhatsApp al chat sin mensaje precargado (el viejo `contact.whatsapp` precargaba "comprar un escáner"). En celular los grupos van de a dos columnas y cada link mide 44 px.
+
+### Dudas abiertas
+
+- ¿Se declara la cookie `al_role` en `/privacidad`? Es funcional, de primer partido y sin datos personales; no se tocó el texto legal.
+- `DownloadCta` quedó sin uso (el header era su único consumidor). Se dejó por si alguna página de la fase 4 vuelve a ofrecer la descarga en mobile; si no, se borra junto con `nav.cta` y `nav.downloadTargets`.
+- `/cuenta?salir=1` cierra sesión con un GET: alguien podría mandar ese link y cerrarte la sesión. Riesgo bajo (solo molesta), pero conviene saberlo.
+
+### Verificación
+
+- `npm run lint`: 0 errores, 282 warnings (los mismos preexistentes de `.agents/`, `.claude/` y `.cursor/`).
+- `npx tsc --noEmit`: sin errores.
+- `npm run build`: OK.
+- Capturas con Chrome headless (CDP) del build en `next start --port 3100`: header a 1440 px en los tres estados con el menú abierto (sin sesión, cliente con `__client_uat`, proveedor con `al_role`), pista de rol vieja (se ve como cliente), header, menú y barra a 390 px, fin de página a 390 px (la barra queda debajo del footer), footer a 1440 px (`/support`) y `/pedido` a 390 px con el menú abierto (sin "Hacé tu pedido"). Los bordes del logo y del contenido del footer coinciden con el header. Comparadas contra `capturas/HeaderEstados.webp`, `SiteFooter.webp` y `Home-celular.webp`.
+- No hay tests automatizados del layout (los scripts `npm run test:*` cubren blog, perfiles, directorio, reclamos y facturación, que no se tocaron).

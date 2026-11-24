@@ -274,7 +274,7 @@ export function PedidoForm() {
   // si la ventana pasa a desktop (ahí el form es la tarjeta, no una vista).
   useEffect(() => {
     if (!open) return;
-    // En `<html>` y NO en `<body>` (mismo criterio que `MobileNav`): como
+    // En `<html>` y NO en `<body>` (mismo criterio que `HeaderAccountMenu`): como
     // `<html>` tiene `overflow-x: hidden`, un `overflow` en el body no llega
     // al viewport, vuelve al body un contenedor de scroll propio y despega el
     // header sticky del sitio.

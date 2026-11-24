@@ -49,12 +49,24 @@ Todos los eventos de PostHog llevan `app: "landing"`, y los de la sesión incluy
 
 ## 3. Eventos explícitos, página por página
 
-### 🌐 Header (todas las páginas excepto `/pedido`)
+### 🌐 Header, menú de cuenta, barra fija, footer y botón flotante (layout compartido)
 
-| Botón                                             | Evento PostHog      | Props                               | Meta | Cuándo                                                      |
-| ------------------------------------------------- | ------------------- | ----------------------------------- | ---- | ----------------------------------------------------------- |
-| "Descargar" en el header, desktop (`DownloadCta`) | `app_store_clicked` | `store`, `placement: "header"`      | —    | Click. Muestra App Store o Google Play según el dispositivo |
-| "Descargar" en el menú mobile                     | `app_store_clicked` | `store`, `placement: "header_menu"` | —    | Click                                                       |
+Desde la fase 2 del rediseño (2026-11-24) el header ya no tiene "Descargar la app": los `app_store_clicked` con `placement: "header"` y `"header_menu"` dejan de llegar desde esa fecha. Su acción principal es "Hacé tu pedido" (salvo en `/pedido`, `/proveedores/planes` y `/proveedores/registro`, que la piden sin ella). Los placements del layout están en `LAYOUT_PLACEMENTS` y `QUOTE_CTA_PLACEMENTS` (`lib/analytics/events.ts`).
+
+| Botón                                                            | Evento PostHog             | Props                           | Meta                  | Cuándo |
+| ---------------------------------------------------------------- | -------------------------- | ------------------------------- | --------------------- | ------ |
+| "Hacé tu pedido" del header (desde `lg`)                         | `quote_cta_clicked`        | `placement: "header"`           | —                     | Click  |
+| "Hacé tu pedido" del menú mobile                                 | `quote_cta_clicked`        | `placement: "header_menu"`      | —                     | Click  |
+| "Hacé tu pedido" de la barra fija en celular (home, directorio)  | `quote_cta_clicked`        | `placement: "mobile_bar"`       | —                     | Click  |
+| "Hacé tu pedido" del footer                                      | `quote_cta_clicked`        | `placement: "footer"`           | —                     | Click  |
+| WhatsApp de la barra fija en celular                             | `whatsapp_clicked`         | `placement: "mobile_bar"`       | `Contact {placement}` | Click  |
+| WhatsApp del footer                                              | `whatsapp_clicked`         | `placement: "footer"`           | `Contact {placement}` | Click  |
+| Botón flotante de WhatsApp                                       | `whatsapp_clicked`         | `placement: "fab"`              | `Contact {placement}` | Click  |
+| "Sumá tu negocio" del header (desde `lg`, sin sesión o cliente)  | `partner_register_started` | `placement: "header"`           | —                     | Click  |
+| "Sumá tu negocio" del menú de cuenta (o del menú mobile)         | `partner_register_started` | `placement: "account_menu"`     | —                     | Click  |
+| "Sumate como proveedor" del footer                               | `partner_register_started` | `placement: "footer"`           | —                     | Click  |
+
+"Ir a mi negocio" (proveedor) y el resto de las opciones del menú de cuenta no tienen evento propio: se ve el `$pageview` de destino. Ningún prop dice si la persona tiene sesión ni su rol.
 
 ### 🏠 Home `/`
 
@@ -78,7 +90,7 @@ Todos los eventos de PostHog llevan `app: "landing"`, y los de la sesión incluy
 
 ### 📝 `/pedido`, la página de la campaña
 
-Hasta el 2026-11-05 el header de `/pedido` tenía un botón de WhatsApp (`placement: "header"` y `"header_menu"`, con `lead_source: "whatsapp"`). Ya no existe: el header muestra el CTA de descarga de siempre, así que esos placements de `whatsapp_clicked` dejan de llegar desde esa fecha.
+Hasta el 2026-11-05 el header de `/pedido` tenía un botón de WhatsApp (`placement: "header"` y `"header_menu"`, con `lead_source: "whatsapp"`). Ya no existe, así que esos placements de `whatsapp_clicked` (con `lead_source`) dejan de llegar desde esa fecha. Desde el 2026-11-24 el header de `/pedido` va sin acción principal (la página ES el pedido).
 
 | Botón / zona                                                               | Evento PostHog     | Props                                                    | Meta                                                                       | Cuándo                           |
 | -------------------------------------------------------------------------- | ------------------ | -------------------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------- |
@@ -147,5 +159,5 @@ La Conversions API de Meta sale en paralelo con el mismo `eventID` que el Pixel,
 
 - **Abrir el modal** no tiene evento propio: se aproxima con `quote_step_viewed step: 1`.
 - **Envío del formulario de proveedores (`/proveedores/registro`):** no tiene evento propio; se aproxima con el `$pageview` de la página. Desde el 2026-11-05 el formulario vive otra vez en `/proveedores/registro` (la página ES el formulario); entre la spec 212 y esa fecha vivió en `/proveedores/registro/formulario`, que hoy redirige (301) a `/proveedores/registro`. Hasta el release de AUT-137 el formulario vivía en `/proveedores`: los `$pageview` de esa ruta anteriores a la fecha de salida (completar al deployar: ____) son del formulario y los posteriores son del directorio; la serie nueva arranca en `/proveedores/registro`.
-- **Links de navegación** (el menú y el link de texto "Pedir presupuesto" a `/pedido`): solo se ve el `$pageview` de destino.
+- **Links de navegación** (los links de página del header y del menú, y las opciones del menú de cuenta salvo "Sumá tu negocio"): solo se ve el `$pageview` de destino.
 - **UTMs dentro del pedido:** hay un TODO porque el DTO del backend rechaza campos desconocidos. Igual, PostHog guarda los UTMs de la sesión, así que el funnel sí se puede cortar por campaña.

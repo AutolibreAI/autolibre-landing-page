@@ -152,7 +152,7 @@ export default async function ProveedoresPage({ searchParams }: PageProps) {
 
   return (
     <>
-      <PageShell currentPath={PROVEEDORES_PATH}>
+      <PageShell currentPath={PROVEEDORES_PATH} actionBar>
         <ProveedoresHero activeCategoryCount={activeCategoryCount} />
         <ProveedoresDirectory
           filters={filters}

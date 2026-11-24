@@ -1,16 +1,18 @@
-import { ACCOUNT_PATH } from "@/lib/account/paths";
+import { ACCOUNT_PATH, ACCOUNT_SIGN_OUT_PATH } from "@/lib/account/paths";
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
-import { PROVEEDORES_PATH, PROVEEDORES_REGISTRO_PATH } from "@/lib/proveedores/query";
-import { PROVIDER_INDEX_PATH } from "@/lib/provider-profile/routes";
-import { PROVIDER_PROFILES_PUBLIC } from "@/lib/provider-profile/visibility";
+import {
+  PROVEEDORES_PATH,
+  PROVEEDORES_PLANES_PATH,
+  PROVEEDORES_REGISTRO_PATH,
+} from "@/lib/proveedores/query";
 import { siteConfig } from "@/lib/seo/config";
 import { providersContent } from "@/lib/content/providers";
-import type { NavLink, StoreLink } from "@/lib/content/types";
+import type { AccountMenuEntry, NavLink, StoreLink } from "@/lib/content/types";
 
 /**
  * Link a `/pedido`: ES la etiqueta única de todos los puntos de entrada de
- * presupuesto (header, menú mobile, hero, banda de la home y footer). Nadie
- * escribe su propio texto: así no vuelven a divergir.
+ * presupuesto (header, menú mobile, barra fija, hero, banda de la home y
+ * footer). Nadie escribe su propio texto: así no vuelven a divergir.
  */
 const quoteLink = { label: "Hacé tu pedido", href: "/pedido" } as const;
 /** Link a `/blog`: el mismo en el header, el menú mobile y el footer. */
@@ -20,39 +22,103 @@ const aboutLink = { label: "Sobre nosotros", href: "/sobre-nosotros" } as const;
 /** Directorio de los negocios de la red: le habla al dueño de auto. */
 const directoryLink = { label: "Proveedores", href: PROVEEDORES_PATH } as const;
 
+/** Alta de negocios: la misma etiqueta en el header, el menú de cuenta y el footer. */
+const joinBusinessLink = { label: "Sumá tu negocio", href: PROVEEDORES_REGISTRO_PATH } as const;
+/** Planes para proveedores: menú de cuenta y footer. */
+const plansLink = { label: "Planes para proveedores", href: PROVEEDORES_PLANES_PATH } as const;
+/** Ayuda: menú de cuenta. Hoy es la página de soporte. */
+const helpLink = { label: "Ayuda", href: "/support" } as const;
+/**
+ * "Cerrar sesión" del menú de cuenta. El header público no carga Clerk, así
+ * que no puede cerrar la sesión él mismo: lleva a `/cuenta?salir=1` y esa
+ * pantalla (que sí tiene Clerk) la cierra y vuelve al inicio.
+ */
+const signOutLink = { label: "Cerrar sesión", href: ACCOUNT_SIGN_OUT_PATH } as const;
+const rule = { kind: "rule" } as const;
+
 /**
  * Contenido del header y del footer, compartido por todas las páginas.
  *
  * El header sale SIEMPRE de acá y es el mismo en todas las páginas: ninguna
  * página elige sus links (`SiteHeader` no acepta props para eso). Lo único
- * que una página puede cambiar es sacar el botón de la derecha (`cta={false}`).
+ * que una página puede cambiar es sacar la acción principal "Hacé tu pedido"
+ * (`cta={false}`).
  */
 export const siteContent = {
   nav: {
-    /**
-     * Anclas de la home + Blog + Proveedores + Sobre nosotros. Visibles desde
-     * `xl`; debajo, en el menú.
-     */
+    /** Links de página del header (desde `lg`; debajo, en el menú). */
     links: [
-      { label: "Producto", href: "/#producto" },
-      { label: "Cómo funciona", href: "/#como-funciona" },
-      { label: "Aliados", href: "/#aliados" },
-      { label: "FAQ", href: "/#faq" },
-      ...(BLOG_PUBLIC ? [blogLink] : []),
       directoryLink,
+      ...(BLOG_PUBLIC ? [blogLink] : []),
       aboutLink,
     ] satisfies readonly NavLink[],
-    /** Presupuesto: visible desde `md`, y en el menú debajo de `xl`. */
+    /** "Hacé tu pedido": la acción principal del header y del menú mobile. */
     quoteLink,
-    /** Alta de negocios: le habla al taller que se quiere sumar. */
-    providerLink: { label: "Soy proveedor", href: PROVEEDORES_REGISTRO_PATH },
     /**
-     * "Mi cuenta": solo cuando hay sesión de Clerk en el browser (pista de la
-     * cookie `__client_uat`, sin cargar Clerk: ver `HeaderAccountSwap`).
-     * Reemplaza a "Soy proveedor" en el header desde `lg` y se suma en el
-     * menú mobile.
+     * Enlace discreto para la otra punta del mercado (patrón Airbnb): "Sumá
+     * tu negocio" sin sesión o con sesión de cliente, "Ir a mi negocio" si
+     * la pista de rol dice que es dueño de un negocio.
      */
-    accountLink: { label: "Mi cuenta", href: ACCOUNT_PATH },
+    businessLink: {
+      join: joinBusinessLink,
+      manage: { label: "Ir a mi negocio", href: ACCOUNT_PATH },
+    },
+    /** Botón de cuenta y su menú (`HeaderAccountMenu`). */
+    accountMenu: {
+      /** Nombre accesible del botón: en celular abre también la navegación. */
+      buttonLabel: { mobile: "Menú y cuenta", desktop: "Cuenta" },
+      /** Nombre del landmark de los links de página dentro del menú mobile. */
+      sectionsLabel: "Secciones",
+      /** Nombre del landmark de las opciones de cuenta. */
+      accountLabel: "Tu cuenta",
+      /**
+       * Opciones por estado. "Mis pedidos" y "Mis autos" del diseño no están:
+       * la cuenta del usuario final todavía no existe en la web (pendiente del
+       * rediseño), y un link a `/cuenta` con ese nombre mentiría.
+       */
+      items: {
+        anon: [
+          {
+            kind: "link",
+            label: "Ingresar o crear cuenta",
+            sub: "Es la misma cuenta de la app",
+            href: ACCOUNT_PATH,
+            strong: true,
+          },
+          rule,
+          { kind: "link", ...joinBusinessLink, sub: "Recibí pedidos de gente de tu zona" },
+          { kind: "link", ...plansLink },
+          rule,
+          { kind: "link", ...helpLink },
+        ],
+        cliente: [
+          { kind: "link", label: "Mi cuenta", href: ACCOUNT_PATH, strong: true },
+          rule,
+          {
+            kind: "link",
+            ...joinBusinessLink,
+            sub: "Con esta misma cuenta, sin crear otro usuario",
+          },
+          rule,
+          { kind: "link", ...helpLink },
+          { kind: "link", ...signOutLink },
+        ],
+        proveedor: [
+          { kind: "group", label: "Tu negocio" },
+          {
+            kind: "link",
+            label: "Mi negocio",
+            sub: "Tus negocios y el estado de su plan",
+            href: ACCOUNT_PATH,
+            strong: true,
+          },
+          { kind: "link", ...plansLink },
+          rule,
+          { kind: "link", ...helpLink },
+          { kind: "link", ...signOutLink },
+        ],
+      } satisfies Record<"anon" | "cliente" | "proveedor", readonly AccountMenuEntry[]>,
+    },
     /**
      * Aviso para lectores de pantalla en los links que abren otra pestaña
      * (va en un `sr-only` después del label).
@@ -77,6 +143,18 @@ export const siteContent = {
   },
 
   /**
+   * Barra fija inferior en celular (home y directorio): "Hacé tu pedido" y,
+   * como segunda opción, el WhatsApp de AutoLibre con un mensaje precargado.
+   */
+  mobileActionBar: {
+    label: "Hacé tu pedido",
+    whatsapp: {
+      label: "WhatsApp",
+      text: "¡Hola! Quiero pedir propuestas para mi auto.",
+    },
+  },
+
+  /**
    * Los dos botones de descarga, en el orden en que se muestran. iOS primero
    * porque es de donde viene la mayor parte del tráfico mobile en AMBA.
    */
@@ -95,7 +173,8 @@ export const siteContent = {
     },
   ] satisfies readonly StoreLink[],
   /**
-   * Botón flotante de WhatsApp (abajo a la derecha, en todas las páginas).
+   * Botón flotante de WhatsApp (abajo a la derecha). En celular no se ve en
+   * las páginas con barra fija inferior (ver `WhatsappFab`).
    * Solo ícono: `label` es su nombre accesible y va en un `sr-only`, seguido
    * de `nav.externalHint` porque abre otra pestaña. Abre el chat sin mensaje
    * precargado (`whatsappChat`): la persona escribe lo que necesita.
@@ -106,74 +185,62 @@ export const siteContent = {
   },
 
   footer: {
+    /** Bajada del logo. Es el eslogan de la marca (`siteConfig.title`). */
+    tagline: "Todo tu auto, en un solo lugar.",
     groups: [
-      /**
-       * Primero: son las dos puertas de entrada del sitio (dueño de auto y
-       * proveedor) y los únicos links internos a páginas de conversión.
-       */
       {
         id: "servicios",
         title: "Servicios",
         links: [
           quoteLink,
-          // Al alta (`/proveedores/registro`, con el formulario), como el resto
-          // de los links de alta del sitio. `/proveedores` es el directorio, no
-          // el alta.
+          { label: "Proveedores de la red", href: PROVEEDORES_PATH },
           { label: providersContent.form.title, href: PROVEEDORES_REGISTRO_PATH },
-          // El índice de perfiles entra al footer recién cuando es público
-          // (`lib/provider-profile/visibility.ts`).
-          ...(PROVIDER_PROFILES_PUBLIC
-            ? [{ label: "Proveedores", href: PROVIDER_INDEX_PATH }]
-            : []),
+          plansLink,
         ],
       },
       {
-        id: "descargar",
-        title: "Descargar",
+        id: "app",
+        title: "La app",
         links: [
+          { label: "Descargar la app", href: "/descarga" },
           { label: "App Store", href: siteConfig.stores.appStore },
           { label: "Google Play", href: siteConfig.stores.playStore },
         ],
       },
-      // "Sobre nosotros" y el blog comparten grupo: así el footer no suma
-      // una columna de un solo link. El blog entra recién cuando es público.
+      // El blog entra recién cuando es público.
       {
         id: "empresa",
         title: "Empresa",
-        links: [aboutLink, ...(BLOG_PUBLIC ? [blogLink] : [])],
-      },
-      {
-        id: "legal",
-        title: "Legal",
         links: [
+          aboutLink,
+          ...(BLOG_PUBLIC ? [blogLink] : []),
           { label: "Términos", href: "/terminos" },
           { label: "Privacidad", href: "/privacidad" },
-          { label: "Eliminar cuenta", href: "/eliminar-cuenta" },
-          { label: "Soporte", href: "/support" },
         ],
       },
       {
-        id: "redes",
-        title: "Redes",
+        id: "ayuda",
+        title: "Ayuda",
         links: [
-          { label: "TikTok", href: siteConfig.social[0] },
-          { label: "Instagram", href: siteConfig.social[1] },
-          { label: "X", href: siteConfig.social[2] },
-          { label: "LinkedIn", href: siteConfig.social[3] },
-        ],
-      },
-      {
-        id: "contacto",
-        title: "Contacto",
-        links: [
+          // El chat sin mensaje precargado: la persona escribe lo que necesita.
+          { label: "WhatsApp", href: siteConfig.contact.whatsappChat },
           {
             label: siteConfig.contact.email,
             href: `mailto:${siteConfig.contact.email}`,
           },
-          { label: "WhatsApp", href: siteConfig.contact.whatsapp },
+          { label: "Soporte", href: "/support" },
+          { label: "Eliminar cuenta", href: "/eliminar-cuenta" },
         ],
       },
-    ],
+    ] satisfies readonly { id: string; title: string; links: readonly NavLink[] }[],
+    /** Redes, en la fila del copyright. */
+    socialLabel: "Redes de AutoLibre",
+    social: [
+      { label: "Instagram", href: siteConfig.social[1] },
+      { label: "TikTok", href: siteConfig.social[0] },
+      { label: "X", href: siteConfig.social[2] },
+      { label: "LinkedIn", href: siteConfig.social[3] },
+    ] satisfies readonly NavLink[],
     copyright: `© ${new Date().getFullYear()} ${siteConfig.legalName}`,
   },
 } as const;

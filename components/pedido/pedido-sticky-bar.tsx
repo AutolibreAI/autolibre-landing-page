@@ -83,7 +83,7 @@ export function PedidoStickyBar({ label, children }: PedidoStickyBarProps) {
           : "pointer-events-none translate-y-full opacity-0",
         // Variante arbitraria: no hay utility para "un ancestro tiene tal
         // descendiente". Se oculta mientras existe el panel del menú mobile.
-        "[html:has(#mobile-nav-panel)_&]:invisible",
+        "[html:has(#menu-del-encabezado)_&]:invisible",
       )}
     >
       {children}

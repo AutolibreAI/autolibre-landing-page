@@ -8,7 +8,7 @@ colors:
   card-line: "#e4eae4"
   card-muted: "#f3f4f6"
   control-line: "#d1d5db"
-  control-line-strong: "#9ca3af"
+  control-line-strong: "#6b7280"
   action: "#1c2b1c"
   action-hover: "#2a3a2a"
   fg: "#111827"
@@ -153,7 +153,7 @@ negro (`action`) con texto blanco, siempre en píldora. El verde de marca
 | `card-line` | `#e4eae4` | Borde de 1px de tarjetas y divisores. |
 | `card-muted` | `#f3f4f6` | Marcadores neutros (portada o logo ausentes). |
 | `control-line` | `#d1d5db` | Borde de chips y tarjetas de opción en reposo. |
-| `control-line-strong` | `#9ca3af` | Borde de inputs (ver contraste abajo). |
+| `control-line-strong` | `#6b7280` | Borde de inputs: 4.79:1 sobre `card`, 4.30:1 sobre `canvas` (ver abajo). |
 
 ### Acción y texto
 
@@ -195,9 +195,10 @@ botón ni de texto chico. La acción es `action`.
 
 **La regla de los bordes de control.** `control-line` (1.46:1 sobre `card`) solo
 en controles que se identifican por su texto y su fondo (chips, tarjetas de
-opción). `control-line-strong` mide 2.52:1 sobre `card`, debajo del 3:1 que
-pide WCAG 1.4.11 cuando el borde es lo único que delimita el campo: es una
-decisión abierta del rediseño (ver `docs/rediseno-2026-11/INFORME.md`, fase 1).
+opción). Los inputs, que solo se delimitan por su borde, usan
+`control-line-strong` `#6b7280` (4.79:1 sobre `card`), por encima del 3:1 de
+WCAG 1.4.11. El diseño pedía `#9ca3af` (2.52:1): se corrigió en la fase 2 del
+rediseño (ver `docs/rediseno-2026-11/INFORME.md`).
 
 ## Tipografía
 
@@ -431,9 +432,10 @@ header, footer, bands), `full` for edge-to-edge.
 `lg` 5rem → 7.5rem, with the second value from `md` (768px) up. Sections never
 set their own paddings by hand.
 
-**Header.** Sticky, 4.5rem tall, `bg-surface/92` with `backdrop-blur-md` and a
-hairline bottom border. `html` carries `scroll-padding-top: 5rem` so an anchor
-jump never lands under it.
+**Header.** Sticky, 4.25rem (68px) tall, solid `card` with a `card-line`
+bottom border (no blur since the 2026-11 redesign). `html` carries
+`scroll-padding-top: 5rem` so an anchor jump never lands under it. The page
+background is `canvas`.
 
 **Overflow.** `html` carries `overflow-x: hidden` (as the root, it applies to
 the viewport) as the safety net against horizontal drag on mobile; `body`
@@ -629,15 +631,24 @@ with its surface.
 
 #### Navigation
 
-- **Header:** sticky, 4.5rem, translucent white (92%) with `backdrop-blur-md`
-  and a hairline bottom border. Links are 15px DM Sans medium in ink, hovering
-  to green. The primary CTA is a `md` primary button, hidden below `sm`.
-- **Mobile panel:** rendered through a portal into `document.body` — the
-  header's `backdrop-filter` makes it a containing block, so a `fixed` panel
-  rendered inside it would size against the header, not the viewport. The panel
-  is a full white sheet from `4.5rem` to the bottom, rows separated by hairlines,
-  set in Outfit semibold `text-xl`, with the CTA anchored to the bottom and
-  safe-area padding below it.
+- **Header (2026-11):** sticky, 68px, solid `card`, `card-line` hairline. From
+  `lg`: logo, page links (15px DM Sans medium in `fg-muted`; current page in
+  `fg` semibold with a 2px `action` underline), the quiet "Sumá tu negocio" /
+  "Ir a mi negocio" link, the account pill (hamburger + 32px avatar, `canvas`
+  without session, `action` with session) and "Hacé tu pedido" (`primary`,
+  `"44"`). Below `lg`: logo + the account pill only.
+- **Account menu / mobile panel:** one disclosure (`HeaderAccountMenu`). From
+  `lg` it is a 300px dropdown (`card`, `control-line` border, `rounded-card`)
+  aligned to the content's right edge; below `lg` it is a full `card` sheet
+  under the header with the page links, the account options and a
+  `primary` `"52"` "Hacé tu pedido". The header has no `backdrop-filter`, so the
+  `fixed` sheet renders inside it.
+- **Footer (2026-11):** `action` ground, logo + tagline, four link groups
+  (titles in `card`, links in `on-dark`), copyright row with the social links
+  in `on-dark-muted`.
+- **Mobile action bar:** `sticky bottom-0` after the footer, below `lg`, on the
+  home and the directory: `primary` "Hacé tu pedido" + `outline` WhatsApp, both
+  `"52"`, with safe-area padding.
 
 #### Store Badges (signature)
 
