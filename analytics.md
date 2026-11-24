@@ -180,6 +180,15 @@ Embudo de contratación: `plan_checkout_started` → `plan_checkout_redirected` 
 | WhatsApp de `/cuenta`: pendientes de "Completá tu perfil", "Agregar"/"Pedir cambio" de la pestaña Perfil, "¿Necesitás una mano?" | `whatsapp_clicked` | `placement: "cuenta_completar_perfil" \| "cuenta_perfil" \| "cuenta_ayuda"` | `Contact` | Click. No hay edición del perfil desde la web: el cambio se pide por WhatsApp. Nunca viaja qué dato ni el negocio |
 | Canje exitoso de un código en `/proveedores/reclamar`                    | `partner_claim_redeemed`   | `from_checkout?` (`true`)              | —    | Al recibir el OK del backend. `from_checkout`: el reclamo venía de contratar un plan                                                        |
 | "Hablar con ventas" en `/proveedores/planes`                             | `whatsapp_clicked`         | `placement: "proveedores_planes_ventas"` | `Contact {placement}` | Click                                                                                                                    |
+| "Registrar mi negocio" de la landing `/proveedores/registro` (hero, "Cómo es el registro", barra fija en celular) | `partner_register_started` | `placement: "registro_hero"` / `"registro_pasos"` / `"registro_barra"` | — | Click. Inicio del registro: abre el flujo (`?alta=1`). Fase 5 del rediseño (2026-11-24) |
+| "Registrate gratis" (tarjeta Gratis) y "Sumá tu negocio" (banda de cierre) en `/proveedores/planes` | `partner_register_started` | `placement: "planes_gratis"` / `"planes_cierre"` | — | Click |
+| "Canjealo acá" en "¿Tu negocio ya aparece?" de la landing | `partner_claim_started` | `placement: "registro_ya_aparece"` | — | Click. Nunca el código |
+| El negocio pasó un paso del alta con "Continuar" (`/proveedores/registro?alta=1`) | `partner_register_step_completed` | `step` (1 = datos del negocio, 2 = atención) | — | Al pasar el paso (ya validado). Con `partner_register_started` y `partner_register_submitted` arma el embudo del alta |
+| El backend aceptó la solicitud de alta (o ya existía) | `partner_register_submitted` | `already_registered?` (`true`), `from_checkout?` (`true`) | — | Fin del registro: al recibir el OK de `/api/provider`. Nunca datos del negocio. Desde la fase 5, el envío del formulario SÍ tiene evento propio |
+| WhatsApp "¿Tu negocio ya aparece? Escribinos" / "¿Otra duda?" de la landing | `whatsapp_clicked` | `placement: "registro_ya_aparece"` / `"registro_faq"` | `Contact {placement}` | Click |
+| "¿Dudas? Escribinos" del encabezado de foco de los flujos (alta, contratar, su resultado, reclamar) | `whatsapp_clicked` | `placement: "registro_encabezado"` / `"contratar_encabezado"` / `"contratar_resultado_encabezado"` / `"reclamar_encabezado"` | `Contact {placement}` | Click |
+
+La pista de rol del header (`al_role`, ver `lib/auth/role-hint.ts`) ahora también la escriben el canje de un código (`partner_claim_redeemed`) y la confirmación de un plan (`plan_checkout_confirmed`): en los dos casos la persona ya es dueña de un negocio. El alta NO la escribe: la solicitud queda en revisión y el negocio todavía no es suyo. No es un evento: es solo lo que pinta el header.
 
 ---
 

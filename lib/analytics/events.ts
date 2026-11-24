@@ -141,6 +141,19 @@ export const ANALYTICS_EVENTS = {
   partnerClaimStarted: "partner_claim_started",
   /** Canje exitoso de un código de reclamo (spec 211). Nunca el código. */
   partnerClaimRedeemed: "partner_claim_redeemed",
+  /**
+   * Alta en pasos de `/proveedores/registro?alta=1` (rediseño 2026-11): la
+   * persona pasó un paso del formulario con "Continuar" (`step`: 1 = datos
+   * del negocio, 2 = atención). El inicio del registro es
+   * `partner_register_started` (clicks a la landing o al flujo). Sólo PostHog.
+   */
+  partnerRegisterStepCompleted: "partner_register_step_completed",
+  /**
+   * Fin del registro: el backend aceptó la solicitud (o ya existía:
+   * `already_registered`). `from_checkout`: vino de contratar un plan. Nunca
+   * datos del negocio. Sólo PostHog.
+   */
+  partnerRegisterSubmitted: "partner_register_submitted",
 } as const;
 
 export type AnalyticsEventName =
@@ -416,6 +429,13 @@ export type AnalyticsEventProps = {
     /** El canje vino de la contratación de un plan (`?next`). */
     from_checkout?: true;
   };
+  partner_register_step_completed: {
+    step: number;
+  };
+  partner_register_submitted: {
+    already_registered?: true;
+    from_checkout?: true;
+  };
 };
 
 export type AnalyticsProps = Record<string, string | number | boolean>;
@@ -581,6 +601,16 @@ export const ANALYTICS_CATALOG: Record<AnalyticsEventName, CatalogEntry> = {
     clickable: true,
   },
   partner_claim_redeemed: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  partner_register_step_completed: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  partner_register_submitted: {
     posthog: "client",
     meta: () => null,
     clickable: false,

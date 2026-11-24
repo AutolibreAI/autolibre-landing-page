@@ -48,8 +48,6 @@ function FooterLink({ href, label, className }: { href: string; label: string; c
   return (
     <Link
       href={href}
-      // El alta carga Clerk: sin prefetch desde el footer.
-      prefetch={href === PROVEEDORES_REGISTRO_PATH ? false : undefined}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       {...analyticsFor(href)}
       className={className}

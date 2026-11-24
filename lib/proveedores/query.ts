@@ -16,6 +16,15 @@ export const PROVEEDORES_PATH = "/proveedores";
  * (301, `next.config.ts`).
  */
 export const PROVEEDORES_REGISTRO_PATH = `${PROVEEDORES_PATH}/registro`;
+/**
+ * `?alta=1`: abre el flujo del alta (cuenta → datos del negocio) en la misma
+ * ruta. Sin el parámetro, `/proveedores/registro` es la landing pública
+ * "Sumá tu negocio", estática y sin Clerk (rediseño 2026-11, fase 5). La URL
+ * con el parámetro tiene el mismo canonical (sin query): no se indexa aparte.
+ */
+export const PROVEEDORES_REGISTRO_FLOW_PARAM = "alta";
+/** Link al flujo del alta (los CTA de la landing, `/cuenta`, la contratación sin taller). */
+export const PROVEEDORES_REGISTRO_ALTA_PATH = `${PROVEEDORES_REGISTRO_PATH}?${PROVEEDORES_REGISTRO_FLOW_PARAM}=1`;
 /** Precios y planes pagos para proveedores: vive bajo el directorio. */
 export const PROVEEDORES_PLANES_PATH = `${PROVEEDORES_PATH}/planes`;
 /**

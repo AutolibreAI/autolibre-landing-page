@@ -9,12 +9,12 @@ type ScopedClerkProviderProps = {
 };
 
 /**
- * Clerk acotado a las pantallas de talleres que piden la cuenta
- * (`/proveedores/reclamar`, `/proveedores/contratar`, `/proveedores/registro`
- * y `/cuenta`). Se monta SOLO desde el `layout.tsx` anidado de cada una y
- * NUNCA en `app/layout.tsx`. La única indexable que lo carga es
- * `/proveedores/registro` (la página ES el formulario del alta desde el
- * 2026-11-05); los links públicos hacia ella van sin prefetch.
+ * Clerk acotado a las pantallas de negocios que piden la cuenta
+ * (`/proveedores/reclamar`, `/proveedores/contratar` y `/cuenta`, desde el
+ * `layout.tsx` anidado de cada una) y al flujo del alta de
+ * `/proveedores/registro`, que lo monta `RegistroFlow` recién cuando la
+ * persona abre el flujo (`?alta=1`, import diferido): desde la fase 5 del
+ * rediseño, NINGUNA página indexable carga Clerk. NUNCA en `app/layout.tsx`.
  *
  * Sin `dynamic`: el provider no lee la sesión en el server (no llama a
  * `auth()`), la sesión la resuelve el browser y no hace falta
