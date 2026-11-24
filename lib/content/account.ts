@@ -22,13 +22,290 @@ export const accountContent = {
     signingOut: "Cerrando sesión…",
   },
 
+  /**
+   * `/cuenta?salir=1` con sesión (el "Cerrar sesión" del menú del header):
+   * se confirma con un botón, nunca se cierra solo por abrir el link.
+   */
+  signOutConfirm: {
+    title: "¿Cerrar sesión?",
+    body: "Vas a salir de tu cuenta de AutoLibre en este navegador. Para volver a entrar, usás el mismo email o la misma cuenta de la app.",
+    confirm: "Sí, cerrar sesión",
+    leaving: "Cerrando sesión…",
+    cancel: "No, seguir en mi cuenta",
+  },
+
+  /**
+   * "Mi negocio" con sesión (fase 6 del rediseño): barra del negocio,
+   * secciones y estados. Lo que no tiene endpoint está diseñado pero apagado
+   * (`lib/account/features.ts`); su copy vive igual acá.
+   */
+  business: {
+    eyebrow: "Mi negocio",
+    loadingTitle: "Mi negocio",
+    loading: "Buscando tu negocio…",
+    /** Iniciales en el cuadrado del negocio: decorativas (el nombre ya está en el `<h1>`). */
+    visibility: {
+      published: "Publicado",
+      hidden: "No visible en la red",
+      review: "En revisión",
+    },
+    switcher: {
+      trigger: "Cambiar de negocio",
+      /** Nombre del landmark de la lista de negocios. */
+      label: "Tus negocios",
+      current: "Estás viendo este",
+    },
+    publicPage: "Ver mi página web",
+    nav: {
+      label: "Secciones de tu negocio",
+      items: { resumen: "Resumen", pedidos: "Pedidos", perfil: "Perfil", plan: "Plan" },
+      /** Lo que lee el lector de pantalla junto al contador de la pestaña Pedidos. */
+      badge: (count: number) => (count === 1 ? "1 por responder" : `${count} por responder`),
+    },
+    sessionTitle: "Tu sesión",
+    /** Aviso `sr-only` de los links que abren otra pestaña (WhatsApp). */
+    externalHint: "(se abre en otra pestaña)",
+
+    summary: {
+      /** `h2` solo para lectores de pantalla: el Resumen no tiene título visible. */
+      title: (partnerName: string) => `Resumen de ${partnerName}`,
+      stagesLabel: "Tus pedidos de un vistazo",
+      stages: {
+        toAnswer: { label: "Por responder", sub: (dueToday: number) => (dueToday > 0 ? `${dueToday} vence hoy` : "Al día") },
+        proposals: { label: "Propuestas enviadas", sub: "Esperando al cliente" },
+        chosen: { label: "Te eligieron", sub: "En los últimos 30 días" },
+        planOrders: { label: "Pedidos de tu plan", of: (limit: number) => `de ${limit}`, sub: "Este mes" },
+      },
+      latest: { title: "Últimos pedidos", all: "Ver todos" },
+      help: {
+        title: "¿Necesitás una mano?",
+        cta: "Escribinos por WhatsApp",
+        message: (partnerName: string) => `¡Hola! Tengo una consulta sobre mi negocio ${partnerName} en AutoLibre.`,
+      },
+      profileError: "No pudimos leer el perfil de tu negocio. Probá de nuevo en un rato.",
+    },
+
+    /** "Completá tu perfil": sale de los campos vacíos de `GET /partners/{id}`. */
+    checklist: {
+      title: "Completá tu perfil",
+      progress: (done: number, total: number) => `${done} de ${total}`,
+      progressLabel: (done: number, total: number) => `Perfil completo: ${done} de ${total} datos`,
+      body: "Un perfil completo le da más información a quien te está por elegir.",
+      preview: "Ver cómo te ven en la app",
+      complete: "Tu perfil tiene todos los datos. Si querés cambiar algo, escribinos.",
+      /**
+       * No hay edición desde la web: cada dato que falta se manda por WhatsApp
+       * al equipo, que lo carga. El botón lo dice ("por WhatsApp").
+       */
+      items: {
+        logo: { title: "Subí el logo de tu negocio", hint: "PNG, JPG o WebP. Mandalo por WhatsApp y lo cargamos." },
+        hours: { title: "Cargá tus horarios de atención", hint: "Ej: Lun a Vie 9 a 18 h, Sáb 9 a 13 h" },
+        description: { title: "Escribí una descripción", hint: "Unas líneas para presentar tu negocio." },
+        services: { title: "Contanos qué servicios hacés", hint: "Así te llegan los pedidos que te sirven." },
+        address: { title: "Cargá la dirección", hint: "Calle, número y localidad." },
+        whatsapp: { title: "Sumá un WhatsApp de contacto", hint: "Para que los clientes te escriban." },
+        links: { title: "Sumá tus redes o tu web", hint: "Instagram, Facebook, tu sitio…" },
+        name: { title: "Cargá el nombre del negocio", hint: "Como te conocen tus clientes." },
+      },
+      cta: "Mandar por WhatsApp",
+      ctaLabel: (item: string) => `${item}: mandar por WhatsApp`,
+      message: (partnerName: string, item: string) =>
+        `¡Hola! Quiero completar el perfil de ${partnerName} en AutoLibre: ${item.toLocaleLowerCase("es-AR")}.`,
+    },
+
+    empty: {
+      title: "Todavía no te llegó ningún pedido",
+      body: "Cuando alguien de tu zona pida un servicio que hacés, te escribimos por WhatsApp con los datos del auto y lo que necesita. Acá vas a ver el historial.",
+      steps: [
+        { title: "1. Te llega el pedido", body: "Por WhatsApp, con el servicio y el auto." },
+        { title: "2. Mandás tu propuesta", body: "Con precio y tiempos." },
+        { title: "3. El cliente elige", body: "Y te escribe para coordinar." },
+      ],
+      cta: "Completá tu perfil",
+    },
+
+    referral: {
+      title: "Tu código para clientes",
+      body: "Pasáselo a tus clientes para que te guarden como su taller en la app.",
+      copy: "Copiar",
+      copied: "Copiado",
+      saved: (count: number) => (count === 1 ? "1 cliente ya te guardó." : `${count} clientes ya te guardaron.`),
+    },
+
+    orders: {
+      title: "Pedidos recibidos",
+      body: "Te avisamos cada pedido por WhatsApp. Acá queda el historial: qué te pidieron, qué propusiste y cómo terminó.",
+      usage: (used: number, limit: number) => `Este mes usaste ${used} de ${limit} pedidos de tu plan`,
+      filtersLabel: "Filtrar pedidos por estado",
+      filters: {
+        todos: "Todos",
+        responder: "Por responder",
+        propuesta: "Con propuesta",
+        elegido: "Te eligieron",
+        cerrado: "Cerrados",
+      },
+      filterCount: (label: string, count: number) => `${label} (${count})`,
+      noneInFilter: "No hay pedidos en este estado.",
+      number: (value: number) => `Pedido #${value}`,
+      status: {
+        responder: { label: "Por responder", action: "Responder por WhatsApp" },
+        detalle: { label: "Esperando tu propuesta", action: "Enviar propuesta" },
+        propuesta: { label: "Propuesta enviada", action: "Ver propuesta" },
+        elegido: { label: "Te eligieron", action: "Escribirle al cliente" },
+        cerrado: { label: "Cerrado", action: "Ver detalle" },
+      },
+    },
+
+    profile: {
+      title: "Perfil del negocio",
+      body: "Lo que ve la gente en el directorio y en la app.",
+      missing: "Falta",
+      allBrands: "Todas las marcas",
+      notVisible:
+        "Tu negocio no está visible en la red ahora mismo, así que no podemos mostrarte sus datos. Escribinos por WhatsApp y lo revisamos.",
+      /** Sin edición desde la web: cada fila pide el cambio por WhatsApp. */
+      edit: "Pedir cambio",
+      add: "Agregar",
+      editLabel: (field: string) => `Pedir un cambio en ${field.toLocaleLowerCase("es-AR")} por WhatsApp`,
+      addLabel: (field: string) => `Agregar ${field.toLocaleLowerCase("es-AR")} por WhatsApp`,
+      changeMessage: (partnerName: string, field: string) =>
+        `¡Hola! Quiero actualizar ${field.toLocaleLowerCase("es-AR")} de ${partnerName} en AutoLibre.`,
+      fields: {
+        name: "Nombre",
+        logo: "Logo",
+        description: "Descripción",
+        services: "Servicios",
+        brands: "Marcas",
+        modality: "Cómo atendés",
+        address: "Dirección",
+        hours: "Horarios",
+        whatsapp: "WhatsApp",
+        links: "Redes",
+      },
+      logoLoaded: "Cargado",
+      note: "La descripción y las redes se ven en tu página web de AutoLibre, no en la app. Los cambios los carga el equipo: escribinos por WhatsApp con lo que querés cambiar.",
+      linkKinds: {
+        instagram: "Instagram",
+        website: "Sitio web",
+        facebook: "Facebook",
+        mercado_libre: "Mercado Libre",
+        x: "X",
+        tiktok: "TikTok",
+        other: "Otro link",
+      } as Record<string, string>,
+    },
+
+    /** Vista previa "Así te ven en la app": réplica de la ficha de la app de hoy. */
+    preview: {
+      title: "Así te ven en la app",
+      show: "Ver cómo te ven en la app",
+      hide: "Ocultar la vista previa",
+      /** Lo que la app dice HOY (`taller-action-bar.tsx`). Debería pasar a "Pedir propuestas". */
+      requestQuote: "Pedir presupuesto",
+      chat: (partnerName: string) => `Escribirle a ${partnerName} por WhatsApp`,
+      whatTheyDo: "Qué hacen",
+      reviews: "Lo que dicen otros conductores",
+      noReviews: "Todavía no tiene reseñas",
+      where: "Dónde está",
+      ratingLabel: (count: number) => (count === 1 ? "1 opinión" : `${count} opiniones`),
+      servicesCount: (count: number) => (count === 1 ? "1 servicio" : `${count} servicios`),
+      note: (hasLogo: boolean) =>
+        hasLogo
+          ? "Es la ficha de tu negocio en la app, con tus datos de hoy. La distancia aparece según dónde esté cada persona."
+          : "Sin logo, la app muestra tus iniciales. La distancia aparece según dónde esté cada persona.",
+      /** Nombre accesible del marco: el contenido es una imagen de la ficha, no una página navegable. */
+      frameLabel: (partnerName: string) => `Vista previa de la ficha de ${partnerName} en la app`,
+    },
+
+    plan: {
+      title: "Plan",
+      yourPlan: "Tu plan",
+      free: "Plan Gratis",
+      freePrice: "Gratis",
+      named: (planName: string) => `Plan ${planName}`,
+      unnamed: "Plan pago",
+      perMonth: (vat: boolean) => (vat ? "por mes, IVA incluido" : "por mes + IVA"),
+      status: {
+        trial: (date: string | null) => (date ? `En prueba hasta el ${date}` : "En período de prueba"),
+        active: "Activo",
+        canceling: (date: string | null) => (date ? `Baja pedida: activo hasta el ${date}` : "Baja pedida"),
+        pending: (planName: string) => `${planName}: pago pendiente de confirmación`,
+        other: "Sin confirmar",
+      },
+      limit: (limit: number) => `Hasta ${limit} pedidos por WhatsApp por mes.`,
+      freeLimit: "1 propuesta por WhatsApp por mes.",
+      seePlan: "Ver mi plan",
+      contractPlus: "Contratar el plan Plus",
+      allPlans: "Ver todos los planes",
+      trial: {
+        days: (days: number) => `Los primeros ${days} días son sin cargo.`,
+        conditional: "Si es la primera vez que tu taller contrata un plan pago, arrancás con un período de prueba sin cargo.",
+      },
+      upsell: {
+        eyebrow: "Con el plan Plus",
+        title: (limit: number | null) =>
+          limit ? `Recibí hasta ${limit} pedidos por mes, sin usar la app` : "Recibí pedidos por WhatsApp, sin usar la app",
+        note: "El plan no cambia la recomendación de la IA.",
+      },
+      usage: {
+        title: "Uso de este mes",
+        paidLabel: "Pedidos por WhatsApp este mes",
+        freeLabel: "Propuestas por WhatsApp este mes",
+        of: (used: number, limit: number) => `${used} de ${limit}`,
+        aria: (used: number, limit: number) => `${used} de ${limit} usados`,
+      },
+      payment: {
+        title: "Pago",
+        method: "Medio",
+        methodValue: "Mercado Pago",
+        firstCharge: "Primer cobro",
+        periodEnd: "Período actual hasta",
+        accessUntil: "Activo hasta",
+      },
+      cancel: {
+        title: "Cancelar suscripción",
+        body: (planLabel: string) =>
+          `Tu taller mantiene el ${planLabel} hasta el final del período en curso. Después pasa al plan Gratis y no se te vuelve a cobrar.`,
+      },
+      pendingBanner: {
+        title: (planName: string) => `Estamos esperando que Mercado Pago confirme el pago del plan ${planName}`,
+        body: "Si ya pagaste, no vuelvas a pagar: la confirmación puede demorar unos minutos. Mientras tanto tu taller sigue con el plan Gratis.",
+        cta: "Ver el estado del pago",
+      },
+    },
+
+    review: {
+      title: "Estamos revisando tu negocio",
+      body: "El equipo revisa los datos y te contacta por WhatsApp para activar tu perfil. Por ahora no tenés que hacer nada más.",
+      now: "Ahora",
+      steps: {
+        sent: { title: "Solicitud enviada", body: (date: string) => `Recibimos los datos de tu taller el ${date}.` },
+        review: { title: "En revisión", body: "El equipo revisa los datos y te contacta por WhatsApp para activar tu perfil." },
+        published: {
+          title: "Taller publicado",
+          body: "Tu taller aparece en la red y lo administrás desde acá. Desde acá también contratás un plan.",
+        },
+      },
+      dataTitle: "Los datos que nos mandaste",
+      fix: "¿Algo está mal?",
+      fixCta: "Avisanos por WhatsApp",
+      fixTail: "y lo corregimos antes de publicarlo.",
+      fixMessage: "¡Hola! Mandé el alta de mi negocio a AutoLibre y quiero corregir un dato.",
+      meanwhile: {
+        title: "Mientras tanto",
+        body: "Con el plan Gratis tu taller ya aparece en la red. Si querés recibir más pedidos por WhatsApp, mirá los planes pagos.",
+        cta: "Conocé los planes",
+      },
+    },
+  },
+
   /** Link secundario desde los éxitos y avisos de los flujos. */
   link: { label: "Ir a mi cuenta", href: ACCOUNT_PATH },
 
   page: {
     meta: {
-      title: "Mi cuenta",
-      description: "Tu cuenta de AutoLibre para talleres: tus talleres, el estado de sus planes y la sesión.",
+      title: "Mi negocio",
+      description: "Mi negocio en AutoLibre: el resumen de tu taller, su perfil y cómo lo ven en la app, y el estado de tu plan.",
     },
     eyebrow: "Talleres",
     title: "Mi cuenta",

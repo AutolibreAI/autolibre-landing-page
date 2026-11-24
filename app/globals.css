@@ -145,6 +145,13 @@
   --radius-field: 0.625rem; /* 10px — inputs y botones (deprecado) */
   --radius-card: 1rem; /* 16px — tarjetas */
   --radius-panel: 1.25rem; /* 20px — paneles grandes */
+
+  /* Portada con monograma de la app (tono "gray"), para la vista previa
+     "Así te ven en la app" de /cuenta: los mismos valores que
+     `monogramGray` y `monogramInkOnGray` de autolibre-mobile. Los otros dos
+     tonos usan `action`/`brand-200` y `brand-50`/`brand`. */
+  --color-monogram-gray: #eff0ef;
+  --color-monogram-ink-gray: #5c6b5c;
 }
 
 /* ── Plataforma del visitante ──

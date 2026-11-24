@@ -108,10 +108,15 @@ export const siteContent = {
           {
             kind: "link",
             label: "Mi negocio",
-            sub: "Tus negocios y el estado de su plan",
+            sub: "El resumen de tu negocio",
             href: ACCOUNT_PATH,
             strong: true,
           },
+          // Secciones de "Mi negocio" (fase 6). "Pedidos recibidos" vuelve
+          // cuando el backend tenga la lectura de pedidos del negocio
+          // (`ACCOUNT_FEATURES.orders`).
+          { kind: "link", label: "Perfil del negocio", href: `${ACCOUNT_PATH}?seccion=perfil` },
+          { kind: "link", label: "Plan", href: `${ACCOUNT_PATH}?seccion=plan` },
           { kind: "link", ...plansLink },
           rule,
           { kind: "link", ...helpLink },

@@ -89,9 +89,9 @@ export function CancelSubscription({
       <Button
         ref={triggerRef}
         type="button"
-        variant="brandOutline"
-        size="sm"
-        className="min-h-11 self-start"
+        variant="outline"
+        size="44"
+        className="self-start"
         aria-expanded={false}
         aria-controls={panelId}
         onClick={() => setPhase({ kind: "open" })}
@@ -114,20 +114,20 @@ export function CancelSubscription({
       onKeyDown={(event) => {
         if (event.key === "Escape" && !submitting) setPhase({ kind: "closed" });
       }}
-      className="flex basis-full flex-col gap-3 rounded-card border border-line bg-surface-muted p-4 sm:p-5"
+      className="flex basis-full flex-col gap-3 rounded-card border border-card-line bg-canvas p-4 sm:p-5"
     >
-      <h4 id={titleId} ref={titleRef} tabIndex={-1} className="font-display text-base font-bold text-ink">
+      <h4 id={titleId} ref={titleRef} tabIndex={-1} className="font-display text-lg font-bold text-fg">
         {cancel.title(partnerName)}
       </h4>
-      <p className="leading-relaxed text-ink/75">
+      <p className="leading-relaxed text-fg-muted">
         {cancel.keepsPlan(planLabel, formatDate(cancellationAccessDate(view)))}
       </p>
-      {trial ? <p className="leading-relaxed text-ink/75">{cancel.trialUsed}</p> : null}
-      <p className="leading-relaxed font-semibold text-ink">{cancel.mercadoPagoWarning}</p>
+      {trial ? <p className="leading-relaxed text-fg-muted">{cancel.trialUsed}</p> : null}
+      <p className="leading-relaxed font-semibold text-fg">{cancel.mercadoPagoWarning}</p>
 
       <div aria-live="polite" aria-atomic="true">
         {error ? (
-          <p className="font-medium text-danger">
+          <p className="font-medium text-status-alert">
             {error === "retryable"
               ? cancel.errors.retryable
               : error === "not-found"
@@ -141,8 +141,9 @@ export function CancelSubscription({
         {canSubmit ? (
           <Button
             type="button"
-            size="sm"
-            className="min-h-11 bg-danger hover:bg-danger/90"
+            // Contorno: la acción principal es mantener el plan (diseño, ref. Vimeo/Podia).
+            variant="outline"
+            size="44"
             // `aria-disabled` y no `disabled`: el foco se queda en el botón mientras responde.
             aria-disabled={submitting}
             onClick={() => {
@@ -155,15 +156,14 @@ export function CancelSubscription({
         {/* Sesión vencida: el mismo camino que la lista de talleres de
             `/cuenta` (cerrar la sesión y volver al login de esta pantalla). */}
         {error === "unauthenticated" ? (
-          <Button type="button" size="sm" className="min-h-11" onClick={() => void signOut({ redirectUrl: selfPath })}>
+          <Button type="button" variant="primary" size="44" onClick={() => void signOut({ redirectUrl: selfPath })}>
             {cancel.reauth}
           </Button>
         ) : null}
         <Button
           type="button"
-          variant="brandOutline"
-          size="sm"
-          className="min-h-11"
+          variant="primary"
+          size="44"
           disabled={submitting}
           onClick={() => setPhase({ kind: "closed" })}
         >
