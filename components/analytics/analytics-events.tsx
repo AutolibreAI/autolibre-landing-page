@@ -9,6 +9,7 @@ import {
   PARTNER_PLANS,
   PROVIDER_ACTIONS,
   QUOTE_CTA_PLACEMENTS,
+  QUOTE_TABS,
   type AnalyticsEventName,
   type AnalyticsProps,
 } from "@/lib/analytics/events";
@@ -23,6 +24,7 @@ const PROVIDER_ACTION_VALUES = new Set<string>(Object.values(PROVIDER_ACTIONS));
 const QUOTE_CTA_PLACEMENT_VALUES = new Set<string>(
   Object.values(QUOTE_CTA_PLACEMENTS),
 );
+const QUOTE_TAB_VALUES = new Set<string>(Object.values(QUOTE_TABS));
 
 /**
  * Isla hoja de la medición. No renderiza nada: sólo engancha dos cosas que
@@ -58,6 +60,8 @@ const QUOTE_CTA_PLACEMENT_VALUES = new Set<string>(
  *     directorio de proveedores al quedar sin resultados; sólo presencia).
  *   - `data-analytics-plan="plus"` → `plan` de `plan_checkout_started` (sólo
  *     los valores de `PARTNER_PLANS`).
+ *   - `data-analytics-tab="auxilio"` → `tab` (pestaña del módulo de pedido;
+ *     sólo los valores de `QUOTE_TABS`).
  *   `lead_source`, `store`, `action`, `plan` y el `placement` de presupuesto sólo aceptan los
  *   valores del catálogo; el resto se ignora para que un typo no abra una
  *   fuente nueva en los reportes.
@@ -106,6 +110,8 @@ export function AnalyticsEvents() {
       if (store && STORE_VALUES.has(store)) props.store = store;
       const plan = el.dataset.analyticsPlan;
       if (plan && PLAN_VALUES.has(plan)) props.plan = plan;
+      const tab = el.dataset.analyticsTab;
+      if (tab && QUOTE_TAB_VALUES.has(tab)) props.tab = tab;
 
       trackUnchecked(
         name as AnalyticsEventName,

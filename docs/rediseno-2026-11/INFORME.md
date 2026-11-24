@@ -473,3 +473,104 @@ Se queda, con dos cambios: se mide (`fab`) y en celular se esconde en las págin
 - `npm run build`: OK.
 - Capturas con Chrome headless (CDP) del build en `next start --port 3100`: header a 1440 px en los tres estados con el menú abierto (sin sesión, cliente con `__client_uat`, proveedor con `al_role`), pista de rol vieja (se ve como cliente), header, menú y barra a 390 px, fin de página a 390 px (la barra queda debajo del footer), footer a 1440 px (`/support`) y `/pedido` a 390 px con el menú abierto (sin "Hacé tu pedido"). Los bordes del logo y del contenido del footer coinciden con el header. Comparadas contra `capturas/HeaderEstados.webp`, `SiteFooter.webp` y `Home-celular.webp`.
 - No hay tests automatizados del layout (los scripts `npm run test:*` cubren blog, perfiles, directorio, reclamos y facturación, que no se tocaron).
+
+## Fase 3: módulo de pedido
+
+`ModuloPedido` (`components/modulo-pedido/`): pestañas Taller / Auxilio / Multas / Seguro con íconos 3D, barra "¿Qué le pasa?" + "¿Dónde estás?" + "Pedir propuestas", chips de "Lo más pedido", paso 2 con WhatsApp y patente "(opcional, recomendada)", y estado enviado. Reutilizable: props `placement` (`modulo_home` | `modulo_pedido`), `headingLevel` (`h2` | `h3`, lo decide la página) e `idPrefix`.
+
+### Dónde quedó montado
+
+En una **vista previa**: `/pedido/modulo` (`index: false`, fuera del sitemap y de `llms.txt`, `PageShell` sin "Hacé tu pedido"). No se reemplazó el form de `/pedido` porque no es un cambio de pieza sino de página: `PedidoForm` es la tarjeta de la columna derecha del hero en desktop y una vista a pantalla completa en celular, y la abren tres botones (`OpenFormButton` del hero, de la banda de cierre y de la barra fija) por un listener delegado. Montar el módulo ahí obliga a rehacer el hero (el diseño lo pone centrado debajo del H1) y la barra fija, que es la fase 4. La vista previa se borra en esa fase. `/pedido` y el Home siguen como estaban.
+
+### Mapeo pestaña → backend
+
+| Pestaña | Qué hace | Backend |
+|---|---|---|
+| Taller | Form de 2 pasos | `POST /api/presupuesto` → `POST /api/v1/quote-requests`, con el mismo body que el form de `/pedido`: `description` = "¿Qué le pasa?", `address` = "¿Dónde estás?" + geocode de Places, `contactPhone`, `plate` y `vehicleLookup` opcionales, `consent: true`. |
+| Auxilio | Panel con "Pedí auxilio" → asistir24.com.ar | No hay vertical de auxilio en el backend. Mismo aliado y misma URL que el banner del Home (`homeContent.allies`). |
+| Multas | Panel con "Consultá tu caso" → sinfotomultas.com.ar | Ídem: aliado del Home. |
+| Seguro | Panel con "Cotizá por WhatsApp" (chat de AutoLibre con "¡Hola! Quiero cotizar el seguro de mi auto.") | **No existe endpoint de cotización de seguros.** El prototipo trae un form (patente, WhatsApp, tipo de cobertura); no se simuló: se reemplazó por WhatsApp, lo más conservador. |
+
+El backend no recibe categoría ni pestaña: el DTO de `quote-requests` usa `forbidNonWhitelisted`. La pestaña viaja solo a PostHog (`quoteTab` y `quotePlacement` en el body de la route, que los valida contra valores cerrados y no los reenvía).
+
+### Qué es server y qué es client
+
+- **Server** (`modulo-pedido.tsx`): arma todo lo que se lee. Íconos (`next/image`, `alt=""`), labels, chips, los cuatro paneles (los de aliados enteros, con sus `h2`), la fila "¿Preferís chatear?" con el WhatsApp medido por `data-analytics-*`, el link a `/privacidad`, el ícono del enviado y "Bajar la app". El copy del form llega a la isla como props (viaja en el HTML, no en el JS).
+- **Client, dos islas hoja**:
+  - `ModuloTabs`: solo qué pestaña está elegida. Recibe íconos y paneles ya renderizados.
+  - `ModuloForm`: el form de Taller (estado, validación, Places, lookup de patente, envío y los tres estados).
+- Verificado con `curl` del build: el HTML del server trae las cuatro pestañas, los tres títulos de los paneles de aliados, labels, placeholders, chips y el WhatsApp. En el chunk de la isla, de copy solo están los mensajes de error del WhatsApp (se separaron a `lib/content/whatsapp-errors.ts`, re-exportado desde `presupuesto.ts`, para no arrastrar todo el copy de `/pedido`).
+- Lógica compartida con `PedidoForm`, sin cambiar su comportamiento: `components/pedido/pedido-client.ts` (`usePlateLookup`, `usePlacesAutocomplete`, `postQuoteRequest`, `placesDropdownOpen`, `withTimeout`), extraídos tal cual de `pedido-form.tsx`, que ahora los usa.
+- Íconos: 9 PNG de `autolibre-mobile/assets/images/{pedido,icons-3d}/` (256-288 px) convertidos con `sharp` a WebP en `public/images/pedido/`: pestañas a 104 px (uso 52) y chips a 56 px (uso 28), de 1.7 a 5.4 KB cada uno. `next/image` con `width`/`height` reales y `sizes`; ninguno es LCP, sin `preload`.
+
+### JS (build de producción, suma de los `<script src>` del HTML, gzip local)
+
+| Ruta | Antes (HEAD de la fase 2) | Después |
+|---|---|---|
+| `/pedido` | 13 scripts · 727.9 KB · 222.0 KB gzip | 13 · 729.6 KB · 222.5 KB gzip |
+| `/` | 13 · 712.6 KB · 217.3 KB gzip | 13 · 713.1 KB · 217.4 KB gzip |
+| `/pedido/modulo` (nueva) | — | 13 · 717.5 KB · 217.6 KB gzip |
+
+Chunk propio de la ruta (lo que no comparte con `/sobre-nosotros`): **módulo 45.8 KB / 15.6 KB gzip** contra **57.8 KB / 20.6 KB gzip** de las islas de `/pedido` (`PedidoForm` + barra fija). Las demás rutas suben menos de 1 KB por las entradas nuevas del catálogo de eventos (`events.ts` va en el layout). El script de Google Maps sigue sin bajar hasta el primer foco o toque de "¿Dónde estás?" (verificado interceptando la red: la primera petición a `maps.googleapis.com` sale recién al enfocar el campo).
+
+### Eventos nuevos (sin renombrar nada; detalle en `analytics.md`)
+
+| Qué | Evento | Props |
+|---|---|---|
+| Inicio del pedido por pestaña | `quote_started` (existente), `quote_tab_selected` (nuevo), `quote_partner_clicked` (nuevo, clickable) | `tab`, `placement`. Taller: `quote_started` con `tab: "taller"`. Auxilio y Multas: `quote_partner_clicked` (su "inicio" es salir al aliado). `quote_tab_selected`: cada elección de pestaña (la inicial no cuenta). |
+| Paso 2 visto | `quote_step_viewed` (existente) | `step: 2`, `tab`, `placement`. Antes solo lo usaba el modal. |
+| Envío por pestaña | `quote_submitted` (existente, no se creó otro) | La route suma `tab` y `placement` al evento de PostHog; el cliente los manda en su `track` (a Meta solo llega `lead_source`, como siempre). `quote_failed` también suma `tab` y `placement`. |
+| Chips | `quote_chip_clicked` (nuevo) | `chip` (id cerrado, nunca texto), `placement`, `selected`. |
+| WhatsApp por ubicación | `whatsapp_clicked` (existente) | `placement: "modulo_home"` o `"modulo_pedido"`, más `tab` (nuevo atributo `data-analytics-tab`, valores cerrados). `lead_source: "whatsapp"` solo en `modulo_pedido`, como el resto de `/pedido`. |
+
+`lead_source` del pedido: `form` en las dos ubicaciones, igual que lo que ya ponía la route en PostHog para todo `flow: "page"`.
+
+### Accesibilidad
+
+- Tabs: patrón APG con activación automática. `tablist`/`tab`/`tabpanel`, `aria-selected`, `aria-controls` y `aria-labelledby` cruzados, roving tabindex, ←/→ en círculo, Inicio/Fin. Verificado con CDP: cada tecla mueve el foco y la selección, y Tab desde la pestaña entra a "¿Qué le pasa?".
+- Errores: `aria-invalid` + `aria-describedby` al texto del error y foco al primer campo inválido. El error del servidor va en una región `aria-live="assertive"` que existe siempre. El estado de la patente ("Validando…", "Patente validada", "No pudimos validarla…") en una región `polite`, como en `/pedido`.
+- Al pasar de paso o enviar, el foco va al título nuevo (`tabIndex=-1`); "Cambiar" y "Hacer otro pedido" lo devuelven a "¿Qué le pasa?".
+- Labels visibles en todos los campos; inputs de 16 px; objetivos de 44 px o más (pestañas, chips de 44, botones de 44 a 56, "Cambiar" de 44, "Hacer otro pedido" de 48). Foco: anillo `brand` en la celda de la barra (el input no tiene borde propio), en el control del WhatsApp y el global en el resto.
+- Chips con `aria-pressed`, dentro de un `role="group"` con nombre "Lo más pedido".
+- Links que salen del sitio con el aviso `sr-only` "(se abre en otra pestaña)" de `siteContent.nav.externalHint`.
+- Contraste: solo tokens ya verificados en la fase 1 (`fg`, `fg-muted` y `fg-subtle` sobre `card`, `action` sobre `brand-50`, `status-alert` sobre `card`).
+
+### CLS
+
+0 en la carga (PerformanceObserver de `layout-shift` a 390 y 1440 px). El estado inicial (Taller, paso 1) es el mismo en el server y al hidratar. Los cambios de alto (paso 2, enviado, errores, cambio de pestaña) pasan solo por un click o una tecla: con eventos reales de mouse y teclado por CDP, la suma de `layout-shift` sin `hadRecentInput` en todo el flujo dio 0 en los dos anchos.
+
+### Diferencias con el diseño y por qué
+
+- **Seguro**: sin el form del prototipo (no hay endpoint); panel con WhatsApp.
+- **Patente**: no se reusó `plate-field.tsx`. Es la patente del modal (obligatoria, label fijo "Patente", tarjeta "Sí, es mi auto / No es mi auto") y está atada al estado de `useQuoteFlow`; acá la patente es opcional y va en una fila. Se reusó la validación existente: `normalizePlateInput` e `isValidPlate`, el lookup en clasific.ar al salir del campo con el mismo hook que `/pedido` (nunca bloquea; el envío lo espera hasta 5 s) y el ícono de estado (`FieldStatusIcon`). Como en `/pedido`, no se muestran marca y modelo.
+- **Enviado**: no se reusó `quote-success.tsx` tal cual: importarlo desde la isla arrastra `use-quote-flow.ts` (todo el hook del modal) y `StoreLinks` al bundle. Se adaptó su anatomía (check en círculo, título, bajada, siguiente paso) al diseño del módulo, con el ícono y "Bajar la app" renderizados en el server. Suma el código del pedido ("Tu pedido es el #AL-1042") cuando el backend lo devuelve.
+- **Chips**: un chip reemplaza el texto de "¿Qué le pasa?" (como el prototipo); tocarlo de nuevo lo vacía. Está "puesto" si el campo dice exactamente su texto, así que editar a mano lo apaga. En `/pedido` los atajos se suman con coma.
+- **Texto legal**: el prototipo solo dice "Tu WhatsApp lo usamos solo para avisarte de este pedido". Como el envío manda `consent: true` sin checkbox (igual que `/pedido`), se sumó "Al enviarlo aceptás que compartamos tu consulta con proveedores de nuestra red." El link a `/privacidad` es interno.
+- **Inputs del paso 2 en píldora** con borde `control-line-strong` (`#6b7280`, decisión de la fase 2) en lugar de radio de 12 px y `#9ca3af`. El borde de la barra del paso 1 también usa `control-line-strong`.
+- **Breakpoint**: la barra pasa de tarjeta apilada a píldora en `md` (768 px), no en 861 px: la píldora entra desde ahí y es el breakpoint del repo más cercano.
+- **CTA de Seguro**: "Cotizá por WhatsApp" (el texto largo partía en dos renglones a 390 px).
+- **Hovers**: el diseño no los define; pestañas con borde `control-line` y el resto los de las primitivas.
+- **WhatsApp**: los links de Taller y Seguro usan `whatsappUrl` (el número de `siteConfig`), no el número escrito a mano del prototipo.
+
+### Endpoints que faltan
+
+- **Cotización de seguros** (por ejemplo `POST /api/v1/insurance-quote-requests` con patente, WhatsApp, tipo de cobertura y consentimiento). Con eso la pestaña Seguro puede tener el form del diseño.
+- **Pestaña o categoría en `quote-requests`**: el DTO no acepta un campo de categoría (ni los UTMs, TODO viejo). Hoy la pestaña solo queda en PostHog.
+- Auxilio y Multas no necesitan endpoint mientras sean aliados externos.
+
+### Dudas abiertas
+
+- ¿Producto confirma que Seguro vaya a WhatsApp hasta que exista el endpoint, y la promesa "te mandamos una cotización para que compares" (copy del diseño)?
+- ¿El chip debe reemplazar el texto (diseño) o sumarse con coma como los atajos de `/pedido`?
+- En el Home, ¿el WhatsApp del módulo tiene que ser `Lead` (con `lead_source`) o `Contact` como el resto del Home? Hoy: `Contact`. Es cambiar una línea en `modulo-pedido.tsx`.
+- `quote_step_viewed` ahora también lo manda el módulo (`step: 2`, `flow: "page"`): en Meta es `PedidoPaso`, que antes solo venía del modal (que ya no se abre). Si marketing usa ese evento, conviene avisarle.
+
+### Verificación
+
+- `npm run lint`: 0 errores, 282 warnings (los mismos preexistentes).
+- `npx tsc --noEmit`: sin errores.
+- `npm run build`: OK (`/pedido/modulo` estática).
+- Tests: `test:blog` 86, `test:provider-profile` 44, `test:proveedores` 58, `test:partner-claims` 16 y `test:partner-billing` 70, todos pasan. Ninguno cubre el pedido: no hay tests del form.
+- Visual con Chrome headless (CDP) sobre `next start --port 3100`, a 1440 y 390 px, contra `capturas/ModuloPedido.webp`, `Pedido.webp` y `Pedido-celular.webp`: paso 1, paso 1 con errores, paso 2, paso 2 con error de WhatsApp, error del servidor, enviado y los paneles de Auxilio y Seguro.
+- Flujo con teclado y mouse reales por CDP. **Ningún pedido salió**: `/api/presupuesto` se interceptó con `Fetch.requestPaused` (primero un 502 simulado, después un OK con `AL-9999`), y `/api/vehicle-lookup` y `maps.googleapis.com` se bloquearon. El body interceptado trae `quoteTab: "taller"` y `quotePlacement: "modulo_pedido"`.
+- `/pedido` después del refactor de `PedidoForm`: mismo flujo a 1440 px con la red interceptada (envío vacío marca problema, zona y WhatsApp con foco en el primero; 502 simulado muestra el error; el OK simulado muestra la confirmación con #AL-9998). El body sigue igual (sin `quoteTab` ni `quotePlacement`), el lookup de la patente sale al salir del campo y Google Maps recién al enfocar la zona.

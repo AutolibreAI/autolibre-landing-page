@@ -104,6 +104,25 @@ Hasta el 2026-11-05 el header de `/pedido` tenía un botón de WhatsApp (`placem
 
 > **Clave para Ads:** en `/pedido` la campaña optimiza sobre un solo `Lead`, que llega por dos caminos y se separa con `lead_source`: `whatsapp` (clicks) o `form` (pedido registrado).
 
+### 🧩 Módulo de pedido (`components/modulo-pedido`, rediseño fase 3)
+
+Pestañas Taller / Auxilio / Multas / Seguro. Lo van a montar el Home (`placement: "modulo_home"`) y `/pedido` (`placement: "modulo_pedido"`) en la fase 4; desde el 2026-11-24 vive en la vista previa `/pedido/modulo` (noindex, mide como `modulo_pedido`). Valores cerrados en `QUOTE_TABS`, `QUOTE_MODULE_PLACEMENTS` y `QUOTE_CHIPS` (`lib/analytics/events.ts`). Solo Taller registra un pedido; el `flow` sigue siendo `page` (mismo body y misma route que el form de `/pedido`), y `tab` + `placement` son lo que lo separa.
+
+| Botón / momento                                                         | Evento PostHog          | Props                                                                     | Meta                                                    | Cuándo |
+| ----------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------- | ------ |
+| Elige una pestaña                                                       | `quote_tab_selected`    | `tab`, `placement`                                                        | —                                                       | Click o flechas. La pestaña inicial (Taller) no cuenta |
+| Primera interacción con Taller (foco en un campo o un chip)             | `quote_started`         | `flow: "page"`, `tab: "taller"`, `placement`                              | `QuoteStart` (custom, sin params)                       | Una vez por carga del módulo |
+| Toca un chip de "Lo más pedido"                                         | `quote_chip_clicked`    | `chip` (id: `service`, `luz_tablero`, `alineacion_balanceo`, `frenos`, `aire_acondicionado`), `placement`, `selected` | — | Click |
+| Pasa al paso 2 (WhatsApp y patente)                                     | `quote_step_viewed`     | `flow: "page"`, `step: 2`, `tab: "taller"`, `placement`                   | `PedidoPaso {step}` (custom)                            | Una vez por carga del módulo |
+| Pedido registrado                                                       | `quote_submitted`       | server, ver [sección 4](#4-quote_submitted-en-el-server) (con `tab` y `placement`) | `Lead {lead_source: "form"}` + `eventID` compartido | Solo con OK del backend |
+| Envío fallido                                                           | `quote_failed`          | `flow: "page"`, `tab`, `placement`, `reason`, `status?`                   | —                                                       | Error |
+| "Pedilo por WhatsApp" (Taller)                                          | `whatsapp_clicked`      | `placement`, `tab: "taller"`, `lead_source: "whatsapp"` solo en `modulo_pedido` | `Lead` en `modulo_pedido`; `Contact` en `modulo_home` | Click |
+| "Cotizá por WhatsApp" (Seguro: no hay endpoint de seguros)              | `whatsapp_clicked`      | `placement`, `tab: "seguro"`, `lead_source` igual que arriba              | Igual que arriba                                        | Click |
+| "Pedí auxilio" (Asistir24) / "Consultá tu caso" (Sin Fotomultas)        | `quote_partner_clicked` | `tab: "auxilio"` / `"multas"`, `placement`                                | —                                                       | Click. Es el "inicio del pedido" de esas pestañas |
+| "Bajar la app" del enviado                                              | (sin evento propio)     |                                                                           |                                                         | Se ve el `$pageview` de `/descarga` |
+
+`lead_source`: el pedido registrado es `Lead {lead_source: "form"}` en las dos ubicaciones (igual que lo que manda la route a PostHog para todo `flow: "page"`). El WhatsApp sigue la regla de `/pedido`: en `modulo_pedido` es `Lead {lead_source: "whatsapp"}`; en `modulo_home`, un `Contact`, como el resto de los WhatsApp del Home. Ningún prop lleva lo que escribe la persona: el chip viaja por id.
+
 ### 📲 `/descarga`
 
 | Botón             | Evento PostHog      | Props                            | Meta | Cuándo |
@@ -143,6 +162,8 @@ Embudo de contratación: `plan_checkout_started` → `plan_checkout_redirected` 
 | Prop                                              | Qué es                                         |
 | ------------------------------------------------- | ---------------------------------------------- |
 | `flow`                                            | `modal` o `page`                               |
+| `tab`                                             | Solo desde el módulo de pedido: pestaña (`taller`) |
+| `placement`                                       | Solo desde el módulo de pedido: `modulo_home` o `modulo_pedido` |
 | `lead_source`                                     | `form` solo en `/pedido`; el modal va sin él (igual que el `Lead` del Pixel) |
 | `has_plate`                                       | Si puso patente                                |
 | `vehicle_identified`                              | Si se identificó el auto                       |

@@ -40,10 +40,30 @@ export const ANALYTICS_EVENTS = {
    * `page` desde que la home no abre más el modal.
    */
   quoteCtaClicked: "quote_cta_clicked",
-  /** Empezó un pedido de presupuesto en `/pedido`. Meta: `QuoteStart`. */
+  /**
+   * Empezó un pedido de presupuesto (form de `/pedido` o pestaña Taller del
+   * módulo de pedido, con `tab` y `placement`). Meta: `QuoteStart`.
+   */
   quoteStarted: "quote_started",
-  /** Vio un paso del modal de presupuesto. Meta: `PedidoPaso`. */
+  /**
+   * Vio un paso del modal de presupuesto o el paso 2 del módulo de pedido
+   * (con `tab` y `placement`). Meta: `PedidoPaso`.
+   */
   quoteStepViewed: "quote_step_viewed",
+  /**
+   * Eligió una pestaña del módulo de pedido (Taller, Auxilio, Multas,
+   * Seguro). Solo la elección de la persona: la pestaña inicial no cuenta.
+   * Sólo PostHog.
+   */
+  quoteTabSelected: "quote_tab_selected",
+  /** Tocó un chip de "Lo más pedido" del módulo de pedido. Sólo PostHog. */
+  quoteChipClicked: "quote_chip_clicked",
+  /**
+   * Click en el CTA de un aliado desde una pestaña del módulo de pedido
+   * (Auxilio → Asistir24, Multas → Sin Fotomultas). Es el "inicio del
+   * pedido" de esas pestañas, que no tienen form propio. Sólo PostHog.
+   */
+  quotePartnerClicked: "quote_partner_clicked",
   /**
    * Pedido registrado por el backend. En PostHog lo manda el SERVER (ver
    * `app/api/presupuesto/route.ts`); el navegador sólo manda el `Lead` de Meta
@@ -174,6 +194,52 @@ export const LAYOUT_PLACEMENTS = {
 } as const;
 
 /**
+ * Pestañas del módulo de pedido (`components/modulo-pedido`). Viaja como
+ * `tab`; el listener de `data-analytics-tab` y la route de
+ * `/api/presupuesto` descartan cualquier otro valor. Solo `taller` manda un
+ * pedido al backend; las demás llevan a un aliado o a WhatsApp.
+ */
+export const QUOTE_TABS = {
+  taller: "taller",
+  auxilio: "auxilio",
+  multas: "multas",
+  seguro: "seguro",
+} as const;
+
+export type QuoteTab = (typeof QUOTE_TABS)[keyof typeof QUOTE_TABS];
+
+/**
+ * Dónde está montado el módulo de pedido. Viaja como `placement` de sus
+ * eventos (incluido `whatsapp_clicked`) y del `quote_submitted` del server.
+ */
+export const QUOTE_MODULE_PLACEMENTS = {
+  home: "modulo_home",
+  pedido: "modulo_pedido",
+} as const;
+
+export type QuoteModulePlacement =
+  (typeof QUOTE_MODULE_PLACEMENTS)[keyof typeof QUOTE_MODULE_PLACEMENTS];
+
+/** Chips de "Lo más pedido" del módulo. Viaja como `chip` (el id, nunca texto libre). */
+export const QUOTE_CHIPS = {
+  service: "service",
+  luzTablero: "luz_tablero",
+  alineacion: "alineacion_balanceo",
+  frenos: "frenos",
+  aire: "aire_acondicionado",
+} as const;
+
+export type QuoteChip = (typeof QUOTE_CHIPS)[keyof typeof QUOTE_CHIPS];
+
+/** Props comunes de los eventos del módulo de pedido. */
+type QuoteModuleProps = {
+  /** Pestaña del módulo. Solo en eventos del módulo de pedido. */
+  tab?: QuoteTab;
+  /** Dónde está montado el módulo. */
+  placement?: QuoteModulePlacement;
+};
+
+/**
  * Qué flujo de pedido: el form de `/pedido` (`page`) o el modal de la home
  * (`modal`, que ya no se abre desde ningún lado y queda por compatibilidad
  * con el tipo que usa el server y con los reportes históricos).
@@ -219,6 +285,8 @@ export type AnalyticsEventProps = {
     pedido?: true;
     /** Slug del proveedor cuando el click es de su perfil público. */
     provider?: string;
+    /** Pestaña del módulo de pedido desde la que se abrió el chat. */
+    tab?: QuoteTab;
   };
   provider_action_clicked: {
     action: ProviderAction;
@@ -231,15 +299,23 @@ export type AnalyticsEventProps = {
     placement?: string;
   };
   quote_cta_clicked: { placement: QuoteCtaPlacement };
-  quote_started: { flow: QuoteFlow };
-  quote_step_viewed: { flow: QuoteFlow; step: number };
-  quote_submitted: { flow: QuoteFlow; lead_source?: LeadSource };
+  quote_started: { flow: QuoteFlow } & QuoteModuleProps;
+  quote_step_viewed: { flow: QuoteFlow; step: number } & QuoteModuleProps;
+  quote_submitted: { flow: QuoteFlow; lead_source?: LeadSource } & QuoteModuleProps;
   quote_failed: {
     flow: QuoteFlow;
     /** `network`: no hubo respuesta. `server`: el backend respondió error. */
     reason: "network" | "server";
     status?: number;
+  } & QuoteModuleProps;
+  quote_tab_selected: { tab: QuoteTab; placement: QuoteModulePlacement };
+  quote_chip_clicked: {
+    chip: QuoteChip;
+    placement: QuoteModulePlacement;
+    /** `true` si el toque lo dejó puesto; `false` si lo sacó. */
+    selected: boolean;
   };
+  quote_partner_clicked: { tab: QuoteTab; placement?: string };
   directory_empty_quote_clicked: {
     /** Había una búsqueda por nombre. Sólo la presencia, nunca el texto. */
     has_query?: true;
@@ -369,6 +445,21 @@ export const ANALYTICS_CATALOG: Record<AnalyticsEventName, CatalogEntry> = {
     posthog: "client",
     meta: () => null,
     clickable: false,
+  },
+  quote_tab_selected: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  quote_chip_clicked: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  quote_partner_clicked: {
+    posthog: "client",
+    meta: () => null,
+    clickable: true,
   },
   directory_empty_quote_clicked: {
     posthog: "client",

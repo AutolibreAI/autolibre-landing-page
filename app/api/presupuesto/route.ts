@@ -4,8 +4,12 @@ import {
   ANALYTICS_EVENTS,
   LEAD_SOURCES,
   QUOTE_FLOWS,
+  QUOTE_MODULE_PLACEMENTS,
+  QUOTE_TABS,
   type AnalyticsProps,
   type QuoteFlow,
+  type QuoteModulePlacement,
+  type QuoteTab,
 } from "@/lib/analytics/events";
 import { META_EVENTS } from "@/lib/analytics/meta-pixel";
 import { capturePostHogServerEvent, posthogIdOrNull } from "@/lib/analytics/posthog-server";
@@ -34,6 +38,24 @@ function metaEventIdOrNull(raw: unknown): string | null {
  */
 function quoteFlowOrNull(raw: unknown): QuoteFlow | null {
   return raw === QUOTE_FLOWS.modal || raw === QUOTE_FLOWS.page ? raw : null;
+}
+
+const QUOTE_TAB_VALUES = new Set<string>(Object.values(QUOTE_TABS));
+const QUOTE_MODULE_PLACEMENT_VALUES = new Set<string>(Object.values(QUOTE_MODULE_PLACEMENTS));
+
+/**
+ * Pestaña y ubicación del módulo de pedido, si el pedido vino de ahí.
+ * Opcionales y cerrados, igual que `quoteFlow`: solo viajan a PostHog (al
+ * backend no llegan: su DTO rechaza campos desconocidos).
+ */
+function quoteTabOrNull(raw: unknown): QuoteTab | null {
+  return typeof raw === "string" && QUOTE_TAB_VALUES.has(raw) ? (raw as QuoteTab) : null;
+}
+
+function quotePlacementOrNull(raw: unknown): QuoteModulePlacement | null {
+  return typeof raw === "string" && QUOTE_MODULE_PLACEMENT_VALUES.has(raw)
+    ? (raw as QuoteModulePlacement)
+    : null;
 }
 
 /** Primer hop de `x-forwarded-for` (el cliente real detrás del proxy). */
@@ -204,6 +226,8 @@ export async function POST(req: NextRequest) {
     posthogDistinctId: rawPosthogDistinctId,
     posthogSessionId: rawPosthogSessionId,
     quoteFlow: rawQuoteFlow,
+    quoteTab: rawQuoteTab,
+    quotePlacement: rawQuotePlacement,
   } = body;
 
   const plate = optionalPlate(rawPlate);
@@ -307,11 +331,16 @@ export async function POST(req: NextRequest) {
     // datos personales: nada de WhatsApp, correo, zona, patente ni
     // descripción; del auto, sólo marca/modelo/año si se validó.
     const flow = quoteFlowOrNull(rawQuoteFlow);
+    const tab = quoteTabOrNull(rawQuoteTab);
+    const placement = quotePlacementOrNull(rawQuotePlacement);
     const posthogProperties: AnalyticsProps = {
       // Igual que el `Lead` del Pixel: `lead_source: "form"` sólo en `/pedido`
       // (lo separa del `Lead` de sus botones de WhatsApp); el modal va sin él.
       ...(flow === QUOTE_FLOWS.page ? { lead_source: LEAD_SOURCES.form } : {}),
       ...(flow ? { flow } : {}),
+      // Solo desde el módulo de pedido: de qué pestaña y de qué página.
+      ...(tab ? { tab } : {}),
+      ...(placement ? { placement } : {}),
       has_plate: Boolean(plate),
       vehicle_identified: Boolean(vehicleLookup),
       ...(vehicleLookup

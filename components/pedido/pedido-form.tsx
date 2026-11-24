@@ -18,22 +18,10 @@ import { createMetaEventId } from "@/lib/analytics/meta-pixel";
 import { getPostHogIds } from "@/lib/analytics/posthog";
 import { track } from "@/lib/analytics/track";
 import { presupuestoContent, whatsappErrorMessage } from "@/lib/content/presupuesto";
-import {
-  EMPTY_GEO,
-  hidePlacesDropdownFromReplay,
-  loadGooglePlaces,
-  placeSelection,
-  QUOTE_AUTOCOMPLETE_OPTIONS,
-  type PlaceGeo,
-} from "@/lib/google-places";
+import { EMPTY_GEO, type PlaceGeo } from "@/lib/google-places";
 import { parseArWhatsapp } from "@/lib/phone";
 import { isValidPlate, normalizePlateInput } from "@/lib/plate";
 import { cn } from "@/lib/utils";
-import type { VehicleLookupSnapshot } from "@/lib/vehicle-lookup";
-import {
-  lookupVehicleFromBrowser,
-  type VehicleLookupOutcome,
-} from "@/lib/vehicle-lookup-client";
 import { whatsappUrl } from "@/lib/whatsapp";
 import {
   FORM_TOGGLE_EVENT,
@@ -43,6 +31,13 @@ import {
   type FormToggleDetail,
 } from "./shared";
 import { WhatsappLink } from "./whatsapp-link";
+import {
+  placesDropdownOpen,
+  postQuoteRequest,
+  usePlacesAutocomplete,
+  usePlateLookup,
+  type PlateCheck,
+} from "./pedido-client";
 // Estilos del dropdown de Google Places. CSS global porque Google cuelga el
 // listbox de <body>, fuera del árbol de React. Solo lo importa esta isla.
 import "@/components/quote-flow/places-autocomplete.css";
@@ -72,12 +67,6 @@ const EMPTY_VALUES: FieldValues = { zona: "", problema: "", patente: "", whatsap
  */
 const VALIDATE_ON_BLUR: readonly FieldName[] = ["patente", "whatsapp"];
 
-/**
- * Cuánto espera el envío a un lookup que todavía no terminó. Pasado esto el
- * pedido sale igual, sin el auto: la validación de la patente nunca bloquea.
- */
-const SUBMIT_LOOKUP_WAIT_MS = 5000;
-
 type Status =
   | { kind: "idle" }
   | { kind: "submitting" }
@@ -89,24 +78,6 @@ type Status =
       zona: string;
       plate: string;
     };
-
-/**
- * Estado visible del lookup de la patente. No se muestra el auto (marca y
- * modelo): solo si se pudo validar. El `snapshot` viaja con el pedido.
- */
-type PlateCheck =
-  | { kind: "idle" }
-  | { kind: "validating"; plate: string }
-  | { kind: "valid"; plate: string }
-  | { kind: "unverified"; plate: string };
-
-/** El lookup en curso o terminado de UNA patente, fuera del render. */
-type PlateLookup = {
-  plate: string;
-  controller: AbortController;
-  promise: Promise<VehicleLookupOutcome>;
-  outcome: VehicleLookupOutcome | null;
-};
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -121,30 +92,6 @@ function validate(values: FieldValues): FieldErrors {
   const phone = parseArWhatsapp(values.whatsapp);
   if (!phone.ok) errors.whatsapp = whatsappErrorMessage(phone.error, phone.diff);
   return errors;
-}
-
-/** El dropdown de Google Places está abierto y con sugerencias. */
-function placesDropdownOpen(): boolean {
-  return Array.from(document.querySelectorAll<HTMLElement>(".pac-container")).some(
-    (el) => el.offsetParent !== null && el.querySelector(".pac-item") !== null,
-  );
-}
-
-/** Resuelve `null` si `promise` no terminó en `ms`. */
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
-  return new Promise((resolve) => {
-    const timer = setTimeout(() => resolve(null), ms);
-    promise.then(
-      (value) => {
-        clearTimeout(timer);
-        resolve(value);
-      },
-      () => {
-        clearTimeout(timer);
-        resolve(null);
-      },
-    );
-  });
 }
 
 /**
@@ -181,7 +128,6 @@ export function PedidoForm() {
   const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
   const [attempted, setAttempted] = useState(false);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
-  const [plateCheck, setPlateCheck] = useState<PlateCheck>({ kind: "idle" });
   const [open, setOpen] = useState(false);
 
   const rootRef = useRef<HTMLElement>(null);
@@ -194,9 +140,6 @@ export function PedidoForm() {
   const pushedRef = useRef(false);
   const openRef = useRef(false);
   const quoteStartTrackedRef = useRef(false);
-  const placesRequestedRef = useRef(false);
-  const placesListenerRef = useRef<{ remove: () => void } | null>(null);
-  const plateLookupRef = useRef<PlateLookup | null>(null);
 
   const fieldRefs: Record<FieldName, React.RefObject<HTMLElement | null>> = {
     zona: zonaRef,
@@ -348,101 +291,20 @@ export function PedidoForm() {
   }, [status.kind]);
 
   // ── Google Places: se carga recién al primer foco del campo de zona ─────
+  // (ver `usePlacesAutocomplete`). Elegir una sugerencia completa la zona y
+  // guarda su geocode.
 
-  function ensurePlaces() {
-    if (placesRequestedRef.current) return;
-    placesRequestedRef.current = true;
-    loadGooglePlaces().then((ready) => {
-      const input = zonaRef.current;
-      if (!ready || !input || !window.google?.maps?.places) {
-        // Sin key o sin red: el campo sigue siendo texto libre. Se deja
-        // reintentar en el próximo foco.
-        placesRequestedRef.current = false;
-        return;
-      }
-      if (placesListenerRef.current) return;
-      const autocomplete = new window.google.maps.places.Autocomplete(
-        input,
-        QUOTE_AUTOCOMPLETE_OPTIONS,
-      );
-      hidePlacesDropdownFromReplay();
-      placesListenerRef.current = autocomplete.addListener("place_changed", () => {
-        const selection = placeSelection(autocomplete.getPlace());
-        if (!selection) return;
-        setValues((current) => ({ ...current, zona: selection.value }));
-        setGeo(selection.geo);
-      });
-    });
-  }
+  const ensurePlaces = usePlacesAutocomplete(zonaRef, (selection) => {
+    setValues((current) => ({ ...current, zona: selection.value }));
+    setGeo(selection.geo);
+  });
 
-  // `.pac-container` cuelga de <body> y Google no lo limpia solo. Y ningún
-  // lookup de patente sigue vivo (ni su polling) con el form desmontado.
-  useEffect(
-    () => () => {
-      placesListenerRef.current?.remove();
-      document.querySelectorAll(".pac-container").forEach((el) => el.remove());
-      plateLookupRef.current?.controller.abort();
-    },
-    [],
-  );
-
-  // ── Patente: lookup en clasific.ar ─────────────────────────────────────
-
-  /**
-   * Arranca (una vez por patente) el lookup de `plate`, ya válida. Si había
-   * otro en curso por una patente distinta, lo cancela: su resultado nunca
-   * llega al estado. Devuelve la promesa, para que el envío pueda esperarla.
-   */
-  function startPlateLookup(plate: string): Promise<VehicleLookupOutcome> {
-    const current = plateLookupRef.current;
-    if (current?.plate === plate) return current.promise;
-    current?.controller.abort();
-
-    const controller = new AbortController();
-    const lookup: PlateLookup = {
-      plate,
-      controller,
-      outcome: null,
-      promise: lookupVehicleFromBrowser(plate, { signal: controller.signal }).then(
-        (outcome) => {
-          lookup.outcome = outcome;
-          if (outcome.kind !== "aborted" && plateLookupRef.current === lookup) {
-            setPlateCheck({
-              kind: outcome.kind === "found" ? "valid" : "unverified",
-              plate,
-            });
-          }
-          return outcome;
-        },
-      ),
-    };
-    plateLookupRef.current = lookup;
-    setPlateCheck({ kind: "validating", plate });
-    return lookup.promise;
-  }
-
+  // ── Patente: lookup en clasific.ar (ver `usePlateLookup`) ──────────────
   // El lookup arranca al salir del campo (o al enviar). Editar la patente
   // después cancela lo que hubiera en curso y vuelve el estado a cero.
-  const plate = values.patente;
-  useEffect(() => {
-    const current = plateLookupRef.current;
-    if (!current || current.plate === plate) return;
-    current.controller.abort();
-    plateLookupRef.current = null;
-    setPlateCheck({ kind: "idle" });
-  }, [plate]);
 
-  /**
-   * Lo que viaja como `vehicleLookup`: el snapshot del auto encontrado para
-   * ESTA patente. Si el lookup sigue en curso lo espera, con tope; si no
-   * terminó a tiempo, falló o no lo encontró, el pedido sale sin él.
-   */
-  async function snapshotForSubmit(plateValue: string): Promise<VehicleLookupSnapshot | undefined> {
-    if (!isValidPlate(plateValue)) return undefined;
-    const outcome = await withTimeout(startPlateLookup(plateValue), SUBMIT_LOOKUP_WAIT_MS);
-    if (outcome?.kind !== "found" || !outcome.snapshot) return undefined;
-    return outcome.snapshot.queriedPlate === plateValue ? outcome.snapshot : undefined;
-  }
+  const { plateCheck, startPlateLookup, snapshotForSubmit, abortPlateLookup } =
+    usePlateLookup(values.patente);
 
   // ── Campos ─────────────────────────────────────────────────────────────
 
@@ -520,61 +382,48 @@ export function PedidoForm() {
     // persona y sesión de PostHog. Sin PostHog, no viajan.
     const posthogIds = getPostHogIds();
 
-    let response: Response;
-    let data: { error?: unknown; publicCode?: unknown } | null;
-    try {
-      response = await fetch("/api/presupuesto", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          // Opcional: sin patente no viaja, ni ella ni el `vehicleLookup`
-          // (el backend da 400 si llega un snapshot sin patente).
-          ...(plateValue ? { plate: plateValue } : {}),
-          ...(plateValue && vehicleLookup ? { vehicleLookup } : {}),
-          description: values.problema.trim(),
-          // Tal cual: la route lo valida y normaliza con la misma regla.
-          contactPhone: values.whatsapp.trim(),
-          address: zona,
-          // Solo si vinieron de una sugerencia elegida: `geo` se resetea en
-          // cuanto la persona edita el texto a mano.
-          latitude: geo.latitude,
-          longitude: geo.longitude,
-          locality: geo.locality,
-          province: geo.province,
-          // Sin checkbox: pedir es aceptar (lo dice el texto legal debajo
-          // del botón, con el link a /privacidad).
-          consent: true,
-          // Lo consume la route para la Conversions API; al backend no llega.
-          metaEventId,
-          // Los consume la route para PostHog; al backend no llegan.
-          quoteFlow: QUOTE_FLOWS.page,
-          posthogDistinctId: posthogIds?.distinctId,
-          posthogSessionId: posthogIds?.sessionId,
-        }),
-      });
-      data = await response.json().catch(() => null);
-    } catch {
-      track(ANALYTICS_EVENTS.quoteFailed, { flow: QUOTE_FLOWS.page, reason: "network" });
-      setStatus({ kind: "error", message: copy.genericError });
-      return;
-    }
+    const result = await postQuoteRequest({
+      // Opcional: sin patente no viaja, ni ella ni el `vehicleLookup`
+      // (el backend da 400 si llega un snapshot sin patente).
+      ...(plateValue ? { plate: plateValue } : {}),
+      ...(plateValue && vehicleLookup ? { vehicleLookup } : {}),
+      description: values.problema.trim(),
+      // Tal cual: la route lo valida y normaliza con la misma regla.
+      contactPhone: values.whatsapp.trim(),
+      address: zona,
+      // Solo si vinieron de una sugerencia elegida: `geo` se resetea en
+      // cuanto la persona edita el texto a mano.
+      latitude: geo.latitude,
+      longitude: geo.longitude,
+      locality: geo.locality,
+      province: geo.province,
+      // Sin checkbox: pedir es aceptar (lo dice el texto legal debajo
+      // del botón, con el link a /privacidad).
+      consent: true,
+      // Lo consume la route para la Conversions API; al backend no llega.
+      metaEventId,
+      // Los consume la route para PostHog; al backend no llegan.
+      quoteFlow: QUOTE_FLOWS.page,
+      posthogDistinctId: posthogIds?.distinctId,
+      posthogSessionId: posthogIds?.sessionId,
+    });
 
-    if (!response.ok) {
+    if (!result.ok) {
       track(ANALYTICS_EVENTS.quoteFailed, {
         flow: QUOTE_FLOWS.page,
-        reason: "server",
-        status: response.status,
+        ...(result.reason === "server"
+          ? { reason: "server", status: result.status }
+          : { reason: "network" }),
       });
       setStatus({
         kind: "error",
-        message:
-          typeof data?.error === "string" && data.error ? data.error : copy.genericError,
+        message: (result.reason === "server" && result.message) || copy.genericError,
       });
       return;
     }
 
     // El pedido ya entró: si el lookup seguía con su polling, no hace falta.
-    plateLookupRef.current?.controller.abort();
+    abortPlateLookup();
     // `Lead` de Meta con el `eventID` de la Conversions API. `lead_source`
     // lo separa del de los botones de WhatsApp: los dos son la conversión de
     // la campaña (ver `LEAD_SOURCES`). En PostHog `quote_submitted` lo manda
@@ -586,10 +435,7 @@ export function PedidoForm() {
     );
     setStatus({
       kind: "success",
-      publicCode:
-        typeof data?.publicCode === "string" && data.publicCode.trim()
-          ? data.publicCode.trim().replace(/^#+/, "")
-          : null,
+      publicCode: result.publicCode,
       zona,
       plate: plateValue,
     });
