@@ -52,12 +52,14 @@ export const partnerAccountContent = {
 
   /**
    * Elección antes del `<SignUp>` de Clerk (y, en una cuenta recién creada
-   * desde "Ingresar", después). La cuenta es una sola: la elección solo
-   * ordena lo que ve primero en "Mi cuenta".
+   * desde "Ingresar", después). La elección define el tipo de cuenta
+   * (`publicMetadata.signupIntent` → `users.role` en el backend) y no se
+   * cambia después: el texto tiene que pedir que se elija bien, nunca decir
+   * que da lo mismo.
    */
   intentChoice: {
     legend: "¿Cómo vas a usar AutoLibre?",
-    hint: "Es la misma cuenta para las dos cosas: esto solo ordena lo que ves primero.",
+    hint: "Elegí la opción que te corresponde: así armamos tu cuenta como cliente o como negocio.",
     options: {
       customer: {
         title: "Soy cliente",
