@@ -97,11 +97,11 @@ function SignedInAccount({ selfPath }: AccountPanelProps) {
               {partners.reason === "unauthenticated" ? page.partners.unauthenticated : page.partners.error}
             </p>
             {partners.reason === "unauthenticated" ? (
-              <Button type="button" variant="outline" onClick={() => void signOut({ redirectUrl: selfPath })}>
+              <Button type="button" variant="brandOutline" onClick={() => void signOut({ redirectUrl: selfPath })}>
                 {partnerAccountContent.reauth}
               </Button>
             ) : (
-              <Button type="button" variant="outline" onClick={retry}>
+              <Button type="button" variant="brandOutline" onClick={retry}>
                 {page.partners.retry}
               </Button>
             )}
@@ -290,7 +290,7 @@ function PartnerRow({ partner, selfPath }: { readonly partner: Membership; reado
             <ButtonLink
               href={`${PROVEEDORES_CONTRATAR_RESULTADO_PATH}?${new URLSearchParams({ partnerId: partner.partnerId }).toString()}`}
               prefetch={false}
-              variant="outline"
+              variant="brandOutline"
               size="sm"
               className="min-h-11 self-start"
             >
@@ -304,7 +304,7 @@ function PartnerRow({ partner, selfPath }: { readonly partner: Membership; reado
                 rel="noopener noreferrer"
                 data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
                 data-analytics-placement="cuenta_cambiar_plan"
-                className={cn(buttonVariants({ variant: "outline", size: "sm" }), "min-h-11 self-start")}
+                className={cn(buttonVariants({ variant: "brandOutline", size: "sm" }), "min-h-11 self-start")}
               >
                 {page.actions.changePlan}
               </a>

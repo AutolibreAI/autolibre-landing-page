@@ -89,7 +89,7 @@ export function CancelSubscription({
       <Button
         ref={triggerRef}
         type="button"
-        variant="outline"
+        variant="brandOutline"
         size="sm"
         className="min-h-11 self-start"
         aria-expanded={false}
@@ -161,7 +161,7 @@ export function CancelSubscription({
         ) : null}
         <Button
           type="button"
-          variant="outline"
+          variant="brandOutline"
           size="sm"
           className="min-h-11"
           disabled={submitting}

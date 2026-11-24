@@ -11,19 +11,30 @@ import "./globals.css";
 
 /**
  * Fuentes autohospedadas por next/font: cero requests a Google, cero
- * render-blocking y cero CLS. Ambas son variable fonts, así que un solo
- * archivo cubre todos los pesos.
+ * render-blocking y CLS acotado por el fallback métrico (`adjustFontFallback`:
+ * una Arial con `size-adjust` y métricas ajustadas a la fuente real).
+ *
+ * Ambas son variable fonts y se cargan SIN `weight`: un solo woff2 por familia
+ * (subset latin) cubre todos los pesos. Se midió (2026-11-24, fase 1 del
+ * rediseño) que pedir pesos sueltos o un rango no achica nada: Google sirve
+ * el MISMO archivo variable (Outfit 32,3 KB, DM Sans 36,9 KB) para
+ * `wght@600;700`, `wght@600..700` o el rango completo. Acotar el rango solo
+ * agregaría riesgo: un peso fuera del rango se clamparía en silencio.
+ * Pesos en uso: Outfit 500/600/700/800 (headings y `font-display`), DM Sans
+ * 400/500/600/700.
  */
 const outfit = Outfit({
   subsets: ["latin"],
   variable: "--font-outfit",
   display: "swap",
+  adjustFontFallback: true,
 });
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-dm-sans",
   display: "swap",
+  adjustFontFallback: true,
 });
 
 export const metadata: Metadata = {

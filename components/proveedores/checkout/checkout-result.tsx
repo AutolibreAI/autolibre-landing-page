@@ -335,7 +335,7 @@ function PendingResult({
             <p className="mt-1 text-[0.9375rem] leading-relaxed text-ink/70">{pendingTimeout.notPaid.body}</p>
           </div>
           {/* Sin prefetch: `/contratar` es otra pantalla privada con su Clerk. */}
-          <ButtonLink href={retryHref ?? content.plansLink.href} prefetch={false} variant="outline">
+          <ButtonLink href={retryHref ?? content.plansLink.href} prefetch={false} variant="brandOutline">
             {retryHref ? pendingTimeout.notPaid.cta : pendingTimeout.choosePlan}
           </ButtonLink>
         </div>

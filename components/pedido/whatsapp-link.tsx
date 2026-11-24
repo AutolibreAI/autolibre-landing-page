@@ -23,8 +23,8 @@ type WhatsappLinkProps = {
   /** Default: el chat precargado de la página. La confirmación manda el suyo. */
   readonly href?: string;
   readonly label?: string;
-  /** Variantes de `buttonVariants` (la home): `primary` sobre claro, `inverse` sobre ink. */
-  readonly variant?: "primary" | "inverse";
+  /** Variantes de `buttonVariants` (la home): `brand` sobre claro, `inverse` sobre ink. */
+  readonly variant?: "brand" | "inverse";
   readonly size?: "sm" | "md" | "lg";
   readonly block?: boolean;
   /**
@@ -55,7 +55,7 @@ export function WhatsappLink({
   placement,
   href = whatsappUrl(whatsapp.text),
   label = whatsapp.label,
-  variant = "primary",
+  variant = "brand",
   size = "lg",
   block,
   afterOrder = false,

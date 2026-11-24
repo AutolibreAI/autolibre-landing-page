@@ -234,11 +234,11 @@ function SignedInCheckout({ planCode, planName, selfPath }: SignedInCheckoutProp
               {partners.reason === "unauthenticated" ? content.errors.unauthenticated : content.partnersError}
             </h2>
             {partners.reason === "unauthenticated" ? (
-              <Button type="button" variant="outline" onClick={reauth}>
+              <Button type="button" variant="brandOutline" onClick={reauth}>
                 {content.reauth}
               </Button>
             ) : (
-              <Button type="button" variant="outline" onClick={retryPartners}>
+              <Button type="button" variant="brandOutline" onClick={retryPartners}>
                 {content.retry}
               </Button>
             )}
@@ -493,7 +493,7 @@ function CheckoutForm({
                   ) : plan.kind === "error" ? (
                     <span className="flex flex-col items-start gap-2">
                       <span className="text-danger">{content.plansError}</span>
-                      <Button type="button" variant="outline" size="sm" className="min-h-11" onClick={onRetryPlan}>
+                      <Button type="button" variant="brandOutline" size="sm" className="min-h-11" onClick={onRetryPlan}>
                         {content.retry}
                       </Button>
                     </span>
@@ -562,7 +562,7 @@ function CheckoutForm({
             {termsVersion.kind === "error" ? (
               <div className="flex flex-col items-start gap-2">
                 <p className="text-danger">{content.prepareError}</p>
-                <Button type="button" variant="outline" className="min-h-11" onClick={onReloadTerms}>
+                <Button type="button" variant="brandOutline" className="min-h-11" onClick={onReloadTerms}>
                   {content.retry}
                 </Button>
               </div>
@@ -649,7 +649,7 @@ function ActivePlanNotice({
           rel="noopener noreferrer"
           data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
           data-analytics-placement="contratar_plan_activo"
-          className={cn(buttonVariants({ variant: "outline" }), "min-h-11 self-start")}
+          className={cn(buttonVariants({ variant: "brandOutline" }), "min-h-11 self-start")}
         >
           {activePlan.salesCta}
         </a>
@@ -669,7 +669,7 @@ function ActivePlanNotice({
 function ErrorAction({ kind, onReauth }: { readonly kind: CheckoutResult["kind"]; readonly onReauth: () => void }) {
   if (kind === "unauthenticated") {
     return (
-      <Button type="button" variant="outline" onClick={onReauth}>
+      <Button type="button" variant="brandOutline" onClick={onReauth}>
         {content.reauth}
       </Button>
     );

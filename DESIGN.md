@@ -1,114 +1,279 @@
 ---
-name: AutoLibre
-description: Verde de taller sobre papel blanco — una landing clara, plana y de una sola voz.
+name: AutoLibre AI
+description: Verde casi negro para actuar, lienzo gris cálido, tarjetas planas con borde fino y todo lo que se toca en píldora.
+status: vigente desde el rediseño de 2026-11 (fase 1). El sistema anterior ("El taller ordenado") queda deprecado al final de este archivo.
 colors:
+  canvas: "#f1f2f0"
+  card: "#fefefd"
+  card-line: "#e4eae4"
+  card-muted: "#f3f4f6"
+  control-line: "#d1d5db"
+  control-line-strong: "#9ca3af"
+  action: "#1c2b1c"
+  action-hover: "#2a3a2a"
+  fg: "#111827"
+  fg-muted: "#374151"
+  fg-subtle: "#6b7280"
+  on-dark: "#dcdedc"
+  on-dark-muted: "#b8bcb8"
+  on-dark-subtle: "#8c968c"
   brand: "#2a8c3a"
   brand-hover: "#23752f"
-  brand-soft: "#5fa86b"
+  brand-50: "#e8f5e8"
+  brand-200: "#a8dfb0"
   ink: "#1c2b1c"
-  surface: "#ffffff"
-  surface-muted: "#eaf3ec"
-  surface-subtle: "#f7faf8"
-  line: "#eaf3ec"
+  status-ok: "#1a7a4a"
+  status-ok-bg: "#e0f5ec"
+  status-pending: "#78350f"
+  status-pending-bg: "#fef3c7"
+  status-alert: "#b91c1c"
   alert-bg: "#fbe2e2"
-  alert-fg: "#c24949"
-  danger: "#d20000"
+  rating: "#f59e0b"
 typography:
   display:
     fontFamily: "Outfit, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "clamp(2.75rem, 5vw, 4rem)"
+    fontSize: "clamp(2.375rem, 5.4vw, 4.25rem)"
     fontWeight: 700
     lineHeight: 1.05
     letterSpacing: "-0.01em"
   headline:
     fontFamily: "Outfit, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "clamp(2.25rem, 4vw, 2.875rem)"
+    fontSize: "clamp(1.625rem, 3vw, 2.25rem)"
     fontWeight: 700
-    lineHeight: 1.15
+    lineHeight: 1.12
     letterSpacing: "-0.01em"
-  title:
+  control:
     fontFamily: "Outfit, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1.75rem"
-    fontWeight: 700
-    lineHeight: 1.15
-    letterSpacing: "-0.01em"
+    fontSize: "0.9375rem"
+    fontWeight: 600
   body:
     fontFamily: "DM Sans, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "clamp(1.0625rem, 1.5vw, 1.1875rem)"
+    fontSize: "1rem"
     fontWeight: 400
-    lineHeight: 1.625
-    letterSpacing: "normal"
+    lineHeight: 1.5
   label:
     fontFamily: "DM Sans, ui-sans-serif, system-ui, sans-serif"
     fontSize: "0.8125rem"
     fontWeight: 600
-    lineHeight: 1.4
-    letterSpacing: "normal"
 rounded:
-  field: "0.625rem"
+  pill: "9999px"
   card: "1rem"
   panel: "1.25rem"
-  pill: "9999px"
+  card-xl: "1.5rem"
 spacing:
-  gutter: "6%"
-  header: "4.5rem"
-  section-sm: "3rem"
-  section-md: "4rem"
-  section-lg: "5rem"
-  section-lg-desktop: "7.5rem"
   touch-min: "2.75rem"
+  control-heights: "2.75rem / 3rem / 3.25rem / 3.5rem"
 components:
   button-primary:
-    backgroundColor: "{colors.brand-hover}"
-    textColor: "{colors.surface}"
-    rounded: "{rounded.field}"
-    padding: "0.625rem 1.25rem"
-    typography: "{typography.label}"
-  button-primary-hover:
-    backgroundColor: "{colors.brand}"
-  button-outline:
-    backgroundColor: "transparent"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.field}"
-    padding: "0.625rem 1.25rem"
-  button-inverse:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.field}"
-    padding: "0.625rem 1.25rem"
-  card-outline:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.card}"
-  card-elevated:
-    backgroundColor: "{colors.surface-subtle}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.card}"
-  input-field:
-    backgroundColor: "{colors.surface-subtle}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.field}"
-    padding: "0.75rem 0.875rem"
-  chip-pill:
-    backgroundColor: "{colors.surface-subtle}"
-    textColor: "{colors.ink}"
+    backgroundColor: "{colors.action}"
+    hoverBackgroundColor: "{colors.action-hover}"
+    textColor: "#ffffff"
     rounded: "{rounded.pill}"
-    padding: "0.5rem 0.875rem"
-  store-badge:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.surface}"
-    rounded: "{rounded.field}"
-    padding: "0.75rem 1.25rem"
-  store-badge-on-dark:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.field}"
-    padding: "0.75rem 1.25rem"
+    typography: "{typography.control}"
+    height: "44 | 48 | 52 | 56px"
+  button-outline:
+    backgroundColor: "{colors.card}"
+    hoverBackgroundColor: "{colors.brand-50}"
+    borderColor: "{colors.action}"
+    textColor: "{colors.fg}"
+    rounded: "{rounded.pill}"
+  button-light:
+    backgroundColor: "{colors.card}"
+    hoverBackgroundColor: "{colors.brand-50}"
+    textColor: "{colors.fg}"
+    rounded: "{rounded.pill}"
+  input-pill:
+    backgroundColor: "{colors.card}"
+    borderColor: "{colors.control-line-strong}"
+    focusBorderColor: "{colors.action}"
+    textColor: "{colors.fg}"
+    fontSize: "1rem"
+    rounded: "{rounded.pill}"
+    height: "52 | 56px"
+  chip:
+    backgroundColor: "{colors.card}"
+    borderColor: "{colors.control-line}"
+    selectedBackgroundColor: "{colors.brand-50}"
+    selectedBorderColor: "{colors.action}"
+    textColor: "{colors.fg}"
+    rounded: "{rounded.pill}"
+    height: "44 | 48px"
+  card:
+    backgroundColor: "{colors.card}"
+    borderColor: "{colors.card-line}"
+    rounded: "{rounded.card} a {rounded.card-xl}"
+    shadow: "none"
+  status-pill:
+    ok: "{colors.status-ok} sobre {colors.status-ok-bg}"
+    pending: "{colors.status-pending} sobre {colors.status-pending-bg}"
+    alert: "{colors.status-alert} sobre {colors.alert-bg}"
+    neutral: "{colors.fg-muted} sobre {colors.canvas}"
+    rounded: "{rounded.pill}"
 ---
 
-# Design System: AutoLibre
+# Design System: AutoLibre AI (vigente)
+
+Este es el sistema vigente desde el rediseño de noviembre de 2026 (referencia:
+`docs/rediseno-2026-11/`). Es el mismo sistema "AutoLibre AI" de la app y del
+perfil público de proveedor (spec 209): sus tokens, que nacieron para el
+perfil, pasan a ser la base global. Las páginas se migran por fases; mientras
+tanto conviven con el sistema anterior, documentado al final como
+**deprecado**. Todo código nuevo usa lo de esta sección.
+
+Fuente de verdad: el `@theme` de `app/globals.css` (con los contrastes medidos
+en comentarios). Los valores compartidos con el perfil están espejados en
+`lib/provider-profile/og-tokens.ts` (Satori no entiende variables CSS): si
+cambia uno, cambia en los dos lados.
 
 ## Overview
+
+Claro, prolijo, formal y amigable. El lienzo de la página es un gris cálido
+(`canvas`); el contenido vive en tarjetas casi blancas (`card`) con un borde
+fino (`card-line`) y **sin sombras**. La acción principal es un verde casi
+negro (`action`) con texto blanco, siempre en píldora. El verde de marca
+(`brand`) baja de rango: ya no es el color de los botones sino un **acento**
+(puntos, tildes, íconos, el anillo de foco).
+
+**Características:**
+
+- Una sola acción oscura por bloque; lo secundario va en contorno.
+- Plano: separación por tono (`canvas` → `card`) y bordes de 1px. Cero sombras.
+- Todo lo que se toca (botones, inputs, chips) es una píldora de 44 a 56px de alto.
+- Tarjetas con radio de 16 a 24px.
+- Outfit en títulos y en el texto de los botones; DM Sans en todo lo demás.
+
+## Colores
+
+### Superficies y bordes
+
+| Token | Valor | Uso |
+|---|---|---|
+| `canvas` | `#f1f2f0` | Fondo de página. |
+| `card` | `#fefefd` | Tarjetas, inputs, chips, botón `outline`/`light`. |
+| `card-line` | `#e4eae4` | Borde de 1px de tarjetas y divisores. |
+| `card-muted` | `#f3f4f6` | Marcadores neutros (portada o logo ausentes). |
+| `control-line` | `#d1d5db` | Borde de chips y tarjetas de opción en reposo. |
+| `control-line-strong` | `#9ca3af` | Borde de inputs (ver contraste abajo). |
+
+### Acción y texto
+
+| Token | Valor | Uso | Contraste |
+|---|---|---|---|
+| `action` | `#1c2b1c` | Fondo del botón principal, borde del `outline` y del chip seleccionado, fondos oscuros. | blanco encima 14.88:1 |
+| `action-hover` | `#2a3a2a` | Hover del botón principal. | blanco encima 12.09:1 |
+| `fg` | `#111827` | Títulos y texto fuerte. | 17.58 `card` · 15.80 `canvas` |
+| `fg-muted` | `#374151` | Texto corrido. | 10.21 `card` · 9.18 `canvas` |
+| `fg-subtle` | `#6b7280` | Metadatos chicos, placeholder. **Solo sobre `card`.** | 4.79 `card` · 4.30 `canvas` (no AA) |
+| `on-dark` | `#dcdedc` | Texto sobre `action`/`ink`. | 11.00:1 |
+| `on-dark-muted` | `#b8bcb8` | Texto secundario sobre oscuro. | 7.74:1 |
+| `on-dark-subtle` | `#8c968c` | Terciario y bordes sobre oscuro. | 4.86:1 |
+
+### Verdes
+
+| Token | Valor | Uso |
+|---|---|---|
+| `brand` | `#2a8c3a` | **Acento**: puntos, tildes, íconos, anillo de foco. Nunca fondo de botón ni texto chico (4.24:1 sobre `card`). |
+| `brand-hover` | `#23752f` | Texto verde chico (5.69 `card` · 5.11 `canvas` · 5.10 `brand-50`). El nombre viene del sistema anterior. |
+| `brand-50` | `#e8f5e8` | Seleccionados (chips, opciones) y bandas suaves; hover de `outline`/`light`. |
+| `brand-200` | `#a8dfb0` | Bandas y eyebrows sobre oscuro (9.81:1 sobre `ink`); `fg` encima 11.70:1. |
+
+### Estados
+
+| Estado | Texto / fondo | Contraste |
+|---|---|---|
+| ok | `status-ok` / `status-ok-bg` | 4.70:1 |
+| pendiente | `status-pending` / `status-pending-bg` | 8.15:1 |
+| alerta | `status-alert` / `alert-bg` | 5.26:1 |
+| neutro | `fg-muted` / `canvas` | 9.18:1 |
+
+`rating` (`#f59e0b`) queda para las estrellas.
+
+### Reglas
+
+**La regla del verde acento.** `brand` marca, no sostiene. No va de fondo de
+botón ni de texto chico. La acción es `action`.
+
+**La regla de los bordes de control.** `control-line` (1.46:1 sobre `card`) solo
+en controles que se identifican por su texto y su fondo (chips, tarjetas de
+opción). `control-line-strong` mide 2.52:1 sobre `card`, debajo del 3:1 que
+pide WCAG 1.4.11 cuando el borde es lo único que delimita el campo: es una
+decisión abierta del rediseño (ver `docs/rediseno-2026-11/INFORME.md`, fase 1).
+
+## Tipografía
+
+- **Outfit** (variable, `next/font`, subset latin, `swap`, fallback métrico):
+  títulos (`h1`–`h4` desde la capa base, 700) y texto de botones (600).
+- **DM Sans** (variable, mismas opciones): todo lo que se lee como oración.
+- Escala: `display-*` y `lead`/`lead-lg`/`label` siguen vigentes; se suma
+  `text-control` (15px) para botones y chips de 44-48px. Todo `--text-*`
+  nuevo se registra en `lib/utils.ts`.
+- Inputs a 16px en todos los anchos (iOS hace zoom con menos).
+
+## Formas y elevación
+
+- **Píldora** (`rounded-full`): botones, inputs, chips, pills de estado.
+- **Tarjetas**: `rounded-card` (16), `rounded-panel` (20) o `rounded-3xl` (24).
+- **Sin sombras.** Un bloque se separa por tono y por un borde de 1px.
+- Alturas de control: 44 (`h-11`), 48 (`h-12`), 52 (`h-13`), 56 (`h-14`).
+
+## Primitivas (`components/ui/`)
+
+Todas son Server Components (sin `"use client"`), con `cva`. Respetan
+`prefers-reduced-motion` (`motion-reduce:transition-none`, además de la regla
+global de `globals.css`) y no tocan el anillo de foco global.
+
+- **`Button` / `ButtonLink` / `ButtonAnchor`** (`button.tsx`): `<button>`,
+  `next/link` y `<a>` externo con la misma apariencia. Variantes vigentes
+  `primary`, `outline`, `light`; tamaños `"44"`, `"48"`, `"52"`, `"56"`;
+  `block` para ancho completo. El default (`brand` + `md`) sigue siendo el del
+  sistema anterior hasta terminar la migración: en código nuevo se pasan
+  `variant` y `size` siempre.
+- **`PillInput`** (`pill-input.tsx`): `id` y `label` obligatorios (label
+  asociado; `hideLabel` lo deja solo para lectores de pantalla), `hint`,
+  `error` (marca `aria-invalid` y arma `aria-describedby`), `size` `"52"` o
+  `"56"`.
+- **`Chip`** (`chip.tsx`): con `pressed` es un `<button aria-pressed>`; sin él,
+  un `<span>` con `selected`. `icon` opcional, `size` `"44"` o `"48"`.
+- **`Card`** (`card.tsx`): `variant="surface"` (vigente), `radius` `md`/`lg`/`xl`,
+  `as` (`div`, `article`, `li`, `section`, `aside`).
+- **`StatusPill`** (`status-pill.tsx`): `tone` `ok`/`pending`/`alert`/`neutral`,
+  `dot` opcional. No es región viva: si cambia en vivo, `role="status"` lo pone
+  el consumidor.
+
+## Perfil público de proveedor (spec 209)
+
+Fue la primera superficie con este sistema (`/proveedores/[slug]`): tokens `canvas`, `card`, `card-line`, `card-muted`, `brand-50`, `status-ok`/`status-ok-bg` y `rating`, CTA oscuro y verde como acento. Sus botones usan todavía `rounded-lg` (8px) de la escala de Tailwind; se pasan a píldora cuando se migre esa página. Íconos: los de línea 24×24 de `components/ui/icon.tsx` (no Phosphor: desvío documentado en la spec 209). `lib/provider-profile/og-tokens.ts` espeja esos valores para la imagen de vista previa con Satori (hoy ninguna ruta lo importa).
+
+## Qué sigue vigente del sistema anterior
+
+Siguen valiendo, sin cambios: el layout (`Section`/`Container`, anchos, ritmo
+vertical, gutter), el anillo de foco global, la regla de 44px, la regla de
+inputs de 16px, la regla de overflow (`overflow-clip`), el movimiento (hero,
+`reveal`, `motion-exempt`), la excepción del motivo de ruta, los íconos en SVG
+inline, los badges de tienda y el QR, y las reglas de adaptar primitivas desde
+afuera. Lo que queda **deprecado**: la paleta de superficie blanca (`surface`,
+`surface-muted`, `surface-subtle`, `line`), el verde como fondo de CTA, el
+radio `field` (10px), las sombras y las variantes `brand`, `brandOutline`,
+`outlineInverse` e `inverse` del botón, y las variantes `outline`, `solid` y
+`elevated` de `Card`.
+
+---
+
+# Sistema anterior: "El taller ordenado" (deprecado)
+
+> **Deprecado** desde el rediseño de 2026-11. Se conserva como referencia de las
+> páginas que todavía no se migraron y de las reglas que siguen vigentes (ver
+> arriba). No usar sus colores, radios, sombras ni variantes en código nuevo.
+
+Tokens del sistema anterior (siguen en `@theme` hasta terminar la migración):
+`brand` `#2a8c3a`, `brand-hover` `#23752f`, `brand-soft` `#5fa86b`, `ink`
+`#1c2b1c`, `surface` `#ffffff`, `surface-muted` `#eaf3ec`, `surface-subtle`
+`#f7faf8`, `line` `#eaf3ec`, `alert-bg` `#fbe2e2`, `alert-fg` `#c24949` (3.93:1:
+no llega a AA en texto chico), `danger` `#d20000`; radios `field` 10px, `card`
+16px, `panel` 20px. En el botón, la variante que se llamaba `primary` pasó a
+llamarse `brand`, y `outline` pasó a `brandOutline` (2026-11, fase 1).
+
+### Overview
 
 **Creative North Star: "El taller ordenado"**
 
@@ -144,12 +309,12 @@ hard edge.
 - All color comes from the `@theme` block in `app/globals.css`. There is no
   second source of truth.
 
-## Colors
+### Colors
 
 A single workshop green carried across a family of green-tinted neutrals, so
 the palette never leaves its own hue.
 
-### Primary
+#### Primary
 
 - **Workshop Green** (`brand`): the one saturated color in the system. CTAs,
   the global focus ring, the accent-color of native checkboxes and radios, the
@@ -164,7 +329,7 @@ the palette never leaves its own hue.
   "Misión"/"Visión" labels on the `/sobre-nosotros` ink band, and the focus
   ring scoped to dark grounds (`/descarga`, that band).
 
-### Neutral
+#### Neutral
 
 - **Green-Black Ink** (`ink`): body text on every light ground, and the dark
   ground itself — the diagnostic band, the footer, the phone frame's bezel, the
@@ -179,13 +344,13 @@ the palette never leaves its own hue.
 - **Hairline** (`line`): every border and divider. Shares its value with
   Pale Wash on purpose: a border is a wash seen edge-on.
 
-### Tertiary
+#### Tertiary
 
 - **Alert Wash / Alert Ink** (`alert-bg` / `alert-fg`): the only non-green pair
   in the system, reserved for form errors and failed submissions.
 - **Danger** (`danger`): destructive and hard-failure signaling only.
 
-### Named Rules
+#### Named Rules
 
 **The Token-Only Rule.** Every color in a component comes from the `@theme`
 block in `app/globals.css`. No hex literal, no `rgb()`, no opacity-tinted
@@ -205,7 +370,7 @@ isotype that measures 1.24:1 on brand green and disappears, splitting the mark
 in half. On ink, use `lockup-dark.png`; on white, `lockup-light.png`. See
 `public/brand/README.md`.
 
-## Typography
+### Typography
 
 **Display Font:** Outfit (variable, self-hosted via `next/font`, `swap`)
 **Body Font:** DM Sans (variable, self-hosted via `next/font`, `swap`)
@@ -215,7 +380,7 @@ makes short Spanish headlines land like statements. DM Sans underneath is
 neutral and quiet, with open counters that hold up at 13px on a phone. The
 pairing is deliberately undramatic: the contrast is size and weight, not style.
 
-### Hierarchy
+#### Hierarchy
 
 - **Display** (700, `2.75rem` → `3.5rem` → `4rem`, line-height 1.05): reserved
   for a page that *is* its headline — currently only the download route's two
@@ -231,7 +396,7 @@ pairing is deliberately undramatic: the contrast is size and weight, not style.
   notes. The smallest step is `0.6875rem`, used only inside the store badge's
   own two-line anatomy.
 
-### Named Rules
+#### Named Rules
 
 **The Two-Role Rule.** Outfit appears on `h1`–`h4` and on short emphatic labels
 (field-group titles, mobile nav rows, the store name inside a badge). Everything
@@ -248,7 +413,7 @@ where the break is the composition itself.
 forced to 16px. Anything smaller makes iOS zoom the viewport on focus. This is
 non-negotiable and lives in the base layer, not in components.
 
-## Layout
+### Layout
 
 The page is a stack of full-bleed horizontal bands. Each band owns its ground
 and its vertical rhythm (`Section`, tones `surface` / `muted` / `ink` /
@@ -279,7 +444,7 @@ scrollport and broke everything tied to document scroll: `position: sticky` and
 container that holds a `reveal` or a sticky child, use `overflow-clip`, never
 `overflow-hidden`.
 
-### Named Rules
+#### Named Rules
 
 **The Six-Percent Gutter Rule.** Horizontal breathing room is always 6% of the
 viewport, never a fixed px value. It scales from a 390px phone to a 1440px
@@ -292,7 +457,7 @@ Any row anchored to the bottom of the viewport adds
 `pb-[calc(2rem+env(safe-area-inset-bottom))]`; without it, half of a 44px target
 falls under the iPhone home indicator and the target fix cancels itself.
 
-## Elevation & Depth
+### Elevation & Depth
 
 The system is **flat by default**. Separation comes from tone — white,
 `surface-subtle`, `surface-muted`, `ink` — and from hairline borders, not from
@@ -304,7 +469,7 @@ over a scrim, the phone mockup's frame, a floating map chip, and the one
 horizontal offset, a large blur, and an ink-tinted (or brand-tinted) rgba —
 never black, never a hard offset.
 
-### Shadow Vocabulary
+#### Shadow Vocabulary
 
 - **Lifted surface** (`box-shadow: 0 20px 50px rgba(28,43,28,0.10)`): the
   `elevated` card variant on a light ground.
@@ -317,7 +482,7 @@ never black, never a hard offset.
 - **Floating chip, neutral** (`box-shadow: 0 4px 14px rgba(28,43,28,0.08)`): the
   unselected marketplace chip.
 
-### Named Rules
+#### Named Rules
 
 **The Flat-By-Default Rule.** A new surface starts with a hairline border on
 white. It earns a shadow only by being lifted above the page — an overlay, a
@@ -379,7 +544,7 @@ equivalent for a green chip), with `0` horizontal offset and a blur at least
 twice the vertical offset. Pure black, hard offsets and multi-layer stacks are
 outside the vocabulary.
 
-## Shapes
+### Shapes
 
 Three radii and one pill, all declared as tokens.
 
@@ -397,7 +562,7 @@ of the home hero and the about hero is not a border: it is the route motif,
 see The Route Motif Exception.) Icons are line
 drawings on a 24px box, inlined as SVG paths with `currentColor`.
 
-### Named Rules
+#### Named Rules
 
 **The Three Radii Rule.** 10 / 16 / 20px plus the pill. A new arbitrary radius
 is a bug unless it is a physical object — the only exception in the build is the
@@ -408,9 +573,9 @@ paths inheriting `currentColor`. No icon font, no glyph character standing in
 for an icon, no icon package, no `<img>` for a mark that has to change color
 with its surface.
 
-## Components
+### Components
 
-### Buttons
+#### Buttons
 
 - **Shape:** softly rounded (10px, `rounded-field`), `font-semibold`, contents
   centered with a 0.5rem gap for an optional icon, `transition-colors` on state.
@@ -429,7 +594,7 @@ with its surface.
 - **Link-shaped buttons:** a CTA that navigates is a real `Link` styled with the
   same variants (`ButtonLink`), never a `button` with an `onClick` router push.
 
-### Chips
+#### Chips
 
 - **Style:** pill, 1px border, 14px text, `transition-colors`.
 - **Unselected:** `line` border on `surface-subtle`, ink text, hover border to
@@ -439,7 +604,7 @@ with its surface.
   with `accent-brand` — keyboard accessibility comes free, and the focus ring is
   driven by `has-[:focus-visible]` on the label.
 
-### Cards / Containers
+#### Cards / Containers
 
 - **Corner Style:** 16px (`rounded-card`).
 - **Outline (default):** hairline `line` border on white.
@@ -448,7 +613,7 @@ with its surface.
 - **Internal padding:** set by the consumer; the primitive ships shape and
   ground only.
 
-### Inputs / Fields
+#### Inputs / Fields
 
 - **Style:** full width, 10px radius, hairline `line` border on `surface-subtle`,
   `0.75rem 0.875rem` padding, 15px ink text, placeholder at `ink/40`.
@@ -462,7 +627,7 @@ with its surface.
   control looks identical across browsers.
 - **Field groups:** separated by a top hairline and a 15px Outfit bold title.
 
-### Navigation
+#### Navigation
 
 - **Header:** sticky, 4.5rem, translucent white (92%) with `backdrop-blur-md`
   and a hairline bottom border. Links are 15px DM Sans medium in ink, hovering
@@ -474,7 +639,7 @@ with its surface.
   set in Outfit semibold `text-xl`, with the CTA anchored to the bottom and
   safe-area padding below it.
 
-### Store Badges (signature)
+#### Store Badges (signature)
 
 The download CTA is not a `Button`: it is a pair of native `<a>` elements with
 their own anatomy — an inline monochrome store glyph at 26px, then a stacked
@@ -484,7 +649,7 @@ default (`tone="light"`), white-on-dark on brand or ink grounds
 (`tone="brand"`). iOS is always first. The URLs always come from
 `siteConfig.stores`.
 
-### QR Plate (signature)
+#### QR Plate (signature)
 
 A single inline-SVG QR (version 3, 29×29 modules, error correction Q, quiet zone
 included in the `viewBox`), drawn in `currentColor` on a white 16px-radius plate
@@ -495,7 +660,7 @@ It points at the page, not at a store: one code cannot serve iOS and Android.
 The path is a build-time constant generated once offline; if the URL ever
 changes it must be regenerated wholesale, never hand-edited.
 
-### Route-Scoped Dark Surface (signature)
+#### Route-Scoped Dark Surface (signature)
 
 `/descarga` is the system's one full-page ink surface, and it is the reference
 implementation for any future dark route:
@@ -515,7 +680,7 @@ implementation for any future dark route:
   page.
 - No shadows, no gradients, no glass.
 
-### Named Rules
+#### Named Rules
 
 **The Adapt-From-Outside Rule.** A shared primitive used by more than one
 surface is adapted by its consumer, never modified. `StoreLinks` is reshaped on
@@ -530,9 +695,9 @@ a route-level `viewport` export — and `globals.css` stays untouched. The globa
 token is right for the ninety percent of the site that is white; the exception
 pays for itself locally.
 
-## Do's and Don'ts
+### Do's and Don'ts
 
-### Do:
+#### Do:
 
 - **Do** take every color from the `@theme` block in `app/globals.css`. A new
   color means a new token, and a new token means it is reused.
@@ -557,7 +722,7 @@ pays for itself locally.
 - **Do** pick the lockup by its ground: `lockup-light.png` on white,
   `lockup-dark.png` on ink, `lockup-white.png` on brand green.
 
-### Don't:
+#### Don't:
 
 - **Don't** set body-sized copy on brand green `#2a8c3a`. White on it measures
   4.28:1, under the 4.5:1 floor. Large display text and white badges are fine;
@@ -583,21 +748,3 @@ pays for itself locally.
   `reveal`; use `overflow-clip` (it clips without creating a scroll container).
 - **Don't** hardcode a store URL; it comes from `siteConfig.stores`.
 
-## Perfil público de proveedor (`/proveedor/<slug>`)
-
-El perfil de proveedor sigue el sistema **"AutoLibre AI"** de la app y NO la paleta de superficie de la landing (decisión de la spec 209, research D22): por eso el `@theme` de `app/globals.css` tiene tokens propios que no pisan los de arriba.
-
-| Token | Valor | Uso |
-|---|---|---|
-| `canvas` | `#f1f2f0` | fondo de la página de perfil |
-| `card` | `#fefefd` | tarjetas, con borde de 1px y sin sombras |
-| `card-line` | `#e4eae4` | borde de las tarjetas |
-| `card-muted` | `#f3f4f6` | marcadores neutros (portada o logo ausentes), pills |
-| `brand-50` | `#e8f5e8` | sello "Aliado de AutoLibre" |
-| `status-ok` / `status-ok-bg` | `#1a7a4a` / `#e0f5ec` | estado "Abierto" |
-| `rating` | `#f59e0b` | estrellas |
-
-- El CTA principal es oscuro (`bg-ink`, texto blanco); el verde de marca queda como acento.
-- Radios con la escala de Tailwind: `rounded-lg` (8, botones), `rounded-xl` (12), `rounded-2xl` (16, tarjetas) y `rounded-full` (pills).
-- Íconos: los de línea 24×24 de `components/ui/icon.tsx` (no Phosphor: desvío documentado en la spec 209).
-- La imagen de vista previa (`/proveedor/<slug>/og`) repite estos valores en `lib/provider-profile/og-tokens.ts`: Satori no entiende variables CSS. Si cambia un token, cambiarlo también ahí.

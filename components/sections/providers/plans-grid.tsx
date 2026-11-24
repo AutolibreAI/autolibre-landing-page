@@ -68,7 +68,7 @@ export function ProvidersPlansGrid() {
             <ButtonLink
               href={plan.cta.href}
               prefetch={false}
-              variant={plan.highlighted ? "primary" : "outline"}
+              variant={plan.highlighted ? "brand" : "brandOutline"}
               block
               {...("analyticsPlan" in plan.cta
                 ? {
@@ -103,7 +103,7 @@ export function ProvidersPlansGrid() {
             rel="noopener noreferrer"
             data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
             data-analytics-placement="proveedores_planes_ventas"
-            className={cn(buttonVariants({ variant: "outline" }), "shrink-0")}
+            className={cn(buttonVariants({ variant: "brandOutline" }), "shrink-0")}
           >
             {sales.cta.label}
           </a>

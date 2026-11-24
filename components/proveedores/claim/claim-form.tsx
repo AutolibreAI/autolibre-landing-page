@@ -232,7 +232,7 @@ export function ClaimForm({
                   rel="noopener noreferrer"
                   data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
                   data-analytics-placement="reclamar_codigo_nuevo"
-                  className={cn(buttonVariants({ variant: "outline" }), "min-h-11 bg-surface")}
+                  className={cn(buttonVariants({ variant: "brandOutline" }), "min-h-11 bg-surface")}
                 >
                   <Icon name="whatsapp" size={18} strokeWidth={1.8} />
                   {invalidCode.requestNew}
@@ -240,7 +240,7 @@ export function ClaimForm({
               </>
             ) : null}
             {status.kind === "error" && status.reason === "unauthenticated" ? (
-              <Button type="button" variant="outline" className="bg-surface" onClick={handleReauth}>
+              <Button type="button" variant="brandOutline" className="bg-surface" onClick={handleReauth}>
                 {partnerClaimContent.reauth}
               </Button>
             ) : null}

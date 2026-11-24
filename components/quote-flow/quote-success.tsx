@@ -52,7 +52,7 @@ function SuccessModal({ onClose }: { readonly onClose?: () => void }) {
           {copy.success.whatsappLinkLabel}
         </a>
       </div>
-      <Button type="button" variant="outline" size="sm" className="mt-2" onClick={onClose}>
+      <Button type="button" variant="brandOutline" size="sm" className="mt-2" onClick={onClose}>
         {copy.success.closeLabel}
       </Button>
     </div>

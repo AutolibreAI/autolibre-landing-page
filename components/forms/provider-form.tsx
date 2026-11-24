@@ -1053,7 +1053,7 @@ export function ProviderForm({
                     disabled={submitState === "loading" || specializedBrands.length >= PROVIDER_BRAND_MAX_COUNT}
                     onChange={(event) => setOtherSpecialty(event.target.value)}
                     onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addSpecialty(otherSpecialty); } }} />
-                  <Button type="button" variant="outline" className="min-h-11 shrink-0"
+                  <Button type="button" variant="brandOutline" className="min-h-11 shrink-0"
                     disabled={submitState === "loading" || !otherSpecialty.trim() || specializedBrands.length >= PROVIDER_BRAND_MAX_COUNT}
                     onClick={() => addSpecialty(otherSpecialty)}>{providersContent.form.brands.add}</Button>
                 </div>

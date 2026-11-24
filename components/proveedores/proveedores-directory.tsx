@@ -199,7 +199,7 @@ function EmptyState({
         >
           {empty.primaryCta.label}
         </ButtonLink>
-        <ButtonLink href={`${secondaryCta.href}#${directory.id}`} variant="outline" className="min-h-11">
+        <ButtonLink href={`${secondaryCta.href}#${directory.id}`} variant="brandOutline" className="min-h-11">
           {secondaryCta.label}
         </ButtonLink>
       </div>

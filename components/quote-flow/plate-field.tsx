@@ -178,7 +178,7 @@ function LookupFoundCard({
         <Button type="button" size="sm" onClick={onConfirm}>
           {copy.foundConfirm}
         </Button>
-        <Button type="button" size="sm" variant="outline" onClick={onReject}>
+        <Button type="button" size="sm" variant="brandOutline" onClick={onReject}>
           {copy.foundReject}
         </Button>
       </div>

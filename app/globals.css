@@ -54,6 +54,54 @@
   --color-status-ok-bg: #e0f5ec;
   --color-rating: #f59e0b; /* estrellas de la puntuación */
 
+  /* ── Sistema "AutoLibre AI" (rediseño 2026-11, fase 1) ──
+     Es el sistema VIGENTE (ver DESIGN.md). Reusa los tokens de arriba como
+     base global: `canvas` (fondo de página), `card` (superficies),
+     `card-line` (bordes de tarjetas), `brand-50` (seleccionados, bandas
+     suaves), `status-ok`/`status-ok-bg`. El verde `brand` queda SOLO como
+     acento (puntos, tildes, íconos): nunca de fondo de botón. El texto verde
+     chico va en `brand-hover` (#23752f: 5.69:1 sobre `card`, 5.11:1 sobre
+     `canvas`, 5.10:1 sobre `brand-50`). Contrastes medidos con la fórmula de
+     WCAG 2.1 (script de node), no a ojo.
+     Los de abajo son NUEVOS y no pisan nada: la migración de las páginas va
+     en las fases siguientes. Si cambia alguno de los compartidos con el
+     perfil, cambiarlo también en `lib/provider-profile/og-tokens.ts`. */
+
+  /* Acción principal: verde casi negro con texto blanco. */
+  --color-action: #1c2b1c; /* blanco encima: 14.88:1 */
+  --color-action-hover: #2a3a2a; /* blanco encima: 12.09:1 */
+
+  /* Texto sobre fondos claros (`card`, `canvas`, `brand-50`). */
+  --color-fg: #111827; /* títulos y texto fuerte: 17.58 card · 15.80 canvas · 15.76 brand-50 · 11.70 brand-200 */
+  --color-fg-muted: #374151; /* texto corrido: 10.21 card · 9.18 canvas · 9.16 brand-50 */
+  /* Texto secundario chico (metadatos, "2,4 km"). 4.79:1 sobre `card`, pero
+     4.30:1 sobre `canvas`: NO usar en texto chico sobre `canvas`. */
+  --color-fg-subtle: #6b7280;
+
+  /* Texto sobre fondo oscuro (`action`/`ink`). */
+  --color-on-dark: #dcdedc; /* 11.00:1 */
+  --color-on-dark-muted: #b8bcb8; /* 7.74:1 */
+  --color-on-dark-subtle: #8c968c; /* 4.86:1 — también borde de outline sobre oscuro */
+
+  /* Verde suave fuerte: bandas y eyebrows sobre oscuro (9.81:1 sobre `ink`).
+     `fg` encima: 11.70:1. */
+  --color-brand-200: #a8dfb0;
+
+  /* Bordes de controles. Son bordes, no texto (WCAG 1.4.11 pide 3:1 cuando
+     el borde es lo único que identifica al control):
+     - `control-line` 1.46:1 sobre `card`: chips y tarjetas de opción, que se
+       identifican por su texto y su fondo.
+     - `control-line-strong` 2.52:1 sobre `card`: borde del input en el
+       diseño. NO llega a 3:1 (ver INFORME, fase 1: decisión abierta). */
+  --color-control-line: #d1d5db;
+  --color-control-line-strong: #9ca3af;
+
+  /* Pills de estado (texto 13px semibold): ok = `status-ok` sobre
+     `status-ok-bg` (4.70:1); neutro = `fg-muted` sobre `canvas` (9.18:1). */
+  --color-status-pending: #78350f; /* sobre `status-pending-bg`: 8.15:1 */
+  --color-status-pending-bg: #fef3c7;
+  --color-status-alert: #b91c1c; /* sobre `alert-bg`: 5.26:1 (el viejo `alert-fg` da 3.93:1) */
+
   /* Estados */
   --color-alert-bg: #fbe2e2;
   --color-alert-fg: #c24949;
@@ -82,6 +130,7 @@
   --text-lead: 1.0625rem; /* 17px — bajadas en mobile */
   --text-lead-lg: 1.1875rem; /* 19px — bajadas desde md */
   --text-label: 0.8125rem; /* 13px — notas, hints, labels */
+  --text-control: 0.9375rem; /* 15px — botones y chips de 44-48px (AutoLibre AI) */
 
   /* ── Animación del hero ──
      Dos ciclos INDEPENDIENTES (palabras 20s, pantallas 24s: distintos a
@@ -179,8 +228,11 @@
      `display-xs` para que "Mantenimientos" no se coma el margen lateral. */
   --breakpoint-xs: 24rem;
 
-  /* ── Radios ── */
-  --radius-field: 0.625rem; /* 10px — inputs y botones */
+  /* ── Radios ──
+     AutoLibre AI: botones, inputs, chips y pills en píldora (`rounded-full`);
+     tarjetas de 16 a 24 (`rounded-card`, `rounded-panel`, `rounded-3xl`).
+     `field` (10px) es del sistema anterior: deprecado, no usar en código nuevo. */
+  --radius-field: 0.625rem; /* 10px — inputs y botones (deprecado) */
   --radius-card: 1rem; /* 16px — tarjetas */
   --radius-panel: 1.25rem; /* 20px — paneles grandes */
 }

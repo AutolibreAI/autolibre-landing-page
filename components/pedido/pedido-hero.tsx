@@ -64,7 +64,7 @@ export function PedidoHero() {
               </p>
               <OpenFormButton
                 className={buttonVariants({
-                  variant: "outline",
+                  variant: "brandOutline",
                   size: "lg",
                   className: "lg:hidden",
                 })}

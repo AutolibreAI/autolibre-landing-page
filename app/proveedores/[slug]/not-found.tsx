@@ -28,7 +28,7 @@ export default function PartnerNotFound() {
             <ButtonLink href={primaryCta.href} size="lg">
               {primaryCta.label}
             </ButtonLink>
-            <ButtonLink href={secondaryCta.href} variant="outline" size="lg">
+            <ButtonLink href={secondaryCta.href} variant="brandOutline" size="lg">
               {secondaryCta.label}
             </ButtonLink>
           </div>

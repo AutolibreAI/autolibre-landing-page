@@ -289,3 +289,101 @@ Sacado del HTML del server con `fetch` (sin ejecutar JS).
 - **Contraste** (`color-contrast`) falla en `/`, el perfil, `/blog`, la nota, `/proveedores/registro` y `/proveedores/planes`: `<time>` de las tarjetas del blog, migas de pan con `hover:text-ink` y textos `text-ink/60`.
 - **El JS propio es casi igual en todas las rutas**: unos 700 KB crudos y 213 KB gzip, con 13 scripts. Solo `/proveedores/registro` sube a 950 KB crudos y 286 KB gzip, con 16 scripts. Lighthouse marca `unused-javascript` y `legacy-javascript` en todas.
 - **SEO estructural**: todas las rutas tienen un único H1 y ningún salto de nivel en los headings, más canonical correcto y JSON-LD con `Organization`. Pendientes: a `/` le falta `BreadcrumbList`, el estándar del proyecto pide `webPageSchema` + `breadcrumbSchema`, y la home tiene `WebPage` pero no migas. Los perfiles de proveedor no están en el sitemap. `/proveedores/planes` usa valores arbitrarios (`text-[1.75rem]`, `text-[1.0625rem]`) en su H1 y su LCP.
+
+## Fase 1: tokens y primitivas
+
+Rama `feat/rediseno-2026-11`. Solo agrega: ninguna página cambia de aspecto (los tokens y variantes viejos siguen y los call sites existentes se renombraron para conservar su look). La migración de páginas va en las fases siguientes.
+
+### Tokens
+
+Reusados y promovidos a base global (ya existían para el perfil de proveedor, spec 209; sin cambio de valor): `canvas` `#f1f2f0` (fondo de página), `card` `#fefefd` (superficies), `card-line` `#e4eae4` (bordes), `card-muted` `#f3f4f6`, `brand-50` `#e8f5e8` (seleccionados y bandas suaves), `status-ok` `#1a7a4a` / `status-ok-bg` `#e0f5ec`. `brand` `#2a8c3a` pasa a ser solo acento y `brand-hover` `#23752f` el texto verde chico.
+
+Nuevos en `@theme` (`app/globals.css`):
+
+| Token | Valor | Uso |
+|---|---|---|
+| `action` | `#1c2b1c` | Fondo del botón principal; borde de `outline` y del chip seleccionado. |
+| `action-hover` | `#2a3a2a` | Hover del botón principal. |
+| `fg` | `#111827` | Títulos y texto fuerte. |
+| `fg-muted` | `#374151` | Texto corrido. |
+| `fg-subtle` | `#6b7280` | Metadatos y placeholder, solo sobre `card`. |
+| `on-dark` | `#dcdedc` | Texto sobre fondo oscuro. |
+| `on-dark-muted` | `#b8bcb8` | Texto secundario sobre oscuro. |
+| `on-dark-subtle` | `#8c968c` | Terciario y bordes sobre oscuro. |
+| `brand-200` | `#a8dfb0` | Bandas y eyebrows sobre oscuro. |
+| `control-line` | `#d1d5db` | Borde de chips y tarjetas de opción. |
+| `control-line-strong` | `#9ca3af` | Borde de inputs. |
+| `status-pending` / `status-pending-bg` | `#78350f` / `#fef3c7` | Pill "pendiente". |
+| `status-alert` | `#b91c1c` | Pill "alerta" (sobre `alert-bg`). |
+| `--text-control` | `0.9375rem` (15px) | Botones y chips de 44-48px. Registrado en `lib/utils.ts`. |
+
+Sin tokens nuevos de radio: píldora = `rounded-full`; tarjetas = `rounded-card` (16), `rounded-panel` (20), `rounded-3xl` (24). `--radius-field` (10) queda marcado como deprecado.
+
+### Contraste (WCAG 2.1, calculado con un script de node)
+
+| Texto / fondo | Ratio | AA texto chico (4.5) |
+|---|---|---|
+| blanco / `action` | 14.88 | sí |
+| blanco / `action-hover` | 12.09 | sí |
+| `fg` / `card` · `canvas` · `brand-50` · `brand-200` | 17.58 · 15.80 · 15.76 · 11.70 | sí |
+| `fg-muted` / `card` · `canvas` · `brand-50` | 10.21 · 9.18 · 9.16 | sí |
+| `fg-subtle` / `card` | 4.79 | sí |
+| `fg-subtle` / `canvas` | 4.30 | **no** (solo sobre `card`) |
+| `brand-hover` / `card` · `canvas` · `brand-50` | 5.69 · 5.11 · 5.10 | sí |
+| `brand` / `card` · `canvas` | 4.24 · 3.81 | no: solo acento (íconos y foco, 3:1) |
+| `on-dark` / `action` | 11.00 | sí |
+| `on-dark-muted` / `action` | 7.74 | sí |
+| `on-dark-subtle` / `action` | 4.86 | sí |
+| `brand-200` / `action` | 9.81 | sí |
+| pill ok: `status-ok` / `status-ok-bg` | 4.70 | sí |
+| pill pendiente: `status-pending` / `status-pending-bg` | 8.15 | sí |
+| pill alerta: `status-alert` / `alert-bg` | 5.26 | sí |
+| pill neutra: `fg-muted` / `canvas` | 9.18 | sí |
+| (viejo) `alert-fg` / `alert-bg` | 3.93 | **no** (hallazgo, no se tocó) |
+
+No-texto (WCAG 1.4.11, mínimo 3:1): anillo de foco `brand` sobre `card` 4.24, sobre `canvas` 3.81, sobre `action` 3.48 (pasa); borde `action` sobre `card` 14.74; `on-dark-subtle` como borde sobre `action` 4.86; `control-line` sobre `card` 1.46 y **`control-line-strong` sobre `card` 2.52 (no llega a 3:1)**.
+
+### Fuentes
+
+`app/layout.tsx` ya cargaba Outfit y DM Sans con `next/font/google`, subset latin y `display: swap`. Se agregó `adjustFontFallback: true` explícito (ya era el default) y se documentó la medición.
+
+| | Antes | Después |
+|---|---|---|
+| Outfit | variable, sin `weight` (100-900), 1 woff2 latin de 32,3 KB | igual |
+| DM Sans | variable, sin `weight` (100-1000), solo eje `wght`, 1 woff2 latin de 36,9 KB | igual |
+
+No se acotaron pesos, a propósito: se midió contra la API de Google Fonts que `wght@600;700`, `wght@600..700`, `wght@500;600;700;800` y el rango completo devuelven **el mismo archivo variable** (mismos bytes). Acotar no ahorra nada y agrega riesgo (un peso fuera del rango se clampa sin aviso). Pesos en uso según `rg`: Outfit 500 (un `h2`), 600, 700 y 800 (`font-extrabold` en `allies.tsx`); DM Sans 400, 500, 600 y 700.
+
+### Primitivas (`components/ui/`, Server Components con `cva`)
+
+- **`Button`, `ButtonLink` (`next/link`) y `ButtonAnchor` (nuevo, `<a>` externo)** en `button.tsx`. Props: `variant`, `size`, `block`, `className` + las del elemento.
+  - Variantes vigentes: `primary` (`action` + blanco), `outline` (borde `action` sobre `card`), `light` (`card` + `fg`, para fondos oscuros). Todas en píldora y Outfit 600.
+  - Tamaños vigentes: `"44"`, `"48"` (15px), `"52"`, `"56"` (16px), alto fijo.
+  - Deprecadas (look anterior intacto): `brand` (antes `primary`), `brandOutline` (antes `outline`), `outlineInverse`, `inverse`; tamaños `sm`/`md`/`lg`. El radio `field` pasó de la base a cada variante vieja.
+  - `transition-colors` con `motion-reduce:transition-none`; foco con el anillo global.
+- **`PillInput`** (`pill-input.tsx`): `id` y `label` obligatorios, `hideLabel`, `hint`, `error` (`aria-invalid` + `aria-describedby` con `{id}-hint`/`{id}-error`), `size` `"52"`/`"56"` (default 56), `required` (asterisco `aria-hidden`), `className` (wrapper), `inputClassName` + props de `<input>`. Fuente de 16px en todos los anchos, borde `control-line-strong`, foco con el anillo global + borde `action`.
+- **`Chip`** (`chip.tsx`): con `pressed: boolean` renderiza `<button type="button" aria-pressed>` (+ props de botón: `onClick`, `disabled`…); sin `pressed`, `<span>` con `selected`. `icon`, `size` `"44"`/`"48"`. Seleccionado: `brand-50` + borde `action`; en reposo: `card` + borde `control-line`.
+- **`Card`** (`card.tsx`): nueva variante `surface` (`card` + borde `card-line`, sin sombra), nuevo prop `radius` `md`/`lg`/`xl` (16/20/24) y `as` ampliado (`section`, `aside`). El default sigue siendo `outline` (viejo).
+- **`StatusPill`** (`status-pill.tsx`): `tone` `ok`/`pending`/`alert`/`neutral`, `dot`, + props de `<span>`. 13px semibold, píldora.
+
+### Cambios en call sites
+
+16 archivos pasaban `variant="outline"` o `"primary"` explícito al botón: se renombraron a `brandOutline`/`brand` para que no tomen el look nuevo (TypeScript no lo detectaría: `primary` y `outline` siguen siendo nombres válidos). `WhatsappLink` (`components/pedido/whatsapp-link.tsx`) cambió su prop `variant` de `"primary" | "inverse"` a `"brand" | "inverse"` (ningún caller pasaba `"primary"`). Los call sites sin `variant` no cambian porque el default sigue siendo `brand`.
+
+### Diferencias con el diseño o con lo pedido
+
+- **Nombres de variantes**: el pedido es `primary`/`outline`/`light`, y `button.tsx` ya tenía `primary` y `outline` con otro significado. Se priorizaron los nombres pedidos (son los finales) y se renombraron las viejas, en lugar de inventar nombres para las vigentes.
+- **Default del botón**: sigue en `brand` + `md` (viejo) para no cambiar los call sites que no pasan `variant`. Al terminar la migración, el default pasa a `primary` y se borran las variantes viejas.
+- **Input**: el prototipo (`ModuloPedido.dc.html`) usa radio de 12px en los inputs sueltos; el pedido dice píldora. Se hizo en píldora (el buscador compuesto del Home también lo es).
+- **Borde del input** `#9ca3af`: 2.52:1 sobre `card`, debajo del 3:1 de WCAG 1.4.11. Se respetó el valor del diseño y queda como decisión abierta. Alternativa AA dentro de la paleta: `fg-subtle` `#6b7280` (4.79:1), más pesado a la vista.
+- **`fg-subtle` `#6b7280`** no estaba en la lista pedida, pero el diseño lo usa 24 veces (metadatos de 11-13px). Se agregó con la restricción de usarlo solo sobre `card` (sobre `canvas` da 4.30:1).
+- **Fondo de página**: `canvas` existe como token, pero `body` sigue en `surface` (blanco). Cambiarlo ahora cambiaría todas las páginas; va con la migración.
+- **Hovers**: el diseño no los define. Se eligió `action-hover` `#2a3a2a` (aparece en el lienzo como superficie oscura) para `primary`, y `brand-50` para `outline`/`light`.
+- **Pill alerta**: el diseño usa `#b91c1c` sin fondo definido; se reusó `alert-bg` `#fbe2e2` (5.26:1) en vez de sumar otro rosa.
+- **Pill neutra**: usa `canvas` de fondo como el diseño; sobre una página `canvas` no se ve su contorno, así que va dentro de tarjetas.
+- **Fuentes**: no se recortaron pesos (ver arriba: no hay ahorro medible).
+- **No se agregó** la variante de botón "contorno sobre oscuro" (borde `on-dark-subtle`, texto claro) que el diseño usa en `Pedido` y `Sumate`: no estaba en el pedido; se suma con la primera página que la necesite.
+
+### Verificación
+
+`npm run lint`: 0 errores (282 warnings, todos preexistentes en scripts de skills vendorizados en `.agents/`, `.claude/` y `.cursor/`; el mismo número que antes del cambio). `npx tsc --noEmit`: sin errores. `npm run build`: OK (56 páginas estáticas). En el CSS compilado salen las utilities nuevas (`bg-action`, `text-control`, `h-13`, `border-control-line-strong`, etc.).

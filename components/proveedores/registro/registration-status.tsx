@@ -77,7 +77,7 @@ export function RegistrationStatus({ alreadyRegisteredMessage, checkout }: Regis
           <>
             <p className="text-[0.9375rem] leading-relaxed text-ink/72">{success.checkout.body(checkout.planName)}</p>
             {/* Sin prefetch: la contratación es otra pantalla privada. */}
-            <ButtonLink href={checkout.href} prefetch={false} variant="outline" className="min-h-11 self-start">
+            <ButtonLink href={checkout.href} prefetch={false} variant="brandOutline" className="min-h-11 self-start">
               {success.checkout.cta(checkout.planName)}
             </ButtonLink>
           </>

@@ -866,7 +866,7 @@ export function PedidoForm() {
                   disabled={submitting}
                   aria-busy={submitting || undefined}
                   className={buttonVariants({
-                    variant: "primary",
+                    variant: "brand",
                     size: "lg",
                     block: true,
                   })}
