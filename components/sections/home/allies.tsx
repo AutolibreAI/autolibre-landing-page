@@ -63,6 +63,16 @@ export function AlliesSection() {
   );
 }
 
+/**
+ * Alto del carrusel desde 1440px (pedido 2026-11-25): el de la pieza de La
+ * Esquina del Neumático (4:1, `25vw`), así esa imagen ocupa el banner entero
+ * sin franjas. Piso de 360px (25vw a 1440) para que entre el contenido de los banners
+ * armados con código (el más alto, Sin Fotomultas, mide ~300px) y techo de
+ * 480px (el alto que tenían). Valor arbitrario a propósito: la escala de
+ * Tailwind no tiene un `clamp`. Abajo de 1440px sigue `min-h-150 sm:min-h-120`.
+ */
+const DESKTOP_HEIGHT = "banner:min-h-[clamp(360px,25vw,480px)]";
+
 type Asistir24SlideData = (typeof homeContent.allies.slides)[0];
 type SinFotomultasSlideData = (typeof homeContent.allies.slides)[1];
 type IntegritySlideData = (typeof homeContent.allies.slides)[2];
@@ -102,7 +112,7 @@ function Asistir24Slide({ slide }: { readonly slide: Asistir24SlideData }) {
       // `min-h-150 sm:min-h-120`: la misma en los tres banners (ver nota en
       // `IntegritySlide`), para que el carrusel no salte de alto al pasar de
       // uno a otro (pedido de producto, 2026-11-17).
-      className="relative flex w-full min-h-150 flex-col text-white sm:min-h-120 sm:flex-row sm:items-stretch"
+      className={`relative flex w-full min-h-150 flex-col text-white sm:min-h-120 sm:flex-row sm:items-stretch ${DESKTOP_HEIGHT}`}
     >
       {/* Panel de la izquierda: su FONDO bleedea hasta el borde (como la pieza
           original). Abajo de `lg`, tal cual la pieza original. Desde `lg`, su
@@ -133,7 +143,7 @@ function Asistir24Slide({ slide }: { readonly slide: Asistir24SlideData }) {
           desde `lg` el borde derecho tiene que coincidir con el del header
           (`--asistir24-edge`) y `Container` no deja cambiar su padding. */}
       <div className="w-full px-[6%] lg:flex lg:flex-1 lg:flex-col lg:justify-center lg:pr-(--asistir24-edge) lg:pl-16">
-        <div className="mx-auto flex w-full max-w-[1440px] flex-col justify-center gap-4 py-8 sm:gap-5 sm:py-12 md:py-16 lg:mx-0">
+        <div className="mx-auto flex w-full max-w-[1440px] flex-col justify-center gap-4 py-8 sm:gap-5 sm:py-12 md:py-16 lg:mx-0 banner:py-4">
           <div className="flex items-center gap-3">
             <AutoLibreMark />
             <span aria-hidden="true" className="font-display text-lg font-semibold text-white/50">
@@ -185,9 +195,9 @@ function SinFotomultasSlide({ slide }: { readonly slide: SinFotomultasSlideData 
       aria-labelledby="allies-sinfotomultas-title"
       /* #14171F: fondo de marca de Sin Fotomultas. */
       style={{ background: "#14171F" }}
-      className="relative flex w-full min-h-150 flex-col justify-center text-white sm:min-h-120"
+      className={`relative flex w-full min-h-150 flex-col justify-center text-white sm:min-h-120 ${DESKTOP_HEIGHT}`}
     >
-      <Container size="wide" className="flex flex-col gap-10 py-14 sm:flex-row sm:items-center sm:py-16 md:py-20">
+      <Container size="wide" className="flex flex-col gap-10 py-14 sm:flex-row sm:items-center sm:py-16 md:py-20 banner:py-4">
         <div className="flex flex-1 flex-col gap-5">
           <div className="flex items-center gap-3">
             <Image
@@ -270,9 +280,9 @@ function IntegritySlide({ slide }: { readonly slide: IntegritySlideData }) {
       // `min-h-150 sm:min-h-120`: la misma en los tres banners (pedido de
       // producto, 2026-11-17), para que el carrusel no salte de alto al pasar
       // de uno a otro.
-      className="relative flex w-full min-h-150 flex-col justify-center text-white sm:min-h-120"
+      className={`relative flex w-full min-h-150 flex-col justify-center text-white sm:min-h-120 ${DESKTOP_HEIGHT}`}
     >
-      <Container size="wide" className="flex flex-col gap-8 py-14 sm:flex-row sm:items-center sm:py-16 md:py-20">
+      <Container size="wide" className="flex flex-col gap-8 py-14 sm:flex-row sm:items-center sm:py-16 md:py-20 banner:py-4">
         <div className="flex flex-1 flex-col gap-5">
           <p className="inline-flex w-fit items-center rounded-full border-2 border-white/60 px-4 py-2 font-display text-xs font-semibold tracking-wide uppercase sm:text-sm">
             {slide.eyebrow}
@@ -354,12 +364,11 @@ function IntegritySlide({ slide }: { readonly slide: IntegritySlideData }) {
  * El que no corresponde queda `hidden` (fuera del árbol de accesibilidad y,
  * con `loading="lazy"`, su imagen no se descarga).
  *
- * La de celular va hasta `lg`: entre `sm` y `lg` la de escritorio (4:1)
- * quedaría de 160 a 256px de alto, ilegible.
+ * La de celular va hasta 1440px: más angosto, el alto de la de escritorio
+ * (4:1) no alcanza para el contenido de los otros banners.
  *
- * La pieza tiene otra proporción que el carrusel (`min-h-150 sm:min-h-120`,
- * igual que los otros banners): lo que sobra queda en negro. Todo el banner
- * es el link.
+ * Desde 1440px todo el carrusel toma el alto de esta pieza (`DESKTOP_HEIGHT`).
+ * Abajo, la de celular va centrada sobre negro. Todo el banner es el link.
  */
 function EsquinaNeumaticoSlide({ slide }: { readonly slide: EsquinaNeumaticoSlideData }) {
   const { externalHint } = siteContent.nav;
@@ -367,21 +376,23 @@ function EsquinaNeumaticoSlide({ slide }: { readonly slide: EsquinaNeumaticoSlid
     {
       key: "mobile",
       piece: slide.mobile,
-      link: "lg:hidden",
+      link: "banner:hidden",
       image: "h-auto w-full sm:h-120 sm:w-auto",
     },
     {
       key: "desktop",
       piece: slide.desktop,
-      link: "hidden lg:flex",
-      image: "h-auto w-full max-w-400",
+      link: "hidden banner:flex",
+      // Llena el banner: el alto es el de la pieza (ver `DESKTOP_HEIGHT`); solo
+      // más de 1920px (techo de 480px) recorta unos px arriba y abajo.
+      image: "absolute inset-0 size-full object-cover",
     },
   ] as const;
 
   return (
     <article
       aria-labelledby="allies-esquina-title"
-      className="relative flex h-full w-full min-h-150 flex-col bg-black sm:min-h-120"
+      className={`relative flex h-full w-full min-h-150 flex-col bg-black sm:min-h-120 ${DESKTOP_HEIGHT}`}
     >
       <h3 id="allies-esquina-title" className="sr-only">
         {slide.title}

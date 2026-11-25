@@ -178,6 +178,11 @@
   /* Celulares angostos (< 384px, p. ej. 360px): el titular del hero baja a
      `display-xs` para que "Mantenimientos" no se coma el margen lateral. */
   --breakpoint-xs: 24rem;
+  /* 1440px: desde acá el carrusel de aliados toma el alto de la pieza 4:1 de
+     La Esquina del Neumático (ver `DESKTOP_HEIGHT` en allies.tsx). Con
+     nombre, y no `min-[1440px]:`, porque Tailwind ordena las variantes
+     arbitrarias antes que `sm:`…`2xl:` y `sm:min-h-120` le ganaba. */
+  --breakpoint-banner: 90rem;
 
   /* ── Radios ── */
   --radius-field: 0.625rem; /* 10px — inputs y botones */
