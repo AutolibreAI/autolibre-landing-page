@@ -23,7 +23,7 @@ import { siteConfig } from "@/lib/seo/config";
 const routes = [
   {
     path: "/",
-    lastModified: "2026-10-29",
+    lastModified: "2026-11-25",
     changeFrequency: "weekly",
     priority: 1,
   },

@@ -29,7 +29,7 @@ import { siteContent } from "@/lib/content/site";
  */
 export function AlliesSection() {
   const { title, prevLabel, nextLabel, goToLabel, slides } = homeContent.allies;
-  const [asistir24, sinfotomultas, integrity] = slides;
+  const [asistir24, sinfotomultas, integrity, esquina] = slides;
 
   return (
     <Section
@@ -52,6 +52,8 @@ export function AlliesSection() {
         nextLabel={nextLabel}
         goToLabels={slides.map((_, position) => goToLabel(position + 1))}
         slides={[
+          // Primero: es la promo con fecha de vencimiento (pedido 2026-11-25).
+          <EsquinaNeumaticoSlide key={esquina.id} slide={esquina} />,
           <Asistir24Slide key={asistir24.id} slide={asistir24} />,
           <SinFotomultasSlide key={sinfotomultas.id} slide={sinfotomultas} />,
           <IntegritySlide key={integrity.id} slide={integrity} />,
@@ -64,6 +66,7 @@ export function AlliesSection() {
 type Asistir24SlideData = (typeof homeContent.allies.slides)[0];
 type SinFotomultasSlideData = (typeof homeContent.allies.slides)[1];
 type IntegritySlideData = (typeof homeContent.allies.slides)[2];
+type EsquinaNeumaticoSlideData = (typeof homeContent.allies.slides)[3];
 
 /** Logo de AutoLibre: ícono verde + "AutoLibre" blanco + ".AI" verde (la pieza original lo usa así, nunca el isologo todo blanco). */
 function AutoLibreMark({ className }: { readonly className?: string }) {
@@ -339,6 +342,70 @@ function IntegritySlide({ slide }: { readonly slide: IntegritySlideData }) {
           </span>
         </div>
       </Container>
+    </article>
+  );
+}
+
+/**
+ * La Esquina del Neumático: la pieza la manda el aliado ya armada como imagen
+ * (texto incluido), una para escritorio y otra para celular, cada una con su
+ * propio link (`utm_content` distinto). Por eso son DOS links y no un
+ * `<picture>`: con un solo `<a>` no se puede cambiar el `href` por pantalla.
+ * El que no corresponde queda `hidden` (fuera del árbol de accesibilidad y,
+ * con `loading="lazy"`, su imagen no se descarga).
+ *
+ * La de celular va hasta `lg`: entre `sm` y `lg` la de escritorio (4:1)
+ * quedaría de 160 a 256px de alto, ilegible.
+ *
+ * La pieza tiene otra proporción que el carrusel (`min-h-150 sm:min-h-120`,
+ * igual que los otros banners): lo que sobra queda en negro. Todo el banner
+ * es el link.
+ */
+function EsquinaNeumaticoSlide({ slide }: { readonly slide: EsquinaNeumaticoSlideData }) {
+  const { externalHint } = siteContent.nav;
+  const pieces = [
+    {
+      key: "mobile",
+      piece: slide.mobile,
+      link: "lg:hidden",
+      image: "h-auto w-full sm:h-120 sm:w-auto",
+    },
+    {
+      key: "desktop",
+      piece: slide.desktop,
+      link: "hidden lg:flex",
+      image: "h-auto w-full max-w-400",
+    },
+  ] as const;
+
+  return (
+    <article
+      aria-labelledby="allies-esquina-title"
+      className="relative flex h-full w-full min-h-150 flex-col bg-black sm:min-h-120"
+    >
+      <h3 id="allies-esquina-title" className="sr-only">
+        {slide.title}
+      </h3>
+      {pieces.map(({ key, piece, link, image }) => (
+        <a
+          key={key}
+          href={piece.href}
+          target="_blank"
+          rel="sponsored noopener noreferrer"
+          className={`relative flex w-full flex-1 items-center justify-center overflow-hidden transition hover:opacity-95 ${link}`}
+        >
+          <Image
+            src={piece.src}
+            width={piece.width}
+            height={piece.height}
+            alt={`${slide.alt} ${externalHint}`}
+            // Original, sin recomprimir: la pieza ya viene comprimida y a 75 de
+            // calidad (el default de Next) el texto perdía nitidez.
+            unoptimized
+            className={image}
+          />
+        </a>
+      ))}
     </article>
   );
 }

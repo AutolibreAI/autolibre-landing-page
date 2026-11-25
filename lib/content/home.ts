@@ -208,8 +208,11 @@ export const homeContent = {
    * `/proveedores/<slug>` cuando lo tiene ahí; si no, se confirma a mano con
    * producto antes de cargarlo (nunca una URL inventada).
    *
-   * Dejamos afuera, a propósito, el banner de La Esquina del Neumático (pedido
-   * explícito, 2026-11-17): se suma el día que haya decisión de producto.
+   * La Esquina del Neumático (2026-11-25) es distinto: el aliado manda la
+   * pieza YA armada como imagen (una de escritorio y otra de celular), cada
+   * una con su propio link (mismo beneficio, `utm_content` distinto para
+   * comparar formatos). Cupo de 150 beneficios, vigente hasta el 31/01/2027:
+   * se baja a mano cuando venza.
    */
   allies: {
     title: "Beneficios de nuestros aliados",
@@ -253,6 +256,24 @@ export const homeContent = {
           label: "Cotizá con Intēgrity",
           href: "https://cotizadores.integrityseguros.com.ar/auto/?promo=AUTO18&origen=Libre",
         },
+      },
+      {
+        id: "esquina-neumatico",
+        /** Para el `<h3>` (solo lectores de pantalla): la pieza es una imagen. */
+        title: "La Esquina del Neumático: 20% OFF en alineación y balanceo para usuarios de AutoLibre, en todas las sucursales, hasta el 31 de enero.",
+        desktop: {
+          src: "/brand/aliados/esquina-neumatico-desktop.jpeg",
+          width: 1600,
+          height: 400,
+          href: "https://www.laesquinadelneumatico.com.ar/beneficio-autolibre/?e=5gg68rf3kenb&utm_source=autolibre&utm_medium=banner&utm_campaign=beneficio-autolibre&utm_content=banner_desktop",
+        },
+        mobile: {
+          src: "/brand/aliados/esquina-neumatico-mobile.jpeg",
+          width: 780,
+          height: 1200,
+          href: "https://www.laesquinadelneumatico.com.ar/beneficio-autolibre/?e=5gg68rf3kenb&utm_source=autolibre&utm_medium=banner&utm_campaign=beneficio-autolibre&utm_content=banner_mobile",
+        },
+        alt: "Activar beneficio: 20% OFF en alineación y balanceo en La Esquina del Neumático, exclusivo para usuarios de AutoLibre.AI. Válido en todas sus sucursales.",
       },
     ],
   },
