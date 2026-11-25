@@ -8,8 +8,10 @@ import { cn } from "@/lib/utils";
 /**
  * Piezas de los estados finales de los flujos de negocios (lienzos
  * `ContratarListo`, `ContratarPendiente`, `ContratarConfirmando` y
- * `ReclamarListo`): columna centrada de 640px, título grande y tarjetas de
- * "Próximos pasos". Sin estado: las usan las islas.
+ * `ReclamarListo`): título y tarjetas de "Próximos pasos", con la densidad
+ * de los formularios del flujo (2026-11): título a 36-40px y no a 48, para
+ * que el resultado y su acción entren en la primera pantalla. Sin estado: las
+ * usan las islas.
  */
 
 /** Ícono + `<h1>` + bajada de un resultado. El foco va al título al aparecer. */
@@ -26,22 +28,22 @@ export function SuccessHead({
   readonly icon?: "check" | "none";
 }) {
   return (
-    <div className="flex flex-col items-start gap-4">
+    <div className="flex flex-col items-start gap-3">
       {icon === "check" ? (
-        <span aria-hidden="true" className="flex size-13 items-center justify-center rounded-full bg-brand-50 text-fg">
-          <Icon name="check" size={22} strokeWidth={2.4} />
+        <span aria-hidden="true" className="flex size-11 items-center justify-center rounded-full bg-brand-50 text-fg">
+          <Icon name="check" size={20} strokeWidth={2.4} />
         </span>
       ) : null}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1.5">
         <h1
           id={PRIVATE_FLOW_TITLE_ID}
           ref={headingRef}
           tabIndex={-1}
-          className="font-display text-4xl font-bold tracking-tight text-balance text-fg md:text-5xl"
+          className="font-display text-3xl font-bold tracking-tight text-balance text-fg md:text-4xl"
         >
           {title}
         </h1>
-        {body ? <p className="text-lead text-fg-muted md:text-lead-lg">{body}</p> : null}
+        {body ? <p className="text-base text-pretty text-fg-muted md:text-lead">{body}</p> : null}
       </div>
     </div>
   );
@@ -99,10 +101,10 @@ export function NextStepCard({
   readonly action: StepAction;
 }) {
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-card-line bg-card p-5 sm:flex-row sm:items-center sm:justify-between sm:gap-8 sm:p-6">
+    <div className="flex flex-col gap-3 rounded-2xl border border-card-line bg-card p-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
       <div className="flex flex-col gap-1">
-        <h2 className="font-display text-lg font-semibold text-fg">{title}</h2>
-        <p className="text-base text-fg-muted">{body}</p>
+        <h2 className="font-display text-base font-semibold text-fg">{title}</h2>
+        <p className="text-sm text-fg-muted">{body}</p>
       </div>
       <StepActionButton action={action} />
     </div>

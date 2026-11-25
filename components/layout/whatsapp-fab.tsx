@@ -21,6 +21,11 @@ import { cn } from "@/lib/utils";
  * - Desde `lg` (y en celular en las páginas sin barra) queda: el diseño del
  *   rediseño 2026-11 no lo dibuja, pero WhatsApp es la segunda vía de
  *   contacto y en desktop no hay otro acceso fijo a él.
+ * - No está en las pantallas de foco de los flujos de negocios (`FlowShell`:
+ *   alta, contratar, reclamar, marcadas con `data-flow-shell`, y el alta
+ *   abierta sobre la landing con `<html data-registro-alta>`): su encabezado
+ *   ya trae "¿Dudas? Escribinos" y el flotante tapaba el "Continuar" de la
+ *   barra fija del formulario en celular.
  * - Se mide como `whatsapp_clicked` con `placement: "fab"`.
  * - El foco visible es el global (`:focus-visible` en `globals.css`).
  */
@@ -43,6 +48,7 @@ export function WhatsappFab() {
         // Variantes arbitrarias: no hay utility para "un ancestro tiene tal
         // descendiente" (recurso que usaba la vieja barra fija de `/pedido`).
         "[html:has(#menu-del-encabezado)_&]:invisible max-lg:[html:has([data-bottom-bar])_&]:hidden",
+        "in-data-[registro-alta]:hidden [html:has([data-flow-shell])_&]:hidden",
       )}
     >
       <WhatsappLogo className="size-7 md:size-8" />

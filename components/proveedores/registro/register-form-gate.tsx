@@ -11,7 +11,7 @@ import { clearApplicationSent, hasSentApplication, markApplicationSent } from "@
 import { FlowMain, FlowShell } from "@/components/proveedores/flow/flow-shell";
 import { FlowSteps } from "@/components/proveedores/flow/flow-steps";
 import { useFlowSignOut } from "@/components/proveedores/flow/use-flow-sign-out";
-import { AltaLayout } from "@/components/proveedores/registro/alta-layout";
+import { AltaLayout, AltaSkeleton } from "@/components/proveedores/registro/alta-layout";
 import type { ServiceFamilyOption } from "@/lib/autolibre-api";
 import { planDisplayName } from "@/lib/content/partner-checkout";
 import { providersContent } from "@/lib/content/providers";
@@ -141,9 +141,8 @@ export function RegisterFormGate({ serviceFamilies, next }: RegisterFormGateProp
       <FlowShell helpMessage={flow.help.whatsappMessage} helpPlacement="registro_encabezado" signOut={signOut}>
         <FlowMain>
           {entry.kind === "checking" ? (
-            <p role="status" className="flex min-h-96 items-start text-fg-muted">
-              {flow.checking}
-            </p>
+            // Esqueleto con la grilla del formulario (lo más común que sigue).
+            <AltaSkeleton />
           ) : entry.kind === "existing" ? (
             <ExistingBusiness
               names={entry.names}

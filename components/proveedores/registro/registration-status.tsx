@@ -48,14 +48,16 @@ export function RegistrationStatus({ alreadyRegisteredMessage, checkout }: Regis
   }, []);
 
   return (
-    <div className="flex flex-col gap-8">
+    // 640px como máximo: también se ve suelta (refresh con la solicitud en
+    // revisión), fuera de la columna del alta, y a lo ancho se desarma.
+    <div className="flex max-w-160 flex-col gap-6">
       <SuccessHead
         headingRef={headingRef}
         title={alreadyRegisteredMessage ? success.alreadyRegisteredTitle : success.title}
         body={alreadyRegisteredMessage ?? success.description}
       />
 
-      <section aria-labelledby="alta-estado" className="flex flex-col gap-5 rounded-3xl bg-canvas p-6 sm:p-7">
+      <section aria-labelledby="alta-estado" className="flex flex-col gap-4 rounded-2xl bg-canvas p-5 sm:p-6">
         <h2 id="alta-estado" className="text-sm font-semibold text-fg">
           {success.timeline.label}
         </h2>
@@ -68,8 +70,8 @@ export function RegistrationStatus({ alreadyRegisteredMessage, checkout }: Regis
         />
       </section>
 
-      <section aria-labelledby="alta-mientras" className="flex flex-col gap-4">
-        <h2 id="alta-mientras" className="font-display text-xl font-semibold text-fg">
+      <section aria-labelledby="alta-mientras" className="flex flex-col gap-3">
+        <h2 id="alta-mientras" className="font-display text-lg font-semibold text-fg">
           {success.nextTitle}
         </h2>
         {checkout ? (

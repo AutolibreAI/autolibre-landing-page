@@ -10,8 +10,9 @@ import { WhatsappInput } from "@/components/ui/whatsapp-input";
 import {
   AltaChip,
   AltaField,
-  AltaOption,
+  altaGroupLabel,
   altaInput,
+  altaSectionHint,
   altaSectionTitle,
   altaSelect,
   altaTextarea,
@@ -77,6 +78,18 @@ export const PROVIDER_FORM_STEPS = 3;
 const STEP = { business: 0, attention: 1, contact: 2 } as const;
 
 const { form: copy, flow } = providersContent;
+
+/**
+ * Píldora con prefijo (el +54 del WhatsApp, el nombre de cada red): 48px,
+ * borde en `action` al enfocar. El anillo de foco va en el contenedor
+ * (`has-[:focus-visible]`) porque el `overflow-clip` recorta el del input.
+ */
+const socialPill =
+  "flex h-12 overflow-clip rounded-full border bg-card transition-colors focus-within:border-action motion-reduce:transition-none has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand";
+
+/** El `<input>` adentro de `socialPill` (sin borde ni fondo propios). */
+const pillInnerInput =
+  "h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 py-0 text-base text-fg placeholder:text-fg-subtle";
 
 /** Botón "×" de una marca elegida (44px de área táctil). */
 function RemoveBrandButton({ brand, onClick }: { readonly brand: string; readonly onClick: () => void }) {
@@ -590,10 +603,12 @@ export function ProviderForm({
         />
       ) : null}
 
-      <form ref={formRef} onSubmit={handleSubmit} noValidate className="flex flex-col gap-12">
+      {/* Ritmo (densidad 2026-11): 32px entre bloques, 12-16px entre el
+          título de un bloque y sus campos, 8px entre rótulo y campo. */}
+      <form ref={formRef} onSubmit={handleSubmit} noValidate className="flex flex-col gap-8">
         {/* ── Paso 1: datos del negocio ─────────────────────────────── */}
-        <div hidden={step !== STEP.business} className="flex flex-col gap-12">
-          <section aria-labelledby="alta-nombre" className="flex flex-col gap-5">
+        <div hidden={step !== STEP.business} className="flex flex-col gap-8">
+          <section aria-labelledby="alta-nombre" className="flex flex-col gap-4">
             <h2 id="alta-nombre" className={altaSectionTitle}>
               {flow.sections.name}
             </h2>
@@ -619,13 +634,7 @@ export function ProviderForm({
                 className={altaInput}
               />
             </AltaField>
-            <AltaField
-              label={flow.descriptionLabel}
-              optional={flow.optional}
-              htmlFor="prov-description"
-              hint={copy.description.hint}
-              hintId="prov-description-hint"
-            >
+            <AltaField label={flow.descriptionLabel} optional={flow.optional} htmlFor="prov-description">
               <Textarea
                 id="prov-description"
                 name="description"
@@ -637,18 +646,22 @@ export function ProviderForm({
                 aria-describedby="prov-description-hint prov-description-count"
                 className={altaTextarea}
               />
-              <p id="prov-description-count" className="text-right text-label text-fg-muted">
-                {copy.description.count(description.length)}
-              </p>
+              {/* Ayuda y contador en la misma línea: dos renglones menos. */}
+              <div className="-mt-0.5 flex items-start justify-between gap-4 text-label text-fg-muted">
+                <p id="prov-description-hint">{copy.description.hint}</p>
+                <p id="prov-description-count" className="shrink-0 tabular-nums">
+                  {copy.description.count(description.length)}
+                </p>
+              </div>
             </AltaField>
           </section>
 
-          <section aria-labelledby="alta-servicios" className="flex flex-col gap-4">
+          <section aria-labelledby="alta-servicios" className="flex flex-col gap-3">
             <div className="flex flex-col gap-1">
               <h2 id="alta-servicios" className={altaSectionTitle}>
                 {flow.sections.services}
               </h2>
-              {serviceFamilies.length > 0 ? <p className="text-base text-fg-muted">{flow.sections.servicesHint}</p> : null}
+              {serviceFamilies.length > 0 ? <p className={altaSectionHint}>{flow.sections.servicesHint}</p> : null}
             </div>
             {serviceFamilies.length > 0 ? (
               <>
@@ -706,17 +719,18 @@ export function ProviderForm({
             ) : null}
           </section>
 
-          <fieldset ref={brandsRef} tabIndex={-1} className="flex flex-col gap-4">
-            <legend className={cn(altaSectionTitle, "mb-4")}>{copy.brands.title}</legend>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <AltaOption
+          <fieldset ref={brandsRef} tabIndex={-1} className="flex flex-col gap-3">
+            <legend className={cn(altaSectionTitle, "mb-3")}>{copy.brands.title}</legend>
+            {/* Opciones cortas: chips de radio, uno al lado del otro también en celular. */}
+            <div className="flex flex-wrap gap-2">
+              <AltaChip
                 type="radio"
                 name="works_all_brands"
                 label={copy.brands.all}
                 checked={worksAllBrands}
                 onChange={() => setWorksAllBrands(true)}
               />
-              <AltaOption
+              <AltaChip
                 type="radio"
                 name="works_all_brands"
                 label={copy.brands.specific}
@@ -781,9 +795,11 @@ export function ProviderForm({
             ) : null}
           </fieldset>
 
-          <fieldset className="flex flex-col gap-3" aria-describedby="prov-specialties-hint">
-            <legend className="mb-1 font-display text-lg font-semibold text-fg">{copy.brands.specialtiesTitle}</legend>
-            <p id="prov-specialties-hint" className="text-sm text-fg-muted">
+          {/* Sub-pregunta opcional de las marcas: rótulo de grupo y 24px arriba
+              (el `gap-8` del paso menos 8), para que se lea pegada a "¿Qué marcas…?". */}
+          <fieldset className="-mt-2 flex flex-col gap-3" aria-describedby="prov-specialties-hint">
+            <legend className={cn(altaGroupLabel, "mb-1")}>{copy.brands.specialtiesTitle}</legend>
+            <p id="prov-specialties-hint" className={altaSectionHint}>
               {worksAllBrands ? copy.brands.specialtiesHint : copy.brands.specialtiesSpecificHint}
             </p>
             <label htmlFor="prov-specialty-picker" className="sr-only">
@@ -817,7 +833,8 @@ export function ProviderForm({
               </ul>
             ) : null}
             <AltaField label={copy.brands.otherLabel} htmlFor="prov-specialty-other">
-              <div className="flex flex-col gap-2 sm:flex-row">
+              {/* Campo y "Agregar" en la misma fila en todos los anchos. */}
+              <div className="flex gap-2">
                 <Input
                   id="prov-specialty-other"
                   className={altaInput}
@@ -836,7 +853,7 @@ export function ProviderForm({
                 <Button
                   type="button"
                   variant="outline"
-                  size="52"
+                  size="48"
                   className="shrink-0"
                   disabled={loading || !otherSpecialty.trim() || specializedBrands.length >= PROVIDER_BRAND_MAX_COUNT}
                   onClick={() => addSpecialty(otherSpecialty)}
@@ -850,12 +867,12 @@ export function ProviderForm({
             ) : null}
           </fieldset>
 
-          <section aria-labelledby="alta-vehiculos" className="flex flex-col gap-5">
+          <section aria-labelledby="alta-vehiculos" className="flex flex-col gap-4">
             <h2 id="alta-vehiculos" className={altaSectionTitle}>
               {flow.sections.vehicles}
             </h2>
-            <fieldset className="flex flex-col gap-3">
-              <legend className="mb-3 text-control font-semibold text-fg">Tipos de vehículo que atienden</legend>
+            <fieldset>
+              <legend className={cn(altaGroupLabel, "mb-2")}>Tipos de vehículo que atienden</legend>
               <div className="flex flex-wrap gap-2">
                 {PROVIDER_VEHICLE_TYPES.map((type) => (
                   <AltaChip
@@ -868,8 +885,8 @@ export function ProviderForm({
                 ))}
               </div>
             </fieldset>
-            <fieldset className="flex flex-col gap-3">
-              <legend className="mb-3 text-control font-semibold text-fg">Motorizaciones que atienden</legend>
+            <fieldset>
+              <legend className={cn(altaGroupLabel, "mb-2")}>Motorizaciones que atienden</legend>
               <div className="flex flex-wrap gap-2">
                 {PROVIDER_FUEL_TYPES.map((fuel) => (
                   <AltaChip
@@ -886,12 +903,12 @@ export function ProviderForm({
         </div>
 
         {/* ── Paso 2: atención ──────────────────────────────────────── */}
-        <div hidden={step !== STEP.attention} className="flex flex-col gap-12">
-          <fieldset className="flex flex-col gap-3">
-            <legend className={cn(altaSectionTitle, "mb-4")}>{flow.sections.modality}</legend>
-            <div className="grid gap-3 sm:grid-cols-2">
+        <div hidden={step !== STEP.attention} className="flex flex-col gap-8">
+          <fieldset>
+            <legend className={cn(altaSectionTitle, "mb-3")}>{flow.sections.modality}</legend>
+            <div className="flex flex-wrap gap-2">
               {PROVIDER_MODALITY_OPTIONS.map((option) => (
-                <AltaOption
+                <AltaChip
                   key={option.value}
                   type="radio"
                   name="modality"
@@ -903,7 +920,7 @@ export function ProviderForm({
             </div>
           </fieldset>
 
-          <section aria-labelledby="alta-direccion" className="flex flex-col gap-5">
+          <section aria-labelledby="alta-direccion" className="flex flex-col gap-4">
             <h2 id="alta-direccion" className={altaSectionTitle}>
               {flow.sections.address}
             </h2>
@@ -936,7 +953,7 @@ export function ProviderForm({
             </AltaField>
           </section>
 
-          <section aria-labelledby="alta-horarios" className="flex flex-col gap-5">
+          <section aria-labelledby="alta-horarios" className="flex flex-col gap-4">
             <h2 id="alta-horarios" className={altaSectionTitle}>
               {flow.sections.hours}
             </h2>
@@ -954,14 +971,16 @@ export function ProviderForm({
         </div>
 
         {/* ── Paso 3: contacto ──────────────────────────────────────── */}
-        <div hidden={step !== STEP.contact} className="flex flex-col gap-12">
-          <section aria-labelledby="alta-contacto" className="flex flex-col gap-5">
+        <div hidden={step !== STEP.contact} className="flex flex-col gap-8">
+          <section aria-labelledby="alta-contacto" className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <h2 id="alta-contacto" className={altaSectionTitle}>
                 {flow.sections.contact}
               </h2>
-              <p className="text-base text-fg-muted">{flow.sections.contactHint}</p>
+              <p className={altaSectionHint}>{flow.sections.contactHint}</p>
             </div>
+            {/* WhatsApp y email lado a lado desde `sm`: son cortos y van juntos. */}
+            <div className="grid gap-4 sm:grid-cols-2 sm:items-start">
             <AltaField
               label={copy.whatsapp.label}
               htmlFor="prov-phone"
@@ -973,7 +992,7 @@ export function ProviderForm({
               {/* Mismo control que /pedido: el `+54` es parte del campo. */}
               <div
                 className={cn(
-                  "flex h-13 overflow-clip rounded-full border bg-card transition-colors focus-within:border-action motion-reduce:transition-none",
+                  socialPill,
                   whatsappError ? "border-status-alert" : "border-control-line-strong hover:border-fg-muted",
                 )}
               >
@@ -1001,7 +1020,7 @@ export function ProviderForm({
                       ? "prov-phone-prefix prov-phone-hint prov-phone-error"
                       : "prov-phone-prefix prov-phone-hint"
                   }
-                  className="h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 py-0 text-base text-fg placeholder:text-fg-subtle"
+                  className={pillInnerInput}
                 />
               </div>
             </AltaField>
@@ -1023,14 +1042,15 @@ export function ProviderForm({
                 className={altaInput}
               />
             </AltaField>
+            </div>
           </section>
 
-          <section aria-labelledby="alta-extras" className="flex flex-col gap-5">
+          <section aria-labelledby="alta-extras" className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <h2 id="alta-extras" className={altaSectionTitle}>
                 {flow.sections.extras}
               </h2>
-              <p className="text-base text-fg-muted">{flow.sections.extrasHint}</p>
+              <p className={altaSectionHint}>{flow.sections.extrasHint}</p>
             </div>
             <AltaField
               label={copy.logo.label}
@@ -1040,22 +1060,42 @@ export function ProviderForm({
               error={logoError}
               errorId="prov-logo-error"
             >
-              <Input
-                id="prov-logo"
-                name="logo"
-                type="file"
-                ref={logoInputRef}
-                accept={PROVIDER_LOGO_TYPES.join(",")}
-                disabled={loading}
-                className="min-h-13 rounded-3xl border-control-line-strong bg-card px-5 py-3 text-base text-fg"
-                aria-invalid={logoError !== null}
-                aria-describedby={logoError ? "prov-logo-hint prov-logo-error" : "prov-logo-hint"}
-                onChange={(event) => {
-                  const file = event.target.files?.[0] ?? null;
-                  setLogo(file && validProviderLogo(file) ? file : null);
-                  setLogoError(file && !validProviderLogo(file) ? copy.logo.invalid : null);
-                }}
-              />
+              {/* El texto del control nativo ("Choose File / No file chosen") sale en el
+                  idioma del navegador: se dibuja una píldora propia en español y el
+                  input real queda encima, transparente, para conservar el foco, el
+                  teclado y el nombre accesible del `<label>`. */}
+              <div
+                className={cn(
+                  "relative flex h-12 items-center gap-4 rounded-full border bg-card pr-5 pl-1.5 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand",
+                  logoError ? "border-status-alert" : "border-control-line-strong hover:border-fg-muted",
+                )}
+              >
+                <span
+                  aria-hidden="true"
+                  className="inline-flex h-9 shrink-0 items-center rounded-full border border-action px-4 font-display text-control font-semibold text-fg"
+                >
+                  {copy.logo.choose}
+                </span>
+                <span aria-hidden="true" className="min-w-0 truncate text-base text-fg-muted">
+                  {logo ? logo.name : copy.logo.empty}
+                </span>
+                <input
+                  id="prov-logo"
+                  name="logo"
+                  type="file"
+                  ref={logoInputRef}
+                  accept={PROVIDER_LOGO_TYPES.join(",")}
+                  disabled={loading}
+                  className="absolute inset-0 size-full cursor-pointer rounded-full opacity-0 disabled:cursor-not-allowed"
+                  aria-invalid={logoError !== null}
+                  aria-describedby={logoError ? "prov-logo-hint prov-logo-error" : "prov-logo-hint"}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0] ?? null;
+                    setLogo(file && validProviderLogo(file) ? file : null);
+                    setLogoError(file && !validProviderLogo(file) ? copy.logo.invalid : null);
+                  }}
+                />
+              </div>
               {logo || logoError ? (
                 <button
                   type="button"
@@ -1072,27 +1112,36 @@ export function ProviderForm({
               ) : null}
             </AltaField>
 
-            <fieldset className="flex flex-col gap-4" aria-describedby="prov-social-hint">
-              <legend className="mb-1 text-control font-semibold text-fg">{copy.social.title}</legend>
-              <p id="prov-social-hint" className="text-sm text-fg-muted">
+            <fieldset className="flex flex-col gap-3" aria-describedby="prov-social-hint">
+              <legend className={cn(altaGroupLabel, "mb-1")}>{copy.social.title}</legend>
+              <p id="prov-social-hint" className={altaSectionHint}>
                 {copy.social.hint}
               </p>
-              <div className="grid gap-4 sm:grid-cols-2">
+              {/* El nombre de la red va DENTRO de la píldora, como el +54 del
+                  WhatsApp, y es el `<label>` del campo: una fila por red en
+                  lugar de dos (rótulo + campo). */}
+              <div className="grid gap-3 sm:grid-cols-2 sm:items-start">
                 {copy.social.networks.map(({ key, label, placeholder, invalid }) => (
-                  <AltaField
-                    key={key}
-                    label={label}
-                    htmlFor={`prov-social-${key}`}
-                    error={invalidSocial.has(key) ? invalid : undefined}
-                    errorId={`prov-social-${key}-error`}
-                  >
+                  <div key={key} className="flex flex-col gap-1.5">
+                    <div
+                      className={cn(
+                        socialPill,
+                        invalidSocial.has(key) ? "border-status-alert" : "border-control-line-strong hover:border-fg-muted",
+                      )}
+                    >
+                      <label
+                        htmlFor={`prov-social-${key}`}
+                        className="flex w-28 shrink-0 items-center border-r border-card-line pr-3 pl-5 text-control font-semibold text-fg"
+                      >
+                        {label}
+                      </label>
                     {/* `text` y no `url`: se puede escribir el usuario (`@tutaller`),
                         y el teclado de `url` en iOS esconde la arroba. */}
                     <Input
                       id={`prov-social-${key}`}
                       name={`social_${key}`}
                       type="text"
-                      className={altaInput}
+                      className={pillInnerInput}
                       maxLength={2048}
                       autoCapitalize="none"
                       autoCorrect="off"
@@ -1113,17 +1162,24 @@ export function ProviderForm({
                         if (invalidSocial.has(key)) checkSocialLink(key, event.target.value);
                       }}
                     />
-                  </AltaField>
+                    </div>
+                    {invalidSocial.has(key) ? (
+                      <p id={`prov-social-${key}-error`} className="text-label font-medium text-status-alert">
+                        {invalid}
+                      </p>
+                    ) : null}
+                  </div>
                 ))}
               </div>
             </fieldset>
           </section>
 
-          <section aria-labelledby="alta-como" className="flex flex-col gap-5">
+          <section aria-labelledby="alta-como" className="flex flex-col gap-4">
             <h2 id="alta-como" className={altaSectionTitle}>
               {flow.sections.howFound}
             </h2>
-            <AltaField label={flow.howFoundLabel} htmlFor="prov-how">
+            {/* El `<h2>` ya hace la pregunta: el rótulo queda para lectores de pantalla. */}
+            <AltaField label={flow.howFoundLabel} htmlFor="prov-how" hideLabel>
               <Select
                 id="prov-how"
                 name="how_found"
@@ -1179,9 +1235,12 @@ export function ProviderForm({
           ) : null}
         </div>
 
-        {/* Acciones del paso: fijas abajo en celular (como el lienzo), al
-            pie del formulario desde `md`. */}
-        <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4 border-t border-card-line bg-card py-3 md:static md:py-6">
+        {/* Acciones del paso: barra fija abajo en celular (siempre a mano y,
+            sin el WhatsApp flotante en el flujo, nunca tapada), con el área
+            segura del iPhone; desde `md`, a continuación del último campo,
+            con la acción principal a la derecha. El `calc` con `env()` no
+            tiene utility canónica (mismo patrón que las barras fijas al pie). */}
+        <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4 border-t border-card-line bg-card pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:static md:border-t-0 md:py-0">
           <button
             type="button"
             onClick={() => goTo(step - 1)}
@@ -1197,17 +1256,23 @@ export function ProviderForm({
           {/* `key` distinto: si React reusara el mismo `<button>` y le cambiara
               el `type` a `submit` durante el click de "Continuar", el browser
               enviaría el formulario al terminar ese mismo click. */}
-          {step < STEP.contact ? (
-            <Button key="continuar" type="button" variant="primary" size="52" onClick={handleContinue}>
-              {flow.next}
-            </Button>
-          ) : (
-            <Button key="enviar" type="submit" variant="primary" size="52" disabled={loading}>
-              {loading ? copy.submitLoadingLabel : copy.submitLabel}
-            </Button>
-          )}
+          <div className="flex items-center gap-4">
+            {/* Desde `md`, la nota va al lado del envío; en celular, debajo de la barra. */}
+            <p hidden={step !== STEP.contact} className="text-label text-fg-muted max-md:hidden">
+              {copy.note}
+            </p>
+            {step < STEP.contact ? (
+              <Button key="continuar" type="button" variant="primary" size="48" onClick={handleContinue}>
+                {flow.next}
+              </Button>
+            ) : (
+              <Button key="enviar" type="submit" variant="primary" size="48" disabled={loading}>
+                {loading ? copy.submitLoadingLabel : copy.submitLabel}
+              </Button>
+            )}
+          </div>
         </div>
-        <p hidden={step !== STEP.contact} className="-mt-8 text-center text-label text-fg-muted md:text-right">
+        <p hidden={step !== STEP.contact} className="-mt-6 text-center text-label text-fg-muted md:hidden">
           {copy.note}
         </p>
       </form>

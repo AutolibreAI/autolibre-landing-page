@@ -389,6 +389,8 @@ export const providersContent = {
       label: "Logo del negocio (opcional)",
       hint: "PNG, JPG o WebP, hasta 512 KB. Podés registrarte sin cargar un logo.",
       invalid: "Elegí una imagen PNG, JPG o WebP de hasta 512 KB.",
+      choose: "Elegir imagen",
+      empty: "Ningún archivo elegido",
       remove: "Quitar logo",
       readError: "No pudimos leer el logo. Volvé a elegirlo o quitalo para continuar.",
     },

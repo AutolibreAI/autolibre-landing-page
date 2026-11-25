@@ -5,8 +5,18 @@ import { PRIVATE_FLOW_TITLE_ID } from "@/components/proveedores/account/private-
 import { FlowSteps } from "@/components/proveedores/flow/flow-steps";
 import { partnerAccountContent } from "@/lib/content/partner-account";
 import { providersContent } from "@/lib/content/providers";
+import { cn } from "@/lib/utils";
 
 const { flow } = providersContent;
+
+/**
+ * Grilla del alta: columna de pasos (desde `lg`, fija al scrollear) y la
+ * columna del formulario. La comparte el esqueleto de "buscando tu negocio"
+ * para que el paso al formulario no corra nada de lugar.
+ */
+const altaGrid = "grid gap-8 lg:grid-cols-12 lg:gap-12";
+const altaAside = "hidden lg:sticky lg:top-24 lg:col-span-3 lg:flex lg:flex-col lg:gap-5 lg:self-start";
+const altaColumn = "flex min-w-0 flex-col lg:col-span-7 lg:col-start-5";
 
 type AltaLayoutProps = {
   /** Paso del formulario a la vista (0 a 2). */
@@ -58,8 +68,8 @@ export function AltaLayout({
   }, [step, done]);
 
   return (
-    <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
-      <aside aria-label={flow.sidebar.label} className="hidden lg:col-span-3 lg:flex lg:flex-col lg:gap-6">
+    <div className={altaGrid}>
+      <aside aria-label={flow.sidebar.label} className={altaAside}>
         <p className="text-sm font-semibold text-fg">{flow.sidebar.title}</p>
         <FlowSteps
           orientation="vertical"
@@ -83,22 +93,67 @@ export function AltaLayout({
         ) : null}
       </aside>
 
-      <div className="flex min-w-0 flex-col gap-10 lg:col-span-7 lg:col-start-5">
+      <div className={cn(altaColumn, done ? "gap-8" : "gap-6 md:gap-8")}>
         {done ? null : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             <p className="text-sm font-semibold text-brand-hover">{flow.progressLabel(step + 1, totalSteps)}</p>
             <h1
               id={PRIVATE_FLOW_TITLE_ID}
               ref={headingRef}
               tabIndex={-1}
-              className="font-display text-4xl font-bold tracking-tight text-balance text-fg md:text-5xl"
+              className="font-display text-3xl font-bold tracking-tight text-balance text-fg md:text-4xl"
             >
               {head.title}
             </h1>
-            <p className="text-lead text-fg-muted md:text-lead-lg">{head.intro}</p>
+            <p className="text-base text-fg-muted md:text-lead">{head.intro}</p>
           </div>
         )}
         {children}
+      </div>
+    </div>
+  );
+}
+
+/** Barra gris del esqueleto (sin animación: es un instante y no distrae). */
+function Bar({ className }: { readonly className: string }) {
+  return <span aria-hidden="true" className={cn("block rounded-full bg-canvas", className)} />;
+}
+
+/**
+ * "Buscando tu negocio…" (con sesión, mientras se consulta si la cuenta ya
+ * tiene un negocio): el esqueleto del paso 1 con la MISMA grilla que
+ * `AltaLayout`, así lo que llega después (casi siempre el formulario) aparece
+ * en su lugar y no se ve una línea de texto suelta. El texto va para lectores
+ * de pantalla (`role="status"`).
+ */
+export function AltaSkeleton() {
+  return (
+    <div role="status" className={altaGrid}>
+      <span className="sr-only">{flow.checking}</span>
+      <div aria-hidden="true" className={altaAside}>
+        <Bar className="h-4 w-36" />
+        {flow.sidebar.items.map((item) => (
+          <div key={item.id} className="flex items-center gap-3.5">
+            <span className="size-6 shrink-0 rounded-full bg-canvas" />
+            <div className="flex flex-1 flex-col gap-1.5">
+              <Bar className="h-3.5 w-28" />
+              <Bar className="h-3 w-40" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div aria-hidden="true" className={cn(altaColumn, "gap-6 md:gap-8")}>
+        <div className="flex flex-col gap-3">
+          <Bar className="h-4 w-20" />
+          <Bar className="h-9 w-3/4 max-w-96" />
+          <Bar className="h-4 w-full max-w-120" />
+        </div>
+        {[0, 1, 2].map((index) => (
+          <div key={index} className="flex flex-col gap-3">
+            <Bar className="h-5 w-52" />
+            <Bar className="h-12 w-full" />
+          </div>
+        ))}
       </div>
     </div>
   );

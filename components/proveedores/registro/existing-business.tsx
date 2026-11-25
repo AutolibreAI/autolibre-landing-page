@@ -33,10 +33,11 @@ export function ExistingBusiness({ names, checkout, onRegisterAnother }: Existin
   }, []);
 
   return (
-    <div className="flex flex-col gap-8">
+    // 640px como máximo, como el resto de los resultados del flujo.
+    <div className="flex max-w-160 flex-col gap-6">
       <SuccessHead headingRef={headingRef} title={existing.title} body={existing.body} />
 
-      <section aria-labelledby="alta-negocios" className="flex flex-col gap-3 rounded-3xl bg-canvas p-6 sm:p-7">
+      <section aria-labelledby="alta-negocios" className="flex flex-col gap-3 rounded-2xl bg-canvas p-5 sm:p-6">
         <h2 id="alta-negocios" className="text-sm font-semibold text-fg">
           {existing.listLabel}
         </h2>
