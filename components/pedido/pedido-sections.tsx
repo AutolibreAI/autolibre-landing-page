@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { FaqList } from "@/components/marketing/faq-list";
 import { GuideLinks } from "@/components/marketing/guide-links";
@@ -26,7 +25,6 @@ import { getGuidePicks } from "@/lib/blog/picks";
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
 import { presupuestoContent } from "@/lib/content/presupuesto";
 import { siteContent } from "@/lib/content/site";
-import { cn } from "@/lib/utils";
 import { whatsappUrl } from "@/lib/whatsapp";
 
 const page = presupuestoContent.pedidoPage;
@@ -113,26 +111,21 @@ export function PedidoHero() {
 
 /**
  * "Así te llega la respuesta" (experimento del 2026-11-25, rama
- * `exp/pedido-comparador`): dos teléfonos lado a lado, el chat de WhatsApp
- * y la app, avanzando juntos como un video; en celular, un toggle elige cuál
- * se ve (ver `CompareStage`). Las dos capas se arman acá, en el server: todo
- * el texto está en el HTML. El chat es el ejemplo ilustrativo de siempre
- * (proveedores y precios inventados, rotulado a la vista); las pantallas de
- * la app son capturas reales. Debajo, la descarga de la app.
+ * `exp/pedido-comparador`): el mismo pedido por WhatsApp y en la app, en
+ * paralelo. La app son los videos reales del flujo nuevo; el chat de
+ * WhatsApp (armado acá, en el server: todo el texto está en el HTML)
+ * avanza al ritmo de esos videos (ver `CompareStage`). Debajo, la descarga.
  */
 export function PedidoExample() {
   const { example } = page;
   const { compare } = example;
-  const bubble = "rounded-lg px-2.5 py-1.5 text-xs leading-snug md:text-sm";
+  const bubble = "rounded-lg px-2.5 py-1.5 text-xs leading-snug";
   const tag =
-    "absolute top-3 z-10 max-lg:hidden inline-flex h-8 items-center gap-1.5 rounded-full px-3 font-display text-sm font-semibold md:top-4";
-  // Teléfono: centrado, desde arriba hasta el borde de abajo del escenario (recortado).
-  const phone =
-    "absolute top-14 bottom-0 left-1/2 flex w-65 -translate-x-1/2 flex-col overflow-clip rounded-t-4xl border-8 border-b-0 md:w-75";
+    "absolute top-3 z-10 hidden h-8 items-center gap-1.5 rounded-full px-3 font-display text-sm font-semibold lg:inline-flex lg:top-4";
 
   const whatsappLayer = (
     <div className="size-full bg-wa-wallpaper">
-      <p className={`${tag} left-3 bg-card text-fg md:left-4`}>
+      <p className={`${tag} left-4 bg-card text-fg`}>
         <Icon
           name="whatsapp"
           size={16}
@@ -141,8 +134,8 @@ export function PedidoExample() {
         />
         {example.whatsapp.label}
       </p>
-      <figure className={`${phone} border-ink bg-wa-wallpaper`}>
-        <div className="flex h-12 shrink-0 items-center gap-2 bg-card px-3">
+      <figure className="cmp-phone border-ink bg-wa-wallpaper">
+        <div className="flex h-11 shrink-0 items-center gap-2 bg-card px-3">
           <span
             aria-hidden="true"
             className="flex size-7 items-center justify-center rounded-full bg-action font-display text-xs font-bold text-card"
@@ -153,15 +146,15 @@ export function PedidoExample() {
             {compare.chatName}
           </span>
         </div>
-        <div className="flex min-h-0 flex-1 flex-col justify-end gap-1.5 overflow-clip p-2.5">
+        <div className="flex min-h-0 flex-1 flex-col justify-end gap-1.5 overflow-clip p-2">
           <div data-on="1 2 3 4 5 6" className="cmp-msg self-end">
-            <p className={`${bubble} max-w-56 rounded-tr-sm bg-wa-out text-fg`}>
+            <p className={`${bubble} max-w-48 rounded-tr-sm bg-wa-out text-fg`}>
               <span className="sr-only">{example.you} </span>
               {example.userMessage}
             </p>
           </div>
           <div data-on="2 3 4 5 6" className="cmp-msg self-start">
-            <div className={`${bubble} max-w-60 rounded-tl-sm bg-card text-fg`}>
+            <div className={`${bubble} max-w-52 rounded-tl-sm bg-card text-fg`}>
               <span className="sr-only">{example.us} </span>
               <p>{example.confirmation.intro}</p>
               <ul>
@@ -183,29 +176,35 @@ export function PedidoExample() {
           </div>
           <div data-on="4 5 6" className="cmp-msg self-start">
             <div
-              className={`${bubble} flex max-w-60 flex-col gap-1.5 rounded-tl-sm bg-card text-fg`}
+              className={`${bubble} flex max-w-52 flex-col gap-1 rounded-tl-sm bg-card text-fg`}
             >
-              <span className="sr-only">{example.us}</span>
-              {example.providers.map((provider, index) => (
-                <div
-                  key={provider.name}
-                  className={
-                    index > 0 ? "border-t border-card-line pt-1.5" : undefined
-                  }
-                >
-                  <p className="font-semibold">{provider.name}</p>
-                  <p>
-                    <strong>{provider.price}</strong> · {provider.eta} ·{" "}
-                    {provider.address}
-                  </p>
-                </div>
-              ))}
+              <p>
+                <span className="sr-only">{example.us} </span>
+                {example.proposalsIntro}
+              </p>
+              <ul className="flex flex-col gap-1">
+                {example.providers.map((provider) => (
+                  <li
+                    key={provider.name}
+                    className="border-t border-card-line pt-1"
+                  >
+                    <span className="block font-semibold">{provider.name}</span>
+                    <strong>{provider.price}</strong> · {provider.detail}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
-          <div data-on="6" className="cmp-msg self-end">
+          <div data-on="5 6" className="cmp-msg self-end">
             <p className={`${bubble} rounded-tr-sm bg-wa-out text-fg`}>
               <span className="sr-only">{example.you} </span>
-              {compare.reply}
+              {example.reply}
+            </p>
+          </div>
+          <div data-on="6" className="cmp-msg self-start">
+            <p className={`${bubble} max-w-52 rounded-tl-sm bg-card text-fg`}>
+              <span className="sr-only">{example.us} </span>
+              {example.final}
             </p>
           </div>
         </div>
@@ -213,39 +212,18 @@ export function PedidoExample() {
     </div>
   );
 
-  const appLayer = (
-    <div className="size-full bg-ink">
-      <p
-        className={`${tag} right-3 bg-action text-card ring-1 ring-on-dark-subtle md:right-4`}
-      >
-        <Icon
-          name="smartphone"
-          size={16}
-          strokeWidth={2}
-          className="text-brand-200"
-        />
-        {example.app.label}
-      </p>
-      <div className={`${phone} border-on-dark-subtle bg-card`}>
-        <div className="relative flex-1">
-          {compare.screens.map((screen, index) => (
-            <Image
-              key={screen.src}
-              data-on={screen.on}
-              src={screen.src}
-              alt={screen.alt}
-              fill
-              loading="lazy"
-              sizes="300px"
-              className={cn(
-                "cmp-screen object-cover object-top",
-                index === 0 && "z-0",
-              )}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
+  const appTag = (
+    <p
+      className={`${tag} right-4 bg-action text-card ring-1 ring-on-dark-subtle`}
+    >
+      <Icon
+        name="smartphone"
+        size={16}
+        strokeWidth={2}
+        className="text-brand-200"
+      />
+      {example.app.label}
+    </p>
   );
 
   return (
@@ -266,7 +244,9 @@ export function PedidoExample() {
       <div className="mt-8">
         <CompareStage
           whatsapp={whatsappLayer}
-          app={appLayer}
+          appTag={appTag}
+          videos={compare.videos}
+          cues={compare.cues}
           copy={{
             toggleLabel: compare.toggleLabel,
             whatsappLabel: example.whatsapp.label,

@@ -351,9 +351,26 @@
   min-height: 0;
   overflow: hidden;
 }
-/* Pantallas de la app: apiladas, entra la nueva desde la derecha. */
-.cmp .cmp-screen {
-  transform: translateX(1.5rem);
+/* El teléfono de cada mitad: mismo marco y medida en las dos, con la
+   proporción de los videos de la app (576 x 1248), de alto completo. */
+.cmp .cmp-phone {
+  position: absolute;
+  /* En celular no hay etiqueta arriba (la reemplaza el toggle): más teléfono. */
+  top: 1.5rem;
+  bottom: 1.5rem;
+  left: 50%;
+  translate: -50% 0;
+  aspect-ratio: 576 / 1248;
+  display: flex;
+  flex-direction: column;
+  overflow: clip;
+  border-width: 7px;
+  border-radius: 2rem;
+}
+@media (min-width: 64rem) {
+  .cmp .cmp-phone {
+    top: 3.5rem;
+  }
 }
 .cmp[data-step="0"] [data-on~="0"] {
   opacity: 1;

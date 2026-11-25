@@ -187,121 +187,115 @@ export const presupuestoContent = {
     },
 
     /**
-     * Chat de ejemplo. Los proveedores, direcciones y precios son INVENTADOS
-     * (ya estaban publicados así antes del rediseño) y se rotula en pantalla
-     * ("Ejemplo ilustrativo", en el `figcaption`): no son datos reales ni
-     * una promesa de precio. El lienzo usa "[Proveedor A]" y "$ [precio]".
+     * "Así te llega la respuesta": el mismo pedido por WhatsApp y en la app,
+     * en paralelo. Del lado de la app, los videos reales del flujo nuevo
+     * (`public/videos/`); del lado de WhatsApp, un chat de muestra cuyos
+     * datos (pedido AL-22123, Toyota Corolla en Tigre, los tres talleres y
+     * sus precios) son los mismos que aparecen en los videos. Talleres,
+     * precios y mensajes son de ejemplo y se rotula a la vista (`note`):
+     * no son datos reales ni una promesa de precio.
      */
     example: {
       title: "Así te llega la respuesta",
-      intro: "Las propuestas te llegan por WhatsApp o en la app, como prefieras. Vos elegís: nada se confirma sin que lo decidas.",
-      /** Columna izquierda: el chat de ejemplo. */
-      whatsapp: {
-        label: "Por WhatsApp",
-        body: "Te confirmamos el pedido y te pasamos cada propuesta con precio, tiempos y dirección.",
-      },
-      /**
-       * Columna derecha: capturas reales de la app (las mismas del bloque
-       * "pedido enviado", `moduloPedidoContent.taller.appPromo.steps`). No
-       * dice que un pedido hecho en la web aparece en la app
-       * (`APP_VINCULADA` sigue apagado).
-       */
-      /**
-       * Comparador (experimento): dos teléfonos lado a lado (en celular, un
-       * toggle), chat de WhatsApp y app, que avanzan juntos.
-       * Las pantallas de la app son capturas reales; el chat es el mismo
-       * ejemplo ilustrativo de arriba.
-       */
-      compare: {
-        intro: "Mirá cómo avanza el mismo pedido por WhatsApp y en la app, paso a paso.",
-        toggleLabel: "Ver cómo llega la respuesta",
-        chatName: "AutoLibre",
-        chatInitial: "A",
-        note: "Ejemplo ilustrativo: el chat es de muestra; las pantallas de la app son reales.",
-        typing: "escribiendo…",
-        reply: "Me quedo con la 1.",
-        pause: "Pausar la animación",
-        play: "Reproducir la animación",
-        beatsLabel: "Los pasos",
-        beats: [
-          { title: "Pedís", body: "Contás qué le pasa al auto y dónde estás." },
-          { title: "Llegan las propuestas", body: "Con precio, tiempos y dirección de cada taller." },
-          { title: "Elegís", body: "Nada se confirma sin que lo decidas." },
-        ],
-        /** Capturas reales de la app, en orden. `on`: pasos en los que se ve. */
-        screens: [
-          {
-            src: "/screenshots/IMG_0581.PNG",
-            width: 1170,
-            height: 2532,
-            on: "0 1",
-            alt: "La app: pedir cotización, con el auto, qué le pasa y dónde.",
-          },
-          {
-            src: "/screenshots/IMG_0582.PNG",
-            width: 1170,
-            height: 2532,
-            on: "2 3",
-            alt: "La app: pedido enviado, con su número y qué sigue.",
-          },
-          {
-            src: "/images/app/app-propuestas.webp",
-            width: 432,
-            height: 600,
-            on: "4",
-            alt: "La app: ya tenés 3 propuestas para comparar.",
-          },
-          {
-            src: "/images/app/app-elegir.webp",
-            width: 432,
-            height: 600,
-            on: "5",
-            alt: "La app: elegí tu taller, con el precio y la distancia de cada propuesta.",
-          },
-          {
-            src: "/images/app/app-elegiste.webp",
-            width: 432,
-            height: 600,
-            on: "6",
-            alt: "La app: elegiste el taller, con el presupuesto y cómo llegar.",
-          },
-        ],
-      },
+      intro:
+        "Las propuestas te llegan por WhatsApp o en la app, como prefieras. Vos elegís: nada se confirma sin que lo decidas.",
+      whatsapp: { label: "Por WhatsApp" },
       app: {
         label: "En la app",
-        body: "Ves las propuestas apenas llegan, las comparás lado a lado y elegís el taller en un toque.",
-        screensLabel: "Cómo se ven las propuestas en la app",
         download: "Bajá la app gratis",
         scan: "Escaneá el código con la cámara del celular.",
         qrAlt: "Código QR para bajar la app de AutoLibre",
       },
-      caption: "Ejemplo ilustrativo",
+      compare: {
+        intro:
+          "Mirá cómo avanza el mismo pedido por WhatsApp y en la app, paso a paso.",
+        toggleLabel: "Ver cómo llega la respuesta",
+        chatName: "AutoLibre",
+        chatInitial: "A",
+        note: "Ejemplo ilustrativo: talleres, precios y mensajes son de muestra.",
+        typing: "escribiendo…",
+        pause: "Pausar",
+        play: "Reproducir",
+        beatsLabel: "Los pasos: tocá uno para verlo",
+        /** Un paso por video, en el mismo orden que `videos`. */
+        beats: [
+          { title: "Pedís", body: "Qué le pasa al auto, dónde y para cuándo." },
+          {
+            title: "Comparás las propuestas",
+            body: "Precio, distancia y qué incluye cada una.",
+          },
+          {
+            title: "Elegís",
+            body: "Coordinás el turno directo con el taller.",
+          },
+        ],
+        /**
+         * Videos reales de la app (sin audio). `start`/`end` en segundos:
+         * de `comparing-quote` se saltea la espera inicial (0 a 17 s).
+         */
+        videos: [
+          {
+            src: "/videos/creating-quote.mp4",
+            poster: "/videos/posters/creating-quote.webp",
+            start: 0.5,
+            end: 24.3,
+            label:
+              "La app: armás el pedido (qué, auto, dónde, cuándo y tu WhatsApp) y lo enviás.",
+          },
+          {
+            src: "/videos/comparing-quote.mp4",
+            poster: "/videos/posters/comparing-quote.webp",
+            start: 17,
+            end: 44.4,
+            label:
+              "La app: te llegan 3 propuestas y las comparás lado a lado antes de elegir.",
+          },
+          {
+            src: "/videos/choosing-quote.mp4",
+            poster: "/videos/posters/choosing-quote.webp",
+            start: 0,
+            end: 7.9,
+            label:
+              "La app: elegiste el taller y tenés cómo llegar y cómo escribirle.",
+          },
+        ],
+        /**
+         * Cuándo aparece cada mensaje del chat: en qué video (`clip`) y en qué
+         * segundo, atado a lo que pasa en la app en ese momento. `step` es el
+         * paso que usan los `data-on` del chat (ver `.cmp` en globals.css).
+         */
+        cues: [
+          { clip: 0, at: 2, step: 1 }, // Empezás a cargar el pedido.
+          { clip: 0, at: 19.3, step: 2 }, // "Tu pedido fue enviado".
+          { clip: 0, at: 22.5, step: 3 }, // "Estamos buscando quién te ayude".
+          { clip: 1, at: 20, step: 4 }, // "Te llegaron 3 propuestas".
+          { clip: 1, at: 41, step: 5 }, // "¿Elegís a Taller Isidro?".
+          { clip: 2, at: 1, step: 6 }, // Taller elegido.
+        ],
+      },
       /** Quién habla en cada globo, solo para lectores de pantalla. */
       you: "Vos:",
       us: "AutoLibre:",
       userMessage:
         "Hola! Quiero hacer el service. Tengo un Toyota Corolla y estoy en Tigre.",
       confirmation: {
-        intro: "Hola! Te escribo desde AutoLibre.ai por el pedido AL-1037. Tenemos registrado:",
-        lines: ["Toyota Corolla XEI 1.8 M/T 2013", "Quiero hacer el service", "Tigre"],
-        outro: "Ya estamos trabajando, cualquier duda o corrección avisanos!",
+        intro:
+          "Hola! Te escribo desde AutoLibre.ai por el pedido AL-22123. Tenemos registrado:",
+        lines: ["Toyota Corolla · NHJ877", "Service", "Tigre, esta semana"],
       },
+      proposalsIntro: "Te llegaron 3 propuestas:",
       providers: [
+        { name: "1. Taller Isidro", price: "$ 225.000", detail: "12 km" },
         {
-          name: "1. Host Garage",
-          service: "Service completo: aceite y filtros",
-          price: "$ 100.000",
-          eta: "Mañana",
-          address: "Av. Italia 100",
+          name: "2. Hasser Performance",
+          price: "Desde $ 240.000",
+          detail: "18 km",
         },
-        {
-          name: "2. HyG Garage",
-          service: "Service completo: aceite y filtros",
-          price: "$ 125.000",
-          eta: "Hoy",
-          address: "Solis 2000",
-        },
+        { name: "3. Mecánica JP", price: "A confirmar", detail: "49 km" },
       ],
+      reply: "Me quedo con Taller Isidro.",
+      final:
+        "Listo. Te pasamos el contacto de Taller Isidro para que coordines el turno.",
     },
 
     steps: {
@@ -358,7 +352,11 @@ export const presupuestoContent = {
      */
     guides: {
       title: "Guías que te pueden servir",
-      slugs: ["vtv-pba-turno-que-llevar", "que-hacer-si-chocas", "consultar-y-pagar-multas"],
+      slugs: [
+        "vtv-pba-turno-que-llevar",
+        "que-hacer-si-chocas",
+        "consultar-y-pagar-multas",
+      ],
       all: "Ver todas las guías",
     },
 
