@@ -36,20 +36,24 @@ export async function POST(request: Request): Promise<Response> {
   const result = await handleSignupIntentRequest(
     { authorization: request.headers.get("authorization"), body },
     {
+      // OJO: el `verifyToken` público de `@clerk/backend` (y de
+      // `@clerk/nextjs/server`) está envuelto en `withLegacyReturn`: devuelve
+      // el PAYLOAD del token y TIRA si no verifica. No devuelve
+      // `{ data, errors }` (esa es la función interna). Desestructurarlo así
+      // daba 401 con todo token válido.
       verifySessionToken: async (token) => {
-        const { data, errors } = await verifyToken(token, { secretKey });
-        if (errors || !data) {
-          // Solo el motivo que da Clerk (p. ej. `jwk-kid-mismatch` = la secret
-          // key es de otra instancia que la publishable; `token-not-active-yet`
-          // = reloj desfasado). Nunca el token ni el usuario.
-          const first: unknown = Array.isArray(errors) ? errors[0] : errors;
-          const reason = (first as { readonly reason?: unknown } | undefined)?.reason;
-          console.error(`[signup-intent] token rechazado: ${typeof reason === "string" ? reason : "sin motivo"}`);
+        try {
+          const payload = await verifyToken(token, { secretKey });
+          // `sub` del token de sesión = id del usuario de Clerk.
+          const sub = (payload as { readonly sub?: unknown }).sub;
+          return typeof sub === "string" && sub !== "" ? sub : null;
+        } catch (error) {
+          // Solo el motivo que da Clerk (p. ej. `jwk-kid-mismatch`). Nunca el
+          // token ni el usuario.
+          const reason = (error as { readonly reason?: unknown } | null)?.reason;
+          console.error(`[signup-intent] token rechazado: ${typeof reason === "string" ? reason : "error de verificación"}`);
           return null;
         }
-        // `sub` del token de sesión = id del usuario de Clerk.
-        const sub = (data as { readonly sub?: unknown }).sub;
-        return typeof sub === "string" && sub !== "" ? sub : null;
       },
       getUser: (userId) => clerk.users.getUser(userId),
       // `updateUserMetadata` hace merge: no toca otras claves de `publicMetadata`.
