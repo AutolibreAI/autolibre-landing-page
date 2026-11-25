@@ -33,6 +33,13 @@ export const partnerAccountContent = {
         { strong: "Seguís tus pedidos", rest: " y las propuestas que te llegan para tu auto." },
         { strong: "Administrás tu negocio", rest: ", si tenés un taller o servicio en la red." },
       ],
+      /** Captura real de la app (ya trae el marco del teléfono). Solo desde `lg`. */
+      appShot: {
+        src: "/mockup/mockup-garage.webp",
+        width: 1472,
+        height: 2886,
+        alt: "La app de AutoLibre: alertas del auto, como la VTV vencida, y el garage con tus autos.",
+      },
     },
     joinPrefix: "¿Tenés un taller o un servicio?",
     join: "Sumá tu negocio",

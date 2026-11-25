@@ -3,8 +3,8 @@
 import { SignIn, SignUp } from "@clerk/nextjs";
 import { useEffect, useRef, useState } from "react";
 import {
+  ClerkSlot,
   SignInLayout,
-  SignInLoading,
   type PrivateFlowHeadContent,
 } from "@/components/proveedores/account/private-flow";
 import { SignupIntentChoice } from "@/components/proveedores/account/signup-intent-choice";
@@ -78,12 +78,12 @@ export function PartnerSignIn({
 
   return (
     <SignInLayout head={head} headSlot={headSlot} context={context} intro={intro} showJoin={showJoin}>
-      {loading ? (
-        <SignInLoading />
-      ) : ask ? (
-        <AccountEntry redirectUrl={redirectUrl} />
+      {ask ? (
+        <AccountEntry redirectUrl={redirectUrl} loading={loading} />
       ) : (
-        <SignIn routing="hash" withSignUp forceRedirectUrl={redirectUrl} signUpForceRedirectUrl={redirectUrl} />
+        <ClerkSlot kind="signIn" loading={loading}>
+          <SignIn routing="hash" withSignUp forceRedirectUrl={redirectUrl} signUpForceRedirectUrl={redirectUrl} />
+        </ClerkSlot>
       )}
     </SignInLayout>
   );
@@ -103,8 +103,12 @@ const withoutFooterAction = { elements: { footerAction: "hidden" } } as const;
  * "Ingresar" / "Crear cuenta" de `/cuenta`. Dos botones con `aria-pressed`
  * (no pestañas ARIA: cada uno cambia lo que hay debajo, sin paneles a la
  * vez). "Crear cuenta" pide primero cliente o taller.
+ *
+ * Las pestañas se pintan desde el primer render, aunque Clerk no haya
+ * cargado (`loading`): el widget va en un `ClerkSlot` que le reserva el alto,
+ * así nada salta cuando monta.
  */
-function AccountEntry({ redirectUrl }: { readonly redirectUrl: string }) {
+function AccountEntry({ redirectUrl, loading }: { readonly redirectUrl: string; readonly loading: boolean }) {
   const pending = usePendingSignupIntent();
   const [mode, setMode] = useState<EntryMode>("signIn");
   /** Lo elegido en esta pantalla (si no hay storage, `pending` queda en `null`). */
@@ -146,7 +150,7 @@ function AccountEntry({ redirectUrl }: { readonly redirectUrl: string }) {
   const creating = mode !== "signIn";
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       <div role="group" aria-label={entry.label} className="grid grid-cols-2 gap-1 rounded-full border border-card-line bg-card p-1">
         <EntryToggle pressed={!creating} onClick={() => change("signIn")}>
           {entry.signIn}
@@ -157,13 +161,15 @@ function AccountEntry({ redirectUrl }: { readonly redirectUrl: string }) {
       </div>
 
       {mode === "signIn" ? (
-        <SignIn
-          routing="hash"
-          withSignUp
-          forceRedirectUrl={redirectUrl}
-          signUpForceRedirectUrl={redirectUrl}
-          appearance={withoutFooterAction}
-        />
+        <ClerkSlot kind="signInBare" loading={loading}>
+          <SignIn
+            routing="hash"
+            withSignUp
+            forceRedirectUrl={redirectUrl}
+            signUpForceRedirectUrl={redirectUrl}
+            appearance={withoutFooterAction}
+          />
+        </ClerkSlot>
       ) : mode === "choose" ? (
         <SignupIntentChoice
           initial={current}
@@ -179,31 +185,31 @@ function AccountEntry({ redirectUrl }: { readonly redirectUrl: string }) {
           }}
         />
       ) : (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4">
           {current ? (
-          <p
-            ref={chosenRef}
-            tabIndex={-1}
-            className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-card border border-card-line bg-card px-4 py-2"
-          >
-            <span className="font-semibold text-fg">
-              {intentChoice.chosen[current]}
-            </span>
-            <button
-              type="button"
-              onClick={() => change("choose")}
-              className="inline-flex min-h-11 items-center px-1 text-sm font-semibold text-fg underline underline-offset-4 hover:text-brand-hover"
+            <p
+              ref={chosenRef}
+              tabIndex={-1}
+              className="flex flex-wrap items-center justify-between gap-x-3 rounded-full border border-card-line bg-card py-0 pr-2 pl-5"
             >
-              {intentChoice.change}
-            </button>
-          </p>
+              <span className="text-sm font-semibold text-fg">{intentChoice.chosen[current]}</span>
+              <button
+                type="button"
+                onClick={() => change("choose")}
+                className="inline-flex min-h-11 items-center px-3 text-sm font-semibold text-fg underline underline-offset-4 hover:text-brand-hover"
+              >
+                {intentChoice.change}
+              </button>
+            </p>
           ) : null}
-          <SignUp
-            routing="hash"
-            forceRedirectUrl={redirectUrl}
-            signInForceRedirectUrl={redirectUrl}
-            appearance={withoutFooterAction}
-          />
+          <ClerkSlot kind="signUp" loading={loading}>
+            <SignUp
+              routing="hash"
+              forceRedirectUrl={redirectUrl}
+              signInForceRedirectUrl={redirectUrl}
+              appearance={withoutFooterAction}
+            />
+          </ClerkSlot>
         </div>
       )}
     </div>

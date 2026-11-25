@@ -23,6 +23,16 @@
  * email (`options.socialButtonsPlacement: "bottom"`), como el lienzo. Borde
  * de los inputs `control-line-strong` (4.79:1, WCAG 1.4.11).
  *
+ * Densidad (2026-11-25): controles de 48px (`h-12`), texto de botón 15px
+ * (`text-control`), inputs a 16px y labels de 13px; menos aire entre filas.
+ * Los tres botones sociales van en una fila; en celular, con 14px, poco
+ * padding y 6px entre ícono y texto (`*:gap-1.5`: el span interno de Clerk
+ * trae 12px) para que "Facebook" entre entero a 360px. El input trae
+ * `max-height: 2.25rem` de Clerk: `max-h-none` deja que tome los 48px. `unsafe_disableDevelopmentModeWarnings`
+ * saca la franja "Development mode" (solo existe en desarrollo): así el
+ * widget mide en dev lo mismo que en producción y la reserva de alto de
+ * `ClerkSlot` (`private-flow.tsx`) vale para los dos.
+ *
  * API verificada en los tipos de `@clerk/react` (`Variables`, `Elements`,
  * `Options`, `GlobalAppearanceOptions.cssLayerName`) de la versión instalada.
  */
@@ -31,6 +41,7 @@ export const clerkAppearance = {
   options: {
     socialButtonsPlacement: "bottom",
     socialButtonsVariant: "blockButton",
+    unsafe_disableDevelopmentModeWarnings: true,
   },
   variables: {
     colorPrimary: "var(--color-action)",
@@ -55,21 +66,25 @@ export const clerkAppearance = {
     // `p-0` eso recortaba el borde derecho de los botones y el badge
     // "Último usado", que sobresale de la esquina del botón de Google.
     cardBox: "w-full max-w-none overflow-visible rounded-none border-0 bg-transparent shadow-none",
-    card: "m-0 w-full gap-5 overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none",
+    card: "m-0 w-full gap-4 overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none",
     header: "hidden",
     logoBox: "hidden",
-    socialButtons: "gap-2.5",
+    main: "gap-4",
+    form: "gap-4",
+    socialButtons: "gap-2",
     socialButtonsBlockButton:
-      "h-13 rounded-full border border-action bg-card text-base text-fg shadow-none transition-colors hover:bg-brand-50",
-    socialButtonsBlockButtonText: "font-display font-semibold text-fg",
+      "h-12 min-w-0 rounded-full border border-action bg-card px-1.5 text-sm text-fg shadow-none transition-colors *:gap-1.5 hover:bg-brand-50 sm:px-3 sm:text-control",
+    socialButtonsBlockButtonText: "font-display text-sm font-semibold text-fg sm:text-control",
+    socialButtonsProviderIcon: "size-4 shrink-0",
+    dividerRow: "my-0",
     dividerLine: "bg-card-line",
-    dividerText: "text-sm text-fg-muted",
+    dividerText: "text-label text-fg-muted",
     formFieldLabel: "text-label font-semibold text-fg",
     formFieldInput:
-      "h-13 rounded-full border border-control-line-strong bg-card px-5 text-base text-fg shadow-none hover:border-fg-muted focus:border-action",
+      "h-12 max-h-none rounded-full border border-control-line-strong bg-card px-5 text-base text-fg shadow-none hover:border-fg-muted focus:border-action",
     formButtonPrimary:
-      "h-13 rounded-full bg-action font-display text-base font-semibold text-white normal-case shadow-none transition-colors hover:bg-action-hover",
-    footer: "bg-none bg-transparent px-0 pt-2 pb-0",
+      "h-12 rounded-full bg-action font-display text-control font-semibold text-white normal-case shadow-none transition-colors hover:bg-action-hover",
+    footer: "bg-none bg-transparent px-0 pt-0 pb-0",
     footerAction: "justify-center",
     footerActionText: "text-sm text-fg-muted",
     footerActionLink: "text-sm font-semibold text-fg underline underline-offset-4 hover:text-brand-hover",

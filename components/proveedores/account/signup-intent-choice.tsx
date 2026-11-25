@@ -43,7 +43,7 @@ export function SignupIntentChoice({
   return (
     <form
       noValidate
-      className="flex flex-col gap-5"
+      className="flex flex-col gap-4"
       onSubmit={(event) => {
         event.preventDefault();
         if (!selected) {
@@ -55,12 +55,12 @@ export function SignupIntentChoice({
       }}
     >
       <fieldset
-        className="flex flex-col gap-3"
+        className="flex flex-col gap-2.5"
         aria-describedby={showError ? `${hintId} ${errorId}` : hintId}
         aria-invalid={showError || undefined}
       >
-        <legend className="mb-1 font-display text-xl font-bold text-fg">{intentChoice.legend}</legend>
-        <p id={hintId} className="-mt-1 mb-1 text-base text-fg-muted">
+        <legend className="mb-1 font-display text-lg font-bold text-fg">{intentChoice.legend}</legend>
+        <p id={hintId} className="-mt-1 text-sm text-fg-muted">
           {intentChoice.hint}
         </p>
         {OPTIONS.map((option, index) => {
@@ -70,7 +70,7 @@ export function SignupIntentChoice({
             <label
               key={option.intent}
               className={cn(
-                "flex min-h-11 cursor-pointer items-start gap-4 rounded-card border bg-card p-4 transition-colors motion-reduce:transition-none sm:p-5",
+                "flex min-h-11 cursor-pointer items-center gap-3 rounded-card border bg-card px-4 py-3 transition-colors motion-reduce:transition-none",
                 "has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand",
                 checked ? "border-action bg-brand-50" : "border-control-line-strong hover:border-action",
               )}
@@ -90,20 +90,20 @@ export function SignupIntentChoice({
               <span
                 aria-hidden="true"
                 className={cn(
-                  "flex size-11 shrink-0 items-center justify-center rounded-full",
+                  "flex size-10 shrink-0 items-center justify-center rounded-full",
                   checked ? "bg-action text-white" : "bg-canvas text-fg",
                 )}
               >
-                <Icon name={option.icon} size={22} strokeWidth={1.8} />
+                <Icon name={option.icon} size={20} strokeWidth={1.8} />
               </span>
-              <span className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="font-display text-lg leading-snug font-bold text-fg">{copy.title}</span>
-                <span className="text-base text-fg-muted">{copy.body}</span>
+              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="font-display text-base leading-snug font-bold text-fg">{copy.title}</span>
+                <span className="text-sm text-fg-muted">{copy.body}</span>
               </span>
               <span
                 aria-hidden="true"
                 className={cn(
-                  "mt-1 flex size-5 shrink-0 items-center justify-center rounded-full border-2",
+                  "flex size-5 shrink-0 items-center justify-center rounded-full border-2",
                   checked ? "border-action" : "border-control-line-strong",
                 )}
               >
@@ -119,7 +119,7 @@ export function SignupIntentChoice({
           </p>
         ) : null}
       </fieldset>
-      <Button type="submit" variant="primary" size="52" block>
+      <Button type="submit" variant="primary" size="48" block>
         {submitLabel}
       </Button>
     </form>
