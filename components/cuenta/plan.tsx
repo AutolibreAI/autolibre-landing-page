@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
+import { rowActionClass } from "@/components/cuenta/styles";
 import { CancelSubscription } from "@/components/proveedores/account/cancel-subscription";
 import { ButtonAnchor, ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -99,7 +101,19 @@ export function PendingPaymentBanner({ partnerId, requestedPlan }: { readonly pa
   );
 }
 
-/** Tarjeta "Tu plan" del Resumen: plan, estado, tope y la acción que corresponde. */
+/** Clases de la tarjeta "Tu plan" del Resumen: las comparte su esqueleto de carga. */
+export const planSummaryClasses = {
+  card: "flex flex-col gap-2.5 rounded-card border border-card-line bg-card px-5 py-3 sm:px-6",
+  head: "flex min-h-11 items-center justify-between gap-3",
+  title: "font-display text-xl leading-7 font-bold text-fg",
+  text: "text-sm text-fg-muted",
+} as const;
+
+/**
+ * Tarjeta del plan en el Resumen: plan, estado, tope y la acción que
+ * corresponde. Con plan pago, "Ver mi plan" es una acción chica en la misma
+ * línea del nombre; con Gratis, contratar el Plus es LA acción de la tarjeta.
+ */
 export function PlanSummaryCard({
   data,
   planHref,
@@ -117,33 +131,38 @@ export function PlanSummaryCard({
   const offerPlus = data.state.kind === "free" || data.state.kind === "other";
 
   return (
-    <section aria-labelledby={titleId} className="flex flex-col gap-4 rounded-card border border-card-line bg-card p-6">
-      <div className="flex flex-col items-start gap-1">
-        <p className="text-sm font-medium text-fg-muted">{copy.yourPlan}</p>
-        <h3 id={titleId} className="font-display text-3xl font-bold text-fg">
+    <section aria-labelledby={titleId} className={planSummaryClasses.card}>
+      <div className={planSummaryClasses.head}>
+        <h3 id={titleId} className={planSummaryClasses.title}>
           {live ? planLabel(live) : copy.free}
         </h3>
-        <PlanStatus state={data.state} />
+        {live ? (
+          <Link href={planHref} scroll={false} className={rowActionClass}>
+            {copy.seePlan}
+            <Icon name="arrow-right" size={16} strokeWidth={2} />
+          </Link>
+        ) : null}
       </div>
+      {data.state.kind !== "free" ? (
+        <div className="-mt-1 flex">
+          <PlanStatus state={data.state} />
+        </div>
+      ) : null}
 
       {usage ? (
         <UsageMeter used={usage.used} limit={live ? limit : 1} paid={live !== null} />
       ) : (
-        <p className="text-control text-fg-muted">{live && limit ? copy.limit(limit) : copy.freeLimit}</p>
+        <p className={planSummaryClasses.text}>{live && limit ? copy.limit(limit) : copy.freeLimit}</p>
       )}
 
-      {live ? (
-        <ButtonLink href={planHref} variant="outline" size="48" block scroll={false}>
-          {copy.seePlan}
-        </ButtonLink>
-      ) : offerPlus ? (
-        <div className="flex flex-col gap-2">
-          {plusLimit ? <p className="text-control text-fg-muted">{copy.upsell.title(plusLimit)}.</p> : null}
+      {!live && offerPlus ? (
+        <div className="flex flex-col gap-2 pb-1">
+          {plusLimit ? <p className={planSummaryClasses.text}>{copy.upsell.title(plusLimit)}.</p> : null}
           <ButtonLink
             href={checkoutHref(PROVEEDORES_CONTRATAR_PATH, "plus")}
             prefetch={false}
             variant="primary"
-            size="48"
+            size="44"
             block
             data-analytics-event={ANALYTICS_EVENTS.planCheckoutStarted}
             data-analytics-placement="cuenta_resumen"
@@ -183,14 +202,23 @@ function UsageMeter({ used, limit, paid }: { readonly used: number; readonly lim
   );
 }
 
-function FeatureList({ items, dark = false }: { readonly items: readonly string[]; readonly dark?: boolean }) {
+function FeatureList({
+  items,
+  dark = false,
+  columns = false,
+}: {
+  readonly items: readonly string[];
+  readonly dark?: boolean;
+  /** Dos columnas desde `sm` (la tarjeta del plan pago, que es ancha). */
+  readonly columns?: boolean;
+}) {
   return (
-    <ul className="flex flex-col gap-2.5">
+    <ul className={cn("grid gap-x-6 gap-y-2 text-sm", columns && "sm:grid-cols-2")}>
       {items.map((item) => (
-        <li key={item} className={cn("flex gap-2.5", dark ? "text-on-dark" : "text-fg-muted")}>
+        <li key={item} className={cn("flex gap-2", dark ? "text-on-dark" : "text-fg-muted")}>
           <Icon
             name="check"
-            size={18}
+            size={16}
             strokeWidth={2.2}
             className={cn("mt-0.5 shrink-0", dark ? "text-brand-200" : "text-brand-hover")}
           />
@@ -200,6 +228,12 @@ function FeatureList({ items, dark = false }: { readonly items: readonly string[
     </ul>
   );
 }
+
+/** Clases de la pestaña Plan: las comparte su esqueleto de carga. */
+export const planSectionClasses = {
+  title: "font-display text-2xl leading-tight font-bold text-fg",
+  grid: "grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]",
+} as const;
 
 /** Pestaña Plan. */
 export function PlanSection({
@@ -236,9 +270,36 @@ export function PlanSection({
   const plusContent = planContent("plus");
   const limit = live ? (data.limits[live] ?? null) : null;
 
+  const cancelCard =
+    live && data.view && canCancelSubscription(data.view) && !notice ? (
+      <section aria-labelledby={`${titleId}-baja`} className="flex flex-col items-start gap-2 rounded-card border border-card-line bg-card p-5">
+        <h3 id={`${titleId}-baja`} className="font-display text-lg font-bold text-fg">
+          {copy.cancel.title}
+        </h3>
+        <p className="text-sm text-fg-muted">{copy.cancel.body(planLabel(live))}</p>
+        <CancelSubscription
+          partnerId={partner.partnerId}
+          partnerName={partner.name}
+          planLabel={planLabel(live)}
+          view={data.view}
+          selfPath={selfPath}
+          onCanceled={handleCanceled}
+        />
+      </section>
+    ) : null;
+
+  const usageCard = usage ? (
+    <section aria-labelledby={`${titleId}-uso`} className="flex flex-col gap-3 rounded-card border border-card-line bg-card p-5">
+      <h3 id={`${titleId}-uso`} className="font-display text-lg font-bold text-fg">
+        {copy.usage.title}
+      </h3>
+      <UsageMeter used={usage.used} limit={live ? limit : 1} paid={live !== null} />
+    </section>
+  ) : null;
+
   return (
-    <div className="flex flex-col gap-7">
-      <h2 id={titleId} className="font-display text-3xl font-bold text-fg">
+    <div className="flex flex-col gap-5">
+      <h2 id={titleId} className={planSectionClasses.title}>
         {copy.title}
       </h2>
 
@@ -246,7 +307,8 @@ export function PlanSection({
         <PendingPaymentBanner partnerId={partner.partnerId} requestedPlan={data.state.requestedPlan} />
       ) : null}
 
-      <div aria-live="polite" aria-atomic="true">
+      {/* Región viva siempre montada (si no, no se anuncia), sin ocupar lugar mientras está vacía. */}
+      <div aria-live="polite" aria-atomic="true" className="-mt-5 not-empty:mt-0">
         {notice ? (
           <p ref={noticeRef} tabIndex={-1} role="status" className="rounded-card bg-brand-50 px-5 py-4 font-medium text-fg">
             {notice}
@@ -254,108 +316,72 @@ export function PlanSection({
         ) : null}
       </div>
 
-      <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
-        <div className="flex flex-col gap-6">
-          {live ? (
-            <PaidPlanCard data={data} live={live} partnerName={partner.name} />
-          ) : (
-            <>
-              <section
-                aria-labelledby={`${titleId}-gratis`}
-                className="flex flex-col gap-5 rounded-card border border-card-line bg-card p-6 sm:p-7"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="flex flex-col items-start gap-1">
-                    <p className="text-sm font-medium text-fg-muted">{copy.yourPlan}</p>
-                    <h3 id={`${titleId}-gratis`} className="font-display text-3xl font-bold text-fg">
-                      {copy.free}
-                    </h3>
-                  </div>
-                  <p className="font-display text-2xl font-bold text-fg">{copy.freePrice}</p>
-                </div>
-                <hr className="border-card-line" />
-                <FeatureList items={freeContent?.features ?? []} />
-              </section>
-
-              {data.state.kind !== "pending" ? (
-                <section
-                  aria-labelledby={`${titleId}-plus`}
-                  className="flex flex-col gap-5 rounded-card bg-action p-6 text-white sm:p-7"
-                >
-                  <div className="flex flex-col gap-2">
-                    <p className="text-sm font-medium text-brand-200">{copy.upsell.eyebrow}</p>
-                    <h3 id={`${titleId}-plus`} className="font-display text-2xl leading-tight font-bold">
-                      {copy.upsell.title(data.limits.plus ?? null)}
-                    </h3>
-                    {plusPlan ? (
-                      <p className="flex flex-wrap items-baseline gap-x-2">
-                        <span className="font-display text-2xl font-bold">{formatPlanPrice(plusPlan)}</span>
-                        <span className="text-sm text-on-dark-muted">{copy.perMonth(plusPlan.priceIncludesVat)}</span>
-                      </p>
-                    ) : null}
-                  </div>
-                  <FeatureList items={(plusContent?.features ?? []).filter((item) => !item.startsWith("Todo lo"))} dark />
-                  <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-                    <ButtonLink
-                      href={checkoutHref(PROVEEDORES_CONTRATAR_PATH, "plus")}
-                      prefetch={false}
-                      variant="light"
-                      size="48"
-                      data-analytics-event={ANALYTICS_EVENTS.planCheckoutStarted}
-                      data-analytics-placement="cuenta_plan"
-                      data-analytics-plan="plus"
-                    >
-                      {copy.contractPlus}
-                    </ButtonLink>
-                    <ButtonLink href={PROVEEDORES_PLANES_PATH} variant="outlineDark" size="48">
-                      {copy.allPlans}
-                    </ButtonLink>
-                  </div>
-                  <div className="flex flex-col gap-1 text-sm text-on-dark-muted">
-                    <TrialNoteDark data={data} />
-                    <p>{copy.upsell.note}</p>
-                  </div>
-                </section>
-              ) : null}
-            </>
-          )}
-
-          {live && data.view && canCancelSubscription(data.view) && !notice ? (
-            <section
-              aria-labelledby={`${titleId}-baja`}
-              className="flex flex-col items-start gap-3 rounded-card border border-card-line bg-card p-6 sm:p-7"
-            >
-              <h3 id={`${titleId}-baja`} className="font-display text-xl font-bold text-fg">
-                {copy.cancel.title}
-              </h3>
-              <p className="leading-relaxed text-fg-muted">{copy.cancel.body(planLabel(live))}</p>
-              <CancelSubscription
-                partnerId={partner.partnerId}
-                partnerName={partner.name}
-                planLabel={planLabel(live)}
-                view={data.view}
-                selfPath={selfPath}
-                onCanceled={handleCanceled}
-              />
-            </section>
-          ) : null}
+      {live ? (
+        // Plan pago: el plan a la izquierda; pago, uso y la baja al costado.
+        <div className={planSectionClasses.grid}>
+          <PaidPlanCard data={data} live={live} partnerName={partner.name} />
+          <aside className="flex flex-col gap-5">
+            {usageCard}
+            <PaymentCard state={data.state} titleId={`${titleId}-pago`} />
+            {cancelCard}
+          </aside>
         </div>
-
-        <aside className="flex flex-col gap-6">
-          {usage ? (
-            <section
-              aria-labelledby={`${titleId}-uso`}
-              className="flex flex-col gap-4 rounded-card border border-card-line bg-card p-6"
-            >
-              <h3 id={`${titleId}-uso`} className="font-display text-xl font-bold text-fg">
-                {copy.usage.title}
+      ) : (
+        // Gratis: el plan de hoy y el Plus lado a lado desde `lg` (se comparan de un vistazo).
+        <div className="grid items-stretch gap-5 lg:grid-cols-2">
+          <section
+            aria-labelledby={`${titleId}-gratis`}
+            className="flex flex-col gap-4 rounded-card border border-card-line bg-card p-5 sm:p-6"
+          >
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <h3 id={`${titleId}-gratis`} className="font-display text-2xl font-bold text-fg">
+                {copy.free}
               </h3>
-              <UsageMeter used={usage.used} limit={live ? limit : 1} paid={live !== null} />
+              <p className="font-display text-xl font-bold text-fg">{copy.freePrice}</p>
+            </div>
+            <hr className="border-card-line" />
+            <FeatureList items={freeContent?.features ?? []} />
+          </section>
+
+          {data.state.kind !== "pending" ? (
+            <section aria-labelledby={`${titleId}-plus`} className="flex flex-col gap-4 rounded-card bg-action p-5 text-white sm:p-6">
+              <div className="flex flex-col gap-1.5">
+                <h3 id={`${titleId}-plus`} className="font-display text-xl leading-tight font-bold">
+                  {copy.upsell.title(data.limits.plus ?? null)}
+                </h3>
+                {plusPlan ? (
+                  <p className="flex flex-wrap items-baseline gap-x-2">
+                    <span className="font-display text-xl font-bold">{formatPlanPrice(plusPlan)}</span>
+                    <span className="text-sm text-on-dark-muted">{copy.perMonth(plusPlan.priceIncludesVat)}</span>
+                  </p>
+                ) : null}
+              </div>
+              <FeatureList items={(plusContent?.features ?? []).filter((item) => !item.startsWith("Todo lo"))} dark />
+              <div className="mt-auto flex flex-wrap items-center gap-3">
+                <ButtonLink
+                  href={checkoutHref(PROVEEDORES_CONTRATAR_PATH, "plus")}
+                  prefetch={false}
+                  variant="light"
+                  size="44"
+                  data-analytics-event={ANALYTICS_EVENTS.planCheckoutStarted}
+                  data-analytics-placement="cuenta_plan"
+                  data-analytics-plan="plus"
+                >
+                  {copy.contractPlus}
+                </ButtonLink>
+                <ButtonLink href={PROVEEDORES_PLANES_PATH} variant="outlineDark" size="44">
+                  {copy.allPlans}
+                </ButtonLink>
+              </div>
+              <div className="flex flex-col gap-0.5 text-sm text-on-dark-muted">
+                <TrialNoteDark data={data} />
+                <p>{copy.upsell.note}</p>
+              </div>
             </section>
           ) : null}
-          {live ? <PaymentCard state={data.state} titleId={`${titleId}-pago`} /> : null}
-        </aside>
-      </div>
+          {usageCard}
+        </div>
+      )}
     </div>
   );
 }
@@ -386,41 +412,40 @@ function PaidPlanCard({
   ];
 
   return (
-    <section aria-labelledby={titleId} className="flex flex-col gap-5 rounded-card border border-card-line bg-card p-6 sm:p-7">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <section aria-labelledby={titleId} className="flex flex-col gap-4 rounded-card border border-card-line bg-card p-5 sm:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
         <div className="flex flex-col items-start gap-1.5">
-          <p className="text-sm font-medium text-fg-muted">{copy.yourPlan}</p>
-          <h3 id={titleId} className="font-display text-3xl font-bold text-fg">
+          <h3 id={titleId} className="font-display text-2xl leading-tight font-bold text-fg">
             {planLabel(live)}
           </h3>
           <PlanStatus state={data.state} />
         </div>
         {billing ? (
-          <p className="flex flex-col items-end">
-            <span className="font-display text-2xl font-bold text-fg">{formatPlanPrice(billing)}</span>
+          <p className="flex flex-col sm:items-end">
+            <span className="font-display text-xl font-bold text-fg">{formatPlanPrice(billing)}</span>
             <span className="text-sm text-fg-muted">{copy.perMonth(billing.priceIncludesVat)}</span>
           </p>
         ) : null}
       </div>
       <hr className="border-card-line" />
       {features.length > 0 ? (
-        <FeatureList items={features} />
+        <FeatureList items={features} columns />
       ) : limit ? (
-        <p className="text-fg-muted">{copy.limit(limit)}</p>
+        <p className="text-sm text-fg-muted">{copy.limit(limit)}</p>
       ) : null}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3 pt-1">
         <ButtonAnchor
           href={whatsappUrl(page.actions.changePlanWhatsapp(partnerName, planDisplayName(live)))}
           target="_blank"
           rel="noopener noreferrer"
           variant="primary"
-          size="48"
+          size="44"
           data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
           data-analytics-placement="cuenta_cambiar_plan"
         >
           {page.actions.changePlan}
         </ButtonAnchor>
-        <ButtonLink href={PROVEEDORES_PLANES_PATH} variant="outline" size="48">
+        <ButtonLink href={PROVEEDORES_PLANES_PATH} variant="outline" size="44">
           {copy.allPlans}
         </ButtonLink>
       </div>
@@ -444,15 +469,15 @@ function PaymentCard({ state, titleId }: { readonly state: PlanState; readonly t
   if (date?.value) rows.push({ label: date.label, value: date.value });
 
   return (
-    <section aria-labelledby={titleId} className="flex flex-col gap-4 rounded-card border border-card-line bg-card p-6">
-      <h3 id={titleId} className="font-display text-xl font-bold text-fg">
+    <section aria-labelledby={titleId} className="flex flex-col gap-2 rounded-card border border-card-line bg-card p-5">
+      <h3 id={titleId} className="font-display text-lg font-bold text-fg">
         {copy.payment.title}
       </h3>
-      <dl className="flex flex-col gap-2.5">
+      <dl className="flex flex-col text-sm">
         {rows.map((row) => (
-          <div key={row.label} className="flex justify-between gap-4">
+          <div key={row.label} className="flex justify-between gap-4 border-t border-card-line py-2 first:border-t-0">
             <dt className="text-fg-muted">{row.label}</dt>
-            <dd className="text-right text-fg">{row.value}</dd>
+            <dd className="text-right font-medium text-fg">{row.value}</dd>
           </div>
         ))}
       </dl>

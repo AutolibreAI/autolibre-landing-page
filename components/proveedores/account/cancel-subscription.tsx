@@ -114,16 +114,16 @@ export function CancelSubscription({
       onKeyDown={(event) => {
         if (event.key === "Escape" && !submitting) setPhase({ kind: "closed" });
       }}
-      className="flex basis-full flex-col gap-3 rounded-card border border-card-line bg-canvas p-4 sm:p-5"
+      className="flex basis-full flex-col gap-2.5 self-stretch rounded-card border border-card-line bg-canvas p-4"
     >
-      <h4 id={titleId} ref={titleRef} tabIndex={-1} className="font-display text-lg font-bold text-fg">
+      <h4 id={titleId} ref={titleRef} tabIndex={-1} className="font-display text-base font-bold text-fg">
         {cancel.title(partnerName)}
       </h4>
-      <p className="leading-relaxed text-fg-muted">
+      <p className="text-sm text-fg-muted">
         {cancel.keepsPlan(planLabel, formatDate(cancellationAccessDate(view)))}
       </p>
-      {trial ? <p className="leading-relaxed text-fg-muted">{cancel.trialUsed}</p> : null}
-      <p className="leading-relaxed font-semibold text-fg">{cancel.mercadoPagoWarning}</p>
+      {trial ? <p className="text-sm text-fg-muted">{cancel.trialUsed}</p> : null}
+      <p className="text-sm font-semibold text-fg">{cancel.mercadoPagoWarning}</p>
 
       <div aria-live="polite" aria-atomic="true">
         {error ? (

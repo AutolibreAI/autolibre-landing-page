@@ -40,10 +40,11 @@ export const accountContent = {
    * (`lib/account/features.ts`); su copy vive igual acá.
    */
   business: {
-    eyebrow: "Mi negocio",
     loadingTitle: "Mi negocio",
     loading: "Buscando tu negocio…",
-    /** Iniciales en el cuadrado del negocio: decorativas (el nombre ya está en el `<h1>`). */
+    /** Lo que lee el lector de pantalla mientras se cargan el perfil o el plan (los esqueletos son decorativos). */
+    loadingProfile: "Cargando el perfil de tu negocio…",
+    loadingPlan: "Consultando el plan…",
     visibility: {
       published: "Publicado",
       hidden: "No visible en la red",
@@ -51,6 +52,8 @@ export const accountContent = {
     },
     switcher: {
       trigger: "Cambiar de negocio",
+      /** Rótulo visible en celular (el nombre accesible sigue siendo `trigger`). */
+      triggerShort: "Cambiar",
       /** Nombre del landmark de la lista de negocios. */
       label: "Tus negocios",
       current: "Estás viendo este",
@@ -108,6 +111,8 @@ export const accountContent = {
         name: { title: "Cargá el nombre del negocio", hint: "Como te conocen tus clientes." },
       },
       cta: "Mandar por WhatsApp",
+      /** Rótulo visible en celular (el nombre accesible es `ctaLabel`). */
+      ctaShort: "Mandar",
       ctaLabel: (item: string) => `${item}: mandar por WhatsApp`,
       message: (partnerName: string, item: string) =>
         `¡Hola! Quiero completar el perfil de ${partnerName} en AutoLibre: ${item.toLocaleLowerCase("es-AR")}.`,
@@ -221,7 +226,6 @@ export const accountContent = {
 
     plan: {
       title: "Plan",
-      yourPlan: "Tu plan",
       free: "Plan Gratis",
       freePrice: "Gratis",
       named: (planName: string) => `Plan ${planName}`,
@@ -244,7 +248,6 @@ export const accountContent = {
         conditional: "Si es la primera vez que tu taller contrata un plan pago, arrancás con un período de prueba sin cargo.",
       },
       upsell: {
-        eyebrow: "Con el plan Plus",
         title: (limit: number | null) =>
           limit ? `Recibí hasta ${limit} pedidos por mes, sin usar la app` : "Recibí pedidos por WhatsApp, sin usar la app",
         note: "El plan no cambia la recomendación de la IA.",
@@ -395,7 +398,6 @@ export const accountContent = {
    * verlos ni en la web ni en la app.
    */
   customer: {
-    eyebrow: "Mi cuenta",
     greeting: (firstName: string | null) => (firstName ? `Hola, ${firstName}` : "Hola"),
     intro: "Desde acá pedís propuestas de talleres y servicios para tu auto.",
     order: {
@@ -425,7 +427,6 @@ export const accountContent = {
    * "partner"`) que todavía no administra ningún negocio.
    */
   onboarding: {
-    eyebrow: "Mi negocio",
     title: "Sumá tu negocio a AutoLibre",
     intro: "Tu cuenta ya está lista. Falta el último paso: cargar tu negocio, o reclamarlo si ya aparece en la red.",
   },
@@ -435,7 +436,6 @@ export const accountContent = {
    * elección: se pregunta una vez, en los primeros 30 minutos.
    */
   newAccount: {
-    eyebrow: "Tu cuenta nueva",
     title: "Te damos la bienvenida a AutoLibre",
     intro: "Antes de seguir, contanos cómo vas a usar tu cuenta.",
     save: "Guardar",

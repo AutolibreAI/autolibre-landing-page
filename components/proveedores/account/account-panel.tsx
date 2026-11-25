@@ -1,14 +1,16 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useEffect } from "react";
-import { BusinessAccount } from "@/components/cuenta/business-account";
+import { useEffect, useSyncExternalStore } from "react";
+import { ACCOUNT_SECTION_CLASS, BusinessAccount } from "@/components/cuenta/business-account";
+import { BusinessDashboardSkeleton } from "@/components/cuenta/business-dashboard";
+import { CustomerAccountSkeleton } from "@/components/cuenta/skeletons";
 import { SignOutConfirm } from "@/components/cuenta/sign-out-confirm";
 import { PartnerSignIn } from "@/components/proveedores/account/partner-sign-in";
 import { PRIVATE_FLOW_TITLE_ID } from "@/components/proveedores/account/private-flow";
 import { Section } from "@/components/ui/section";
 import type { AccountSection } from "@/lib/account/sections";
-import { clearRoleHint } from "@/lib/auth/role-hint";
+import { clearRoleHint, readAccountHint, type AccountHint } from "@/lib/auth/role-hint";
 import { accountContent } from "@/lib/content/account";
 
 const { page } = accountContent;
@@ -27,7 +29,19 @@ type AccountPanelProps = {
   readonly requestedPartnerId: string | null;
   /** `?salir=1`: el "Cerrar sesión" del menú del header público. */
   readonly signOutRequested: boolean;
+  /**
+   * Pista de sesión y rol leída en el server (cookies `__client_uat` y
+   * `al_role`, ver `lib/auth/role-hint.ts`). Con ella el HTML del server ya
+   * trae el esqueleto correcto mientras carga Clerk. Sin ella se lee en el
+   * browser después de hidratar.
+   */
+  readonly accountHint?: AccountHint;
 };
+
+/** Las cookies no avisan cuando cambian: la pista se lee una vez por render. */
+function subscribeNoop() {
+  return () => {};
+}
 
 /**
  * Isla client de `/cuenta`. Sin sesión, el login compartido de los flujos de
@@ -49,14 +63,37 @@ export function AccountPanel({
   section,
   requestedPartnerId,
   signOutRequested,
+  accountHint,
 }: AccountPanelProps) {
   const { isLoaded, isSignedIn } = useAuth();
+  const browserHint = useSyncExternalStore(
+    subscribeNoop,
+    () => readAccountHint(sessionCookie),
+    () => null,
+  );
+  const hint = accountHint ?? browserHint;
 
   useEffect(() => {
     if (!isLoaded || isSignedIn || !signOutRequested) return;
     clearRoleHint();
     window.history.replaceState(null, "", selfPath);
   }, [isLoaded, isSignedIn, signOutRequested, selfPath]);
+
+  // Mientras carga Clerk, quien ya tiene sesión ve el esqueleto de SU pantalla
+  // (tablero o cuenta de cliente) en vez del login: nada salta cuando entra.
+  if (!isLoaded && !signOutRequested && hint === "proveedor") {
+    return <BusinessDashboardSkeleton section={section} />;
+  }
+  if (!isLoaded && !signOutRequested && hint === "cliente") {
+    return (
+      <Section tone="canvas" spacing="sm" className={ACCOUNT_SECTION_CLASS} aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
+        <p role="status" className="sr-only">
+          {page.partners.loading}
+        </p>
+        <CustomerAccountSkeleton firstName={null} />
+      </Section>
+    );
+  }
 
   if (!isLoaded || !isSignedIn) {
     return (

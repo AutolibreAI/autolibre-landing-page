@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useId, useState } from "react";
 import { AppPreview } from "@/components/cuenta/app-preview";
+import { rowActionClass } from "@/components/cuenta/styles";
 import { ButtonAnchor } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import {
   isProfileFieldFilled,
   profileChecklist,
@@ -21,10 +23,25 @@ const { checklist, profile: copy, preview } = accountContent.business;
 export const APP_PREVIEW_ANCHOR = "vista-app";
 
 /**
+ * Clases que comparten "Completá tu perfil" y su esqueleto de carga: mismo
+ * alto antes y después de que llegue el perfil (sin saltos).
+ */
+export const checklistClasses = {
+  card: "flex flex-col rounded-card border border-card-line bg-card px-5 pt-4 pb-1 sm:px-6",
+  head: "flex flex-wrap items-center justify-between gap-x-6 gap-y-1",
+  title: "font-display text-xl leading-7 font-bold text-fg",
+  intro: "flex flex-wrap items-center justify-between gap-x-4",
+  introText: "py-2.5 text-sm text-fg-muted",
+  row: "flex items-center gap-3 border-t border-card-line py-2",
+  rowTitle: "leading-snug font-medium text-fg",
+  rowHint: "text-sm leading-snug text-fg-muted",
+} as const;
+
+/**
  * "Completá tu perfil" del Resumen (referencia: Square "Complete your setup").
  * Sale de los datos vacíos de `GET /partners/{id}`. Como no hay edición desde
- * la web, cada pendiente se manda por WhatsApp al equipo, que lo carga: el
- * botón lo dice.
+ * la web, cada pendiente se manda por WhatsApp al equipo, que lo carga: la
+ * acción de cada fila lo dice.
  */
 export function ProfileChecklistCard({
   profile,
@@ -37,33 +54,33 @@ export function ProfileChecklistCard({
   const { done, total, missing } = profileChecklist(profile);
 
   return (
-    <section aria-labelledby={titleId} className="flex flex-col gap-4 rounded-card border border-card-line bg-card p-6 sm:p-7">
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-        <h3 id={titleId} className="font-display text-2xl font-bold text-fg">
+    <section aria-labelledby={titleId} className={checklistClasses.card}>
+      <div className={checklistClasses.head}>
+        <h3 id={titleId} className={checklistClasses.title}>
           {checklist.title}
         </h3>
-        <div className="flex items-center gap-3">
+        <div className="flex h-7 items-center gap-3">
           <div
             role="meter"
             aria-valuemin={0}
             aria-valuemax={total}
             aria-valuenow={done}
             aria-label={checklist.progressLabel(done, total)}
-            className="h-1.5 w-35 overflow-hidden rounded-full bg-card-muted"
+            className="h-1.5 w-28 overflow-hidden rounded-full bg-card-muted"
           >
             {/* Ancho calculado: es el dato. */}
             <span className="block h-full rounded-full bg-action" style={{ width: `${Math.round((done / total) * 100)}%` }} />
           </div>
-          <span aria-hidden="true" className="text-sm font-medium text-fg">
+          <span aria-hidden="true" className="text-sm font-medium text-fg tabular-nums">
             {checklist.progress(done, total)}
           </span>
         </div>
       </div>
-      <div>
-        <p className="leading-relaxed text-fg-muted">{missing.length > 0 ? checklist.body : checklist.complete}</p>
+      <div className={checklistClasses.intro}>
+        <p className={checklistClasses.introText}>{missing.length > 0 ? checklist.body : checklist.complete}</p>
         <Link
           href={previewHref}
-          className="inline-flex min-h-11 items-center font-semibold text-fg underline underline-offset-4"
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-fg underline underline-offset-4 hover:text-brand-hover"
         >
           {checklist.preview}
         </Link>
@@ -73,25 +90,25 @@ export function ProfileChecklistCard({
           {missing.map((key) => {
             const item = checklist.items[key];
             return (
-              <li key={key} className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-card-line py-3.5">
-                <span aria-hidden="true" className="size-5.5 shrink-0 rounded-full border-[1.5px] border-control-line-strong" />
-                <div className="min-w-0 flex-[1_1_12rem]">
-                  <p className="font-medium text-fg">{item.title}</p>
-                  <p className="text-sm text-fg-muted">{item.hint}</p>
+              <li key={key} className={checklistClasses.row}>
+                <span aria-hidden="true" className="size-5 shrink-0 rounded-full border-[1.5px] border-control-line-strong" />
+                <div className="min-w-0 flex-1">
+                  <p className={checklistClasses.rowTitle}>{item.title}</p>
+                  <p className={checklistClasses.rowHint}>{item.hint}</p>
                 </div>
-                <ButtonAnchor
+                <a
                   href={whatsappUrl(checklist.message(profile.name, item.title))}
                   target="_blank"
                   rel="noopener noreferrer"
-                  variant="outline"
-                  size="44"
                   aria-label={checklist.ctaLabel(item.title)}
                   data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
                   data-analytics-placement="cuenta_completar_perfil"
-                  className="ml-9.5 shrink-0 px-4 sm:ml-0"
+                  className={rowActionClass}
                 >
-                  {checklist.cta}
-                </ButtonAnchor>
+                  <Icon name="whatsapp" size={18} strokeWidth={1.8} className="text-whatsapp" />
+                  <span className="sm:hidden">{checklist.ctaShort}</span>
+                  <span className="max-sm:hidden">{checklist.cta}</span>
+                </a>
               </li>
             );
           })}
@@ -144,12 +161,37 @@ const CHECKLIST_FIELD: Partial<Record<FieldKey, ProfileChecklistKey>> = {
   links: "links",
 };
 
+/** Datos largos: ocupan las dos columnas de la grilla. */
+const WIDE_FIELDS: ReadonlySet<FieldKey> = new Set(["description", "services"]);
+
+/** Clases que comparten la pestaña Perfil y su esqueleto de carga. */
+export const profileClasses = {
+  head: "flex flex-wrap items-end justify-between gap-x-4 gap-y-2",
+  title: "font-display text-2xl leading-tight font-bold text-fg",
+  body: "mt-1 text-sm text-fg-muted",
+  grid: "grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem] xl:gap-10",
+  card: "overflow-hidden rounded-card border border-card-line bg-card px-5 sm:px-6",
+  /** `-mt-px`: el filete de arriba de la primera fila queda oculto (la tarjeta ya tiene borde). */
+  list: "-mt-px grid gap-x-8 md:grid-cols-2",
+  cell: "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 border-t border-card-line py-1.5",
+  label: "text-sm text-fg-muted",
+  previewToggle:
+    "inline-flex h-12 w-full items-center justify-center rounded-full border border-action bg-card font-display text-control font-semibold text-fg hover:bg-brand-50 lg:hidden",
+} as const;
+
+/** Las filas de la pestaña Perfil, en orden (las largas, a lo ancho). */
+export const PROFILE_FIELDS = (Object.keys(copy.fields) as FieldKey[]).map((key) => ({
+  key,
+  wide: WIDE_FIELDS.has(key),
+}));
+
 /**
- * Pestaña Perfil (referencia: Podia "Account": una fila por dato, valor al
- * medio y acción a la derecha) con la vista previa de la app al costado
- * desde `lg`; en celular la vista previa se abre con un botón.
+ * Pestaña Perfil (referencia: Podia "Account"): una grilla de dato y valor
+ * en dos columnas desde `md` (los largos, a lo ancho), con una acción chica
+ * por dato, y la vista previa de la app al costado desde `lg`; en celular la
+ * vista previa se abre con un botón.
  *
- * Sin edición desde la web (no hay PATCH del dueño): cada fila pide el
+ * Sin edición desde la web (no hay PATCH del dueño): cada dato pide el
  * cambio por WhatsApp. `ACCOUNT_FEATURES.profileEditing` queda para cuando
  * exista.
  */
@@ -169,69 +211,63 @@ export function ProfileSection({
     () => typeof window !== "undefined" && window.location.hash === `#${APP_PREVIEW_ANCHOR}`,
   );
   const previewId = useId();
-  const fields = Object.keys(copy.fields) as FieldKey[];
 
   return (
-    <div className="flex flex-col gap-7">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="flex flex-col gap-5">
+      <div className={profileClasses.head}>
         <div>
-          <h2 id={titleId} className="font-display text-3xl font-bold text-fg">
+          <h2 id={titleId} className={profileClasses.title}>
             {copy.title}
           </h2>
-          <p className="mt-2 text-fg-muted">{copy.body}</p>
+          <p className={profileClasses.body}>{copy.body}</p>
         </div>
         {publicHref ? (
-          <ButtonAnchor href={publicHref} variant="outline" size="48">
+          <ButtonAnchor href={publicHref} variant="outline" size="44">
             {accountContent.business.publicPage}
           </ButtonAnchor>
         ) : null}
       </div>
 
-      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] xl:gap-12">
-        <div className="flex flex-col gap-4">
-          <dl className="rounded-card border border-card-line bg-card px-6 sm:px-7">
-            {fields.map((key, index) => {
-              const label = copy.fields[key];
-              const value = fieldValue(profile, key);
-              const checklistKey = CHECKLIST_FIELD[key];
-              const missing = value === null || (checklistKey ? !isProfileFieldFilled(profile, checklistKey) : false);
-              return (
-                <div
-                  key={key}
-                  className={cn(
-                    "flex min-h-17 flex-wrap items-center gap-x-5 gap-y-1.5 py-3",
-                    index > 0 && "border-t border-card-line",
-                  )}
-                >
-                  <dt className="w-full font-medium text-fg sm:w-48 sm:shrink-0">{label}</dt>
-                  <dd
-                    className={cn(
-                      "min-w-0 flex-[1_1_14rem] whitespace-pre-line",
-                      missing ? "font-semibold text-status-pending" : "text-fg-muted",
-                    )}
-                  >
-                    {missing ? copy.missing : value}
-                  </dd>
-                  <dd className="shrink-0">
-                    <ButtonAnchor
-                      href={whatsappUrl(copy.changeMessage(profile.name, label))}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      variant={missing ? "primary" : "outline"}
-                      size="44"
-                      aria-label={missing ? copy.addLabel(label) : copy.editLabel(label)}
-                      data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
-                      data-analytics-placement="cuenta_perfil"
-                      className="px-4"
+      <div className={profileClasses.grid}>
+        <div className="flex flex-col gap-3">
+          <div className={profileClasses.card}>
+            <dl className={profileClasses.list}>
+              {PROFILE_FIELDS.map(({ key, wide }) => {
+                const label = copy.fields[key];
+                const value = fieldValue(profile, key);
+                const checklistKey = CHECKLIST_FIELD[key];
+                const missing = value === null || (checklistKey ? !isProfileFieldFilled(profile, checklistKey) : false);
+                return (
+                  <div key={key} className={cn(profileClasses.cell, wide && "md:col-span-2")}>
+                    <dt className={profileClasses.label}>{label}</dt>
+                    <dd
+                      className={cn(
+                        "col-start-1 min-w-0 whitespace-pre-line",
+                        missing ? "font-semibold text-status-pending" : "text-fg",
+                      )}
                     >
-                      {missing ? copy.add : copy.edit}
-                    </ButtonAnchor>
-                  </dd>
-                </div>
-              );
-            })}
-          </dl>
-          <p className="text-sm leading-relaxed text-fg-muted">{copy.note}</p>
+                      {missing ? copy.missing : value}
+                    </dd>
+                    <dd className="col-start-2 row-span-2 row-start-1">
+                      <a
+                        href={whatsappUrl(copy.changeMessage(profile.name, label))}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={missing ? copy.addLabel(label) : copy.editLabel(label)}
+                        data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
+                        data-analytics-placement="cuenta_perfil"
+                        className={rowActionClass}
+                      >
+                        <Icon name="whatsapp" size={16} strokeWidth={1.8} className="text-whatsapp" />
+                        {missing ? copy.add : copy.edit}
+                      </a>
+                    </dd>
+                  </div>
+                );
+              })}
+            </dl>
+          </div>
+          <p className="text-sm text-fg-muted">{copy.note}</p>
         </div>
 
         <div id={APP_PREVIEW_ANCHOR} className="scroll-mt-24">
@@ -240,11 +276,11 @@ export function ProfileSection({
             aria-expanded={previewOpen}
             aria-controls={previewId}
             onClick={() => setPreviewOpen((value) => !value)}
-            className="inline-flex h-12 w-full items-center justify-center rounded-full border border-action bg-card font-display text-control font-semibold text-fg hover:bg-brand-50 lg:hidden"
+            className={profileClasses.previewToggle}
           >
             {previewOpen ? preview.hide : preview.show}
           </button>
-          <div id={previewId} className={cn("mt-6 lg:mt-0 lg:block", previewOpen ? "block" : "hidden")}>
+          <div id={previewId} className={cn("mt-5 lg:mt-0 lg:block", previewOpen ? "block" : "hidden")}>
             <AppPreview profile={profile} headingLevel="h3" />
           </div>
         </div>

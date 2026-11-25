@@ -9,6 +9,7 @@ import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { accountContent } from "@/lib/content/account";
 import { partnerAccountContent } from "@/lib/content/partner-account";
 import { PROVEEDORES_PLANES_PATH } from "@/lib/proveedores/query";
+import { cn } from "@/lib/utils";
 import { whatsappUrl } from "@/lib/whatsapp";
 
 const { referral, summary, review } = accountContent.business;
@@ -56,10 +57,10 @@ export function ReferralCodeCard({ code, savedCount }: { readonly code: string; 
 }
 
 /** "¿Necesitás una mano?": WhatsApp de AutoLibre con el nombre del negocio. */
-export function HelpLink({ partnerName }: { readonly partnerName: string }) {
+export function HelpLink({ partnerName, className }: { readonly partnerName: string; readonly className?: string }) {
   const titleId = useId();
   return (
-    <section aria-labelledby={titleId} className="flex flex-col gap-1 px-1">
+    <section aria-labelledby={titleId} className={cn("flex flex-col gap-1 px-1", className)}>
       <h3 id={titleId} className="font-medium text-fg">
         {summary.help.title}
       </h3>

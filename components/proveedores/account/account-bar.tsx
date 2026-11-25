@@ -59,7 +59,7 @@ export function AccountBar({ selfPath, signOutUrl = PROVEEDORES_REGISTRO_PATH, c
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-card border border-card-line bg-card px-4 py-2.5",
+        "flex flex-wrap items-center justify-between gap-x-4 gap-y-0.5 rounded-card border border-card-line bg-card px-4 py-1.5",
         className,
       )}
     >

@@ -42,12 +42,12 @@ export function NoPartnerOptions({ headingRef, checkout, withRegister = false }:
 
   if (withRegister) {
     return (
-      <div role="group" aria-labelledby={titleId} className="flex flex-col gap-5">
+      <div role="group" aria-labelledby={titleId} className="flex flex-col gap-4">
         <div>
-          <h2 id={titleId} ref={headingRef} tabIndex={-1} className="font-display text-2xl font-bold text-fg">
+          <h2 id={titleId} ref={headingRef} tabIndex={-1} className="font-display text-xl leading-7 font-bold text-fg">
             {account.title}
           </h2>
-          <p className="mt-2 text-base text-fg-muted">{account.body}</p>
+          <p className="mt-1 text-base text-fg-muted">{account.body}</p>
         </div>
         <ul className="grid gap-4 md:grid-cols-2">
           <OptionCard
@@ -109,7 +109,11 @@ export function NoPartnerOptions({ headingRef, checkout, withRegister = false }:
   );
 }
 
-/** Tarjeta de una salida de "Sumá tu negocio" (`/cuenta`, sistema AutoLibre AI). */
+/**
+ * Tarjeta de una salida de "Sumá tu negocio" (`/cuenta`, sistema AutoLibre
+ * AI): ícono y título en una línea, la bajada y la acción. Compacta: las dos
+ * salidas entran juntas en la primera pantalla.
+ */
 function OptionCard({
   icon,
   title,
@@ -128,24 +132,20 @@ function OptionCard({
   readonly analytics: { readonly event: string; readonly placement: string };
 }) {
   return (
-    <li className="flex flex-col gap-4 rounded-card border border-card-line bg-card p-5 sm:p-6">
-      <span
-        aria-hidden="true"
-        className="flex size-11 shrink-0 items-center justify-center rounded-full bg-canvas text-fg"
-      >
-        <Icon name={icon} size={22} strokeWidth={1.8} />
-      </span>
-      <div className="flex flex-1 flex-col gap-1">
+    <li className="flex flex-col items-start gap-3 rounded-card border border-card-line bg-card p-5">
+      <div className="flex items-center gap-3">
+        <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full bg-canvas text-fg">
+          <Icon name={icon} size={20} strokeWidth={1.8} />
+        </span>
         <h3 className="font-display text-lg leading-snug font-bold text-fg">{title}</h3>
-        <p className="text-base text-fg-muted">{body}</p>
       </div>
+      <p className="flex-1 text-base text-fg-muted">{body}</p>
       {/* Sin prefetch: el alta y el reclamo son pantallas privadas con su Clerk. */}
       <ButtonLink
         href={href}
         prefetch={false}
         variant={primary ? "primary" : "outline"}
-        size="48"
-        className="self-start"
+        size="44"
         data-analytics-event={analytics.event}
         data-analytics-placement={analytics.placement}
       >

@@ -62,8 +62,8 @@ export function AppPreview({ profile, headingLevel: Heading, className }: AppPre
   const initials = partnerInitials(profile.name);
 
   return (
-    <section aria-labelledby={titleId} className={cn("flex flex-col items-center gap-4", className)}>
-      <Heading id={titleId} className="self-start font-display text-xl font-bold text-fg">
+    <section aria-labelledby={titleId} className={cn("flex flex-col items-center gap-3", className)}>
+      <Heading id={titleId} className="self-start font-display text-lg leading-7 font-bold text-fg">
         {preview.title}
       </Heading>
 
@@ -73,7 +73,7 @@ export function AppPreview({ profile, headingLevel: Heading, className }: AppPre
           role="region"
           aria-label={preview.frameLabel(profile.name)}
           tabIndex={0}
-          className="relative h-140 overflow-hidden rounded-[2rem] bg-card"
+          className="relative h-128 overflow-hidden rounded-[2rem] bg-card"
         >
           <div className="h-full overflow-y-auto overscroll-contain pb-20">
             {/* Portada */}

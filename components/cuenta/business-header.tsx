@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { PRIVATE_FLOW_TITLE_ID } from "@/components/proveedores/account/private-flow";
 import { ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { boneClass } from "@/components/cuenta/styles";
 import { StatusPill } from "@/components/ui/status-pill";
 import { partnerInitials } from "@/lib/account/partner-profile";
 import { accountSectionHref, type AccountSection } from "@/lib/account/sections";
@@ -21,8 +22,12 @@ type BusinessHeaderProps = {
   readonly partner: { readonly partnerId: string; readonly name: string };
   readonly partners: readonly { readonly partnerId: string; readonly name: string }[];
   readonly section: AccountSection;
-  /** `null` mientras no se sabe (o si falló la lectura): sin pill. */
+  /** `null` si no se sabe (falló la lectura): sin pill. */
   readonly visibility: BusinessVisibility;
+  /** El perfil todavía no llegó: se reserva el lugar del estado (en celular va en otra línea). */
+  readonly visibilityPending?: boolean;
+  /** Logo del negocio (`logoUrl` de `GET /partners/{id}`); `null` = iniciales. */
+  readonly logoUrl: string | null;
   /** Link al perfil público (necesita el slug: hoy apagado). */
   readonly publicHref: string | null;
   /** Secciones visibles (Pedidos solo con la bandera `orders`). `null` = sin pestañas (en revisión). */
@@ -33,11 +38,23 @@ type BusinessHeaderProps = {
 
 const visibilityTone = { published: "ok", hidden: "neutral", review: "pending" } as const;
 
+/** Clases de la barra del negocio: las comparte el esqueleto de carga (mismo alto, sin saltos). */
+export const businessHeaderClasses = {
+  row: "flex min-h-12 items-center gap-3 sm:gap-4",
+  avatar: "size-11 shrink-0 rounded-card sm:size-12",
+  title: "font-display text-xl leading-tight font-bold tracking-tight text-fg sm:text-2xl lg:text-3xl",
+  nav: "mt-1 -mb-px overflow-x-auto",
+  navList: "flex gap-x-6 whitespace-nowrap",
+  navItem: "inline-flex min-h-11 items-center gap-2 border-b-3 text-control",
+  /** Lugar del pill de estado mientras carga (mismo alto que `StatusPill`). */
+  pillBone: "h-6.5 w-24",
+} as const;
+
 /**
- * Barra del negocio de "Mi negocio": cuadrado con iniciales, "Mi negocio",
- * el `<h1>` con el nombre y su estado, "Cambiar de negocio" y las secciones.
- * Referencia del diseño: Laravel Cloud / Snowflake (nombre del espacio con
- * selector y pestañas debajo; sin barra lateral, son pocas secciones).
+ * Barra del negocio de "Mi negocio", compacta (referencia: Jobber / Podia /
+ * Remote): logo o iniciales, el `<h1>` con el nombre y su estado en la misma
+ * línea, "Cambiar de negocio" a la derecha y las secciones pegadas abajo.
+ * Sin rótulo arriba del nombre ni barra lateral: son pocas secciones.
  *
  * El estado va FUERA del `<h1>`: el título es el nombre del negocio, sin
  * "Publicado" pegado al final para el lector de pantalla.
@@ -48,39 +65,32 @@ export function BusinessHeader({
   partners,
   section,
   visibility,
+  visibilityPending = false,
+  logoUrl,
   publicHref,
   sections,
   ordersBadge,
 }: BusinessHeaderProps) {
   return (
     <div className="flex flex-col">
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-4">
-        <span
-          aria-hidden="true"
-          className="flex size-15 shrink-0 items-center justify-center rounded-card bg-action font-display text-xl font-bold text-card"
-        >
-          {partnerInitials(partner.name)}
-        </span>
-        <div className="flex min-w-0 flex-[1_1_16rem] flex-col">
-          <p className="text-sm text-fg-muted">{business.eyebrow}</p>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-            <h1
-              id={PRIVATE_FLOW_TITLE_ID}
-              className="font-display text-3xl leading-tight font-bold tracking-tight text-balance text-fg md:text-4xl"
-            >
-              {partner.name}
-            </h1>
-            {visibility ? (
-              <StatusPill tone={visibilityTone[visibility]} dot>
-                {business.visibility[visibility]}
-              </StatusPill>
-            ) : null}
-          </div>
+      <div className={businessHeaderClasses.row}>
+        <BusinessAvatar name={partner.name} logoUrl={logoUrl} />
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
+          <h1 id={PRIVATE_FLOW_TITLE_ID} className={cn(businessHeaderClasses.title, "min-w-0 text-balance")}>
+            {partner.name}
+          </h1>
+          {visibility ? (
+            <StatusPill tone={visibilityTone[visibility]} dot>
+              {business.visibility[visibility]}
+            </StatusPill>
+          ) : visibilityPending ? (
+            <span aria-hidden="true" className={cn(boneClass, businessHeaderClasses.pillBone)} />
+          ) : null}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <BusinessSwitcher basePath={basePath} partner={partner} partners={partners} section={section} />
           {publicHref ? (
-            <ButtonLink href={publicHref} variant="outline" size="44">
+            <ButtonLink href={publicHref} variant="outline" size="44" className="max-md:hidden">
               {business.publicPage}
             </ButtonLink>
           ) : null}
@@ -96,9 +106,42 @@ export function BusinessHeader({
           ordersBadge={ordersBadge}
         />
       ) : (
-        <div aria-hidden="true" className="h-6" />
+        <div aria-hidden="true" className="h-4" />
       )}
     </div>
+  );
+}
+
+/**
+ * Logo del negocio o, sin logo, sus iniciales. Decorativo (`alt=""`): el
+ * nombre ya está en el `<h1>`. Caja de tamaño fijo, así el logo que llega
+ * con el perfil reemplaza a las iniciales sin mover nada.
+ */
+function BusinessAvatar({ name, logoUrl }: { readonly name: string; readonly logoUrl: string | null }) {
+  if (logoUrl) {
+    return (
+      // URL del backend (cualquier host): `<img>` con medidas fijas, como la vista previa de la app.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={logoUrl}
+        alt=""
+        width={48}
+        height={48}
+        decoding="async"
+        className={cn(businessHeaderClasses.avatar, "border border-card-line bg-card object-contain p-1")}
+      />
+    );
+  }
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        businessHeaderClasses.avatar,
+        "flex items-center justify-center bg-action font-display text-base font-bold text-white sm:text-lg",
+      )}
+    >
+      {partnerInitials(name)}
+    </span>
   );
 }
 
@@ -120,8 +163,8 @@ function SectionNav({
   readonly ordersBadge: number | null;
 }) {
   return (
-    <nav aria-label={business.nav.label} className="mt-5 -mb-px overflow-x-auto">
-      <ul className="flex gap-x-7 whitespace-nowrap">
+    <nav aria-label={business.nav.label} className={businessHeaderClasses.nav}>
+      <ul className={businessHeaderClasses.navList}>
         {sections.map((item) => {
           const current = item === section;
           const badge = item === "pedidos" && ordersBadge ? ordersBadge : null;
@@ -133,7 +176,8 @@ function SectionNav({
                 scroll={false}
                 aria-current={current ? "page" : undefined}
                 className={cn(
-                  "inline-flex min-h-12 items-center gap-2 border-b-3 text-base transition-colors motion-reduce:transition-none",
+                  businessHeaderClasses.navItem,
+                  "transition-colors motion-reduce:transition-none",
                   current
                     ? "border-action font-semibold text-fg"
                     : "border-transparent font-medium text-fg-muted hover:border-control-line hover:text-fg",
@@ -214,10 +258,13 @@ function BusinessSwitcher({
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
+        // En celular se ve "Cambiar": el nombre accesible es siempre el completo.
+        aria-label={business.switcher.trigger}
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-11 items-center gap-2 rounded-full border border-control-line bg-card px-5 font-display text-control font-semibold text-fg transition-colors hover:bg-brand-50 motion-reduce:transition-none"
+        className="inline-flex h-11 items-center gap-1.5 rounded-full border border-control-line bg-card px-4 font-display text-control font-semibold text-fg transition-colors hover:bg-brand-50 motion-reduce:transition-none"
       >
-        {business.switcher.trigger}
+        <span className="sm:hidden">{business.switcher.triggerShort}</span>
+        <span className="max-sm:hidden">{business.switcher.trigger}</span>
         <Icon
           name="chevron-down"
           size={16}
@@ -229,7 +276,7 @@ function BusinessSwitcher({
         <div
           id={panelId}
           // Ancho arbitrario: 26rem del diseño, sin pasarse del viewport en celular.
-          className="absolute top-full left-0 z-20 mt-2 flex w-[min(26rem,calc(100vw-2rem))] flex-col rounded-card border border-control-line bg-card p-2 sm:right-0 sm:left-auto"
+          className="absolute top-full right-0 z-20 mt-2 flex w-[min(26rem,calc(100vw-2rem))] flex-col rounded-card border border-control-line bg-card p-2"
         >
           <nav aria-label={business.switcher.label}>
             <ul className="flex flex-col">

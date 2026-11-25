@@ -58,6 +58,21 @@ export function readAccountHint(cookieName: string | null): AccountHint {
   return readCookie(ROLE_HINT_COOKIE) === `${PROVIDER_ROLE}.${uat}` ? "proveedor" : "cliente";
 }
 
+/**
+ * La misma pista, calculada en el server con las cookies del request (para
+ * que el HTML de `/cuenta` ya traiga el esqueleto correcto). `getCookie` es
+ * `(name) => cookies().get(name)?.value`.
+ */
+export function accountHintFromCookies(
+  cookieName: string | null,
+  getCookie: (name: string) => string | undefined,
+): AccountHint {
+  if (!cookieName) return "anon";
+  const uat = getCookie(cookieName) ?? getCookie(UNSUFFIXED_CLIENT_UAT);
+  if (!uat || uat === "0") return "anon";
+  return getCookie(ROLE_HINT_COOKIE) === `${PROVIDER_ROLE}.${uat}` ? "proveedor" : "cliente";
+}
+
 function writeCookie(value: string, maxAge: number) {
   const secure = window.location.protocol === "https:" ? "; Secure" : "";
   document.cookie = `${ROLE_HINT_COOKIE}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; SameSite=Lax${secure}`;

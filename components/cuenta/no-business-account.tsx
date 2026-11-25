@@ -4,7 +4,8 @@ import { useUser } from "@clerk/nextjs";
 import { useEffect, useRef, useState } from "react";
 import { CustomerAccount } from "@/components/cuenta/customer-account";
 import { NoPartnerOptions } from "@/components/proveedores/account/no-partner-options";
-import { PrivateFlowHead, PRIVATE_FLOW_TITLE_ID } from "@/components/proveedores/account/private-flow";
+import { AccountHead } from "@/components/cuenta/account-head";
+import { PRIVATE_FLOW_TITLE_ID } from "@/components/proveedores/account/private-flow";
 import { RegistrationStatus } from "@/components/proveedores/registro/registration-status";
 import { providersContent } from "@/lib/content/providers";
 import { hasSentApplication } from "@/lib/proveedores/application-hint";
@@ -69,7 +70,7 @@ export function NoBusinessAccount({ view, firstName, footer }: NoBusinessAccount
 
   if (view === "partner" && applicationSent) {
     return (
-      <div className="flex max-w-180 flex-col gap-8">
+      <div className="flex max-w-180 flex-col gap-6">
         <RegistrationStatus alreadyRegisteredMessage={providersContent.flow.pendingBody} checkout={null} />
         {footer}
       </div>
@@ -78,8 +79,8 @@ export function NoBusinessAccount({ view, firstName, footer }: NoBusinessAccount
 
   if (view === "partner") {
     return (
-      <div className="flex max-w-180 flex-col gap-8">
-        <PrivateFlowHead head={onboarding} />
+      <div className="flex max-w-240 flex-col gap-6">
+        <AccountHead title={onboarding.title} intro={onboarding.intro} />
         <NoPartnerOptions checkout={null} withRegister />
         {footer}
       </div>
@@ -87,8 +88,8 @@ export function NoBusinessAccount({ view, firstName, footer }: NoBusinessAccount
   }
 
   return (
-    <div className="flex max-w-140 flex-col gap-8">
-      <PrivateFlowHead head={{ eyebrow: newAccount.eyebrow, title: newAccount.title, intro: newAccount.intro }} />
+    <div className="flex max-w-140 flex-col gap-6">
+      <AccountHead title={newAccount.title} intro={newAccount.intro} />
       <SignupIntentChoice
         submitLabel={newAccount.save}
         onSubmit={(intent) => {

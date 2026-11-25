@@ -4,8 +4,22 @@ import { useId } from "react";
 import { BusinessHeader, type BusinessVisibility } from "@/components/cuenta/business-header";
 import { HelpLink, ReferralCodeCard, ReviewStatus } from "@/components/cuenta/extras";
 import { LatestOrders, OrdersEmpty, OrdersOverviewStrip, OrdersSection } from "@/components/cuenta/orders";
-import { PendingPaymentBanner, PlanSection, PlanSummaryCard, type PlanData } from "@/components/cuenta/plan";
-import { APP_PREVIEW_ANCHOR, ProfileChecklistCard, ProfileSection } from "@/components/cuenta/profile";
+import {
+  PendingPaymentBanner,
+  PlanSection,
+  planSectionClasses,
+  PlanSummaryCard,
+  type PlanData,
+} from "@/components/cuenta/plan";
+import { APP_PREVIEW_ANCHOR, ProfileChecklistCard, ProfileSection, profileClasses } from "@/components/cuenta/profile";
+import {
+  BusinessHeaderSkeleton,
+  ChecklistSkeleton,
+  HelpLinkSkeleton,
+  PlanSummarySkeleton,
+  PlanTabSkeleton,
+  ProfileSkeleton,
+} from "@/components/cuenta/skeletons";
 import { PRIVATE_FLOW_TITLE_ID } from "@/components/proveedores/account/private-flow";
 import { Section } from "@/components/ui/section";
 import type { AccountFeatures } from "@/lib/account/features";
@@ -92,20 +106,22 @@ export function BusinessDashboard({ basePath, selfPath, data, onPlanChanged, foo
 
   return (
     <>
-      <Section tone="card" spacing="sm" className="border-t-0 pt-6 pb-0 md:pt-8 md:pb-0" aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
+      <Section tone="card" spacing="sm" className={dashboardClasses.header} aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
         <BusinessHeader
           basePath={basePath}
           partner={partner}
           partners={partners}
           section={section}
           visibility={visibility}
+          visibilityPending={!inReview && data.profile.kind === "loading"}
+          logoUrl={data.profile.kind === "ok" ? data.profile.profile.logoUrl : null}
           publicHref={features.publicPageLink && !inReview ? data.publicHref : null}
           sections={inReview ? null : sections}
           ordersBadge={ordersBadge}
         />
       </Section>
 
-      <Section tone="canvas" spacing="sm" className="pt-8 md:pt-10" aria-labelledby={titleId}>
+      <Section tone="canvas" spacing="sm" className={dashboardClasses.body} aria-labelledby={titleId}>
         {inReview && data.review ? (
           <ReviewStatus
             titleId={titleId}
@@ -128,7 +144,7 @@ export function BusinessDashboard({ basePath, selfPath, data, onPlanChanged, foo
           <PlanTab data={data} titleId={titleId} selfPath={selfPath} onPlanChanged={onPlanChanged} />
         )}
 
-        {footer ? <div className="mt-14">{footer}</div> : null}
+        {footer ? <div className={dashboardClasses.footer}>{footer}</div> : null}
       </Section>
     </>
   );
@@ -141,11 +157,103 @@ function usageFor(data: DashboardData): { readonly used: number; readonly limit:
   return limit ? { used: data.usage.used, limit } : null;
 }
 
-function Loading({ children }: { readonly children: React.ReactNode }) {
+/** Lo que lee el lector de pantalla mientras se ve un esqueleto. */
+function LoadingStatus({ children }: { readonly children: React.ReactNode }) {
   return (
-    <p role="status" className="text-fg-muted">
+    <p role="status" className="sr-only">
       {children}
     </p>
+  );
+}
+
+/** Ritmo de "Mi negocio": lo comparten el tablero y su esqueleto de carga. */
+const dashboardClasses = {
+  header: "border-t-0 pt-4 pb-0 md:pt-5 md:pb-0",
+  body: "pt-5 pb-10 md:pt-7 md:pb-14",
+  footer: "mt-8",
+  summary: "flex flex-col gap-5",
+  /**
+   * Resumen: pendientes a la izquierda y el plan al costado desde `lg`. El
+   * plan ocupa dos filas y la ayuda va debajo de los pendientes: así el alto
+   * del bloque no depende de si el plan es Gratis o pago (la tarjeta de
+   * Gratis es más alta) y la fila de sesión no se mueve cuando llega.
+   * En celular, el orden del DOM: pendientes, plan, ayuda.
+   */
+  summaryGrid: "grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-x-6",
+  main: "flex flex-col gap-5 lg:col-start-1 lg:row-start-1",
+  aside: "flex flex-col gap-4 lg:col-start-2 lg:row-span-2 lg:row-start-1",
+  help: "lg:col-start-1 lg:row-start-2",
+} as const;
+
+/**
+ * "Mi negocio" mientras se buscan los negocios de la cuenta: la barra del
+ * negocio y la sección pedida con esqueletos en su lugar definitivo, así la
+ * llegada de los datos no mueve nada.
+ */
+export function BusinessDashboardSkeleton({
+  section,
+  footer,
+}: {
+  readonly section: AccountSection;
+  /** La fila de sesión: ya se conoce (es de Clerk), va igual que en el tablero. */
+  readonly footer?: React.ReactNode;
+}) {
+  const sections: readonly AccountSection[] = ACCOUNT_SECTIONS.filter((item) => item !== "pedidos");
+  const current = sections.includes(section) ? section : "resumen";
+  return (
+    <>
+      <Section tone="card" spacing="sm" className={dashboardClasses.header} aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
+        <BusinessHeaderSkeleton sections={sections} current={current} />
+      </Section>
+      <Section tone="canvas" spacing="sm" className={dashboardClasses.body} aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
+        <LoadingStatus>{business.loading}</LoadingStatus>
+        {current === "perfil" ? (
+          <ProfileLoading />
+        ) : current === "plan" ? (
+          <PlanLoading />
+        ) : (
+          <div className={dashboardClasses.summaryGrid}>
+            <div className={dashboardClasses.main}>
+              <ChecklistSkeleton />
+            </div>
+            <div className={dashboardClasses.aside}>
+              <PlanSummarySkeleton />
+            </div>
+            <HelpLinkSkeleton className={dashboardClasses.help} />
+          </div>
+        )}
+        {footer ? <div className={dashboardClasses.footer}>{footer}</div> : null}
+      </Section>
+    </>
+  );
+}
+
+/** Pestaña Perfil sin el perfil todavía: el título es fijo, el resto, esqueleto. */
+function ProfileLoading({ titleId }: { readonly titleId?: string }) {
+  return (
+    <div className="flex flex-col gap-5">
+      <div className={profileClasses.head}>
+        <div>
+          <h2 id={titleId} className={profileClasses.title}>
+            {business.profile.title}
+          </h2>
+          <p className={profileClasses.body}>{business.profile.body}</p>
+        </div>
+      </div>
+      <ProfileSkeleton />
+    </div>
+  );
+}
+
+/** Pestaña Plan sin la suscripción todavía. */
+function PlanLoading({ titleId }: { readonly titleId?: string }) {
+  return (
+    <div className="flex flex-col gap-5">
+      <h2 id={titleId} className={planSectionClasses.title}>
+        {business.plan.title}
+      </h2>
+      <PlanTabSkeleton />
+    </div>
   );
 }
 
@@ -164,7 +272,7 @@ function Summary({
   const plan = data.plan;
 
   return (
-    <div className="flex flex-col gap-7">
+    <div className={dashboardClasses.summary}>
       <h2 id={titleId} className="sr-only">
         {business.summary.title(data.partner.name)}
       </h2>
@@ -180,18 +288,23 @@ function Summary({
         />
       ) : null}
 
-      <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,1fr)_24rem]">
-        <div className="flex flex-col gap-10">
+      <div className={dashboardClasses.summaryGrid}>
+        <div className={dashboardClasses.main}>
           {data.profile.kind === "ok" ? (
             <ProfileChecklistCard profile={data.profile.profile} previewHref={href("perfil", `#${APP_PREVIEW_ANCHOR}`)} />
           ) : data.profile.kind === "loading" ? (
-            <Loading>{business.loading}</Loading>
+            <>
+              <LoadingStatus>{business.loadingProfile}</LoadingStatus>
+              <ChecklistSkeleton />
+            </>
           ) : data.profile.kind === "not-visible" ? (
-            <p className="rounded-card border border-card-line bg-card p-6 leading-relaxed text-fg-muted">
+            <p className="rounded-card border border-card-line bg-card px-5 py-4 text-fg-muted sm:px-6">
               {business.profile.notVisible}
             </p>
           ) : (
-            <p className="rounded-card border border-card-line bg-card p-6 text-fg-muted">{business.summary.profileError}</p>
+            <p className="rounded-card border border-card-line bg-card px-5 py-4 text-fg-muted sm:px-6">
+              {business.summary.profileError}
+            </p>
           )}
 
           {orders ? (
@@ -203,7 +316,7 @@ function Summary({
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div className={dashboardClasses.aside}>
           {plan.kind === "ready" ? (
             <PlanSummaryCard
               data={plan.data}
@@ -211,15 +324,20 @@ function Summary({
               usage={features.usage ? data.usage : null}
             />
           ) : plan.kind === "loading" ? (
-            <Loading>{accountContent.page.plan.loading}</Loading>
+            <>
+              <LoadingStatus>{business.loadingPlan}</LoadingStatus>
+              <PlanSummarySkeleton />
+            </>
           ) : (
-            <p className="rounded-card border border-card-line bg-card p-6 text-fg-muted">{accountContent.page.plan.error}</p>
+            <p className="rounded-card border border-card-line bg-card px-5 py-4 text-fg-muted sm:px-6">
+              {accountContent.page.plan.error}
+            </p>
           )}
           {features.referralCode && data.referral ? (
             <ReferralCodeCard code={data.referral.code} savedCount={data.referral.savedCount} />
           ) : null}
-          <HelpLink partnerName={data.partner.name} />
         </div>
+        <HelpLink partnerName={data.partner.name} className={dashboardClasses.help} />
       </div>
     </div>
   );
@@ -235,18 +353,22 @@ function ProfileTab({ data, titleId }: { readonly data: DashboardData; readonly 
       />
     );
   }
+  if (data.profile.kind === "loading") {
+    return (
+      <>
+        <LoadingStatus>{business.loadingProfile}</LoadingStatus>
+        <ProfileLoading titleId={titleId} />
+      </>
+    );
+  }
   return (
-    <div className="flex flex-col gap-5">
-      <h2 id={titleId} className="font-display text-3xl font-bold text-fg">
+    <div className="flex flex-col gap-4">
+      <h2 id={titleId} className={profileClasses.title}>
         {business.profile.title}
       </h2>
-      {data.profile.kind === "loading" ? (
-        <Loading>{business.loading}</Loading>
-      ) : (
-        <p className="max-w-150 leading-relaxed text-fg-muted">
-          {data.profile.kind === "not-visible" ? business.profile.notVisible : business.summary.profileError}
-        </p>
-      )}
+      <p className="max-w-150 text-fg-muted">
+        {data.profile.kind === "not-visible" ? business.profile.notVisible : business.summary.profileError}
+      </p>
       <HelpLink partnerName={data.partner.name} />
     </div>
   );
@@ -275,16 +397,20 @@ function PlanTab({
       />
     );
   }
+  if (data.plan.kind === "loading") {
+    return (
+      <>
+        <LoadingStatus>{business.loadingPlan}</LoadingStatus>
+        <PlanLoading titleId={titleId} />
+      </>
+    );
+  }
   return (
-    <div className="flex flex-col gap-5">
-      <h2 id={titleId} className="font-display text-3xl font-bold text-fg">
+    <div className="flex flex-col gap-4">
+      <h2 id={titleId} className={planSectionClasses.title}>
         {business.plan.title}
       </h2>
-      {data.plan.kind === "loading" ? (
-        <Loading>{accountContent.page.plan.loading}</Loading>
-      ) : (
-        <p className="text-fg-muted">{accountContent.page.plan.error}</p>
-      )}
+      <p className="text-fg-muted">{accountContent.page.plan.error}</p>
     </div>
   );
 }

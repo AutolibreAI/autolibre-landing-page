@@ -4,9 +4,11 @@ import { useAuth, useClerk, useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import {
   BusinessDashboard,
+  BusinessDashboardSkeleton,
   type PlanLoadState,
   type ProfileState,
 } from "@/components/cuenta/business-dashboard";
+import { CustomerAccountSkeleton } from "@/components/cuenta/skeletons";
 import { AccountBar } from "@/components/proveedores/account/account-bar";
 import { NoBusinessAccount, noBusinessView } from "@/components/cuenta/no-business-account";
 import { PRIVATE_FLOW_TITLE_ID } from "@/components/proveedores/account/private-flow";
@@ -17,7 +19,7 @@ import { ACCOUNT_FEATURES } from "@/lib/account/features";
 import { planStateFor } from "@/lib/account/plan-state";
 import { pickAccountPartner, type AccountSection } from "@/lib/account/sections";
 import { usePendingSignupIntent } from "@/lib/auth/pending-signup-intent";
-import { syncRoleHint } from "@/lib/auth/role-hint";
+import { readAccountHint, syncRoleHint } from "@/lib/auth/role-hint";
 import { isWithinSignupWindow, readSignupIntent, SIGNUP_INTENTS } from "@/lib/auth/signup-intent";
 import { accountContent } from "@/lib/content/account";
 import { partnerAccountContent } from "@/lib/content/partner-account";
@@ -25,6 +27,12 @@ import { fetchOwnerPartners, fetchSubscription } from "@/lib/partner-billing/cli
 import type { Membership } from "@/lib/partner-claims/redeem";
 
 const { page, business } = accountContent;
+
+/**
+ * Ritmo de las vistas de `/cuenta` sin negocio (cliente, onboarding, la
+ * pregunta y el error): arriba, lo justo para separarse del header.
+ */
+export const ACCOUNT_SECTION_CLASS = "pt-8 md:pt-10";
 
 type BusinessAccountProps = {
   /** `/cuenta` sin query. */
@@ -70,6 +78,11 @@ export function BusinessAccount({ basePath, selfPath, sessionCookie, section, re
   const intent = readSignupIntent(user?.publicMetadata) ?? pendingIntent;
   const registeredAsPartner = intent === SIGNUP_INTENTS.partner;
   const ownsPartners = partners.kind === "ready" && partners.owners.length > 0;
+  // Qué esqueleto mostrar mientras llegan los negocios: el tablero si la
+  // cuenta se registró como proveedor o ya se la vio dueña en este navegador
+  // (pista de rol, solo UI). Esta parte solo se dibuja en el browser.
+  const [roleHint] = useState(() => readAccountHint(sessionCookie));
+  const expectBusiness = registeredAsPartner || roleHint === "proveedor";
 
   useEffect(() => {
     let active = true;
@@ -94,7 +107,7 @@ export function BusinessAccount({ basePath, selfPath, sessionCookie, section, re
   if (partners.kind === "ready" && partners.owners.length === 0) {
     const createdAt = user?.createdAt?.getTime() ?? Number.NaN;
     return (
-      <Section tone="canvas" spacing="md" aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
+      <Section tone="canvas" spacing="sm" className={ACCOUNT_SECTION_CLASS} aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
         <NoBusinessAccount
           view={noBusinessView(intent, isWithinSignupWindow(createdAt, loadedAt))}
           firstName={user?.firstName?.trim() || null}
@@ -104,40 +117,50 @@ export function BusinessAccount({ basePath, selfPath, sessionCookie, section, re
     );
   }
 
-  if (partners.kind !== "ready") {
+  if (partners.kind === "loading") {
+    if (expectBusiness) return <BusinessDashboardSkeleton section={section} footer={bar} />;
     return (
-      <Section tone="canvas" spacing="md" aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
-        <div className="flex max-w-180 flex-col gap-8">
-          <h1 id={PRIVATE_FLOW_TITLE_ID} tabIndex={-1} className="font-display text-3xl font-bold text-fg md:text-4xl">
+      <Section tone="canvas" spacing="sm" className={ACCOUNT_SECTION_CLASS} aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
+        <p role="status" className="sr-only">
+          {page.partners.loading}
+        </p>
+        <CustomerAccountSkeleton firstName={user?.firstName?.trim() || null} footer={bar} />
+      </Section>
+    );
+  }
+
+  if (partners.kind === "error") {
+    return (
+      <Section tone="canvas" spacing="sm" className={ACCOUNT_SECTION_CLASS} aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
+        <div className="flex max-w-180 flex-col gap-6">
+          <h1
+            id={PRIVATE_FLOW_TITLE_ID}
+            tabIndex={-1}
+            className="font-display text-2xl leading-tight font-bold tracking-tight text-fg md:text-3xl"
+          >
             {registeredAsPartner ? business.loadingTitle : page.title}
           </h1>
-          <div aria-live="polite" aria-atomic="true">
-            {partners.kind === "loading" ? (
-              <p className="text-fg-muted">{business.loading}</p>
-            ) : partners.kind === "error" ? (
-              <div className="flex flex-col items-start gap-3">
-                <p className="font-medium text-status-alert">
-                  {partners.reason === "unauthenticated" ? page.partners.unauthenticated : page.partners.error}
-                </p>
-                {partners.reason === "unauthenticated" ? (
-                  <Button type="button" variant="outline" size="44" onClick={() => void signOut({ redirectUrl: selfPath })}>
-                    {partnerAccountContent.reauth}
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="44"
-                    onClick={() => {
-                      setPartners({ kind: "loading" });
-                      setAttempt((value) => value + 1);
-                    }}
-                  >
-                    {page.partners.retry}
-                  </Button>
-                )}
-              </div>
-            ) : null}
+          <div aria-live="polite" aria-atomic="true" className="flex flex-col items-start gap-3">
+            <p className="font-medium text-status-alert">
+              {partners.reason === "unauthenticated" ? page.partners.unauthenticated : page.partners.error}
+            </p>
+            {partners.reason === "unauthenticated" ? (
+              <Button type="button" variant="outline" size="44" onClick={() => void signOut({ redirectUrl: selfPath })}>
+                {partnerAccountContent.reauth}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="44"
+                onClick={() => {
+                  setPartners({ kind: "loading" });
+                  setAttempt((value) => value + 1);
+                }}
+              >
+                {page.partners.retry}
+              </Button>
+            )}
           </div>
           {bar}
         </div>
