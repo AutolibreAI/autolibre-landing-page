@@ -52,6 +52,8 @@ export type ProfileLink = {
     | "x"
     | "tiktok"
     | "mercado_libre"
+    | "linkedin"
+    | "youtube"
     | "other";
   readonly url: string;
 };

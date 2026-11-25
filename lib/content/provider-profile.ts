@@ -136,6 +136,8 @@ export const providerProfileContent = {
     x: "X",
     tiktok: "TikTok",
     mercadoLibre: "Mercado Libre",
+    linkedin: "LinkedIn",
+    youtube: "YouTube",
     other: "Enlace",
   },
 

@@ -191,6 +191,8 @@ export const accountContent = {
         mercado_libre: "Mercado Libre",
         x: "X",
         tiktok: "TikTok",
+        linkedin: "LinkedIn",
+        youtube: "YouTube",
         other: "Otro link",
       } as Record<string, string>,
     },

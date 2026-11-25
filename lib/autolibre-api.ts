@@ -693,6 +693,8 @@ export type PartnerLinkKind =
   | "mercado_libre"
   | "x"
   | "tiktok"
+  | "linkedin"
+  | "youtube"
   | "other";
 const PARTNER_LINK_KINDS: readonly PartnerLinkKind[] = [
   "instagram",
@@ -701,6 +703,8 @@ const PARTNER_LINK_KINDS: readonly PartnerLinkKind[] = [
   "mercado_libre",
   "x",
   "tiktok",
+  "linkedin",
+  "youtube",
   "other",
 ];
 
