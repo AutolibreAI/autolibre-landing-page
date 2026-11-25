@@ -128,8 +128,11 @@ export function ModuloPedido({
       chips={taller.chips.items.map((chip) => ({
         id: chip.id,
         label: chip.label,
+        // `key`: el elemento viaja dentro de un array de props hacia la isla
+        // client y React (RSC) lo valida como hijo de una lista.
         icon: (
           <Image
+            key={chip.id}
             src={chip.icon.src}
             alt=""
             width={chip.icon.width}
@@ -212,6 +215,7 @@ export function ModuloPedido({
           label: tab.label,
           icon: (
             <Image
+              key={tab.id}
               src={tab.icon.src}
               alt=""
               width={tab.icon.width}

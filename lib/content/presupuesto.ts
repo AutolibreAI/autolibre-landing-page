@@ -194,10 +194,26 @@ export const presupuestoContent = {
      */
     example: {
       title: "Así te llega la respuesta",
-      paragraphs: [
-        "Te confirmamos el pedido por WhatsApp y te vamos pasando las propuestas a medida que llegan, con precio, tiempos y dirección.",
-        "Vos elegís. Nada se confirma sin que lo decidas.",
-      ],
+      intro: "Las propuestas te llegan por WhatsApp o en la app, como prefieras. Vos elegís: nada se confirma sin que lo decidas.",
+      /** Columna izquierda: el chat de ejemplo. */
+      whatsapp: {
+        label: "Por WhatsApp",
+        body: "Te confirmamos el pedido y te pasamos cada propuesta con precio, tiempos y dirección.",
+      },
+      /**
+       * Columna derecha: capturas reales de la app (las mismas del bloque
+       * "pedido enviado", `moduloPedidoContent.taller.appPromo.steps`). No
+       * dice que un pedido hecho en la web aparece en la app
+       * (`APP_VINCULADA` sigue apagado).
+       */
+      app: {
+        label: "En la app",
+        body: "Ves las propuestas apenas llegan, las comparás lado a lado y elegís el taller en un toque.",
+        screensLabel: "Cómo se ven las propuestas en la app",
+        download: "Bajá la app gratis",
+        scan: "Escaneá el código con la cámara del celular.",
+        qrAlt: "Código QR para bajar la app de AutoLibre",
+      },
       caption: "Ejemplo ilustrativo",
       /** Quién habla en cada globo, solo para lectores de pantalla. */
       you: "Vos:",

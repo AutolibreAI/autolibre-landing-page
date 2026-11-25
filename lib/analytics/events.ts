@@ -332,6 +332,8 @@ export type AppStore = (typeof APP_STORES)[keyof typeof APP_STORES];
 export const DOWNLOAD_SECTIONS = {
   /** Bloque de la app del estado enviado del módulo de pedido. */
   pedidoEnviado: "pedido_enviado",
+  /** Columna "En la app" de "Así te llega la respuesta" en `/pedido`. */
+  pedidoRespuesta: "pedido_respuesta",
 } as const;
 
 export type DownloadSection = (typeof DOWNLOAD_SECTIONS)[keyof typeof DOWNLOAD_SECTIONS];
