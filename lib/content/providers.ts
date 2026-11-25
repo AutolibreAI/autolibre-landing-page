@@ -156,6 +156,22 @@ export const providersContent = {
     },
     signInIntro: "Para registrar tu negocio necesitás una cuenta de AutoLibre. Es la misma de la app.",
     loading: "Cargando el registro…",
+    /** Con sesión, mientras se consulta si la cuenta ya tiene un negocio. */
+    checking: "Buscando tu negocio…",
+    /**
+     * La cuenta ya es dueña de al menos un negocio aprobado: en lugar del
+     * formulario vacío, se lo mostramos y lo llevamos a "Mi negocio".
+     */
+    existing: {
+      title: "Tu negocio ya está en AutoLibre",
+      body: "Tu cuenta ya administra estos negocios. Desde Mi negocio ves tu perfil y tu plan.",
+      listLabel: "Tus negocios",
+      goToAccount: "Ir a mi negocio",
+      continueCheckout: (plan: string) => `Seguir con el plan ${plan}`,
+      registerAnother: "Registrar otro negocio",
+    },
+    /** Refresh después de enviar, con la solicitud todavía sin aprobar. */
+    pendingBody: "Ya recibimos tu solicitud y el equipo la está revisando. Cuando la aprobemos, tu negocio aparece en Mi negocio.",
     /** Columna de pasos del formulario (cuenta ya hecha). */
     sidebar: {
       title: "Registrá tu negocio",

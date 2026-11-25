@@ -1,9 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useUser } from "@clerk/nextjs";
+import { useEffect, useRef, useState } from "react";
 import { CustomerAccount } from "@/components/cuenta/customer-account";
 import { NoPartnerOptions } from "@/components/proveedores/account/no-partner-options";
 import { PrivateFlowHead, PRIVATE_FLOW_TITLE_ID } from "@/components/proveedores/account/private-flow";
+import { RegistrationStatus } from "@/components/proveedores/registro/registration-status";
+import { providersContent } from "@/lib/content/providers";
+import { hasSentApplication } from "@/lib/proveedores/application-hint";
 import { SignupIntentChoice } from "@/components/proveedores/account/signup-intent-choice";
 import { ANALYTICS_EVENTS, SIGNUP_INTENT_PLACEMENTS } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
@@ -43,6 +47,16 @@ type NoBusinessAccountProps = {
  */
 export function NoBusinessAccount({ view, firstName, footer }: NoBusinessAccountProps) {
   const chose = useRef(false);
+  const { user } = useUser();
+  const userId = user?.id ?? null;
+  // Solicitud de alta enviada desde este navegador y todavía sin aprobar
+  // (pista local: el backend no expone el estado de la solicitud). Se lee
+  // después de montar para no depender de `localStorage` en el render.
+  const [applicationSent, setApplicationSent] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- `localStorage` existe recién en el browser.
+    setApplicationSent(userId ? hasSentApplication(userId) : false);
+  }, [userId]);
 
   // Después de elegir, el foco va al `<h1>` de la pantalla nueva.
   useEffect(() => {
@@ -52,6 +66,15 @@ export function NoBusinessAccount({ view, firstName, footer }: NoBusinessAccount
   }, [view]);
 
   if (view === "customer") return <CustomerAccount firstName={firstName} footer={footer} />;
+
+  if (view === "partner" && applicationSent) {
+    return (
+      <div className="flex max-w-180 flex-col gap-8">
+        <RegistrationStatus alreadyRegisteredMessage={providersContent.flow.pendingBody} checkout={null} />
+        {footer}
+      </div>
+    );
+  }
 
   if (view === "partner") {
     return (

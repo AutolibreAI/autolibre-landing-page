@@ -1,9 +1,13 @@
 "use client";
 
 import { useAuth, useUser } from "@clerk/nextjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PROVIDER_FORM_STEPS, ProviderForm } from "@/components/forms/provider-form";
 import { PartnerSignIn } from "@/components/proveedores/account/partner-sign-in";
+import { ExistingBusiness } from "@/components/proveedores/registro/existing-business";
+import { RegistrationStatus } from "@/components/proveedores/registro/registration-status";
+import { fetchOwnerPartners } from "@/lib/partner-billing/client";
+import { clearApplicationSent, hasSentApplication, markApplicationSent } from "@/lib/proveedores/application-hint";
 import { FlowMain, FlowShell } from "@/components/proveedores/flow/flow-shell";
 import { FlowSteps } from "@/components/proveedores/flow/flow-steps";
 import { useFlowSignOut } from "@/components/proveedores/flow/use-flow-sign-out";
@@ -62,6 +66,20 @@ function flowPath(checkout: { readonly href: string } | null): string {
  * todo lo escrito. En ese caso `getToken` no da token, el envío no sale (nunca
  * se manda anónimo) y el formulario pide volver a entrar en otra pestaña.
  */
+/**
+ * Qué ve una cuenta con sesión al abrir el alta, antes de tocar nada:
+ * - `checking`: se consulta `GET /partners/me/memberships`.
+ * - `existing`: ya es dueña de un negocio aprobado → se lo mostramos.
+ * - `pending`: mandó una solicitud que todavía no se aprobó (pista local) →
+ *   "en revisión", también después de un refresh.
+ * - `form`: el formulario. Si la consulta falla, se cae acá: nunca bloquea.
+ */
+type Entry =
+  | { readonly kind: "checking" }
+  | { readonly kind: "existing"; readonly names: readonly string[] }
+  | { readonly kind: "pending" }
+  | { readonly kind: "form" };
+
 export function RegisterFormGate({ serviceFamilies, next }: RegisterFormGateProps) {
   const { isLoaded, isSignedIn, getToken } = useAuth();
   const { user } = useUser();
@@ -69,12 +87,32 @@ export function RegisterFormGate({ serviceFamilies, next }: RegisterFormGateProp
   const [formShown, setFormShown] = useState(false);
   const [step, setStep] = useState(0);
   const [done, setDone] = useState(false);
+  const [entry, setEntry] = useState<Entry>({ kind: "checking" });
   const checkout = checkoutFromNext(next);
   const returnPath = flowPath(checkout);
+  const userId = user?.id ?? null;
 
   // Estado derivado en el render (patrón de React para "recordar" un valor
   // previo): sin efecto ni render extra.
   if (isSignedIn && !formShown) setFormShown(true);
+
+  // Una sola consulta por cuenta: la membresía manda sobre la pista local.
+  useEffect(() => {
+    if (!isSignedIn || !userId) return;
+    let cancelled = false;
+    void fetchOwnerPartners(getToken).then((result) => {
+      if (cancelled) return;
+      if (result.kind === "ok" && result.owners.length > 0) {
+        clearApplicationSent(userId);
+        setEntry({ kind: "existing", names: result.owners.map((owner) => owner.name) });
+        return;
+      }
+      setEntry(hasSentApplication(userId) ? { kind: "pending" } : { kind: "form" });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isSignedIn, userId, getToken]);
 
   if (!formShown && !isSignedIn) {
     return (
@@ -94,12 +132,38 @@ export function RegisterFormGate({ serviceFamilies, next }: RegisterFormGateProp
     );
   }
 
+  const signOut = isSignedIn ? { onClick: () => void session.leave(PROVEEDORES_REGISTRO_PATH), pending: session.pending } : null;
+
+  // Con sesión, antes del formulario: ¿ya tiene negocio o una solicitud en revisión?
+  // Solo mientras no empezó a cargar el formulario (`entry` pasa a `form`).
+  if (isSignedIn && entry.kind !== "form" && !done) {
+    return (
+      <FlowShell helpMessage={flow.help.whatsappMessage} helpPlacement="registro_encabezado" signOut={signOut}>
+        <FlowMain>
+          {entry.kind === "checking" ? (
+            <p role="status" className="flex min-h-96 items-start text-fg-muted">
+              {flow.checking}
+            </p>
+          ) : entry.kind === "existing" ? (
+            <ExistingBusiness
+              names={entry.names}
+              checkout={checkout}
+              onRegisterAnother={() => setEntry({ kind: "form" })}
+            />
+          ) : (
+            <RegistrationStatus alreadyRegisteredMessage={flow.pendingBody} checkout={checkout} />
+          )}
+        </FlowMain>
+      </FlowShell>
+    );
+  }
+
   return (
     <FlowShell
       helpMessage={flow.help.whatsappMessage}
       helpPlacement="registro_encabezado"
       progress={{ current: done ? PROVIDER_FORM_STEPS : step + 1, total: PROVIDER_FORM_STEPS }}
-      signOut={isSignedIn ? { onClick: () => void session.leave(PROVEEDORES_REGISTRO_PATH), pending: session.pending } : null}
+      signOut={signOut}
     >
       <FlowMain>
         <AltaLayout
@@ -117,7 +181,10 @@ export function RegisterFormGate({ serviceFamilies, next }: RegisterFormGateProp
             checkout={checkout}
             step={step}
             onStepChange={setStep}
-            onDone={() => setDone(true)}
+            onDone={() => {
+              if (userId) markApplicationSent(userId);
+              setDone(true);
+            }}
           />
         </AltaLayout>
       </FlowMain>
