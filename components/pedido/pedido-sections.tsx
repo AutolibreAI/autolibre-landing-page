@@ -11,6 +11,7 @@ import {
 import { ModuloPedido } from "@/components/modulo-pedido/modulo-pedido";
 import { ButtonAnchor, ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { CompareStage } from "@/components/pedido/compare-stage";
 import { QrCode } from "@/components/ui/qr-code";
 import { Section } from "@/components/ui/section";
 import { StoreLinks } from "@/components/ui/store-links";
@@ -23,7 +24,6 @@ import {
 } from "@/lib/analytics/events";
 import { getGuidePicks } from "@/lib/blog/picks";
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
-import { moduloPedidoContent } from "@/lib/content/modulo-pedido";
 import { presupuestoContent } from "@/lib/content/presupuesto";
 import { siteContent } from "@/lib/content/site";
 import { cn } from "@/lib/utils";
@@ -112,28 +112,148 @@ export function PedidoHero() {
 }
 
 /**
- * "Así te llega la respuesta": las dos vías lado a lado (desde `lg`; en
- * celular, una debajo de la otra, las dos en el HTML, sin tabs).
- * - Por WhatsApp: el chat de ejemplo, un `<figure>` con su `<figcaption>`
- *   "Ejemplo ilustrativo" a la vista (proveedores, precios y direcciones son
- *   inventados y tiene que quedar claro para quien lo lee y para un LLM).
- * - En la app: capturas reales (las del bloque "pedido enviado") con la
- *   descarga: QR a `/descarga` desde `lg` y los botones de tienda (solo la
- *   del sistema en el celular).
- *
- * Server Component, sin JS. Las capturas van con alto fijo (marco recortado)
- * y `loading="lazy"`: están debajo del pliegue y no mueven nada al bajar.
+ * "Así te llega la respuesta" (experimento del 2026-11-25, rama
+ * `exp/pedido-comparador`): un teléfono partido por un slider, el chat de
+ * WhatsApp a la izquierda y la app a la derecha, avanzando juntos como un
+ * video (ver `CompareStage`). Las dos capas se arman acá, en el server: todo
+ * el texto está en el HTML. El chat es el ejemplo ilustrativo de siempre
+ * (proveedores y precios inventados, rotulado a la vista); las pantallas de
+ * la app son capturas reales. Debajo, la descarga de la app.
  */
 export function PedidoExample() {
   const { example } = page;
-  const screens = moduloPedidoContent.taller.appPromo.steps;
-  // Globos más anchos y de 14px en celular: el chat entra en menos renglones.
-  const bubble = "rounded-card px-3 py-2.5 text-sm md:px-3.5 md:py-3 md:text-control";
-  const column =
-    "flex min-w-0 flex-col gap-5 rounded-panel border border-card-line bg-card p-5 md:p-6";
-  const columnHead = "flex flex-col gap-1.5";
-  const columnTitle =
-    "flex items-center gap-2 font-display text-xl font-bold text-fg";
+  const { compare } = example;
+  const valueTexts = Object.fromEntries(
+    Array.from({ length: 21 }, (_, index) => [
+      index * 5,
+      compare.valueText(index * 5),
+    ]),
+  );
+  const bubble = "rounded-lg px-2.5 py-1.5 text-xs leading-snug md:text-sm";
+  const tag =
+    "absolute top-3 z-10 inline-flex h-8 items-center gap-1.5 rounded-full px-3 font-display text-sm font-semibold md:top-4";
+  // Teléfono: centrado, desde arriba hasta el borde de abajo del escenario (recortado).
+  const phone =
+    "absolute top-14 bottom-0 left-1/2 flex w-65 -translate-x-1/2 flex-col overflow-clip rounded-t-4xl border-8 border-b-0 md:w-75";
+
+  const whatsappLayer = (
+    <div className="size-full bg-wa-wallpaper">
+      <p className={`${tag} left-3 bg-card text-fg md:left-4`}>
+        <Icon
+          name="whatsapp"
+          size={16}
+          strokeWidth={2}
+          className="text-status-ok"
+        />
+        {example.whatsapp.label}
+      </p>
+      <figure className={`${phone} border-ink bg-wa-wallpaper`}>
+        <div className="flex h-12 shrink-0 items-center gap-2 bg-card px-3">
+          <span
+            aria-hidden="true"
+            className="flex size-7 items-center justify-center rounded-full bg-action font-display text-xs font-bold text-card"
+          >
+            {compare.chatInitial}
+          </span>
+          <span className="font-display text-sm font-semibold text-fg">
+            {compare.chatName}
+          </span>
+        </div>
+        <div className="flex min-h-0 flex-1 flex-col justify-end gap-1.5 overflow-clip p-2.5">
+          <div data-on="1 2 3 4 5 6" className="cmp-msg self-end">
+            <p className={`${bubble} max-w-56 rounded-tr-sm bg-wa-out text-fg`}>
+              <span className="sr-only">{example.you} </span>
+              {example.userMessage}
+            </p>
+          </div>
+          <div data-on="2 3 4 5 6" className="cmp-msg self-start">
+            <div className={`${bubble} max-w-60 rounded-tl-sm bg-card text-fg`}>
+              <span className="sr-only">{example.us} </span>
+              <p>{example.confirmation.intro}</p>
+              <ul>
+                {example.confirmation.lines.map((line) => (
+                  <li key={line}>
+                    <span aria-hidden="true">· </span>
+                    {line}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <div data-on="3" aria-hidden="true" className="cmp-msg self-start">
+            <p
+              className={`${bubble} rounded-tl-sm bg-card text-fg-muted italic`}
+            >
+              {compare.typing}
+            </p>
+          </div>
+          <div data-on="4 5 6" className="cmp-msg self-start">
+            <div
+              className={`${bubble} flex max-w-60 flex-col gap-1.5 rounded-tl-sm bg-card text-fg`}
+            >
+              <span className="sr-only">{example.us}</span>
+              {example.providers.map((provider, index) => (
+                <div
+                  key={provider.name}
+                  className={
+                    index > 0 ? "border-t border-card-line pt-1.5" : undefined
+                  }
+                >
+                  <p className="font-semibold">{provider.name}</p>
+                  <p>
+                    <strong>{provider.price}</strong> · {provider.eta} ·{" "}
+                    {provider.address}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div data-on="6" className="cmp-msg self-end">
+            <p className={`${bubble} rounded-tr-sm bg-wa-out text-fg`}>
+              <span className="sr-only">{example.you} </span>
+              {compare.reply}
+            </p>
+          </div>
+        </div>
+      </figure>
+    </div>
+  );
+
+  const appLayer = (
+    <div className="size-full bg-ink">
+      <p
+        className={`${tag} right-3 bg-action text-card ring-1 ring-on-dark-subtle md:right-4`}
+      >
+        <Icon
+          name="smartphone"
+          size={16}
+          strokeWidth={2}
+          className="text-brand-200"
+        />
+        {example.app.label}
+      </p>
+      <div className={`${phone} border-on-dark-subtle bg-card`}>
+        <div className="relative flex-1">
+          {compare.screens.map((screen, index) => (
+            <Image
+              key={screen.src}
+              data-on={screen.on}
+              src={screen.src}
+              alt={screen.alt}
+              fill
+              loading="lazy"
+              sizes="300px"
+              className={cn(
+                "cmp-screen object-cover object-top",
+                index === 0 && "z-0",
+              )}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <Section
       id="asi-te-llega"
@@ -146,134 +266,47 @@ export function PedidoExample() {
           {example.title}
         </h2>
         <p className="text-lead text-fg-muted">{example.intro}</p>
+        <p className="text-base text-fg-muted">{compare.intro}</p>
       </div>
 
-      <div className="mt-8 grid gap-5 lg:grid-cols-2 lg:gap-6">
-        <section aria-labelledby="asi-te-llega-whatsapp" className={column}>
-          <div className={columnHead}>
-            <h3 id="asi-te-llega-whatsapp" className={columnTitle}>
-              <Icon name="whatsapp" size={22} className="text-brand" />
-              {example.whatsapp.label}
-            </h3>
-            <p className="text-base text-fg-muted">{example.whatsapp.body}</p>
-          </div>
+      <div className="mt-8">
+        <CompareStage
+          whatsapp={whatsappLayer}
+          app={appLayer}
+          valueTexts={valueTexts}
+          copy={{
+            sliderLabel: compare.sliderLabel,
+            pause: compare.pause,
+            play: compare.play,
+            beatsLabel: compare.beatsLabel,
+            beats: compare.beats,
+          }}
+        />
+      </div>
 
-          <figure className="flex flex-1 flex-col gap-3 rounded-card bg-canvas p-3 md:p-4">
-            <p
-              className={`${bubble} max-w-11/12 self-end rounded-br-sm md:max-w-4/5 bg-action text-card`}
-            >
-              <span className="sr-only">{example.you} </span>
-              {example.userMessage}
-            </p>
-            <div
-              className={`${bubble} flex max-w-11/12 flex-col gap-1 self-start md:max-w-5/6 rounded-bl-sm bg-card text-fg-muted`}
-            >
-              <span className="sr-only">{example.us} </span>
-              <p>{example.confirmation.intro}</p>
-              <ul>
-                {example.confirmation.lines.map((line) => (
-                  <li key={line}>
-                    <span aria-hidden="true">· </span>
-                    {line}
-                  </li>
-                ))}
-              </ul>
-              <p>{example.confirmation.outro}</p>
-            </div>
-            <div
-              className={`${bubble} flex max-w-11/12 flex-col gap-2.5 self-start md:max-w-5/6 rounded-bl-sm bg-card text-fg-muted`}
-            >
-              <span className="sr-only">{example.us}</span>
-              {example.providers.map((provider, index) => (
-                <div
-                  key={provider.name}
-                  className={
-                    index > 0
-                      ? "border-t border-control-line pt-2.5"
-                      : undefined
-                  }
-                >
-                  <p className="font-semibold text-fg">{provider.name}</p>
-                  <p>{provider.service}</p>
-                  <p>
-                    <strong className="text-fg">{provider.price}</strong> ·{" "}
-                    {provider.eta} · {provider.address}
-                  </p>
-                </div>
-              ))}
-            </div>
-            <figcaption className="mt-auto text-label text-fg-muted">
-              {example.caption}
-            </figcaption>
-          </figure>
-        </section>
-
-        <section aria-labelledby="asi-te-llega-app" className={column}>
-          <div className={columnHead}>
-            <h3 id="asi-te-llega-app" className={columnTitle}>
-              <Icon name="smartphone" size={22} className="text-brand" />
-              {example.app.label}
-            </h3>
-            <p className="text-base text-fg-muted">{example.app.body}</p>
-          </div>
-
-          {/* Tres pantallas reales con marco recortado de alto fijo (el lugar
-              queda reservado antes de que bajen). En celular entran dos; la
-              tercera ("Elegís y coordinás") aparece desde `sm`. */}
-          <ol
-            aria-label={example.app.screensLabel}
-            className="grid list-none grid-cols-2 gap-3 sm:grid-cols-3"
-          >
-            {screens.map((screen, index) => (
-              <li
-                key={screen.title}
-                className={cn(
-                  "flex min-w-0 flex-col gap-2",
-                  index === 2 && "hidden sm:flex",
-                )}
-              >
-                <div className="h-56 overflow-clip rounded-t-2xl border-5 border-b-0 border-ink bg-canvas md:h-64">
-                  <Image
-                    src={screen.screen.src}
-                    alt=""
-                    width={screen.screen.width}
-                    height={screen.screen.height}
-                    loading="lazy"
-                    sizes="(min-width: 1024px) 180px, (min-width: 640px) 30vw, 45vw"
-                    className="block h-auto w-full"
-                  />
-                </div>
-                <p className="text-sm leading-snug font-semibold text-fg">
-                  {screen.title}
-                </p>
-              </li>
-            ))}
-          </ol>
-
-          <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-4 border-t border-card-line pt-5">
-            {/* QR solo desde `lg`: en el celular no sirve. */}
-            <div className="hidden shrink-0 rounded-card border border-card-line bg-card p-2 lg:block">
-              <QrCode
-                code="descarga"
-                title={example.app.qrAlt}
-                className="size-24 text-fg"
-              />
-            </div>
-            <div className="min-w-0 flex-1 basis-40">
-              <p className="font-display text-lg font-semibold text-fg">
-                {example.app.download}
-              </p>
-              <p className="mt-0.5 hidden text-sm text-fg-muted lg:block">
-                {example.app.scan}
-              </p>
-            </div>
-            <StoreLinks
-              placement={DOWNLOAD_SECTIONS.pedidoRespuesta}
-              section={DOWNLOAD_SECTIONS.pedidoRespuesta}
-              platformAware
-            />
-          </div>
-        </section>
+      <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-4 border-t border-card-line pt-6">
+        {/* QR solo desde `lg`: en el celular no sirve. */}
+        <div className="hidden shrink-0 rounded-card border border-card-line bg-card p-2 lg:block">
+          <QrCode
+            code="descarga"
+            title={example.app.qrAlt}
+            className="size-20 text-fg"
+          />
+        </div>
+        <div className="min-w-0 flex-1 basis-56">
+          <p className="font-display text-lg font-semibold text-fg">
+            {example.app.download}
+          </p>
+          <p className="mt-0.5 text-sm text-fg-muted">
+            <span className="hidden lg:inline">{example.app.scan} </span>
+            {compare.note}
+          </p>
+        </div>
+        <StoreLinks
+          placement={DOWNLOAD_SECTIONS.pedidoRespuesta}
+          section={DOWNLOAD_SECTIONS.pedidoRespuesta}
+          platformAware
+        />
       </div>
     </Section>
   );

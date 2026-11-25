@@ -198,6 +198,13 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M8 11V8a4 4 0 0 1 8 0v3" />
     </>
   ),
+  pause: (
+    <>
+      <line x1="9" y1="6" x2="9" y2="18" />
+      <line x1="15" y1="6" x2="15" y2="18" />
+    </>
+  ),
+  play: <path d="M8 5.5v13l10.5-6.5z" />,
 };
 
 export function Icon({

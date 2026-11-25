@@ -152,6 +152,12 @@
      tonos usan `action`/`brand-200` y `brand-50`/`brand`. */
   --color-monogram-gray: #eff0ef;
   --color-monogram-ink-gray: #5c6b5c;
+
+  /* Comparador "Así te llega la respuesta" (experimento 2026-11-25): el chat
+     de WhatsApp dibujado. `fg` encima: 14.2:1 sobre el fondo, 16.4:1 sobre
+     el globo propio. */
+  --color-wa-wallpaper: #efeae2;
+  --color-wa-out: #d9fdd3;
 }
 
 /* ── Plataforma del visitante ──
@@ -320,4 +326,67 @@
       transition-duration: 0.01ms !important;
     }
   }
+}
+
+/* ── Comparador WhatsApp / app de `/pedido` (experimento 2026-11-25) ──
+   `CompareStage` pone `data-step` (0 a 6) en `.cmp`; cada pieza animada
+   lista en `data-on` los pasos en los que se ve. Solo opacidad, transform y
+   `grid-template-rows` dentro de un escenario de alto fijo: no mueve nada
+   fuera de él (CLS 0). Con `prefers-reduced-motion` la isla no avanza y la
+   regla global apaga las transiciones: queda el paso 4 quieto. */
+.cmp [data-on] {
+  opacity: 0;
+  transition:
+    opacity 0.35s ease,
+    transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    grid-template-rows 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* Globos: colapsados hasta que llegan (el chat crece desde abajo). */
+.cmp .cmp-msg {
+  display: grid;
+  grid-template-rows: 0fr;
+  transform: translateY(0.5rem) scale(0.98);
+}
+.cmp .cmp-msg > * {
+  min-height: 0;
+  overflow: hidden;
+}
+/* Pantallas de la app: apiladas, entra la nueva desde la derecha. */
+.cmp .cmp-screen {
+  transform: translateX(1.5rem);
+}
+.cmp[data-step="0"] [data-on~="0"] {
+  opacity: 1;
+  transform: none;
+  grid-template-rows: 1fr;
+}
+.cmp[data-step="1"] [data-on~="1"] {
+  opacity: 1;
+  transform: none;
+  grid-template-rows: 1fr;
+}
+.cmp[data-step="2"] [data-on~="2"] {
+  opacity: 1;
+  transform: none;
+  grid-template-rows: 1fr;
+}
+.cmp[data-step="3"] [data-on~="3"] {
+  opacity: 1;
+  transform: none;
+  grid-template-rows: 1fr;
+}
+.cmp[data-step="4"] [data-on~="4"] {
+  opacity: 1;
+  transform: none;
+  grid-template-rows: 1fr;
+}
+.cmp[data-step="5"] [data-on~="5"] {
+  opacity: 1;
+  transform: none;
+  grid-template-rows: 1fr;
+}
+.cmp[data-step="6"] [data-on~="6"] {
+  opacity: 1;
+  transform: none;
+  grid-template-rows: 1fr;
 }

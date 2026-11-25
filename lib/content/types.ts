@@ -55,6 +55,8 @@ export type HeroHighlight = {
 };
 
 export type IconName =
+  | "pause"
+  | "play"
   | "document"
   | "bell"
   | "clock"

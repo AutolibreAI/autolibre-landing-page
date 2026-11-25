@@ -206,6 +206,68 @@ export const presupuestoContent = {
        * dice que un pedido hecho en la web aparece en la app
        * (`APP_VINCULADA` sigue apagado).
        */
+      /**
+       * Comparador (experimento): un teléfono partido al medio, chat de
+       * WhatsApp a la izquierda y la app a la derecha, que avanzan juntos.
+       * Las pantallas de la app son capturas reales; el chat es el mismo
+       * ejemplo ilustrativo de arriba.
+       */
+      compare: {
+        intro: "Mirá las dos maneras a la vez: arrastrá la línea para ver más de WhatsApp o más de la app.",
+        sliderLabel: "Ver más WhatsApp o más app",
+        valueText: (app: number) => `${100 - app}% WhatsApp, ${app}% app`,
+        chatName: "AutoLibre",
+        chatInitial: "A",
+        note: "Ejemplo ilustrativo: el chat es de muestra; las pantallas de la app son reales.",
+        typing: "escribiendo…",
+        reply: "Me quedo con la 1.",
+        pause: "Pausar la animación",
+        play: "Reproducir la animación",
+        beatsLabel: "Los pasos",
+        beats: [
+          { title: "Pedís", body: "Contás qué le pasa al auto y dónde estás." },
+          { title: "Llegan las propuestas", body: "Con precio, tiempos y dirección de cada taller." },
+          { title: "Elegís", body: "Nada se confirma sin que lo decidas." },
+        ],
+        /** Capturas reales de la app, en orden. `on`: pasos en los que se ve. */
+        screens: [
+          {
+            src: "/screenshots/IMG_0581.PNG",
+            width: 1170,
+            height: 2532,
+            on: "0 1",
+            alt: "La app: pedir cotización, con el auto, qué le pasa y dónde.",
+          },
+          {
+            src: "/screenshots/IMG_0582.PNG",
+            width: 1170,
+            height: 2532,
+            on: "2 3",
+            alt: "La app: pedido enviado, con su número y qué sigue.",
+          },
+          {
+            src: "/images/app/app-propuestas.webp",
+            width: 432,
+            height: 600,
+            on: "4",
+            alt: "La app: ya tenés 3 propuestas para comparar.",
+          },
+          {
+            src: "/images/app/app-elegir.webp",
+            width: 432,
+            height: 600,
+            on: "5",
+            alt: "La app: elegí tu taller, con el precio y la distancia de cada propuesta.",
+          },
+          {
+            src: "/images/app/app-elegiste.webp",
+            width: 432,
+            height: 600,
+            on: "6",
+            alt: "La app: elegiste el taller, con el presupuesto y cómo llegar.",
+          },
+        ],
+      },
       app: {
         label: "En la app",
         body: "Ves las propuestas apenas llegan, las comparás lado a lado y elegís el taller en un toque.",
