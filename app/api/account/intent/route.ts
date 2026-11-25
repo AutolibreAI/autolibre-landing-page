@@ -38,7 +38,15 @@ export async function POST(request: Request): Promise<Response> {
     {
       verifySessionToken: async (token) => {
         const { data, errors } = await verifyToken(token, { secretKey });
-        if (errors || !data) return null;
+        if (errors || !data) {
+          // Solo el motivo que da Clerk (p. ej. `jwk-kid-mismatch` = la secret
+          // key es de otra instancia que la publishable; `token-not-active-yet`
+          // = reloj desfasado). Nunca el token ni el usuario.
+          const first: unknown = Array.isArray(errors) ? errors[0] : errors;
+          const reason = (first as { readonly reason?: unknown } | undefined)?.reason;
+          console.error(`[signup-intent] token rechazado: ${typeof reason === "string" ? reason : "sin motivo"}`);
+          return null;
+        }
         // `sub` del token de sesión = id del usuario de Clerk.
         const sub = (data as { readonly sub?: unknown }).sub;
         return typeof sub === "string" && sub !== "" ? sub : null;
