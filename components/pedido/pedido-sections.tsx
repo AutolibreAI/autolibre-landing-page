@@ -113,9 +113,9 @@ export function PedidoHero() {
 
 /**
  * "Así te llega la respuesta" (experimento del 2026-11-25, rama
- * `exp/pedido-comparador`): un teléfono partido por un slider, el chat de
- * WhatsApp a la izquierda y la app a la derecha, avanzando juntos como un
- * video (ver `CompareStage`). Las dos capas se arman acá, en el server: todo
+ * `exp/pedido-comparador`): dos teléfonos lado a lado, el chat de WhatsApp
+ * y la app, avanzando juntos como un video; en celular, un toggle elige cuál
+ * se ve (ver `CompareStage`). Las dos capas se arman acá, en el server: todo
  * el texto está en el HTML. El chat es el ejemplo ilustrativo de siempre
  * (proveedores y precios inventados, rotulado a la vista); las pantallas de
  * la app son capturas reales. Debajo, la descarga de la app.
@@ -123,15 +123,9 @@ export function PedidoHero() {
 export function PedidoExample() {
   const { example } = page;
   const { compare } = example;
-  const valueTexts = Object.fromEntries(
-    Array.from({ length: 21 }, (_, index) => [
-      index * 5,
-      compare.valueText(index * 5),
-    ]),
-  );
   const bubble = "rounded-lg px-2.5 py-1.5 text-xs leading-snug md:text-sm";
   const tag =
-    "absolute top-3 z-10 inline-flex h-8 items-center gap-1.5 rounded-full px-3 font-display text-sm font-semibold md:top-4";
+    "absolute top-3 z-10 max-lg:hidden inline-flex h-8 items-center gap-1.5 rounded-full px-3 font-display text-sm font-semibold md:top-4";
   // Teléfono: centrado, desde arriba hasta el borde de abajo del escenario (recortado).
   const phone =
     "absolute top-14 bottom-0 left-1/2 flex w-65 -translate-x-1/2 flex-col overflow-clip rounded-t-4xl border-8 border-b-0 md:w-75";
@@ -273,9 +267,10 @@ export function PedidoExample() {
         <CompareStage
           whatsapp={whatsappLayer}
           app={appLayer}
-          valueTexts={valueTexts}
           copy={{
-            sliderLabel: compare.sliderLabel,
+            toggleLabel: compare.toggleLabel,
+            whatsappLabel: example.whatsapp.label,
+            appLabel: example.app.label,
             pause: compare.pause,
             play: compare.play,
             beatsLabel: compare.beatsLabel,

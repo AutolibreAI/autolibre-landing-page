@@ -207,15 +207,14 @@ export const presupuestoContent = {
        * (`APP_VINCULADA` sigue apagado).
        */
       /**
-       * Comparador (experimento): un teléfono partido al medio, chat de
-       * WhatsApp a la izquierda y la app a la derecha, que avanzan juntos.
+       * Comparador (experimento): dos teléfonos lado a lado (en celular, un
+       * toggle), chat de WhatsApp y app, que avanzan juntos.
        * Las pantallas de la app son capturas reales; el chat es el mismo
        * ejemplo ilustrativo de arriba.
        */
       compare: {
-        intro: "Mirá las dos maneras a la vez: arrastrá la línea para ver más de WhatsApp o más de la app.",
-        sliderLabel: "Ver más WhatsApp o más app",
-        valueText: (app: number) => `${100 - app}% WhatsApp, ${app}% app`,
+        intro: "Mirá cómo avanza el mismo pedido por WhatsApp y en la app, paso a paso.",
+        toggleLabel: "Ver cómo llega la respuesta",
         chatName: "AutoLibre",
         chatInitial: "A",
         note: "Ejemplo ilustrativo: el chat es de muestra; las pantallas de la app son reales.",
