@@ -28,7 +28,7 @@ type RegistroFlowMountProps = {
  *
  * - marca `<html data-registro-alta>`: el CSS esconde la landing (header y pie
  *   del sitio incluidos) y queda la pantalla de foco del flujo. El script
- *   inline de la página pone la misma marca ANTES del primer paint cuando se
+ *   inline del `<head>` del layout raíz (`REGISTRO_FLOW_SCRIPT`) pone la misma marca ANTES del primer paint cuando se
  *   carga la URL con el parámetro (vuelta del login de Google, recarga), así
  *   no se ve la landing un instante;
  * - monta `RegistroFlow` (Clerk) con `React.lazy`.

@@ -1,15 +1,22 @@
 import { FlowMain, FlowShell } from "@/components/proveedores/flow/flow-shell";
 import { providersContent } from "@/lib/content/providers";
-import { PROVEEDORES_REGISTRO_FLOW_PARAM } from "@/lib/proveedores/query";
+import { PROVEEDORES_REGISTRO_FLOW_PARAM, PROVEEDORES_REGISTRO_PATH } from "@/lib/proveedores/query";
 import { REGISTRO_FLOW_ATTR } from "@/components/proveedores/registro/registro-flow-attr";
 
 
 /**
- * Script inline (va en el HTML del server, antes de la landing): si la URL
- * trae `?alta` o `?next`, marca `<html>` antes de pintar. Sin JS no corre y
- * se ve la landing, que es lo correcto (el flujo necesita JS).
+ * Script inline: si la URL es `/proveedores/registro` y trae `?alta` o
+ * `?next`, marca `<html>` antes de pintar. Sin JS no corre y se ve la
+ * landing, que es lo correcto (el flujo necesita JS).
+ *
+ * Vive en el `<head>` del layout raíz y NO en la página: el layout solo se
+ * renderiza en la carga dura, pero la página también se renderiza en el
+ * cliente al navegar hacia ella (el CTA "Sumá tu negocio"), y ahí React 19
+ * tira "Encountered a script tag while rendering React component" (el script
+ * nunca corre en el cliente). En la navegación del cliente la marca la pone
+ * `RegistroFlowMount` en su efecto, así que acá alcanza con la carga dura.
  */
-export const REGISTRO_FLOW_SCRIPT = `try{var p=new URLSearchParams(location.search);if(p.has("${PROVEEDORES_REGISTRO_FLOW_PARAM}")||p.has("next"))document.documentElement.setAttribute("${REGISTRO_FLOW_ATTR}","")}catch(e){}`;
+export const REGISTRO_FLOW_SCRIPT = `try{var p=new URLSearchParams(location.search);if(location.pathname.replace(/\\/$/,"")==="${PROVEEDORES_REGISTRO_PATH}"&&(p.has("${PROVEEDORES_REGISTRO_FLOW_PARAM}")||p.has("next")))document.documentElement.setAttribute("${REGISTRO_FLOW_ATTR}","")}catch(e){}`;
 
 const { flow } = providersContent;
 

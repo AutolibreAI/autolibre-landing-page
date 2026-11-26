@@ -3,7 +3,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { RegistroFlowLoading, REGISTRO_FLOW_SCRIPT } from "@/components/proveedores/registro/registro-flow-loading";
+import { RegistroFlowLoading } from "@/components/proveedores/registro/registro-flow-loading";
 import { RegistroFlowMount } from "@/components/proveedores/registro/registro-flow-mount";
 import {
   SumateBenefits,
@@ -94,9 +94,8 @@ export default async function ProveedoresRegistroPage() {
 
   return (
     <>
-      {/* Antes del primer paint: con `?alta`/`?next` esconde la landing. */}
-      <script dangerouslySetInnerHTML={{ __html: REGISTRO_FLOW_SCRIPT }} />
-
+      {/* La marca antes del primer paint (`?alta`/`?next`) la pone el script
+          `REGISTRO_FLOW_SCRIPT` del `<head>` del layout raíz. */}
       <div className={landingClass}>
         <SiteHeader cta={false} currentPath={PATH} />
         <main>

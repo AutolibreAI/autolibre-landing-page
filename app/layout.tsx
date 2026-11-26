@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { AnalyticsEvents } from "@/components/analytics/analytics-events";
 import { WhatsappFab } from "@/components/layout/whatsapp-fab";
+import { REGISTRO_FLOW_SCRIPT } from "@/components/proveedores/registro/registro-flow-loading";
 import { META_PIXEL_ID } from "@/lib/analytics/meta-pixel";
 import { siteConfig } from "@/lib/seo/config";
 import "./globals.css";
@@ -175,6 +176,8 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: platformScript }} />
+        {/* Marca del flujo del alta en `/proveedores/registro` (ver el script). */}
+        <script dangerouslySetInnerHTML={{ __html: REGISTRO_FLOW_SCRIPT }} />
         {metaPixelScript && <script dangerouslySetInnerHTML={{ __html: metaPixelScript }} />}
       </head>
       {/* Fondo `canvas` (sistema "AutoLibre AI"): el header va sobre `card` y
