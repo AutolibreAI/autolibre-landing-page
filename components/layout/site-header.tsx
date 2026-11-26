@@ -16,6 +16,7 @@ import {
   type QuoteCtaPlacement,
 } from "@/lib/analytics/events";
 import { clerkClientUatCookieName } from "@/lib/auth/session-cookie";
+import { SIGN_IN_PATH } from "@/lib/auth/sign-in-redirect";
 import { siteContent } from "@/lib/content/site";
 import type { AccountMenuEntry } from "@/lib/content/types";
 import {
@@ -53,6 +54,7 @@ type SiteHeaderProps = {
  */
 const CLERK_ROUTES = [
   ACCOUNT_PATH,
+  SIGN_IN_PATH,
   PROVEEDORES_RECLAMAR_PATH,
   PROVEEDORES_CONTRATAR_PATH,
 ];

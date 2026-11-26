@@ -2,7 +2,7 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { useEffect, useRef, useState } from "react";
-import { PartnerSignIn } from "@/components/proveedores/account/partner-sign-in";
+import { useSignInRedirect } from "@/components/auth/use-sign-in-redirect";
 import {
   CheckingView,
   ConfirmedView,
@@ -61,13 +61,15 @@ type ResultState =
  * FR-018): la vuelta de Mercado Pago. El estado sale SOLO de
  * `GET /partners/{partnerId}/subscription`; los query params que agrega MP
  * no se leen nunca. Misma pantalla de foco que `/contratar`, con "Pago" en
- * curso hasta que el backend confirma.
+ * curso hasta que el backend confirma. Sin sesión, `proxy.ts` (o
+ * `useSignInRedirect`, si venció con la página abierta) manda a `/ingresar`.
  */
 export function CheckoutResult({ partnerIdFromQuery, selfPath, sessionCookie }: CheckoutResultProps) {
   const { isLoaded, isSignedIn } = useAuth();
   const session = useFlowSignOut();
   const [confirmed, setConfirmed] = useState(false);
   const signedIn = isLoaded && isSignedIn;
+  useSignInRedirect(isLoaded && !isSignedIn, selfPath);
 
   return (
     <FlowShell
@@ -85,7 +87,9 @@ export function CheckoutResult({ partnerIdFromQuery, selfPath, sessionCookie }: 
             onReauth={() => void session.leave(selfPath)}
           />
         ) : (
-          <PartnerSignIn intro={content.signInIntro} showJoin={false} redirectUrl={selfPath} loading={!isLoaded} />
+          // Clerk confirmando la sesión (el proxy ya dejó pasar): el mismo
+          // "confirmando" que sigue, así nada salta.
+          <CheckingView />
         )}
       </FlowMain>
     </FlowShell>

@@ -1,0 +1,19 @@
+{
+  // Typecheck del contrato de `/ingresar?redirect=` (2026-11-26) y sus
+  // pruebas. Corren con `node --test` (type stripping de Node): solo sintaxis
+  // TS borrable e imports relativos con extensión `.ts`.
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true
+  },
+  "include": ["./**/*.ts", "../../lib/auth/sign-in-redirect.ts"]
+}

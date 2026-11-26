@@ -10,8 +10,8 @@ import {
  * taller" en `publicMetadata.signupIntent` de la cuenta de Clerk (contrato en
  * `lib/auth/signup-intent.ts`).
  *
- * La landing no tiene `clerkMiddleware`, así que `auth()` no sirve acá: el
- * browser manda `Authorization: Bearer <token de sesión de Clerk>` y esta
+ * `clerkMiddleware` (`proxy.ts`) corre SOLO en las pantallas privadas, no en
+ * `/api`, así que `auth()` no sirve acá: el browser manda `Authorization: Bearer <token de sesión de Clerk>` y esta
  * ruta lo verifica con `verifyToken` de `@clerk/backend` (firma, vencimiento
  * y emisor contra el JWKS de la instancia, con `CLERK_SECRET_KEY`). El
  * `userId` sale del `sub` del token verificado, nunca del cuerpo.

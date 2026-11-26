@@ -1,12 +1,7 @@
 "use client";
 
-import { SignIn, SignUp } from "@clerk/nextjs";
+import { SignIn, SignUp, useAuth } from "@clerk/nextjs";
 import { useEffect, useRef, useState } from "react";
-import {
-  ClerkSlot,
-  SignInLayout,
-  type PrivateFlowHeadContent,
-} from "@/components/proveedores/account/private-flow";
 import { SignupIntentChoice } from "@/components/proveedores/account/signup-intent-choice";
 import { track } from "@/lib/analytics/track";
 import { ANALYTICS_EVENTS, SIGNUP_INTENT_PLACEMENTS } from "@/lib/analytics/events";
@@ -27,47 +22,31 @@ import { cn } from "@/lib/utils";
  */
 export type SignupIntentMode = SignupIntent | "ask";
 
-type PartnerSignInProps = {
-  /** Encabezado de la pantalla: su `intro` es la bajada del panel si no hay `intro`. */
-  readonly head?: PrivateFlowHeadContent;
-  /** Encabezado ya renderizado (en el server), arriba del panel. Ver `SignInLayout`. */
-  readonly headSlot?: React.ReactNode;
-  /** Lo que acompaña al login, arriba del título: pasos del flujo, plan elegido… */
-  readonly context?: React.ReactNode;
-  /** Adónde vuelve después de entrar o crear la cuenta: la misma URL (con su query). */
+type SignInWidgetProps = {
+  /**
+   * Adónde vuelve después de entrar o crear la cuenta: el `?redirect=` de
+   * `/ingresar`, YA validado en el server (`parseSafeRedirect`).
+   */
   readonly redirectUrl: string;
-  /** Clerk todavía no cargó: el panel muestra el "cargando". */
-  readonly loading?: boolean;
-  /** Bajada del panel "Ingresá o creá tu cuenta" (opcional). */
-  readonly intro?: string;
-  /** "¿Tenés un taller o un servicio? Sumá tu negocio" (por defecto, sí). */
-  readonly showJoin?: boolean;
   /** Cliente o proveedor al crear la cuenta (por defecto, `partner`). */
   readonly signupIntent?: SignupIntentMode;
 };
 
 /**
- * Paso de login de TODAS las pantallas privadas de negocios (reclamo, alta,
- * contratación, resultado y `/cuenta`): el panel único "Ingresá o creá tu
- * cuenta" (lienzo `Ingresar`) con el `<SignIn>` de Clerk adentro.
- * `routing="hash"` para no crear una ruta catch-all (211 D5) y redirección
- * forzada a la misma URL para no perder el plan, el `?next` o el código. La
- * apariencia sale del `ScopedClerkProvider` (`lib/auth/clerk-appearance.ts`).
+ * Isla del login de `/ingresar`: solo el widget de Clerk (el `<h1>`, la
+ * bajada y el panel de marca los pinta el server). `routing="hash"` para no
+ * crear una ruta catch-all (211 D5): la vuelta de Google entra por
+ * `/ingresar?redirect=…#/sso-callback`. Redirección forzada al destino para
+ * no perder el plan, el `?next` o el código. La apariencia sale del
+ * `ScopedClerkProvider` (`lib/auth/clerk-appearance.ts`).
  *
  * El intent de la cuenta nueva (`signupIntent`) viaja en `sessionStorage`
  * (`lib/auth/pending-signup-intent.ts`) y lo guarda `SignupIntentSync` apenas
- * hay sesión.
+ * hay sesión (en `/ingresar` o en la pantalla a la que vuelve).
  */
-export function PartnerSignIn({
-  head,
-  headSlot,
-  context,
-  redirectUrl,
-  loading = false,
-  intro,
-  showJoin,
-  signupIntent = SIGNUP_INTENTS.partner,
-}: PartnerSignInProps) {
+export function SignInWidget({ redirectUrl, signupIntent = SIGNUP_INTENTS.partner }: SignInWidgetProps) {
+  const { isLoaded } = useAuth();
+  const loading = !isLoaded;
   const ask = signupIntent === "ask";
 
   // Flujos sin pregunta: el intent queda pendiente mientras se ve el login.
@@ -76,20 +55,16 @@ export function PartnerSignIn({
     if (!loading && !ask) setPendingSignupIntent(signupIntent);
   }, [loading, ask, signupIntent]);
 
-  return (
-    <SignInLayout head={head} headSlot={headSlot} context={context} intro={intro} showJoin={showJoin}>
-      {ask ? (
-        <AccountEntry redirectUrl={redirectUrl} loading={loading} />
-      ) : (
-        <ClerkSlot kind="signIn" loading={loading}>
-          <SignIn routing="hash" withSignUp forceRedirectUrl={redirectUrl} signUpForceRedirectUrl={redirectUrl} />
-        </ClerkSlot>
-      )}
-    </SignInLayout>
+  return ask ? (
+    <AccountEntry redirectUrl={redirectUrl} loading={loading} />
+  ) : (
+    <ClerkSlot kind="signIn" loading={loading}>
+      <SignIn routing="hash" withSignUp forceRedirectUrl={redirectUrl} signUpForceRedirectUrl={redirectUrl} />
+    </ClerkSlot>
   );
 }
 
-const { entry, intentChoice } = partnerAccountContent;
+const { entry, intentChoice, signIn } = partnerAccountContent;
 
 type EntryMode = "signIn" | "choose" | "signUp";
 
@@ -237,5 +212,76 @@ function EntryToggle({
     >
       {children}
     </button>
+  );
+}
+
+/**
+ * Qué componente de Clerk ocupa el lugar, para reservarle el alto:
+ * - `signIn`: `<SignIn withSignUp>` de los flujos de proveedor (con el
+ *   "¿No tenés cuenta? Registrate" de Clerk al pie).
+ * - `signInBare`: el `<SignIn>` de `/cuenta`, sin ese pie (lo reemplazan
+ *   las pestañas "Ingresar" / "Crear cuenta").
+ * - `signUp`: el `<SignUp>` de `/cuenta`, sin pie.
+ */
+type ClerkSlotKind = "signIn" | "signInBare" | "signUp";
+
+/**
+ * Alto mínimo de cada widget de Clerk YA montado (primer paso: email,
+ * "Continuar", divisor, botones sociales y "Secured by Clerk"), medido con la
+ * apariencia de `lib/auth/clerk-appearance.ts`. Si cambia la apariencia, se
+ * vuelve a medir: si el widget queda más alto que la reserva, la línea legal
+ * y el footer saltan cuando Clerk monta.
+ */
+const slotHeights: Record<ClerkSlotKind, string> = {
+  // 280px medidos (2026-11-25) en los dos: el "¿No tenés cuenta?" del pie
+  // de Clerk no cambia el alto del primer paso.
+  signIn: "min-h-70",
+  signInBare: "min-h-70",
+  // 379px medidos: email, contraseña, "Continuar" y los botones sociales.
+  signUp: "min-h-95",
+};
+
+/**
+ * Lugar del widget de Clerk: reserva su alto mientras carga (`loading`, con
+ * un esqueleto quieto del formulario) y cuando monta, así nada de lo que
+ * sigue se mueve. El `<SignIn>` de Clerk llega vacío y se llena ~1s después.
+ */
+function ClerkSlot({
+  kind,
+  loading = false,
+  children,
+}: {
+  readonly kind: ClerkSlotKind;
+  readonly loading?: boolean;
+  readonly children?: React.ReactNode;
+}) {
+  return (
+    <div className={cn("flex flex-col", slotHeights[kind])}>
+      {loading ? <SignInLoading /> : children}
+    </div>
+  );
+}
+
+/**
+ * Mientras Clerk carga: el esqueleto del primer paso (label, email,
+ * "Continuar", divisor y los botones sociales), en los tonos de las líneas,
+ * sin animación. El texto queda para lectores de pantalla.
+ */
+function SignInLoading() {
+  return (
+    <div role="status" className="flex flex-col gap-4">
+      <span className="sr-only">{signIn.loading}</span>
+      <div aria-hidden="true" className="flex flex-col gap-1.5">
+        <span className="h-4 w-32 rounded-full bg-card-line" />
+        <span className="h-12 rounded-full border border-card-line bg-card" />
+      </div>
+      <span aria-hidden="true" className="h-12 rounded-full bg-card-line" />
+      <span aria-hidden="true" className="h-px bg-card-line" />
+      <div aria-hidden="true" className="grid grid-cols-3 gap-2">
+        <span className="h-12 rounded-full border border-card-line bg-card" />
+        <span className="h-12 rounded-full border border-card-line bg-card" />
+        <span className="h-12 rounded-full border border-card-line bg-card" />
+      </div>
+    </div>
   );
 }

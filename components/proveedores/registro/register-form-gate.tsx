@@ -2,17 +2,17 @@
 
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
+import { useSignInRedirect } from "@/components/auth/use-sign-in-redirect";
 import { PROVIDER_FORM_STEPS, ProviderForm } from "@/components/forms/provider-form";
-import { PartnerSignIn } from "@/components/proveedores/account/partner-sign-in";
 import { ExistingBusiness } from "@/components/proveedores/registro/existing-business";
 import { RegistrationStatus } from "@/components/proveedores/registro/registration-status";
 import { fetchOwnerPartners } from "@/lib/partner-billing/client";
 import { clearApplicationSent, hasSentApplication, markApplicationSent } from "@/lib/proveedores/application-hint";
 import { FlowMain, FlowShell } from "@/components/proveedores/flow/flow-shell";
-import { FlowSteps } from "@/components/proveedores/flow/flow-steps";
 import { useFlowSignOut } from "@/components/proveedores/flow/use-flow-sign-out";
 import { AltaLayout, AltaSkeleton } from "@/components/proveedores/registro/alta-layout";
 import type { ServiceFamilyOption } from "@/lib/autolibre-api";
+import { buildSignInHref } from "@/lib/auth/sign-in-redirect";
 import { planDisplayName } from "@/lib/content/partner-checkout";
 import { providersContent } from "@/lib/content/providers";
 import { parsePlanParam } from "@/lib/partner-billing/checkout";
@@ -56,10 +56,14 @@ function flowPath(checkout: { readonly href: string } | null): string {
 /**
  * El flujo del alta (lienzos `IngresarNegocio` y `Alta`), dentro del
  * `ScopedClerkProvider` que monta `RegistroFlow` recién cuando la persona
- * abre el flujo (la landing no carga Clerk). Pantalla de foco (`FlowShell`):
- * sin sesión, los tres pasos y el panel "Ingresá o creá tu cuenta" (vuelta
- * forzada a esta URL); con sesión, el formulario en pasos, que manda el
- * token de Clerk en cada envío.
+ * abre el flujo (la landing no carga Clerk). Pantalla de foco (`FlowShell`)
+ * con el formulario en pasos, que manda el token de Clerk en cada envío.
+ *
+ * El login es `/ingresar?redirect=<esta URL>`: los CTA de la landing ya
+ * linkean ahí (con sesión, `proxy.ts` devuelve directo al alta). `proxy.ts`
+ * NO corre en esta ruta (la landing es pública e indexable), así que si
+ * alguien abre `?alta=1` sin sesión, `useSignInRedirect` lo manda a
+ * `/ingresar` mientras se ve el esqueleto.
  *
  * Una vez que el formulario apareció, NO se desmonta aunque Clerk pase a "sin
  * sesión" (la sesión venció o se cerró en otra pestaña): desmontarlo borraría
@@ -114,19 +118,13 @@ export function RegisterFormGate({ serviceFamilies, next }: RegisterFormGateProp
     };
   }, [isSignedIn, userId, getToken]);
 
+  useSignInRedirect(isLoaded && !isSignedIn && !formShown, returnPath);
+
   if (!formShown && !isSignedIn) {
     return (
       <FlowShell helpMessage={flow.help.whatsappMessage} helpPlacement="registro_encabezado">
         <FlowMain>
-          <PartnerSignIn
-            intro={flow.signInIntro}
-            showJoin={false}
-            redirectUrl={returnPath}
-            loading={!isLoaded}
-            context={
-              <FlowSteps label={flow.signInSteps.label} steps={flow.signInSteps.items} current={0} className="flex-wrap" />
-            }
-          />
+          <AltaSkeleton />
         </FlowMain>
       </FlowShell>
     );
@@ -170,13 +168,13 @@ export function RegisterFormGate({ serviceFamilies, next }: RegisterFormGateProp
           totalSteps={PROVIDER_FORM_STEPS}
           done={done}
           accountName={user?.primaryEmailAddress?.emailAddress ?? user?.fullName ?? null}
-          onSwitchAccount={() => void session.leave(returnPath)}
+          onSwitchAccount={() => void session.leave(buildSignInHref(returnPath))}
           switching={session.pending}
         >
           <ProviderForm
             serviceFamilies={serviceFamilies}
             getToken={getToken}
-            reauthHref={returnPath}
+            reauthHref={buildSignInHref(returnPath)}
             checkout={checkout}
             step={step}
             onStepChange={setStep}

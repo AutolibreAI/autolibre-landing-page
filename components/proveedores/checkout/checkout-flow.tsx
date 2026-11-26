@@ -2,8 +2,8 @@
 
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useEffect, useRef, useState } from "react";
+import { useSignInRedirect } from "@/components/auth/use-sign-in-redirect";
 import { NoPartnerOptions } from "@/components/proveedores/account/no-partner-options";
-import { PartnerSignIn } from "@/components/proveedores/account/partner-sign-in";
 import { PrivateFlowHead } from "@/components/proveedores/account/private-flow";
 import {
   CheckoutFormView,
@@ -16,6 +16,7 @@ import { useFlowSignOut } from "@/components/proveedores/flow/use-flow-sign-out"
 import { Button } from "@/components/ui/button";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
+import { partnerAccountContent } from "@/lib/content/partner-account";
 import { partnerCheckoutContent } from "@/lib/content/partner-checkout";
 import { findPlan, validatePayerEmail, type PaidPlanCode } from "@/lib/partner-billing/checkout";
 import {
@@ -46,8 +47,10 @@ type CheckoutFlowProps = {
 /**
  * Isla client de `/proveedores/contratar` (spec 212; lienzos `Contratar` y
  * `ContratarMax`). Pinta la pantalla entera con el encabezado de foco
- * (`FlowShell`, con los pasos Tu taller · Plan · Pago): sin sesión, el panel
- * "Ingresá o creá tu cuenta"; con sesión, la contratación. La página (server)
+ * (`FlowShell`, con los pasos Tu taller · Plan · Pago). Sin sesión no se
+ * llega acá: `proxy.ts` manda a `/ingresar`. Mientras Clerk confirma la
+ * sesión, el encabezado y el "cargando"; si la sesión venció con la página
+ * abierta, de vuelta a `/ingresar` (`useSignInRedirect`). La página (server)
  * ya validó el plan.
  */
 export function CheckoutFlow({ planCode, planName, selfPath }: CheckoutFlowProps) {
@@ -57,6 +60,7 @@ export function CheckoutFlow({ planCode, planName, selfPath }: CheckoutFlowProps
   const [redirecting, setRedirecting] = useState(false);
   const signedIn = isLoaded && isSignedIn;
   const step = !signedIn ? STEP.partner : redirecting ? STEP.payment : STEP.plan;
+  useSignInRedirect(isLoaded && !isSignedIn, selfPath);
 
   return (
     <FlowShell
@@ -75,12 +79,12 @@ export function CheckoutFlow({ planCode, planName, selfPath }: CheckoutFlowProps
             onReauth={() => void session.leave(selfPath)}
           />
         ) : (
-          <PartnerSignIn
-            intro={content.signInIntro(planName)}
-            showJoin={false}
-            redirectUrl={selfPath}
-            loading={!isLoaded}
-          />
+          <div className="flex flex-col gap-6">
+            <PrivateFlowHead head={{ eyebrow: content.eyebrow, title: content.title(planName), intro: content.intro }} />
+            <p role="status" className="text-fg-muted">
+              {partnerAccountContent.sessionLoading}
+            </p>
+          </div>
         )}
       </FlowMain>
     </FlowShell>

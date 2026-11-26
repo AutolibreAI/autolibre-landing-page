@@ -21,7 +21,9 @@
     "test:partner-billing": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"scripts/partner-billing/**/*.test.ts\"",
     "typecheck:partner-billing": "tsc -p scripts/partner-billing/tsconfig.json",
     "test:signup-intent": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"scripts/signup-intent/**/*.test.ts\"",
-    "typecheck:signup-intent": "tsc -p scripts/signup-intent/tsconfig.json"
+    "typecheck:signup-intent": "tsc -p scripts/signup-intent/tsconfig.json",
+    "test:sign-in-redirect": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"scripts/sign-in-redirect/**/*.test.ts\"",
+    "typecheck:sign-in-redirect": "tsc -p scripts/sign-in-redirect/tsconfig.json"
   },
   "dependencies": {
     "@clerk/localizations": "^4.24.5",

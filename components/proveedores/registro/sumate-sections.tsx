@@ -6,6 +6,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Section } from "@/components/ui/section";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { buildSignInHref } from "@/lib/auth/sign-in-redirect";
 import { providersContent } from "@/lib/content/providers";
 import { providersPlansContent } from "@/lib/content/providers-plans";
 import { siteContent } from "@/lib/content/site";
@@ -21,6 +22,7 @@ import { whatsappUrl } from "@/lib/whatsapp";
 
 const { sumate } = providersContent;
 const { form } = providersContent;
+const REGISTER_HREF = buildSignInHref(PROVEEDORES_REGISTRO_ALTA_PATH);
 
 /** `h2` de sección del sistema AutoLibre AI. */
 const sectionTitle = "font-display text-3xl font-bold tracking-tight text-balance text-fg md:text-4xl";
@@ -28,9 +30,11 @@ const textLink =
   "font-semibold text-fg underline underline-offset-4 transition-colors hover:text-brand-hover motion-reduce:transition-none";
 
 /**
- * Link al flujo del alta (`?alta=1`). Misma ruta: la navegación es del lado
- * del cliente y la isla monta el flujo. Sin prefetch: el flujo trae Clerk y
- * no se baja hasta que la persona lo pide.
+ * Link al flujo del alta, que empieza por la cuenta: va a
+ * `/ingresar?redirect=/proveedores/registro?alta=1`. Con sesión, `proxy.ts`
+ * devuelve directo al alta (un 307, sin JS en esta landing para saber si hay
+ * sesión). Sin prefetch: `/ingresar` trae Clerk y no se baja hasta que la
+ * persona lo pide.
  */
 function RegisterLink({
   placement,
@@ -45,7 +49,7 @@ function RegisterLink({
 }) {
   return (
     <ButtonLink
-      href={PROVEEDORES_REGISTRO_ALTA_PATH}
+      href={REGISTER_HREF}
       prefetch={false}
       variant="primary"
       size={size}

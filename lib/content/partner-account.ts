@@ -15,12 +15,25 @@ export const partnerAccountContent = {
   },
 
   /**
-   * Panel único "Ingresá o creá tu cuenta" (rediseño 2026-11, lienzo
-   * `Ingresar`): el estado sin sesión de `/cuenta` y de los flujos privados.
-   * No hay cuenta "de proveedor" aparte: la misma sirve para pedir y para
-   * administrar un negocio.
+   * `/ingresar` (2026-11-26): el login dedicado, a pantalla completa, al que
+   * mandan `/cuenta` y los flujos privados sin sesión. No hay cuenta "de
+   * proveedor" aparte: la misma sirve para pedir y para administrar un
+   * negocio. La bajada cambia según adónde vuelve (`lib/content/sign-in.ts`).
    */
   ingresar: {
+    meta: {
+      title: "Ingresá a tu cuenta",
+      description:
+        "Ingresá o creá tu cuenta de AutoLibre para seguir los pedidos de tu auto o administrar tu negocio en la red.",
+    },
+    /** Panel de marca, al costado del formulario (arriba en celular). */
+    brand: {
+      home: "AutoLibre, ir al inicio",
+      logoAlt: "AutoLibre.AI",
+      /** Frase de marca vigente (PRODUCT.md). */
+      headline: "Todo tu auto, en un solo lugar.",
+      body: "AutoLibre junta la documentación, los vencimientos y el historial de tu auto, y te conecta con talleres y servicios de tu zona.",
+    },
     title: "Ingresá o creá tu cuenta",
     body: "Es la misma cuenta de la app de AutoLibre.",
     legalPrefix: "Al continuar aceptás los",
@@ -33,7 +46,7 @@ export const partnerAccountContent = {
         { strong: "Seguís tus pedidos", rest: " y las propuestas que te llegan para tu auto." },
         { strong: "Administrás tu negocio", rest: ", si tenés un taller o servicio en la red." },
       ],
-      /** Captura real de la app (sin marco: el bisel lo pone el componente). Solo desde `xl`. */
+      /** Captura real de la app (sin marco: el bisel lo pone el componente). Solo desde `lg`, en el panel de marca. */
       appShot: {
         src: "/screenshots/app-inicio.webp",
         width: 1170,
@@ -43,7 +56,12 @@ export const partnerAccountContent = {
     },
     joinPrefix: "¿Tenés un taller o un servicio?",
     join: "Sumá tu negocio",
+    /** La sesión venció con una pantalla privada abierta: se va a `/ingresar`. */
+    redirecting: "Llevándote al inicio de sesión…",
   },
+
+  /** Pantallas privadas mientras Clerk confirma la sesión (el proxy ya dejó pasar). */
+  sessionLoading: "Cargando tu cuenta…",
 
   /**
    * "Ingresar" / "Crear cuenta" del panel de `/cuenta` (registro: cliente o

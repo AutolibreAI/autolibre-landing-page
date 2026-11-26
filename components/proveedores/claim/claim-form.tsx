@@ -2,13 +2,15 @@
 
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useEffect, useRef, useState } from "react";
-import { PartnerSignIn } from "@/components/proveedores/account/partner-sign-in";
+import { useSignInRedirect } from "@/components/auth/use-sign-in-redirect";
+import { PrivateFlowHead } from "@/components/proveedores/account/private-flow";
 import { ClaimFormView, ClaimSuccessView } from "@/components/proveedores/claim/claim-views";
 import { FlowMain, FlowShell } from "@/components/proveedores/flow/flow-shell";
 import { useFlowSignOut } from "@/components/proveedores/flow/use-flow-sign-out";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { track } from "@/lib/analytics/track";
 import { syncRoleHint } from "@/lib/auth/role-hint";
+import { partnerAccountContent } from "@/lib/content/partner-account";
 import { partnerClaimContent } from "@/lib/content/partner-claim";
 import { fetchClaimedPartnerName, redeemClaimCode } from "@/lib/partner-claims/client";
 import { validateCode, type RedeemFailureKind } from "@/lib/partner-claims/redeem";
@@ -64,13 +66,14 @@ type ClaimFormProps = {
 
 /**
  * Isla client del canje (`/proveedores/reclamar`). Pinta la pantalla entera
- * con el encabezado de foco (`FlowShell`): sin sesión, el panel "Ingresá o
- * creá tu cuenta"; con sesión, el formulario (lienzos `Reclamar`,
- * `ReclamarError`) y, al canjear, el resultado (`ReclamarListo`).
+ * con el encabezado de foco (`FlowShell`): el formulario (lienzos `Reclamar`,
+ * `ReclamarError`) y, al canjear, el resultado (`ReclamarListo`). Sin sesión
+ * no se llega acá: `proxy.ts` (o `useSignInRedirect`, si venció con la
+ * página abierta) manda a `/ingresar?redirect=<esta URL>`.
  *
  * El código es estado de este componente y nunca se borra ante un error
- * (FR-012, FR-013): el login y el formulario son ramas del mismo componente,
- * así que volver a iniciar sesión no lo pierde.
+ * (FR-012, FR-013). Si hay que volver a iniciar sesión, viaja en
+ * `sessionStorage` (`savePendingCode`) y se recupera al volver.
  *
  * Al canjear, la persona pasa a ser dueña de un negocio: se escribe la pista
  * de rol del header público (`al_role`), igual que lo hace `/cuenta`.
@@ -139,6 +142,7 @@ export function ClaimForm({ continueHref = null, selfPath = PROVEEDORES_RECLAMAR
   }
 
   const signedIn = isLoaded && isSignedIn;
+  useSignInRedirect(isLoaded && !isSignedIn, selfPath);
 
   return (
     <FlowShell
@@ -148,12 +152,14 @@ export function ClaimForm({ continueHref = null, selfPath = PROVEEDORES_RECLAMAR
     >
       {!signedIn ? (
         <FlowMain>
-          <PartnerSignIn
-            intro={partnerClaimContent.signInIntro}
-            showJoin={false}
-            redirectUrl={selfPath}
-            loading={!isLoaded}
-          />
+          <div className="flex flex-col gap-6">
+            <PrivateFlowHead
+              head={{ eyebrow: partnerClaimContent.eyebrow, title: partnerClaimContent.title, intro: partnerClaimContent.intro }}
+            />
+            <p role="status" className="text-fg-muted">
+              {partnerAccountContent.sessionLoading}
+            </p>
+          </div>
         </FlowMain>
       ) : status.kind === "success" ? (
         <FlowMain>

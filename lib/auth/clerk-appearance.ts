@@ -14,7 +14,7 @@
  *   aplicara, las clases de `elements` cubren lo visible (botón primario,
  *   inputs, links), que es lo que importa.
  * - `elements`: la tarjeta de Clerk va transparente y sin borde ni sombra:
- *   la tarjeta es la nuestra (`SignInLayout`). Su encabezado (logo +
+ *   la pantalla es la nuestra (`SignInScreen`, `/ingresar`). Su encabezado (logo +
  *   "Continuar a …") va oculto: el título es el nuestro, uno solo.
  *
  * Rediseño 2026-11 (lienzo `Ingresar`, sistema AutoLibre AI): inputs y
@@ -31,7 +31,7 @@
  * `max-height: 2.25rem` de Clerk: `max-h-none` deja que tome los 48px. `unsafe_disableDevelopmentModeWarnings`
  * saca la franja "Development mode" (solo existe en desarrollo): así el
  * widget mide en dev lo mismo que en producción y la reserva de alto de
- * `ClerkSlot` (`private-flow.tsx`) vale para los dos.
+ * `ClerkSlot` (`components/auth/sign-in-widget.tsx`) vale para los dos.
  *
  * API verificada en los tipos de `@clerk/react` (`Variables`, `Elements`,
  * `Options`, `GlobalAppearanceOptions.cssLayerName`) de la versión instalada.
