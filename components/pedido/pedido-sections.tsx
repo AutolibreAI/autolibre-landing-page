@@ -212,8 +212,10 @@ export function PedidoExample() {
     </div>
   );
 
+  // `key`: slot que la isla monta entre hermanos (ver AGENTS.md, "Slots").
   const appTag = (
     <p
+      key="app-tag"
       className={`${tag} right-4 bg-action text-card ring-1 ring-on-dark-subtle`}
     >
       <Icon

@@ -112,6 +112,9 @@ export function ModuloPedido({
     "data-analytics-tab": tab,
   });
 
+  // Todo elemento que viaja como prop a `ModuloForm` lleva `key`: la isla los
+  // monta entre hermanos y RSC los valida como hijos de una lista (ver
+  // AGENTS.md, "Slots de Server a Client").
   const tallerPanel = (
     <ModuloForm
       idPrefix={idPrefix}
@@ -128,8 +131,7 @@ export function ModuloPedido({
       chips={taller.chips.items.map((chip) => ({
         id: chip.id,
         label: chip.label,
-        // `key`: el elemento viaja dentro de un array de props hacia la isla
-        // client y React (RSC) lo valida como hijo de una lista.
+        // `key`: slot que la isla monta entre hermanos (ver AGENTS.md, "Slots").
         icon: (
           <Image
             key={chip.id}
@@ -143,7 +145,7 @@ export function ModuloPedido({
         ),
       }))}
       whatsapp={
-        <p className="flex flex-wrap items-center justify-center gap-x-3.5 gap-y-2 text-control text-fg-muted">
+        <p key="whatsapp" className="flex flex-wrap items-center justify-center gap-x-3.5 gap-y-2 text-control text-fg-muted">
           {taller.whatsapp.prompt}
           <ButtonAnchor
             href={whatsappUrl(taller.whatsapp.text)}
@@ -161,6 +163,7 @@ export function ModuloPedido({
         // En otra pestaña: salir de acá perdería lo que la persona cargó.
         terms: (
           <Link
+            key="terms"
             href="/terminos"
             target="_blank"
             className="font-semibold text-fg underline underline-offset-4 hover:text-brand-hover"
@@ -171,6 +174,7 @@ export function ModuloPedido({
         ),
         privacy: (
           <Link
+            key="privacy"
             href="/privacidad"
             target="_blank"
             className="font-semibold text-fg underline underline-offset-4 hover:text-brand-hover"
@@ -182,6 +186,7 @@ export function ModuloPedido({
       }}
       sentIcon={
         <span
+          key="sent-icon"
           aria-hidden="true"
           className="flex size-13 shrink-0 items-center justify-center rounded-full bg-brand-50 text-action"
         >
@@ -191,6 +196,7 @@ export function ModuloPedido({
       appLinked={APP_VINCULADA}
       appPromo={
         <ModuloAppPromo
+          key="app-promo"
           placement={placement}
           headingLevel={headingLevel === "h2" ? "h3" : "h4"}
         />
