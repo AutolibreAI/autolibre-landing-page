@@ -17,7 +17,7 @@ Datos clave:
 - Servicios que se pueden pedir: talleres, multas (pago con descuento o presentación del descargo) y repuestos; auxilio mecánico con el aliado Asistir24. Seguros: no se ofrecen por ahora desde la web. Financiamiento: próximamente, todavía no disponible.
 - Patente y VTV: consulta de deuda de patente del auto y turnos para la VTV.
 - Una sola cuenta admite varios autos.
-- Empresa: AutoLibre nació en febrero de 2026 en Buenos Aires como una idea de Nicolás Leunda y Ramiro Sarasola. Cofundadores: Nicolás Leunda (CEO), Matías García Guevara (CFO), Ramiro Sarasola (líder de desarrollo), Mateo Ghidini (desarrollo) y Matías Vidal (legal e inversores).
+- Empresa: AutoLibre nació en febrero de 2026 en Buenos Aires como una idea de Nicolás Leunda y Ramiro Sarasola. Cofundadores: Nicolás Leunda (CEO), Matías García Guevara (CFO), Ramiro Sarasola (líder de desarrollo), Mateo Ghidini (desarrollo) y Matías Vidal (inversor).
 - Lanzamiento: la app salió en App Store y Google Play el 8 de agosto de 2026.
 - Contacto: contact@autolibre.ai · WhatsApp +54 9 11 7280-4347
 
