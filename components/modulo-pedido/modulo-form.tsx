@@ -1,21 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
-import {
-  FIELD_STATUS_PADDING,
-  FieldStatusIcon,
-  type FieldStatus,
-} from "@/components/ui/field-status-icon";
-import { pillInputVariants } from "@/components/ui/pill-input";
-import { WhatsappInput } from "@/components/ui/whatsapp-input";
 import {
   placesDropdownOpen,
   postQuoteRequest,
   usePlacesAutocomplete,
   usePlateLookup,
-  type PlateCheck,
 } from "@/components/pedido/pedido-client";
 // Estilos del dropdown de Google Places: CSS global porque Google cuelga el
 // listbox de <body>, fuera del árbol de React.
@@ -33,12 +25,20 @@ import { createMetaEventId } from "@/lib/analytics/meta-pixel";
 import { getPostHogIds } from "@/lib/analytics/posthog";
 import { track } from "@/lib/analytics/track";
 import type { moduloPedidoContent } from "@/lib/content/modulo-pedido";
+import type { RequestFlowContent } from "@/lib/content/request-flow";
 import { whatsappErrorMessage } from "@/lib/content/whatsapp-errors";
 import { EMPTY_GEO, type PlaceGeo } from "@/lib/google-places";
 import { takePedidoPrefill } from "@/lib/pedido-prefill";
 import { parseArWhatsapp } from "@/lib/phone";
-import { isValidPlate, normalizePlateInput } from "@/lib/plate";
+import { isValidPlate } from "@/lib/plate";
+import type { QuoteDetails } from "@/lib/quote-details";
 import { cn } from "@/lib/utils";
+import {
+  RequestFlowOverlay,
+  type ContactField,
+  type RequestFlowCloseReason,
+  type RequestFlowSubmitResult,
+} from "./request-flow-overlay";
 import { useRotatingPlaceholder } from "./use-rotating-placeholder";
 
 type TallerContent = (typeof moduloPedidoContent)["taller"];
@@ -51,6 +51,8 @@ export type ModuloFormCopy = {
   readonly chipsLabel: string;
   readonly contact: TallerContent["contact"];
   readonly sent: TallerContent["sent"];
+  /** Paso final (`RequestFlowOverlay`). */
+  readonly requestFlow: RequestFlowContent;
 };
 
 export type ModuloChip = {
@@ -63,18 +65,16 @@ export type ModuloChip = {
 type ModuloFormProps = {
   readonly idPrefix: string;
   readonly placement: QuoteModulePlacement;
-  /** Nivel de los títulos del paso 2 y del enviado: lo decide la página. */
-  readonly headingLevel: "h2" | "h3";
   readonly copy: ModuloFormCopy;
   readonly chips: readonly ModuloChip[];
   /** "¿Preferís chatear?" + WhatsApp (server, medido por `data-analytics-*`). */
   readonly whatsapp: React.ReactNode;
   /** Links a `/terminos` y `/privacidad` del consentimiento (server). */
   readonly consentLinks: { readonly terms: React.ReactNode; readonly privacy: React.ReactNode };
-  /** Ícono del estado enviado (server). */
+  /** Ícono de la confirmación (server). */
   readonly sentIcon: React.ReactNode;
   /**
-   * Bloque de la app del estado enviado (`ModuloAppPromo`, server): capturas,
+   * Bloque de la app de la confirmación (`ModuloAppPromo`, server): capturas,
    * QR y tiendas. Se monta recién al enviar; hasta ahí sus imágenes no se
    * piden.
    */
@@ -88,8 +88,8 @@ type Values = Record<FieldName, string>;
 type Errors = Partial<Record<FieldName | "consent", string>>;
 
 const EMPTY_VALUES: Values = { problema: "", zona: "", whatsapp: "", patente: "" };
-const STEP_1_FIELDS: readonly FieldName[] = ["problema", "zona"];
-const STEP_2_FIELDS: readonly FieldName[] = ["whatsapp", "patente"];
+const BAR_FIELDS = ["problema", "zona"] as const;
+const CONTACT_FIELDS = ["whatsapp", "patente"] as const;
 
 type Status =
   | { kind: "idle" }
@@ -97,22 +97,21 @@ type Status =
   | { kind: "error"; message: string };
 
 /**
- * Pestaña Taller del módulo de pedido: el único camino del módulo que
- * registra un pedido en el backend (`/api/presupuesto`, el mismo body que el
- * form de `/pedido`).
+ * Pestaña Taller del módulo de pedido (Home y `/pedido`): el único camino del
+ * módulo que registra un pedido en el backend (`/api/presupuesto`).
  *
- * Tres estados en el mismo lugar, siempre por acción de la persona (un
- * click o un Enter: el cambio de alto no cuenta como CLS):
- *
- * 1. "¿Qué le pasa?" (placeholder con ejemplos que rotan) + "¿Dónde
- *    estás?" + "Pedir propuestas"; debajo, la salida por WhatsApp y los
- *    chips de "Lo más pedido".
- * 2. Resumen + WhatsApp + patente opcional (recomendada) + consentimiento
+ * 1. En la página: "¿Qué le pasa?" (placeholder con ejemplos que rotan) +
+ *    "¿Dónde estás?" + "Pedir propuestas"; debajo, la salida por WhatsApp y
+ *    los chips de "Lo más pedido".
+ * 2. "Pedir propuestas" (con los dos campos completos) abre
+ *    `RequestFlowOverlay`: la página se limpia, la barra sube y suma para
+ *    cuándo, repuestos, kilometraje, patente, WhatsApp y consentimiento
  *    (checkbox desmarcado y obligatorio, decisión de producto del
- *    2026-11-24) + "Enviar pedido".
- * 3. Enviado.
+ *    2026-11-24). El envío y la confirmación pasan ahí adentro; "Volver al
+ *    inicio" deja el módulo vacío otra vez (`reset`).
  *
- * Reglas y lógica del form viejo de `/pedido`, en `pedido-client.ts`: misma
+ * El estado (valores, validación, lookup de la patente, envío y medición)
+ * vive acá; la capa solo pinta y anima. Reglas de `pedido-client.ts`: misma
  * validación del WhatsApp (`parseArWhatsapp`) y de la patente
  * (`isValidPlate`), lookup de la patente en clasific.ar al salir del campo
  * (nunca bloquea el envío), Google Places recién al enfocar "¿Dónde estás?".
@@ -120,7 +119,6 @@ type Status =
 export function ModuloForm({
   idPrefix,
   placement,
-  headingLevel: Heading,
   copy,
   chips,
   whatsapp,
@@ -129,10 +127,9 @@ export function ModuloForm({
   appPromo,
   appLinked,
 }: ModuloFormProps) {
-  const [step, setStep] = useState<1 | 2 | "sent">(1);
   const [values, setValues] = useState<Values>(EMPTY_VALUES);
   const [geo, setGeo] = useState<PlaceGeo>(EMPTY_GEO);
-  const [attempted, setAttempted] = useState<{ 1: boolean; 2: boolean }>({ 1: false, 2: false });
+  const [attempted, setAttempted] = useState({ bar: false, contact: false });
   const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [publicCode, setPublicCode] = useState<string | null>(null);
@@ -145,34 +142,28 @@ export function ModuloForm({
     copy.problema.placeholders,
     problemaFocused || values.problema !== "",
   );
+  // Pantalla limpia: `overlayFrom` es la foto de la barra al tocar "Pedir
+  // propuestas" (el "First" del FLIP); `null` = cerrada.
+  const [overlayFrom, setOverlayFrom] = useState<DOMRect | null>(null);
+  // La confirmación ya se ve adentro de la capa (mide el bloque de la app).
+  const [sentShown, setSentShown] = useState(false);
 
   const problemaRef = useRef<HTMLInputElement>(null);
   const zonaRef = useRef<HTMLInputElement>(null);
-  const whatsappRef = useRef<HTMLInputElement>(null);
-  const patenteRef = useRef<HTMLInputElement>(null);
-  const consentRef = useRef<HTMLInputElement>(null);
-  const headingRef = useRef<HTMLHeadingElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+  const nextButtonRef = useRef<HTMLButtonElement>(null);
   const sentRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
   const step2TrackedRef = useRef(false);
-  // A dónde va el foco después del próximo cambio de paso.
-  const focusAfterRef = useRef<"heading" | "problema" | null>(null);
+  // A dónde vuelve el foco al cerrar la capa.
+  const focusAfterOverlayRef = useRef<"next" | "problema" | null>(null);
 
   const ids = {
     problema: `${idPrefix}-que`,
     zona: `${idPrefix}-zona`,
-    whatsapp: `${idPrefix}-whatsapp`,
-    patente: `${idPrefix}-patente`,
-    consent: `${idPrefix}-consentimiento`,
     chips: `${idPrefix}-chips`,
-    heading: `${idPrefix}-paso`,
   };
-  const fieldRefs: Record<FieldName, React.RefObject<HTMLInputElement | null>> = {
-    problema: problemaRef,
-    zona: zonaRef,
-    whatsapp: whatsappRef,
-    patente: patenteRef,
-  };
+  const barRefs = { problema: problemaRef, zona: zonaRef };
 
   const ensurePlaces = usePlacesAutocomplete(zonaRef, (selection) => {
     setValues((current) => ({ ...current, zona: selection.value }));
@@ -180,6 +171,9 @@ export function ModuloForm({
   });
   const { plateCheck, startPlateLookup, snapshotForSubmit, abortPlateLookup } =
     usePlateLookup(values.patente);
+
+  // Estable: la capa lo usa en su listener de resize.
+  const getBarRect = useCallback(() => barRef.current?.getBoundingClientRect() ?? null, []);
 
   // Lo que la persona escribió en la banda del directorio o en el perfil de
   // un proveedor (`lib/pedido-prefill.ts`). Solo completa el campo: no mueve
@@ -194,21 +188,22 @@ export function ModuloForm({
     if (prefill) setValues((current) => (current.problema ? current : { ...current, problema: prefill }));
   }, []);
 
-  // Foco después de cambiar de paso: el título nuevo (que se lee) o, al
-  // volver, "¿Qué le pasa?".
+  // Foco al cerrar la capa. En un efecto: recién acá la capa ya sacó el
+  // `inert` de la página.
   useEffect(() => {
-    const target = focusAfterRef.current;
-    focusAfterRef.current = null;
-    if (target === "heading") headingRef.current?.focus();
-    if (target === "problema") problemaRef.current?.focus();
-  }, [step]);
+    if (overlayFrom) return;
+    const target = focusAfterOverlayRef.current;
+    focusAfterOverlayRef.current = null;
+    if (target === "next") nextButtonRef.current?.focus({ preventScroll: true });
+    if (target === "problema") problemaRef.current?.focus({ preventScroll: true });
+  }, [overlayFrom]);
 
-  // Enviado: `pedido_app_promo_view` al aparecer el bloque de la app y
+  // Confirmación: `pedido_app_promo_view` al aparecer el bloque de la app y
   // `qr_view` cuando el QR entra en pantalla (solo existe desde `lg`: con
   // `display: none` el observer nunca lo ve, así que en celular no sale).
-  // Una vez por envío: "Hacer otro pedido" desmonta el bloque.
+  // Una vez por envío: "Volver al inicio" desmonta el bloque.
   useEffect(() => {
-    if (step !== "sent") return;
+    if (!sentShown) return;
     track(ANALYTICS_EVENTS.pedidoAppPromoView, { placement, app_linked: appLinked });
     const qr = sentRef.current?.querySelector("[data-qr-view]");
     if (!qr || typeof IntersectionObserver === "undefined") return;
@@ -222,9 +217,9 @@ export function ModuloForm({
     );
     observer.observe(qr);
     return () => observer.disconnect();
-  }, [step, placement, appLinked]);
+  }, [sentShown, placement, appLinked]);
 
-  // ── Validación (misma regla que `/pedido`) ─────────────────────────────
+  // ── Validación ─────────────────────────────────────────────────────────
 
   const allErrors: Errors = {};
   if (!values.problema.trim()) allErrors.problema = copy.problema.error;
@@ -235,18 +230,17 @@ export function ModuloForm({
     allErrors.patente = copy.contact.patente.error;
   }
   if (!consent) allErrors.consent = copy.contact.consent.error;
-  // Un error se ve después del primer intento de su paso o, en WhatsApp y
+  // Un error se ve después del primer intento de su parte o, en WhatsApp y
   // patente, después de salir del campo. Desde ahí se corrige en vivo.
   const errors: Errors = {};
-  for (const name of STEP_1_FIELDS) {
-    if (allErrors[name] && attempted[1]) errors[name] = allErrors[name];
+  for (const name of BAR_FIELDS) {
+    if (allErrors[name] && attempted.bar) errors[name] = allErrors[name];
   }
-  for (const name of STEP_2_FIELDS) {
-    if (allErrors[name] && (attempted[2] || touched[name])) errors[name] = allErrors[name];
+  for (const name of CONTACT_FIELDS) {
+    if (allErrors[name] && (attempted.contact || touched[name])) errors[name] = allErrors[name];
   }
-  // El del consentimiento, solo después de intentar enviar (aparece por
-  // interacción: no cuenta como CLS).
-  if (allErrors.consent && attempted[2]) errors.consent = allErrors.consent;
+  // El del consentimiento, solo después de intentar enviar.
+  if (allErrors.consent && attempted.contact) errors.consent = allErrors.consent;
 
   // ── Medición ───────────────────────────────────────────────────────────
 
@@ -281,26 +275,25 @@ export function ModuloForm({
     track(ANALYTICS_EVENTS.quoteChipClicked, { chip: chip.id, placement, selected });
   }
 
-  function goToStep2(event: React.FormEvent<HTMLFormElement>) {
+  /** "Pedir propuestas": valida la barra y abre la pantalla limpia. */
+  function openRequestFlow(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setAttempted((current) => ({ ...current, 1: true }));
-    const firstInvalid = STEP_1_FIELDS.find((name) => allErrors[name]);
+    setAttempted((current) => ({ ...current, bar: true }));
+    const firstInvalid = BAR_FIELDS.find((name) => allErrors[name]);
     if (firstInvalid) {
-      fieldRefs[firstInvalid].current?.focus();
+      barRefs[firstInvalid].current?.focus();
       return;
     }
+    const barRect = barRef.current?.getBoundingClientRect();
+    if (!barRect) return;
     markStarted();
+    // Sigue siendo el paso 2 del embudo (`quote_step_viewed`), una vez por montaje.
     if (!step2TrackedRef.current) {
       step2TrackedRef.current = true;
       track(ANALYTICS_EVENTS.quoteStepViewed, { flow: QUOTE_FLOWS.page, step: 2, ...moduleProps });
     }
-    focusAfterRef.current = "heading";
-    setStep(2);
-  }
-
-  function backToStep1() {
-    focusAfterRef.current = "problema";
-    setStep(1);
+    setStatus({ kind: "idle" });
+    setOverlayFrom(barRect);
   }
 
   function handleBlur(name: "whatsapp" | "patente") {
@@ -309,21 +302,42 @@ export function ModuloForm({
     if (name === "patente" && isValidPlate(values.patente)) startPlateLookup(values.patente);
   }
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (status.kind === "submitting") return;
+  /** Valida el contacto y, si está todo bien, envía con los detalles. */
+  async function submitRequest(details: QuoteDetails): Promise<RequestFlowSubmitResult> {
+    if (status.kind === "submitting") return { ok: false };
+    setAttempted((current) => ({ ...current, contact: true }));
+    const invalid: ContactField | undefined =
+      CONTACT_FIELDS.find((name) => allErrors[name]) ?? (consent ? undefined : "consent");
+    if (invalid) return { ok: false, invalid };
+    return { ok: await sendQuote(details) };
+  }
 
-    setAttempted((current) => ({ ...current, 2: true }));
-    const firstInvalid = STEP_2_FIELDS.find((name) => allErrors[name]);
-    if (firstInvalid) {
-      fieldRefs[firstInvalid].current?.focus();
-      return;
-    }
-    if (!consent) {
-      consentRef.current?.focus();
-      return;
-    }
+  /** Vuelve todo a cero: la barra vacía, como recién llegada la página. */
+  function reset() {
+    setValues(EMPTY_VALUES);
+    setGeo(EMPTY_GEO);
+    setAttempted({ bar: false, contact: false });
+    setTouched({});
+    setPublicCode(null);
+    setConsent(false);
+    setStatus({ kind: "idle" });
+  }
 
+  function onOverlayClosed(reason: RequestFlowCloseReason) {
+    if (reason === "done") {
+      // Después de enviar: módulo vacío para otro pedido, foco a "¿Qué le pasa?".
+      reset();
+      setSentShown(false);
+    }
+    focusAfterOverlayRef.current = reason === "close" ? "next" : "problema";
+    setOverlayFrom(null);
+  }
+
+  /**
+   * Manda el pedido a `/api/presupuesto` con los detalles y mide el
+   * resultado. `true` si quedó registrado.
+   */
+  async function sendQuote(details: QuoteDetails): Promise<boolean> {
     setStatus({ kind: "submitting" });
     // Mismo ID para el `Lead` del Pixel y el de la Conversions API.
     const metaEventId = createMetaEventId();
@@ -346,6 +360,9 @@ export function ModuloForm({
       province: geo.province,
       // El valor real del checkbox (acá siempre `true`: sin él no se llega).
       consent,
+      // Para cuándo, repuestos y km. La route solo los pasa al backend con
+      // `QUOTE_DETAILS_ENABLED`.
+      ...details,
       metaEventId,
       // Solo para PostHog (los consume la route; al backend no llegan).
       quoteFlow: QUOTE_FLOWS.page,
@@ -367,7 +384,7 @@ export function ModuloForm({
         kind: "error",
         message: (result.reason === "server" && result.message) || copy.contact.genericError,
       });
-      return;
+      return false;
     }
 
     abortPlateLookup();
@@ -382,283 +399,13 @@ export function ModuloForm({
     );
     setPublicCode(result.publicCode);
     setStatus({ kind: "idle" });
-    focusAfterRef.current = "heading";
-    setStep("sent");
+    return true;
   }
 
-  function reset() {
-    setValues(EMPTY_VALUES);
-    setGeo(EMPTY_GEO);
-    setAttempted({ 1: false, 2: false });
-    setTouched({});
-    setPublicCode(null);
-    setConsent(false);
-    focusAfterRef.current = "problema";
-    setStep(1);
-  }
+  const describedBy = (name: (typeof BAR_FIELDS)[number]) =>
+    errors[name] ? `${ids[name]}-error` : undefined;
 
-  const describedBy = (name: FieldName | "consent", ...extra: (string | false | undefined)[]) =>
-    [...extra, errors[name] ? `${ids[name]}-error` : null].filter(Boolean).join(" ") ||
-    undefined;
-
-  // ── Enviado ────────────────────────────────────────────────────────────
-
-  if (step === "sent") {
-    const { code } = copy.sent;
-    return (
-      // `overflow-clip` y no `overflow-hidden` (PRODUCT.md): recorta las
-      // esquinas del bloque de la app sin crear un contenedor de scroll.
-      <div
-        ref={sentRef}
-        className="overflow-clip rounded-panel border border-control-line bg-card text-left"
-      >
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-3.5 p-5 md:p-7">
-          {sentIcon}
-          {/* La confirmación es la región de estado; el foco va a su título. */}
-          <div role="status" className="min-w-0 flex-1 basis-80">
-            <Heading
-              id={ids.heading}
-              ref={headingRef}
-              tabIndex={-1}
-              className="font-display text-xl leading-tight font-bold text-fg outline-none md:text-2xl"
-            >
-              {copy.sent.title}
-            </Heading>
-            <p className="mt-1.5 text-base text-fg-muted">
-              {/* Solo el código real que devolvió el envío; sin él, no va. */}
-              {publicCode ? (
-                <>
-                  {code.before}
-                  <strong className="font-semibold text-fg tabular-nums">
-                    {code.prefix}
-                    {publicCode}
-                  </strong>
-                  {code.after}
-                </>
-              ) : null}
-              {copy.sent.body}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={reset}
-            className="min-h-11 shrink-0 px-1 text-sm font-semibold text-fg-muted underline underline-offset-4 hover:text-fg"
-          >
-            {copy.sent.again}
-          </button>
-        </div>
-        {appPromo}
-      </div>
-    );
-  }
-
-  // ── Paso 2: WhatsApp y patente ─────────────────────────────────────────
-
-  if (step === 2) {
-    const submitting = status.kind === "submitting";
-    const plateNow =
-      plateCheck.kind !== "idle" && plateCheck.plate === values.patente ? plateCheck : null;
-    const plateStatus: FieldStatus = errors.patente
-      ? "invalid"
-      : plateNow?.kind === "validating"
-        ? "validating"
-        : plateNow?.kind === "valid"
-          ? "valid"
-          : plateNow?.kind === "unverified"
-            ? "notice"
-            : "idle";
-    const whatsappStatus: FieldStatus = errors.whatsapp
-      ? "invalid"
-      : touched.whatsapp || attempted[2]
-        ? "valid"
-        : "idle";
-    const c = copy.contact;
-
-    return (
-      <div className="flex flex-col gap-4 rounded-panel border border-control-line bg-card p-5 text-left md:p-7">
-        <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1">
-          {/* `ph-no-capture`: lo que escribió la persona, fuera de un input,
-              queda fuera de la grabación de sesiones. */}
-          <p className="ph-no-capture inline-flex min-w-0 items-center rounded-full bg-brand-50 px-3 py-1.5 text-sm font-semibold break-words text-action">
-            <span className="sr-only">{c.summaryLabel} </span>
-            {values.problema.trim()} · {values.zona.trim()}
-          </p>
-          <button
-            type="button"
-            onClick={backToStep1}
-            className="min-h-11 text-sm font-semibold text-fg-muted underline underline-offset-4 hover:text-fg"
-          >
-            {c.change}
-          </button>
-        </div>
-
-        <Heading
-          id={ids.heading}
-          ref={headingRef}
-          tabIndex={-1}
-          className="font-display text-xl font-bold text-fg outline-none md:text-2xl"
-        >
-          {c.title}
-        </Heading>
-
-        <form noValidate onSubmit={submit} aria-labelledby={ids.heading} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-3 md:flex-row md:items-start">
-            {/* WhatsApp: un solo control visual, el `+54` es parte del campo. */}
-            <div className="flex min-w-0 flex-col gap-1.5 md:flex-2">
-              <label htmlFor={ids.whatsapp} className="text-label font-semibold text-fg">
-                {c.whatsapp.label}
-              </label>
-              <div
-                className={cn(
-                  "flex h-14 overflow-clip rounded-full border bg-card transition-colors motion-reduce:transition-none",
-                  "outline-brand has-focus-visible:border-action has-focus-visible:outline-2 has-focus-visible:outline-offset-2",
-                  errors.whatsapp ? "border-status-alert" : "border-control-line-strong hover:border-fg-muted",
-                )}
-              >
-                <span
-                  id={`${ids.whatsapp}-prefix`}
-                  className="flex shrink-0 items-center border-r border-control-line bg-card-muted pr-3 pl-5 text-base text-fg-muted"
-                >
-                  <span aria-hidden="true">{c.whatsapp.prefix}</span>
-                  <span className="sr-only">{c.whatsapp.prefixLabel}</span>
-                </span>
-                <div className="relative min-w-0 flex-1">
-                  <WhatsappInput
-                    id={ids.whatsapp}
-                    ref={whatsappRef}
-                    autoComplete="tel-national"
-                    required
-                    value={values.whatsapp}
-                    onValueChange={(value) => setField("whatsapp", value)}
-                    onBlur={() => handleBlur("whatsapp")}
-                    placeholder={c.whatsapp.placeholder}
-                    aria-invalid={errors.whatsapp ? true : undefined}
-                    aria-describedby={describedBy("whatsapp", `${ids.whatsapp}-prefix`)}
-                    className={cn(
-                      "h-full rounded-none border-0 bg-transparent py-0 pl-3 text-base text-fg placeholder:text-fg-subtle",
-                      FIELD_STATUS_PADDING,
-                    )}
-                  />
-                  <FieldStatusIcon status={whatsappStatus} />
-                </div>
-              </div>
-              {errors.whatsapp ? (
-                <p id={`${ids.whatsapp}-error`} className="px-5 text-label font-medium text-status-alert">
-                  {errors.whatsapp}
-                </p>
-              ) : null}
-            </div>
-
-            {/* Patente: opcional pero recomendada. */}
-            <div className="flex min-w-0 flex-col gap-1.5 md:flex-1">
-              <label htmlFor={ids.patente} className="text-label font-semibold text-fg">
-                {c.patente.label} <span className="font-normal">{c.patente.optional}</span>
-              </label>
-              <div className="relative">
-                <input
-                  id={ids.patente}
-                  ref={patenteRef}
-                  type="text"
-                  value={values.patente}
-                  onChange={(event) => setField("patente", normalizePlateInput(event.target.value))}
-                  onBlur={() => handleBlur("patente")}
-                  placeholder={c.patente.placeholder}
-                  maxLength={9}
-                  autoComplete="off"
-                  autoCapitalize="characters"
-                  spellCheck={false}
-                  aria-invalid={errors.patente ? true : undefined}
-                  aria-busy={plateStatus === "validating" || undefined}
-                  aria-describedby={describedBy(
-                    "patente",
-                    `${ids.patente}-hint`,
-                    `${ids.patente}-status`,
-                  )}
-                  className={cn(
-                    pillInputVariants({ size: "56" }),
-                    FIELD_STATUS_PADDING,
-                    "tracking-wide uppercase placeholder:normal-case",
-                  )}
-                />
-                <FieldStatusIcon status={plateStatus} />
-              </div>
-              {errors.patente ? (
-                <p id={`${ids.patente}-error`} className="px-5 text-label font-medium text-status-alert">
-                  {errors.patente}
-                </p>
-              ) : null}
-            </div>
-
-          </div>
-
-          <p id={`${ids.patente}-hint`} className="text-label text-fg-muted">
-            {c.patente.hint}
-          </p>
-          <PlateStatus id={`${ids.patente}-status`} check={plateCheck} plate={values.patente} copy={c.patente.status} />
-
-          {/* Consentimiento: checkbox nativo desmarcado y obligatorio. Todo el
-              renglón es el label (objetivo táctil de 44px o más). Los links
-              abren en otra pestaña y no marcan el checkbox. */}
-          <div className="flex flex-col gap-1">
-            <label
-              htmlFor={ids.consent}
-              className="flex min-h-11 cursor-pointer items-start gap-3 py-2 text-sm text-fg-muted"
-            >
-              <input
-                id={ids.consent}
-                ref={consentRef}
-                type="checkbox"
-                checked={consent}
-                onChange={(event) => setConsent(event.target.checked)}
-                required
-                aria-invalid={errors.consent ? true : undefined}
-                aria-describedby={describedBy("consent")}
-                className="mt-0.5 size-5 shrink-0 cursor-pointer accent-action"
-              />
-              <span>
-                {c.consent.prefix}
-                {consentLinks.terms}
-                {c.consent.middle}
-                {consentLinks.privacy}
-                {c.consent.suffix}
-              </span>
-            </label>
-            {errors.consent ? (
-              <p id={`${ids.consent}-error`} className="pl-8 text-label font-medium text-status-alert">
-                {errors.consent}
-              </p>
-            ) : null}
-          </div>
-
-          {/* Siempre en el DOM (vacía en reposo): si se montara junto con el
-              texto, el lector de pantalla no anunciaría el error. */}
-          <div aria-live="assertive">
-            {status.kind === "error" ? (
-              <p className="text-sm font-medium text-status-alert">{status.message}</p>
-            ) : null}
-          </div>
-
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <p className="text-label text-fg-muted">{c.note}</p>
-            <Button
-              type="submit"
-              variant="primary"
-              size="56"
-              className="max-md:w-full md:shrink-0"
-              disabled={submitting}
-              aria-busy={submitting || undefined}
-            >
-              {submitting ? c.submitting : c.submit}
-            </Button>
-          </div>
-        </form>
-      </div>
-    );
-  }
-
-  // ── Paso 1: qué le pasa y dónde ────────────────────────────────────────
-
-  const step1Errors = STEP_1_FIELDS.filter((name) => errors[name]);
+  const barErrors = BAR_FIELDS.filter((name) => errors[name]);
   // Celda de un campo dentro de la barra: el anillo de foco va en la celda
   // (el input no tiene borde propio). Anillo hacia adentro: en celular la
   // tarjeta recorta lo que sale de sus bordes redondeados.
@@ -669,12 +416,13 @@ export function ModuloForm({
 
   return (
     <div className="flex flex-col gap-4.5">
-      <form noValidate onSubmit={goToStep2} onFocusCapture={onFocusCapture}>
+      <form noValidate onSubmit={openRequestFlow} onFocusCapture={onFocusCapture}>
         <div
+          ref={barRef}
           className={cn(
             "flex flex-col overflow-hidden rounded-panel border bg-card",
             "md:h-18 md:flex-row md:items-center md:overflow-visible md:rounded-full md:pr-2",
-            step1Errors.length > 0 ? "border-status-alert" : "border-control-line-strong",
+            barErrors.length > 0 ? "border-status-alert" : "border-control-line-strong",
           )}
         >
           <div className={cn(cell, "border-b border-card-line px-4.5 pt-3 pb-2.5 md:min-w-0 md:flex-8 md:self-stretch md:justify-center md:border-b-0 md:py-0 md:pr-4 md:pl-7")}>
@@ -731,6 +479,7 @@ export function ModuloForm({
             />
           </div>
           <Button
+            ref={nextButtonRef}
             type="submit"
             variant="primary"
             size="56"
@@ -739,9 +488,9 @@ export function ModuloForm({
             {copy.next}
           </Button>
         </div>
-        {step1Errors.length > 0 ? (
+        {barErrors.length > 0 ? (
           <ul className="mt-2 flex flex-col gap-1 px-5">
-            {step1Errors.map((name) => (
+            {barErrors.map((name) => (
               <li key={name} id={`${ids[name]}-error`} className="text-label font-medium text-status-alert">
                 {errors[name]}
               </li>
@@ -749,6 +498,43 @@ export function ModuloForm({
           </ul>
         ) : null}
       </form>
+
+      {/* Pantalla limpia: el resto del pedido (portal a <body>). */}
+      {overlayFrom ? (
+        <RequestFlowOverlay
+          from={overlayFrom}
+          getOriginRect={getBarRect}
+          idPrefix={idPrefix}
+          copy={copy.requestFlow}
+          contactCopy={copy.contact}
+          barLabels={{ problema: copy.problema.label, zona: copy.zona.label }}
+          problema={values.problema.trim()}
+          zona={values.zona.trim()}
+          contact={{
+            whatsapp: values.whatsapp,
+            onWhatsappChange: (value) => setField("whatsapp", value),
+            onWhatsappBlur: () => handleBlur("whatsapp"),
+            patente: values.patente,
+            onPatenteChange: (value) => setField("patente", value),
+            onPatenteBlur: () => handleBlur("patente"),
+            plateCheck,
+            consent,
+            onConsentChange: setConsent,
+            errors: { whatsapp: errors.whatsapp, patente: errors.patente, consent: errors.consent },
+          }}
+          consentLinks={consentLinks}
+          submitting={status.kind === "submitting"}
+          errorMessage={status.kind === "error" ? status.message : null}
+          onSubmit={submitRequest}
+          onClosed={onOverlayClosed}
+          sentCopy={copy.sent}
+          publicCode={publicCode}
+          sentIcon={sentIcon}
+          appPromo={appPromo}
+          successRef={sentRef}
+          onSuccessShown={() => setSentShown(true)}
+        />
+      ) : null}
 
       {/* WhatsApp ARRIBA de "Lo más pedido" (pedido de producto,
           2026-11-26): form → WhatsApp → chips, en todos los anchos. */}
@@ -773,35 +559,5 @@ export function ModuloForm({
         </ul>
       </div>
     </div>
-  );
-}
-
-/**
- * Estado del lookup debajo de la patente (mismo criterio que `/pedido`). La
- * región `aria-live` existe siempre: "Validando…" y "Patente validada" solo
- * se leen (el ícono ya lo muestra); "No pudimos validarla…" también se ve.
- */
-function PlateStatus({
-  id,
-  check,
-  plate,
-  copy,
-}: {
-  readonly id: string;
-  readonly check: PlateCheck;
-  readonly plate: string;
-  readonly copy: TallerContent["contact"]["patente"]["status"];
-}) {
-  const current = check.kind !== "idle" && check.plate === plate ? check : null;
-  return (
-    <p
-      id={id}
-      aria-live="polite"
-      className={cn(current?.kind === "unverified" ? "-mt-2 text-label text-fg-muted" : "sr-only")}
-    >
-      {current?.kind === "validating" ? copy.validating : null}
-      {current?.kind === "valid" ? copy.valid : null}
-      {current?.kind === "unverified" ? copy.unverified : null}
-    </p>
   );
 }

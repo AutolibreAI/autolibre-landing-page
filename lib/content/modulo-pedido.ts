@@ -136,14 +136,12 @@ export const moduloPedidoContent = {
       text: "¡Hola! Quiero pedir propuestas para mi auto.",
     },
 
-    /** Paso 2: WhatsApp y patente. */
+    /**
+     * Contacto del paso final (`RequestFlowOverlay`): WhatsApp, patente y
+     * consentimiento. Para cuándo, repuestos y km: `lib/content/request-flow.ts`.
+     */
     contact: {
-      change: "Cambiar",
-      /** Lo que lee un lector de pantalla antes del resumen. */
-      summaryLabel: "Tu pedido:",
-      title: "¿Qué auto es y a qué WhatsApp te avisamos?",
       whatsapp: {
-        label: "Tu WhatsApp",
         prefix: "+54",
         prefixLabel: "Código de país +54.",
         placeholder: "11 2345-6789",
@@ -181,11 +179,10 @@ export const moduloPedidoContent = {
     },
 
     /**
-     * Estado enviado: reemplaza al form en el mismo lugar. Arriba la
-     * confirmación; abajo, el bloque de la app (`appPromo`).
+     * Confirmación, adentro de la pantalla limpia (el título está en
+     * `requestFlowContent.success`). Abajo, el bloque de la app (`appPromo`).
      */
     sent: {
-      title: "¡Listo! Ya tenemos tu pedido",
       /**
        * Código público que devuelve el envío (`AL-1042`), en negrita entre
        * `before` y `after`. Si el backend no lo devuelve, la oración no va:
@@ -193,7 +190,6 @@ export const moduloPedidoContent = {
        */
       code: { before: "Tu pedido es el ", prefix: "#", after: ". " },
       body: "Te escribimos por WhatsApp en el día con las propuestas.",
-      again: "Hacer otro pedido",
     },
 
     /**

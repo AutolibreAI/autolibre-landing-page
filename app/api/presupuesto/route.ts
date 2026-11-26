@@ -14,8 +14,10 @@ import {
 import { META_EVENTS } from "@/lib/analytics/meta-pixel";
 import { capturePostHogServerEvent, posthogIdOrNull } from "@/lib/analytics/posthog-server";
 import { whatsappErrorMessage } from "@/lib/content/presupuesto";
+import { requestFlowContent } from "@/lib/content/request-flow";
 import { parseArWhatsapp } from "@/lib/phone";
 import { canonicalPlate } from "@/lib/plate";
+import { parseQuoteDetails, type QuoteDetails } from "@/lib/quote-details";
 import { siteConfig } from "@/lib/seo/config";
 import { VEHICLE_LOOKUP_LIMITS, type VehicleLookupSnapshot } from "@/lib/vehicle-lookup";
 
@@ -56,6 +58,18 @@ function quotePlacementOrNull(raw: unknown): QuoteModulePlacement | null {
   return typeof raw === "string" && QUOTE_MODULE_PLACEMENT_VALUES.has(raw)
     ? (raw as QuoteModulePlacement)
     : null;
+}
+
+/**
+ * `QUOTE_DETAILS_ENABLED=true` prende los detalles del pedido (`timing`,
+ * `preferredDate`, `partsSupply`, `mileageKm`) hacia el backend. Apagado (o
+ * sin la variable), la route los ignora y el body que sale es EXACTAMENTE el
+ * de antes: el DTO del backend tiene `forbidNonWhitelisted` y un backend sin
+ * esos campos desplegados respondería 400. Se prende cuando el backend que
+ * los acepta esté en producción.
+ */
+function quoteDetailsEnabled(): boolean {
+  return process.env.QUOTE_DETAILS_ENABLED === "true";
 }
 
 /** Primer hop de `x-forwarded-for` (el cliente real detrás del proxy). */
@@ -228,6 +242,10 @@ export async function POST(req: NextRequest) {
     quoteFlow: rawQuoteFlow,
     quoteTab: rawQuoteTab,
     quotePlacement: rawQuotePlacement,
+    timing: rawTiming,
+    preferredDate: rawPreferredDate,
+    partsSupply: rawPartsSupply,
+    mileageKm: rawMileageKm,
   } = body;
 
   const plate = optionalPlate(rawPlate);
@@ -257,6 +275,25 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Detalles del pedido: solo con el flag prendido se validan y viajan.
+  // Apagado, se ignoran (no dan 400): el form del Home los manda siempre.
+  let details: QuoteDetails = {};
+  if (quoteDetailsEnabled()) {
+    const parsed = parseQuoteDetails({
+      timing: rawTiming,
+      preferredDate: rawPreferredDate,
+      partsSupply: rawPartsSupply,
+      mileageKm: rawMileageKm,
+    });
+    if (!parsed.ok) {
+      return NextResponse.json(
+        { error: requestFlowContent.serverErrors[parsed.error] },
+        { status: 400 },
+      );
+    }
+    details = parsed.details;
+  }
+
   const apiUrl = normalizeApiBaseUrl(process.env.AUTOLIBRE_API_URL);
   if (!apiUrl) {
     return NextResponse.json(
@@ -284,6 +321,12 @@ export async function POST(req: NextRequest) {
         location: buildLocation(trimmedAddress, latitude, longitude, locality, province),
         ...(trimmedEmail ? { contactEmail: trimmedEmail } : {}),
         ...(vehicleLookup ? { vehicleLookup } : {}),
+        // Detalles (vacío con el flag apagado). `preferredDate` solo existe
+        // con `timing: "date"`: lo garantiza `parseQuoteDetails`.
+        ...(details.timing ? { timing: details.timing } : {}),
+        ...(details.preferredDate ? { preferredDate: details.preferredDate } : {}),
+        ...(details.partsSupply ? { partsSupply: details.partsSupply } : {}),
+        ...(details.mileageKm !== undefined ? { mileageKm: details.mileageKm } : {}),
       }),
     });
 
@@ -353,6 +396,11 @@ export async function POST(req: NextRequest) {
       has_email: Boolean(trimmedEmail),
       location_from_suggestion:
         finiteCoordinate(latitude) !== null && finiteCoordinate(longitude) !== null,
+      // Detalles del pedido: solo lo que viajó al backend (nada con el flag
+      // apagado). Sin la fecha ni el kilometraje en sí.
+      ...(details.timing ? { timing: details.timing } : {}),
+      ...(details.partsSupply ? { parts_supply: details.partsSupply } : {}),
+      ...(quoteDetailsEnabled() ? { has_mileage: details.mileageKm !== undefined } : {}),
     };
     const posthogEvent = {
       event: ANALYTICS_EVENTS.quoteSubmitted,

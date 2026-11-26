@@ -11,6 +11,7 @@ import {
   type QuoteTab,
 } from "@/lib/analytics/events";
 import { APP_VINCULADA, moduloPedidoContent } from "@/lib/content/modulo-pedido";
+import { requestFlowContent } from "@/lib/content/request-flow";
 import { siteContent } from "@/lib/content/site";
 import { cn } from "@/lib/utils";
 import { whatsappUrl } from "@/lib/whatsapp";
@@ -24,8 +25,9 @@ type ModuloPedidoProps = {
   /** Dónde está montado: viaja como `placement` en todos sus eventos. */
   readonly placement: QuoteModulePlacement;
   /**
-   * Nivel de los títulos de los paneles (y del paso 2 y del enviado). Lo
-   * decide la página según su outline: `h2` si el módulo cuelga del `h1`.
+   * Nivel de los títulos de los paneles de Auxilio y Multas. Lo decide la
+   * página según su outline: `h2` si el módulo cuelga del `h1`. (El resto
+   * del pedido pasa en la pantalla limpia, con su propio `h2`.)
    */
   readonly headingLevel?: "h2" | "h3";
   /** Prefijo de los ids. Default: el `placement`. */
@@ -36,16 +38,17 @@ type ModuloPedidoProps = {
 /**
  * Módulo de pedido (rediseño 2026-11, fase 3): pestañas Taller / Auxilio /
  * Multas (sin Seguro desde el 2026-11-24, decisión de producto), la barra "¿Qué le pasa?" + "¿Dónde estás?" + "Pedir
- * propuestas", los chips de "Lo más pedido" y, en un segundo paso, WhatsApp
- * y patente. Lo montan el Home y `/pedido`.
+ * propuestas", los chips de "Lo más pedido" y, al pedir, la pantalla limpia
+ * con el resto del pedido (`RequestFlowOverlay`). Lo montan el Home y `/pedido`.
  *
  * Server Component. Todo lo que se lee (pestañas, labels, chips, paneles de
  * los aliados, WhatsApp) sale en el HTML del server; los íconos son
  * `next/image` renderizados acá. Islas de cliente, dos y hoja:
  *
  * - `ModuloTabs`: qué pestaña está elegida (recibe íconos y paneles hechos).
- * - `ModuloForm`: el form de Taller (estado, validación, Places, envío).
- *   El bloque de la app del enviado (`ModuloAppPromo`: capturas, QR,
+ * - `ModuloForm`: el form de Taller (estado, validación, Places, envío). El
+ *   paso final es la pantalla limpia `RequestFlowOverlay`.
+ *   El bloque de la app de la confirmación (`ModuloAppPromo`: capturas, QR,
  *   tiendas) se arma acá y la isla solo lo monta al enviar.
  *
  * Mapeo con el backend: solo Taller registra un pedido (`/api/presupuesto`).
@@ -76,11 +79,15 @@ export function ModuloPedido({
 
   const externalHint = <span className="sr-only"> {siteContent.nav.externalHint}</span>;
 
-  /** Panel de una pestaña sin form: título, bajada y un CTA que sale del sitio. */
+  /**
+   * Panel de una pestaña sin form: título, bajada y un CTA que sale del sitio.
+   * `whatsapp`: el CTA abre un chat (Auxilio → Asistir24), así que lleva la
+   * variante y el ícono de WhatsApp, igual que el de Taller.
+   */
   function partnerPanel(
-    tab: QuoteTab,
     panel: { title: string; body: string; cta: { label: string; href: string } },
     ctaProps: Record<string, string | undefined>,
+    { whatsapp = false }: { whatsapp?: boolean } = {},
   ) {
     return (
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 rounded-panel border border-control-line bg-card p-5 text-left md:p-7">
@@ -92,11 +99,12 @@ export function ModuloPedido({
         </div>
         <ButtonAnchor
           href={panel.cta.href}
-          variant="primary"
+          variant={whatsapp ? "whatsapp" : "primary"}
           size="56"
           className="max-sm:w-full max-sm:whitespace-normal"
           {...ctaProps}
         >
+          {whatsapp && <Icon name="whatsapp" size={22} strokeWidth={1.8} />}
           {panel.cta.label}
           {externalHint}
         </ButtonAnchor>
@@ -119,7 +127,6 @@ export function ModuloPedido({
     <ModuloForm
       idPrefix={idPrefix}
       placement={placement}
-      headingLevel={headingLevel}
       copy={{
         problema: taller.problema,
         zona: taller.zona,
@@ -127,6 +134,7 @@ export function ModuloPedido({
         chipsLabel: taller.chips.label,
         contact: taller.contact,
         sent: taller.sent,
+        requestFlow: requestFlowContent,
       }}
       chips={taller.chips.items.map((chip) => ({
         id: chip.id,
@@ -198,7 +206,8 @@ export function ModuloPedido({
         <ModuloAppPromo
           key="app-promo"
           placement={placement}
-          headingLevel={headingLevel === "h2" ? "h3" : "h4"}
+          // Cuelga del `h2` de la confirmación, en la pantalla limpia.
+          headingLevel="h3"
         />
       }
     />
@@ -206,8 +215,8 @@ export function ModuloPedido({
 
   const panels: Record<QuoteTab, React.ReactNode> = {
     taller: tallerPanel,
-    auxilio: partnerPanel(QUOTE_TABS.auxilio, copy.auxilio, partnerCtaProps(QUOTE_TABS.auxilio)),
-    multas: partnerPanel(QUOTE_TABS.multas, copy.multas, partnerCtaProps(QUOTE_TABS.multas)),
+    auxilio: partnerPanel(copy.auxilio, partnerCtaProps(QUOTE_TABS.auxilio), { whatsapp: true }),
+    multas: partnerPanel(copy.multas, partnerCtaProps(QUOTE_TABS.multas)),
   };
 
   return (
