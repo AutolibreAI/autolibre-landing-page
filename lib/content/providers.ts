@@ -145,15 +145,7 @@ export const providersContent = {
    * sesión y nunca está en el HTML del server.
    */
   flow: {
-    /** Indicador de tres pasos arriba del login. */
-    signInSteps: {
-      label: "Pasos del registro",
-      items: [
-        { id: "cuenta", label: "Tu cuenta" },
-        { id: "negocio", label: "Tu negocio" },
-        { id: "revision", label: "Revisión" },
-      ],
-    },
+    /** Bajada del login dedicado (`/ingresar`) cuando vuelve al alta. */
     signInIntro: "Para registrar tu negocio necesitás una cuenta de AutoLibre. Es la misma de la app.",
     loading: "Cargando el registro…",
     /** Con sesión, mientras se consulta si la cuenta ya tiene un negocio. */
