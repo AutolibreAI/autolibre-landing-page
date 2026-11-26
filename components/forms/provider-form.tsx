@@ -43,8 +43,9 @@ import {
   PROVIDER_BRAND_MAX_LENGTH,
   PROVIDER_BRAND_MAX_COUNT,
   validBrandSelection,
-  validProviderLogo,
+  validProviderLogoSource,
 } from "@/lib/proveedores/registration";
+import { compressProviderLogo } from "@/lib/proveedores/logo-compression";
 import {
   EMPTY_GEO,
   findAddressComponent,
@@ -197,8 +198,22 @@ export function ProviderForm({
   const [brands, setBrands] = useState<string[]>([]);
   const [specializedBrands, setSpecializedBrands] = useState<string[]>([]);
   const [otherSpecialty, setOtherSpecialty] = useState("");
-  const [logo, setLogo] = useState<File | null>(null);
+  /**
+   * El logo YA comprimido (ver lib/proveedores/logo-compression.ts), no el
+   * archivo que eligio la persona: se achica al elegirlo, asi el error aparece
+   * en el momento y el envio no espera.
+   */
+  const [logo, setLogo] = useState<Blob | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
+  const [logoProcessing, setLogoProcessing] = useState(false);
+  /** Nombre del archivo elegido, para la píldora: el `Blob` comprimido no tiene `name`. */
+  const [logoName, setLogoName] = useState<string | null>(null);
+  /**
+   * Cada eleccion de archivo suma uno. Si la persona elige otro logo (o lo
+   * quita) mientras el anterior se comprime, el resultado viejo llega con un
+   * numero que ya no es el actual y se descarta.
+   */
+  const logoPickRef = useRef(0);
   const [description, setDescription] = useState("");
   /**
    * Redes con un link que el backend rechazaria. Se marca al salir del campo
@@ -1077,7 +1092,7 @@ export function ProviderForm({
                   {copy.logo.choose}
                 </span>
                 <span aria-hidden="true" className="min-w-0 truncate text-base text-fg-muted">
-                  {logo ? logo.name : copy.logo.empty}
+                  {logoName ?? copy.logo.empty}
                 </span>
                 <input
                   id="prov-logo"
@@ -1089,19 +1104,44 @@ export function ProviderForm({
                   className="absolute inset-0 size-full cursor-pointer rounded-full opacity-0 disabled:cursor-not-allowed"
                   aria-invalid={logoError !== null}
                   aria-describedby={logoError ? "prov-logo-hint prov-logo-error" : "prov-logo-hint"}
-                  onChange={(event) => {
+                  onChange={async (event) => {
                     const file = event.target.files?.[0] ?? null;
-                    setLogo(file && validProviderLogo(file) ? file : null);
-                    setLogoError(file && !validProviderLogo(file) ? copy.logo.invalid : null);
+                    const pick = ++logoPickRef.current;
+                    setLogo(null);
+                    setLogoProcessing(false);
+                    setLogoName(file?.name ?? null);
+                    if (!file) {
+                      setLogoError(null);
+                      return;
+                    }
+                    if (!validProviderLogoSource(file)) {
+                      setLogoError(copy.logo.invalid);
+                      return;
+                    }
+                    setLogoError(null);
+                    setLogoProcessing(true);
+                    const compressed = await compressProviderLogo(file);
+                    if (pick !== logoPickRef.current) return;
+                    setLogoProcessing(false);
+                    setLogo(compressed);
+                    setLogoError(compressed ? null : copy.logo.processError);
                   }}
                 />
               </div>
-              {logo || logoError ? (
+              {logoProcessing ? (
+                <p role="status" className="text-sm text-fg-muted">
+                  {copy.logo.processing}
+                </p>
+              ) : null}
+              {logo || logoError || logoProcessing ? (
                 <button
                   type="button"
                   className="min-h-11 self-start text-sm font-semibold text-fg underline underline-offset-4"
                   disabled={loading}
                   onClick={() => {
+                    logoPickRef.current += 1;
+                    setLogoProcessing(false);
+                    setLogoName(null);
                     setLogo(null);
                     setLogoError(null);
                     if (logoInputRef.current) logoInputRef.current.value = "";
@@ -1266,7 +1306,7 @@ export function ProviderForm({
                 {flow.next}
               </Button>
             ) : (
-              <Button key="enviar" type="submit" variant="primary" size="48" disabled={loading}>
+              <Button key="enviar" type="submit" variant="primary" size="48" disabled={loading || logoProcessing}>
                 {loading ? copy.submitLoadingLabel : copy.submitLabel}
               </Button>
             )}
