@@ -25,7 +25,12 @@ export function HomeHero() {
       tone="card"
       spacing="sm"
       aria-labelledby="hero-title"
-      className="border-t-0 scroll-mt-17"
+      // `min-h-below-header`: el hero ocupa al menos la pantalla menos el
+      // header sticky, así la sección siguiente no se asoma en la primera
+      // pantalla. Contenido alineado ARRIBA, no centrado: las pestañas del
+      // módulo cambian el alto del panel (Taller → Auxilio, paso 2, enviado)
+      // y centrado movería las pestañas debajo del dedo al tocarlas.
+      className="min-h-below-header border-t-0 scroll-mt-17"
     >
       <div className="flex flex-col items-center text-center">
         <h1

@@ -47,6 +47,12 @@ const buttonVariants = cva(
          * (11.70:1). Bandas "¿No sabés a quién elegir?" y "Sumate a AutoLibre".
          */
         accent: "rounded-full bg-brand-200 font-display text-fg hover:bg-brand-50",
+        /**
+         * Salida a WhatsApp con el verde de la marca (#25d366). Texto e ícono
+         * `ink` (7.50:1; en hover, 6.01:1): blanco encima no llega a AA.
+         */
+        whatsapp:
+          "rounded-full bg-whatsapp-brand font-display text-ink hover:bg-whatsapp-brand-hover",
 
         // ── Sistema anterior (deprecado) ──
         /**

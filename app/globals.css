@@ -34,6 +34,12 @@
      contra el fondo blanco); el hover, 4.1:1. */
   --color-whatsapp: #1da851;
   --color-whatsapp-hover: #178f45;
+  /* WhatsApp (botón "Pedilo por WhatsApp" del módulo de pedido, 2026-11-26):
+     el #25d366 oficial de fondo, con texto e ícono `ink` encima (7.50:1;
+     blanco daría 1.98:1 y no llega a AA). Hover un punto más oscuro: `ink`
+     encima, 6.01:1. */
+  --color-whatsapp-brand: #25d366;
+  --color-whatsapp-brand-hover: #20bd5a;
   /* Sombra del botón flotante: dos capas (contacto + difusa) en `ink`, para
      que el disco se despegue también de fondos claros y verdes. */
   --shadow-fab: 0 2px 6px rgb(28 43 28 / 0.22), 0 10px 28px rgb(28 43 28 / 0.28);
@@ -143,6 +149,11 @@
      arbitrarias antes que `sm:`…`2xl:` y `sm:min-h-120` le ganaba. */
   --breakpoint-banner: 90rem;
 
+  /* Alto del header sticky (`SiteHeader`): `h-17` (68px) + el `border-b` de
+     1px. Lo usa `min-h-below-header` (hero del Home). Si cambia el alto del
+     header, cambia acá. */
+  --spacing-header: 4.3125rem;
+
   /* ── Radios ──
      AutoLibre AI: botones, inputs, chips y pills en píldora (`rounded-full`);
      tarjetas de 16 a 24 (`rounded-card`, `rounded-panel`, `rounded-3xl`).
@@ -210,6 +221,16 @@
 
 @utility reveal-group {
   @apply reveal-stagger;
+}
+
+/* ── Alto mínimo = la pantalla menos el header sticky ──
+   Hero del Home: en la primera pantalla no se asoma la sección siguiente.
+   `svh` (alto con la barra del navegador del celular VISIBLE, que es como
+   carga la página) y no `dvh`: no cambia el alto al scrollear, así que no
+   hay saltos de layout. `vh` antes, de respaldo para navegadores sin `svh`. */
+@utility min-h-below-header {
+  min-height: calc(100vh - var(--spacing-header));
+  min-height: calc(100svh - var(--spacing-header));
 }
 
 

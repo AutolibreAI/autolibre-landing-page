@@ -69,7 +69,19 @@ export const moduloPedidoContent = {
   taller: {
     problema: {
       label: "¿Qué le pasa?",
-      placeholder: "Hace ruido al frenar, toca el service…",
+      /**
+       * Ejemplos que rotan en el placeholder (cada ~3 s, ver
+       * `useRotatingPlaceholder`). El primero es el del HTML del server y el
+       * que queda fijo con `prefers-reduced-motion`. Cortos: en un celular de
+       * 360px el campo no muestra mucho más de 30 caracteres.
+       */
+      placeholders: [
+        "Ej.: hace ruido al frenar",
+        "Ej.: se prendió una luz en el tablero",
+        "Ej.: el aire no enfría",
+        "Ej.: tiembla el volante",
+        "Ej.: el service de los 10.000 km",
+      ],
       error: "Contanos qué le pasa al auto.",
     },
     zona: {

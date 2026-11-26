@@ -39,6 +39,7 @@ import { takePedidoPrefill } from "@/lib/pedido-prefill";
 import { parseArWhatsapp } from "@/lib/phone";
 import { isValidPlate, normalizePlateInput } from "@/lib/plate";
 import { cn } from "@/lib/utils";
+import { useRotatingPlaceholder } from "./use-rotating-placeholder";
 
 type TallerContent = (typeof moduloPedidoContent)["taller"];
 
@@ -103,8 +104,9 @@ type Status =
  * Tres estados en el mismo lugar, siempre por acción de la persona (un
  * click o un Enter: el cambio de alto no cuenta como CLS):
  *
- * 1. "¿Qué le pasa?" + "¿Dónde estás?" + "Pedir propuestas", con los chips
- *    de "Lo más pedido" y la salida por WhatsApp.
+ * 1. "¿Qué le pasa?" (placeholder con ejemplos que rotan) + "¿Dónde
+ *    estás?" + "Pedir propuestas"; debajo, la salida por WhatsApp y los
+ *    chips de "Lo más pedido".
  * 2. Resumen + WhatsApp + patente opcional (recomendada) + consentimiento
  *    (checkbox desmarcado y obligatorio, decisión de producto del
  *    2026-11-24) + "Enviar pedido".
@@ -136,6 +138,13 @@ export function ModuloForm({
   const [publicCode, setPublicCode] = useState<string | null>(null);
   // Consentimiento real: arranca desmarcado y viaja con su valor.
   const [consent, setConsent] = useState(false);
+  // "¿Qué le pasa?": el placeholder rota por los ejemplos hasta que la
+  // persona enfoca el campo o escribe.
+  const [problemaFocused, setProblemaFocused] = useState(false);
+  const problemaPlaceholder = useRotatingPlaceholder(
+    copy.problema.placeholders,
+    problemaFocused || values.problema !== "",
+  );
 
   const problemaRef = useRef<HTMLInputElement>(null);
   const zonaRef = useRef<HTMLInputElement>(null);
@@ -679,10 +688,17 @@ export function ModuloForm({
               required
               value={values.problema}
               onChange={(event) => setField("problema", event.target.value)}
-              placeholder={copy.problema.placeholder}
+              onFocus={() => setProblemaFocused(true)}
+              onBlur={() => setProblemaFocused(false)}
+              placeholder={problemaPlaceholder.placeholder}
               aria-invalid={errors.problema ? true : undefined}
               aria-describedby={describedBy("problema")}
-              className={barInput}
+              className={cn(
+                barInput,
+                // Fundido entre ejemplos; sin transición con reduced-motion.
+                "placeholder:transition-opacity placeholder:duration-200 motion-reduce:placeholder:transition-none",
+                problemaPlaceholder.fading && "placeholder:opacity-0",
+              )}
             />
           </div>
           <span aria-hidden="true" className="hidden h-9 w-px shrink-0 bg-control-line md:block" />
@@ -734,6 +750,10 @@ export function ModuloForm({
         ) : null}
       </form>
 
+      {/* WhatsApp ARRIBA de "Lo más pedido" (pedido de producto,
+          2026-11-26): form → WhatsApp → chips, en todos los anchos. */}
+      {whatsapp}
+
       <div
         role="group"
         aria-labelledby={ids.chips}
@@ -752,8 +772,6 @@ export function ModuloForm({
           ))}
         </ul>
       </div>
-
-      {whatsapp}
     </div>
   );
 }

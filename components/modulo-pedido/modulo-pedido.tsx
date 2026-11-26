@@ -149,11 +149,11 @@ export function ModuloPedido({
           {taller.whatsapp.prompt}
           <ButtonAnchor
             href={whatsappUrl(taller.whatsapp.text)}
-            variant="outline"
+            variant="whatsapp"
             size="44"
             {...whatsappProps(QUOTE_TABS.taller)}
           >
-            <Icon name="whatsapp" size={20} strokeWidth={1.8} className="text-status-ok" />
+            <Icon name="whatsapp" size={20} strokeWidth={1.8} />
             {taller.whatsapp.label}
             {externalHint}
           </ButtonAnchor>
