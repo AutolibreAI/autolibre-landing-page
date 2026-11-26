@@ -8,6 +8,7 @@ import {
   partnerPath,
 } from "@/lib/proveedores/query";
 import { BLOG_PUBLIC } from "@/lib/blog/visibility";
+import { FAQ_PATH } from "@/lib/content/faq";
 import { categoryPath } from "@/lib/blog/query";
 import { collectCategories, getPosts, postPath } from "@/lib/hygraph/posts";
 import { siteConfig } from "@/lib/seo/config";
@@ -23,7 +24,7 @@ import { siteConfig } from "@/lib/seo/config";
 const routes = [
   {
     path: "/",
-    lastModified: "2026-11-25",
+    lastModified: "2026-11-26",
     changeFrequency: "weekly",
     priority: 1,
   },
@@ -38,6 +39,12 @@ const routes = [
     lastModified: "2026-11-24",
     changeFrequency: "monthly",
     priority: 0.9,
+  },
+  {
+    path: FAQ_PATH,
+    lastModified: "2026-11-26",
+    changeFrequency: "monthly",
+    priority: 0.7,
   },
   {
     path: "/blog",

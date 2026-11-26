@@ -20,9 +20,10 @@ export function ProfileFaqSection({ items }: { readonly items: readonly FaqItem[
             <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 py-2 text-base font-semibold text-ink [&::-webkit-details-marker]:hidden">
               {item.question}
               <Icon
-                name="chevron-down"
+                name="plus"
                 size={20}
-                className="shrink-0 text-ink/55 transition-transform group-open:rotate-180"
+                strokeWidth={2}
+                className="shrink-0 text-ink/55 transition-transform group-open:rotate-45 motion-reduce:transition-none"
               />
             </summary>
             <p className="pb-3 text-[0.9375rem] leading-relaxed text-ink/75">{item.answer}</p>

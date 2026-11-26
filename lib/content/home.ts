@@ -251,18 +251,16 @@ export const homeContent = {
   },
 
   /**
-   * FAQ del Home: las cinco del lienzo (orientadas al pedido) y, debajo, las
-   * de la app (`lib/content/faq.ts`) agrupadas por tema, para no perder ese
-   * contenido indexable. Todo va al `FAQPage`.
+   * FAQ del Home: las cinco del lienzo (grupo "Tu pedido") y, debajo, tres
+   * grupos cortos de la app elegidos por `id` de `lib/content/faq.ts`. El
+   * `FAQPage` del Home lleva EXACTAMENTE estas preguntas; todas las demás
+   * están en `/preguntas-frecuentes` (link "Ver todas").
    */
   faq: {
-    title: "Preguntas frecuentes",
-    contact: {
-      prefix: "¿No encontrás tu respuesta? Escribinos a ",
-      middle: " o por ",
-      whatsapp: "WhatsApp",
-      suffix: ".",
-    },
+    eyebrow: "Preguntas frecuentes",
+    title: "Lo que más nos preguntan",
+    lead: "Cómo funciona el pedido de propuestas y qué hace la app, en respuestas cortas.",
+    allLink: "Ver todas las preguntas",
     items: [
       {
         id: "home-faq-costo",
@@ -291,9 +289,24 @@ export const homeContent = {
         answer: "Hoy operamos en AMBA y estamos ampliando a otras zonas del país.",
       },
     ],
-    moreTitle: "Sobre la app",
-    /** Preguntas de `faq.ts` que repiten una de arriba: no se muestran dos veces. */
-    duplicateIds: ["faq-zonas"],
+    /** Grupos de la app del Home: máximo tres preguntas cada uno. */
+    appGroups: [
+      {
+        id: "home-faq-la-app",
+        name: "La app",
+        itemIds: ["faq-como-empiezo", "faq-costo", "faq-varios-autos"],
+      },
+      {
+        id: "home-faq-diagnostico",
+        name: "Diagnóstico",
+        itemIds: ["faq-diagnostica-sola", "faq-adaptador-obligatorio", "faq-que-adaptador"],
+      },
+      {
+        id: "home-faq-documentacion",
+        name: "Documentación y vencimientos",
+        itemIds: ["faq-documentos", "faq-tramites", "faq-servicios-previos"],
+      },
+    ],
   },
 
   /**

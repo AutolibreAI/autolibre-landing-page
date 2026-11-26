@@ -229,6 +229,13 @@ export const QUOTE_CTA_PLACEMENTS = {
   aboutClosing: "about_closing",
   /** "Hacé tu pedido" de la cuenta de cliente en `/cuenta`. */
   accountCustomer: "cuenta_cliente",
+  /**
+   * "Contanos qué le pasa a tu auto" de la tarjeta "¿Seguís con dudas?" de
+   * la FAQ: en el Home sube al módulo; en `/preguntas-frecuentes`, va a
+   * `/pedido`.
+   */
+  homeFaq: "home_faq",
+  faqPage: "faq_page",
 } as const;
 
 export type QuoteCtaPlacement =

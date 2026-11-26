@@ -1,4 +1,4 @@
-import { FaqRows } from "@/components/proveedores/faq-rows";
+import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Section } from "@/components/ui/section";
@@ -112,7 +112,7 @@ export function PlansFaqSection() {
           {faq.title}
         </h2>
         <div className="lg:col-span-8">
-          <FaqRows items={faq.items} />
+          <FaqAccordion items={faq.items} />
         </div>
       </div>
 

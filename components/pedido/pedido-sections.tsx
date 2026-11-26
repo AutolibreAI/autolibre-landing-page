@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FaqList } from "@/components/marketing/faq-list";
+import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { GuideLinks } from "@/components/marketing/guide-links";
 import { NumberedSteps } from "@/components/marketing/numbered-steps";
 import {
@@ -330,7 +330,7 @@ export async function PedidoFaqAndGuides() {
           <h2 id="preguntas-frecuentes-titulo" className={sectionTitle}>
             {faq.title}
           </h2>
-          <FaqList items={faq.items} />
+          <FaqAccordion items={faq.items} openFirst />
         </div>
 
         {picked.length > 0 ? (

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Breadcrumbs, type Crumb } from "@/components/marketing/breadcrumbs";
-import { FaqRows } from "@/components/proveedores/faq-rows";
+import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { FlowSteps } from "@/components/proveedores/flow/flow-steps";
 import { ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -337,7 +337,7 @@ export function SumateFaq() {
           </p>
         </div>
         <div className="lg:col-span-8">
-          <FaqRows items={faq.items} />
+          <FaqAccordion items={faq.items} />
         </div>
       </div>
     </Section>

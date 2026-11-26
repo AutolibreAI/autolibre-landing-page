@@ -6,6 +6,7 @@ import {
   PROVEEDORES_REGISTRO_PATH,
 } from "@/lib/proveedores/query";
 import { siteConfig } from "@/lib/seo/config";
+import { FAQ_PATH } from "@/lib/content/faq";
 import { providersContent } from "@/lib/content/providers";
 import type { AccountMenuEntry, NavLink, StoreLink } from "@/lib/content/types";
 
@@ -233,6 +234,7 @@ export const siteContent = {
             label: siteConfig.contact.email,
             href: `mailto:${siteConfig.contact.email}`,
           },
+          { label: "Preguntas frecuentes", href: FAQ_PATH },
           { label: "Soporte", href: "/support" },
           { label: "Eliminar cuenta", href: "/eliminar-cuenta" },
         ],

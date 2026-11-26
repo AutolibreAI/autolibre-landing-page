@@ -1,15 +1,20 @@
 import type { FaqCategory, FaqItem } from "@/lib/content/types";
 import { siteConfig } from "@/lib/seo/config";
 
+/** Página con todas las preguntas frecuentes. */
+export const FAQ_PATH = "/preguntas-frecuentes";
+
 /**
- * FAQ agrupada por categoría. Alimenta dos cosas a la vez: la UI con tabs
- * y el schema `FAQPage`. Una sola fuente = imposible que el structured data
- * se desincronice de lo que ve el usuario.
+ * FAQ de la app agrupada por categoría. Es la fuente de las preguntas que se
+ * ven Y del schema `FAQPage`: `/preguntas-frecuentes` las muestra todas (un
+ * `h2` por categoría) y el Home elige unas pocas por `id`
+ * (`homeContent.faq.appGroups`). Una sola fuente = imposible que el
+ * structured data se desincronice de lo que ve el usuario.
  *
  * Combina las preguntas del diseño nuevo con las de la landing anterior
  * (que traían el contenido largo de OBD-II, escáneres y compatibilidad).
- * El adaptador se llevó a su propia categoría: si no, "Diagnóstico"
- * quedaba con 13 preguntas y las tabs dejaban de servir para navegar.
+ * El adaptador tiene su propia categoría para que "Diagnóstico" no quede
+ * con 13 preguntas.
  */
 export const faqCategories: readonly FaqCategory[] = [
   {
@@ -215,3 +220,52 @@ export const faqCategories: readonly FaqCategory[] = [
 export const allFaqItems: readonly FaqItem[] = faqCategories.flatMap(
   (category) => category.items,
 );
+
+/**
+ * Preguntas de la app por `id`, en el orden pedido. Un `id` que no existe
+ * rompe la página en desarrollo: mejor eso que una pregunta que desaparece
+ * en silencio del HTML (y del `FAQPage`).
+ */
+export function pickFaqItems(ids: readonly string[]): readonly FaqItem[] {
+  return ids.map((id) => {
+    const item = allFaqItems.find((candidate) => candidate.id === id);
+    if (!item) throw new Error(`[faq] no existe la pregunta "${id}"`);
+    return item;
+  });
+}
+
+/**
+ * Copy compartido de la FAQ (Home y `/preguntas-frecuentes`) y de su página.
+ * Las preguntas del pedido viven en `homeContent.faq.items`.
+ */
+export const faqContent = {
+  /** Primer grupo, en el Home y en la página: las preguntas del pedido. */
+  pedidoGroup: { id: "tu-pedido", name: "Tu pedido" },
+  /**
+   * Preguntas de la app que repiten una del pedido ("¿Dónde funciona?"): en
+   * la página no se muestran dos veces.
+   */
+  duplicateIds: ["faq-zonas"],
+
+  /** Tarjeta "¿Seguís con dudas?" (columna izquierda; en celular, al final). */
+  contactCard: {
+    title: "¿Seguís con dudas?",
+    body: "Escribinos por WhatsApp y te ayudamos. Si ya sabés qué necesitás, pedí propuestas a proveedores de tu zona.",
+    whatsapp: "Escribinos por WhatsApp",
+    pedido: "Contanos qué le pasa a tu auto",
+  },
+
+  page: {
+    meta: {
+      title: "Preguntas frecuentes",
+      description:
+        "Respuestas sobre AutoLibre: cómo pedir propuestas a proveedores de tu zona, qué hace la app, el diagnóstico con IA, el adaptador OBD2, los talleres y la documentación del auto.",
+      breadcrumb: "Preguntas frecuentes",
+      homeBreadcrumb: "Inicio",
+    },
+    title: "Preguntas frecuentes",
+    lead: "Todo lo que nos preguntan sobre el pedido de propuestas, la app, el diagnóstico, el adaptador OBD2, los talleres y la documentación del auto.",
+    /** Rótulo del índice de categorías (`<nav>`). */
+    indexLabel: "Categorías",
+  },
+} as const;
