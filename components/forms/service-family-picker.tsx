@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { ChoicePill } from "@/components/ui/choice";
+import { AltaChip } from "@/components/proveedores/registro/alta-controls";
 import type { ServiceFamilyOption } from "@/lib/autolibre-api";
 import { cn } from "@/lib/utils";
 
@@ -96,7 +96,10 @@ export function ServiceFamilyPicker({
   }
 
   return (
-    <ul className="flex flex-col gap-2">
+    // Densidad (2026-11): en celular, una sola lista con divisores y filas
+    // de 44px (sin aire entre tarjetas: 16 familias son la mitad del paso);
+    // desde `lg`, dos columnas de tarjetas, que bajan el paso a la mitad.
+    <ul className="flex flex-col overflow-clip rounded-2xl border border-control-line lg:grid lg:grid-cols-2 lg:items-start lg:gap-2 lg:overflow-visible lg:rounded-none lg:border-0">
       {families.map((family) => (
         <ServiceFamilyRow
           key={family.slug}
@@ -160,21 +163,19 @@ function ServiceFamilyRow({
   return (
     <li
       className={cn(
-        "overflow-hidden rounded-field border transition-colors",
-        count > 0
-          ? "border-brand/40 bg-brand/5"
-          : "border-line bg-surface-subtle",
+        "border-control-line transition-colors not-last:border-b motion-reduce:transition-none lg:overflow-clip lg:rounded-2xl lg:border",
+        count > 0 ? "bg-brand-50" : "bg-card",
       )}
     >
       <div className="flex items-stretch">
         {/* El label envuelve al input, asi que el click ya llega solo. El texto
             accesible lo pone el `aria-label` del input: ponerlo tambien acá
             haria que el lector de pantalla lo lea dos veces. */}
-        <label className="flex cursor-pointer items-center py-3 pr-2 pl-3.5 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-2 has-[:focus-visible]:outline-brand">
+        <label className="flex min-h-11 cursor-pointer items-center pr-2 pl-4 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-2 has-[:focus-visible]:outline-brand">
           <input
             ref={checkboxRef}
             type="checkbox"
-            className="size-4 shrink-0 accent-brand"
+            className="size-4 shrink-0 accent-action"
             checked={allSelected}
             onChange={onToggleFamily}
             aria-label={`Marcar ${
@@ -188,14 +189,14 @@ function ServiceFamilyRow({
           onClick={onToggleOpen}
           aria-expanded={isOpen}
           aria-controls={panelId}
-          className="flex flex-1 items-center gap-2 py-3 pr-3.5 pl-1 text-left focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
+          className="flex min-h-11 flex-1 items-center gap-2 py-2 pr-4 pl-1 text-left focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
         >
-          <span id={headingId} className="flex-1 text-sm font-semibold text-ink">
+          <span id={headingId} className="flex-1 text-control font-semibold text-fg">
             {family.name}
           </span>
 
           {count > 0 ? (
-            <span className="rounded-full bg-brand/15 px-2 py-0.5 text-xs font-bold text-brand">
+            <span className="rounded-full bg-action px-2 py-0.5 text-xs font-semibold text-white tabular-nums">
               {count}
               <span className="sr-only">
                 {" "}
@@ -203,7 +204,7 @@ function ServiceFamilyRow({
               </span>
             </span>
           ) : (
-            <span className="text-xs text-ink/45">
+            <span className="text-xs text-fg-muted">
               {total} {rubros}
             </span>
           )}
@@ -219,7 +220,7 @@ function ServiceFamilyRow({
             strokeLinejoin="round"
             aria-hidden="true"
             className={cn(
-              "shrink-0 text-ink/45 transition-transform",
+              "shrink-0 text-fg-muted transition-transform motion-reduce:transition-none",
               isOpen && "rotate-180",
             )}
           >
@@ -240,10 +241,10 @@ function ServiceFamilyRow({
           id={panelId}
           role="region"
           aria-labelledby={headingId}
-          className="flex flex-wrap gap-2 border-t border-line/70 px-3.5 py-3"
+          className="flex flex-wrap gap-2 border-t border-control-line px-4 py-3"
         >
           {family.services.map((service) => (
-            <ChoicePill
+            <AltaChip
               key={service.slug}
               type="checkbox"
               label={service.name}

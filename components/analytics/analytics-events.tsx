@@ -5,10 +5,12 @@ import { usePathname } from "next/navigation";
 import {
   APP_STORES,
   CLICKABLE_EVENTS,
+  DOWNLOAD_SECTIONS,
   LEAD_SOURCES,
   PARTNER_PLANS,
   PROVIDER_ACTIONS,
   QUOTE_CTA_PLACEMENTS,
+  QUOTE_TABS,
   type AnalyticsEventName,
   type AnalyticsProps,
 } from "@/lib/analytics/events";
@@ -23,6 +25,8 @@ const PROVIDER_ACTION_VALUES = new Set<string>(Object.values(PROVIDER_ACTIONS));
 const QUOTE_CTA_PLACEMENT_VALUES = new Set<string>(
   Object.values(QUOTE_CTA_PLACEMENTS),
 );
+const QUOTE_TAB_VALUES = new Set<string>(Object.values(QUOTE_TABS));
+const DOWNLOAD_SECTION_VALUES = new Set<string>(Object.values(DOWNLOAD_SECTIONS));
 
 /**
  * Isla hoja de la medición. No renderiza nada: sólo engancha dos cosas que
@@ -58,6 +62,14 @@ const QUOTE_CTA_PLACEMENT_VALUES = new Set<string>(
  *     directorio de proveedores al quedar sin resultados; sólo presencia).
  *   - `data-analytics-plan="plus"` → `plan` de `plan_checkout_started` (sólo
  *     los valores de `PARTNER_PLANS`).
+ *   - `data-analytics-tab="auxilio"` → `tab` (pestaña del módulo de pedido;
+ *     sólo los valores de `QUOTE_TABS`).
+ *   - `data-analytics-section="pedido_enviado"` → `section` (superficie de
+ *     descarga; sólo los valores de `DOWNLOAD_SECTIONS`).
+ *   `data-analytics-event` acepta VARIOS nombres separados por espacio
+ *   (`"app_store_clicked cta_download_click"`): cada uno sale con los mismos
+ *   props. Se usa cuando un click nuevo no puede cortar la serie de uno que
+ *   ya existe.
  *   `lead_source`, `store`, `action`, `plan` y el `placement` de presupuesto sólo aceptan los
  *   valores del catálogo; el resto se ignora para que un typo no abra una
  *   fuente nueva en los reportes.
@@ -77,8 +89,10 @@ export function AnalyticsEvents() {
     function onClick(event: MouseEvent) {
       if (!(event.target instanceof Element)) return;
       const el = event.target.closest<HTMLElement>("[data-analytics-event]");
-      const name = el?.dataset.analyticsEvent;
-      if (!el || !name || !CLICKABLE_EVENTS.has(name)) return;
+      const names = (el?.dataset.analyticsEvent ?? "")
+        .split(/\s+/)
+        .filter((name) => CLICKABLE_EVENTS.has(name));
+      if (!el || names.length === 0) return;
 
       const props: AnalyticsProps = {};
       const placement = el.dataset.analyticsPlacement;
@@ -106,11 +120,17 @@ export function AnalyticsEvents() {
       if (store && STORE_VALUES.has(store)) props.store = store;
       const plan = el.dataset.analyticsPlan;
       if (plan && PLAN_VALUES.has(plan)) props.plan = plan;
+      const tab = el.dataset.analyticsTab;
+      if (tab && QUOTE_TAB_VALUES.has(tab)) props.tab = tab;
+      const section = el.dataset.analyticsSection;
+      if (section && DOWNLOAD_SECTION_VALUES.has(section)) props.section = section;
 
-      trackUnchecked(
-        name as AnalyticsEventName,
-        Object.keys(props).length > 0 ? props : undefined,
-      );
+      for (const name of names) {
+        trackUnchecked(
+          name as AnalyticsEventName,
+          Object.keys(props).length > 0 ? props : undefined,
+        );
+      }
     }
     document.addEventListener("click", onClick, { capture: true });
     return () => document.removeEventListener("click", onClick, { capture: true });

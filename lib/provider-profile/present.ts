@@ -207,6 +207,10 @@ export function linkLabel(link: ProfileLink): string {
       return copy.contact.tiktok;
     case "mercado_libre":
       return copy.contact.mercadoLibre;
+    case "linkedin":
+      return copy.contact.linkedin;
+    case "youtube":
+      return copy.contact.youtube;
     default:
       return copy.contact.other;
   }

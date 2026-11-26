@@ -2,6 +2,7 @@
 
 import { useAuth, useClerk, useUser } from "@clerk/nextjs";
 import { useState } from "react";
+import { clearRoleHint } from "@/lib/auth/role-hint";
 import { accountContent } from "@/lib/content/account";
 import { PROVEEDORES_REGISTRO_PATH } from "@/lib/proveedores/query";
 import { cn } from "@/lib/utils";
@@ -50,37 +51,39 @@ export function AccountBar({ selfPath, signOutUrl = PROVEEDORES_REGISTRO_PATH, c
 
   async function leave(redirectUrl: string) {
     setLeaving(true);
+    // La pista de rol del header público (ver `lib/auth/role-hint.ts`).
+    clearRoleHint();
     await signOut({ redirectUrl });
   }
 
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-card border border-line bg-surface px-4 py-2.5",
+        "flex flex-wrap items-center justify-between gap-x-4 gap-y-0.5 rounded-card border border-card-line bg-card px-4 py-1.5",
         className,
       )}
     >
       <div className="flex min-w-0 items-center gap-3 py-1">
         <span
           aria-hidden="true"
-          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-surface-muted font-display text-base font-bold text-brand-hover"
+          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-canvas font-display text-base font-bold text-fg"
         >
           {initial}
         </span>
         <p className="flex min-w-0 flex-col leading-tight">
-          <span className="text-label text-ink/65">{bar.signedInAs}</span>
-          <span className="truncate font-semibold text-ink">{name}</span>
+          <span className="text-label text-fg-muted">{bar.signedInAs}</span>
+          <span className="truncate font-semibold text-fg">{name}</span>
         </p>
       </div>
       <div className="flex items-center gap-x-3" aria-live="polite">
         {leaving ? (
-          <span className="inline-flex min-h-11 items-center text-sm text-ink/65">{bar.signingOut}</span>
+          <span className="inline-flex min-h-11 items-center text-sm text-fg-muted">{bar.signingOut}</span>
         ) : (
           <>
             <button type="button" className={actionClass} onClick={() => void leave(selfPath)}>
               {bar.switchAccount}
             </button>
-            <span aria-hidden="true" className="h-4 w-px bg-ink/15" />
+            <span aria-hidden="true" className="h-4 w-px bg-control-line" />
             <button type="button" className={actionClass} onClick={() => void leave(signOutUrl)}>
               {bar.signOut}
             </button>

@@ -1,83 +1,88 @@
-import { ButtonLink } from "@/components/ui/button";
+import { Breadcrumbs, type Crumb } from "@/components/marketing/breadcrumbs";
+import { ProveedoresSearch } from "@/components/proveedores/proveedores-search";
 import { Section } from "@/components/ui/section";
+import type { PartnerZone } from "@/lib/autolibre-api";
 import { providersDirectoryContent } from "@/lib/content/providers-directory";
+import type { CategoryOption } from "@/lib/proveedores/directory";
+import type { ProveedoresFilters } from "@/lib/proveedores/query";
 
 type ProveedoresHeroProps = {
-  /**
-   * Familias del catálogo con al menos un negocio activo. `null` si no se
-   * pudo calcular: el dato "Rubros" no se muestra.
-   */
+  readonly breadcrumbs: readonly Crumb[];
+  /** Conteo real de la red; `null` si no se pudo leer (no se muestra). */
+  readonly networkTotal: number | null;
+  /** Familias con al menos un negocio; `null` si no se pudo calcular. */
   readonly activeCategoryCount: number | null;
+  readonly filters: ProveedoresFilters;
+  readonly zones: readonly PartnerZone[];
+  readonly categories: readonly CategoryOption[];
 };
 
-/**
- * Apertura de `/proveedores`: eyebrow, el único `h1`, la bajada, los dos CTA y
- * una ficha de datos. Una sola columna alineada a la izquierda.
- *
- * La ficha reusa el lenguaje de "registro" del hero de `/sobre-nosotros`
- * (regla en tinta arriba, renglones con hairline). Sin el conteo de rubros,
- * ese dato no se muestra: mejor un dato menos que uno inventado.
- *
- * Sin `reveal`: es lo que está en pantalla al cargar y el `h1` es la LCP.
- */
-export function ProveedoresHero({ activeCategoryCount }: ProveedoresHeroProps) {
-  const { eyebrow, title, lead, primaryCta, secondaryCta, facts } = providersDirectoryContent.hero;
+const { hero, breadcrumb } = providersDirectoryContent;
 
-  const items = [
-    { id: "negocios", label: facts.partners.label, value: facts.partners.value },
-    ...(activeCategoryCount
-      ? [
-          {
-            id: "rubros",
-            label: facts.categories.label,
-            value: facts.categories.value(activeCategoryCount),
-          },
-        ]
-      : []),
-    { id: "zona", label: facts.zone.label, value: facts.zone.value },
-  ];
+/**
+ * Cabecera de `/proveedores`: migas, el único `h1`, la bajada (solo desde
+ * `md`, como el lienzo; en celular el `h1` y el conteo alcanzan), las cifras
+ * reales de la red y el buscador. Banda `card` con filete abajo.
+ *
+ * Sin `reveal` ni imágenes: el `h1` es el LCP, texto del server.
+ */
+export function ProveedoresHero({
+  breadcrumbs,
+  networkTotal,
+  activeCategoryCount,
+  filters,
+  zones,
+  categories,
+}: ProveedoresHeroProps) {
+  const { facts } = hero;
 
   return (
-    <Section tone="muted" spacing="sm" className="md:pt-20" aria-labelledby="proveedores-titulo">
-      <div className="flex max-w-190 flex-col gap-4">
-        <p className="text-label font-semibold tracking-wider text-brand-hover uppercase">
-          {eyebrow}
-        </p>
+    <Section
+      tone="card"
+      spacing="sm"
+      aria-labelledby="proveedores-titulo"
+      className="border-t-0 pt-5 pb-6 md:pt-7 md:pb-9"
+    >
+      <Breadcrumbs items={breadcrumbs} label={breadcrumb.label} />
+
+      <div className="mt-2 max-w-190 md:mt-4">
         <h1
           id="proveedores-titulo"
-          className="font-display text-display-xs font-bold text-balance text-ink sm:text-display-sm md:text-display-md"
+          className="font-display text-display-xs font-bold tracking-tight text-balance text-fg sm:text-display-sm md:text-display-md"
         >
-          {title}
+          {hero.title}
         </h1>
-        <p className="max-w-150 text-lead leading-relaxed text-ink/70 md:text-lead-lg">{lead}</p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <ButtonLink href={primaryCta.href} size="lg">
-            {primaryCta.label}
-          </ButtonLink>
-          {/* "Sumar mi negocio" va al alta, que carga Clerk: sin prefetch. */}
-          <ButtonLink href={secondaryCta.href} prefetch={false} variant="outline" size="lg">
-            {secondaryCta.label}
-          </ButtonLink>
-        </div>
+        <p className="mt-3 hidden text-lead text-fg-muted md:block">{hero.lead}</p>
+
+        {/* Las cifras salen del backend: sin el dato, ese tramo no va. */}
+        <p className="mt-3.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-control text-fg-muted">
+          {networkTotal !== null ? (
+            <>
+              <span>
+                <strong className="font-semibold text-fg tabular-nums">{networkTotal}</strong>{" "}
+                {facts.partners(networkTotal)}
+              </span>
+              <span aria-hidden="true" className="size-1 rounded-full bg-fg-subtle" />
+            </>
+          ) : null}
+          {activeCategoryCount ? (
+            <>
+              <span>
+                <strong className="font-semibold text-fg tabular-nums">{activeCategoryCount}</strong>{" "}
+                {facts.categories(activeCategoryCount)}
+              </span>
+              <span aria-hidden="true" className="size-1 rounded-full bg-fg-subtle" />
+            </>
+          ) : null}
+          <span>
+            {facts.zonePrefix} <strong className="font-semibold text-fg">{facts.zone}</strong>
+          </span>
+        </p>
       </div>
 
-      {/* 1 columna en mobile, una fila desde `md` (una columna por dato). */}
-      <dl className="mt-12 grid grid-cols-1 border-t border-ink md:mt-16 md:auto-cols-fr md:grid-flow-col md:gap-x-12">
-        {items.map((item) => (
-          // Un `<div>` por par `<dt>`/`<dd>`: válido dentro de un `<dl>`.
-          //
-          // Hairline en `ink/15` y no en `line`: sobre `surface-muted`, `line`
-          // es el mismo color que el fondo y no se vería.
-          <div key={item.id} className="flex flex-col gap-2 border-b border-ink/15 py-5 md:py-6">
-            <dt className="text-label font-semibold tracking-wider text-brand-hover uppercase">
-              {item.label}
-            </dt>
-            <dd className="font-display text-xl leading-tight font-semibold text-ink tabular-nums sm:text-2xl">
-              {item.value}
-            </dd>
-          </div>
-        ))}
-      </dl>
+      <div className="mt-6">
+        <ProveedoresSearch filters={filters} zones={zones} categories={categories} />
+      </div>
     </Section>
   );
 }

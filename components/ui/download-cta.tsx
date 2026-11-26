@@ -33,8 +33,10 @@ type DownloadCtaProps = Pick<
  * todos (estático, sin cloaking) y no hay nada que hidratar. Los ocultos van
  * con `display: none`, así que salen del árbol de accesibilidad.
  *
- * No lleva `"use client"`: el header lo renderiza en el server y `MobileNav`
- * lo importa como un componente más. El click lo mide el listener delegado
+ * No lleva `"use client"`: se puede renderizar en el server o importar desde
+ * una isla. Desde la fase 2 del rediseño (2026-11) el header ya no lo usa
+ * ("Hacé tu pedido" es su acción principal); queda para las páginas que
+ * vuelvan a ofrecer la descarga en mobile. El click lo mide el listener delegado
  * de `AnalyticsEvents` (`app_store_clicked`, por los `data-analytics-*`).
  */
 export function DownloadCta({

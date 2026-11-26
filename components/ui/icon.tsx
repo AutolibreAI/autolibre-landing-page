@@ -154,6 +154,8 @@ const paths: Record<IconName, React.ReactNode> = {
     </>
   ),
   "chevron-down": <path d="M6 9l6 6 6-6" />,
+  /** Tres rayas que se acortan: filtros del buscador del directorio. */
+  filter: <path d="M4 7h16M7 12h10M10 17h4" />,
   bolt: <path d="M13 3L5 13.5h6L10 21l8-10.5h-6z" />,
   camera: (
     <>
@@ -185,6 +187,24 @@ const paths: Record<IconName, React.ReactNode> = {
   wrench: (
     <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z" />
   ),
+  /** Barras: métricas (landing "Sumá tu negocio"). */
+  chart: <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />,
+  /** Más: abrir una pregunta frecuente (gira 45° al abrir). */
+  plus: <path d="M12 5v14M5 12h14" />,
+  /** Candado: el pago se termina en Mercado Pago. */
+  lock: (
+    <>
+      <rect x="5" y="11" width="14" height="10" rx="2" />
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+    </>
+  ),
+  pause: (
+    <>
+      <line x1="9" y1="6" x2="9" y2="18" />
+      <line x1="15" y1="6" x2="15" y2="18" />
+    </>
+  ),
+  play: <path d="M8 5.5v13l10.5-6.5z" />,
 };
 
 export function Icon({

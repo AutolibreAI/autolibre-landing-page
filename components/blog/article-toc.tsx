@@ -20,7 +20,7 @@ export function ArticleTocDesktop({ items }: ArticleTocProps) {
 
   return (
     <nav aria-labelledby="toc-titulo" className="flex flex-col gap-3">
-      <p id="toc-titulo" className="text-label font-semibold tracking-wider text-ink/60 uppercase">
+      <p id="toc-titulo" className="text-label font-semibold tracking-wider text-fg-muted uppercase">
         {blogContent.article.tocTitle}
       </p>
       <ol className="flex flex-col">
@@ -29,7 +29,7 @@ export function ArticleTocDesktop({ items }: ArticleTocProps) {
             <a
               href={`#${item.id}`}
               data-toc-link={item.id}
-              className="group flex items-baseline gap-3 py-1.5 text-[0.9375rem] leading-snug text-ink/70 transition-colors hover:text-ink aria-[current=location]:font-semibold aria-[current=location]:text-ink"
+              className="group flex items-baseline gap-3 py-1.5 text-[0.9375rem] leading-snug text-fg-muted transition-colors hover:text-fg aria-[current=location]:font-semibold aria-[current=location]:text-fg"
             >
               <span
                 aria-hidden="true"
@@ -49,17 +49,17 @@ export function ArticleTocMobile({ items }: ArticleTocProps) {
   if (items.length === 0) return null;
 
   return (
-    <details className="rounded-panel border border-line px-4">
-      <summary className="flex min-h-13 items-center justify-between gap-3 text-[0.9375rem] font-semibold text-ink">
+    <details className="rounded-panel border border-card-line px-4">
+      <summary className="flex min-h-13 items-center justify-between gap-3 text-[0.9375rem] font-semibold text-fg">
         {blogContent.article.tocTitle}
-        <span className="text-label font-normal text-ink/60">
+        <span className="text-label font-normal text-fg-muted">
           {blogContent.article.tocCount(items.length)}
         </span>
       </summary>
       <ol className="flex flex-col pb-2">
         {items.map((item) => (
-          <li key={item.id} className="border-t border-line">
-            <a href={`#${item.id}`} className="flex min-h-11 items-center text-[0.9375rem] text-ink">
+          <li key={item.id} className="border-t border-card-line">
+            <a href={`#${item.id}`} className="flex min-h-11 items-center text-[0.9375rem] text-fg">
               {item.text}
             </a>
           </li>

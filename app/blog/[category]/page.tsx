@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { BlogListingHeader } from "@/components/blog/blog-listing-header";
 import { PostGridSection } from "@/components/blog/post-grid-section";
 import { RichText } from "@/components/blog/rich-text";
-import { ClosingCtaSection } from "@/components/sections/home/closing-cta";
+import { BlogAppBand } from "@/components/blog/blog-app-band";
+import { MobileDownloadBar } from "@/components/blog/mobile-download-bar";
 import { PageShell } from "@/components/layout/page-shell";
 import { JsonLd } from "@/components/seo/json-ld";
 import { Section } from "@/components/ui/section";
@@ -129,7 +130,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
   return (
     <>
-      <PageShell currentPath="/blog">
+      <PageShell currentPath="/blog" bottomBar={<MobileDownloadBar />}>
         <BlogListingHeader
           heading={heading}
           description={description}
@@ -151,9 +152,9 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         />
 
         {pillar ? (
-          <Section spacing="md" aria-labelledby="guia-titulo">
+          <Section spacing="md" aria-labelledby="guia-titulo" className="bg-card">
             <div className="max-w-180">
-              <h2 id="guia-titulo" className="text-3xl leading-tight text-ink md:text-4xl">
+              <h2 id="guia-titulo" className="text-3xl leading-tight text-fg md:text-4xl">
                 {blogContent.category.pillarHeading(category.name)}
               </h2>
               {/* `nested`: los headings del editor bajan a `h3`+, colgados
@@ -165,7 +166,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
           </Section>
         ) : null}
 
-        <ClosingCtaSection />
+        <BlogAppBand placement="closing_cta" />
       </PageShell>
 
       <JsonLd schema={schema} />

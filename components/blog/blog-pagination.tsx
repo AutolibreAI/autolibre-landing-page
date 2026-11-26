@@ -11,7 +11,9 @@ type BlogPaginationProps = {
 };
 
 const pageLink =
-  "inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-field border border-line px-3 text-[0.9375rem] font-semibold text-ink transition-colors hover:border-brand-soft";
+  "inline-flex h-11 min-w-11 items-center justify-center gap-1.5 rounded-full px-3 text-control font-semibold text-fg transition-colors hover:bg-card motion-reduce:transition-none";
+/** "Anterior" / "Siguiente": píldora con borde `action`. */
+const stepLink = "border border-action px-4.5 font-display";
 
 /**
  * Links numerados y no "cargar más": un crawler sigue un `<a href>`, no
@@ -28,7 +30,7 @@ export function BlogPagination({ page, totalPages, filters }: BlogPaginationProp
             <Link
               href={blogHref({ ...filters, page: page - 1 })}
               rel="prev"
-              className={cn(pageLink, "px-4")}
+              className={cn(pageLink, stepLink)}
             >
               <Icon name="arrow-left" size={16} />
               {blogContent.pagination.previous}
@@ -40,7 +42,7 @@ export function BlogPagination({ page, totalPages, filters }: BlogPaginationProp
             <Link
               href={blogHref({ ...filters, page: n })}
               aria-current={n === page ? "page" : undefined}
-              className={cn(pageLink, n === page && "border-ink bg-ink text-white hover:border-ink")}
+              className={cn(pageLink, n === page && "bg-action text-white hover:bg-action-hover")}
             >
               {n}
             </Link>
@@ -51,7 +53,7 @@ export function BlogPagination({ page, totalPages, filters }: BlogPaginationProp
             <Link
               href={blogHref({ ...filters, page: page + 1 })}
               rel="next"
-              className={cn(pageLink, "px-4")}
+              className={cn(pageLink, stepLink)}
             >
               {blogContent.pagination.next}
               <Icon name="arrow-right" size={16} />

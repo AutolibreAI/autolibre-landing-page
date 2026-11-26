@@ -397,9 +397,23 @@ export interface PartnerSummary {
   readonly brands: readonly string[] | null;
   /**
    * El backend marca como indexables solo los perfiles con horarios
-   * estructurados. Los demás van con `noindex` y fuera del sitemap.
+   * estructurados. La landing YA NO lo usa (decisión de producto del
+   * 2026-11-24: todos los perfiles se indexan y van al sitemap); queda
+   * parseado hasta que el backend lo alinee.
    */
   readonly indexable: boolean;
+  /**
+   * Última edición del negocio (ISO 8601, `partners.updated_at`), o `null`
+   * si el backend no la manda. Es el `lastModified` del perfil en el sitemap.
+   */
+  readonly updatedAt: string | null;
+  /**
+   * Coordenadas del negocio. Entra completo o no entra. En el listado HOY el
+   * backend no las manda (`null`): se leen si algún día llegan (como
+   * `address.latitude`/`longitude`, igual que el perfil), y entonces el mapa
+   * del directorio deja de depender de leer cada perfil.
+   */
+  readonly geo: { readonly latitude: number; readonly longitude: number } | null;
 }
 
 export interface PartnersPage {
@@ -418,6 +432,15 @@ export interface PartnersPage {
  * corte corto sin mostrar el estado de error.
  */
 const PARTNERS_REVALIDATE_SECONDS = 3600;
+
+/**
+ * Etiquetas del Data Cache de los perfiles. Las mismas que invalida el webhook
+ * `POST /api/revalidate/provider` (`lib/provider-profile/api.ts`): sin ellas en
+ * el `fetch`, ese aviso no vaciaba nada y un cambio tardaba hasta una hora en
+ * verse.
+ */
+const PARTNER_PROFILES_TAG = "provider-profiles";
+const partnerTag = (slug: string) => `provider:${slug}`;
 
 /** Tope del backend para `pageSize`. */
 const PARTNERS_MAX_PAGE_SIZE = 100;
@@ -443,6 +466,27 @@ function textList(value: unknown): string[] {
 
 function records(value: unknown): JsonRecord[] {
   return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+/**
+ * Coordenadas de `address.latitude`/`longitude` (o sueltas en el objeto), o
+ * `null` si falta alguna: entran completas o no entran.
+ */
+function geoOf(value: JsonRecord): { latitude: number; longitude: number } | null {
+  const source = isRecord(value.address) ? value.address : value;
+  const { latitude, longitude } = source;
+  return typeof latitude === "number" &&
+    typeof longitude === "number" &&
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude)
+    ? { latitude, longitude }
+    : null;
+}
+
+/** Fecha ISO válida, o `null` (un valor raro no llega al sitemap). */
+function isoDate(value: unknown): string | null {
+  const raw = text(value);
+  return raw && !Number.isNaN(Date.parse(raw)) ? raw : null;
 }
 
 function finiteNumber(value: unknown, fallback: number): number {
@@ -492,7 +536,9 @@ export async function fetchPartners({
 
   const response = await fetch(
     `${apiBaseUrl()}/api/v1/partner-profiles?${params}`,
-    q ? { cache: "no-store" } : { next: { revalidate: PARTNERS_REVALIDATE_SECONDS } },
+    q
+      ? { cache: "no-store" }
+      : { next: { revalidate: PARTNERS_REVALIDATE_SECONDS, tags: [PARTNER_PROFILES_TAG] } },
   );
 
   if (!response.ok) {
@@ -523,7 +569,7 @@ export interface PartnerZone {
  */
 export async function fetchPartnerZones(): Promise<PartnerZone[]> {
   const response = await fetch(`${apiBaseUrl()}/api/v1/partner-profiles/facets/zones`, {
-    next: { revalidate: PARTNERS_REVALIDATE_SECONDS },
+    next: { revalidate: PARTNERS_REVALIDATE_SECONDS, tags: [PARTNER_PROFILES_TAG] },
   });
 
   if (!response.ok) {
@@ -587,6 +633,8 @@ function parsePartnersPage(value: unknown): PartnersPage {
         categories: primary ? [primary] : [],
         brands: null,
         indexable: raw.indexable === true,
+        updatedAt: isoDate(raw.updatedAt),
+        geo: geoOf(raw),
       };
     })
     .filter((partner): partner is PartnerSummary => partner !== null);
@@ -635,25 +683,6 @@ export async function fetchAllPartners(): Promise<PartnerSummary[]> {
   return partners;
 }
 
-/**
- * Slugs de las familias que tienen al menos un negocio activo, sacados del
- * directorio completo (`fetchAllPartners`) y no de una llamada por familia.
- * El listado solo trae el rubro PRINCIPAL de cada negocio: una familia que
- * aparece solo como rubro secundario no cuenta acá.
- *
- * Devuelve `null` —nunca tira— si algo falla: quien lo usa cae en mostrar
- * todas las familias del catalogo.
- */
-export async function fetchActivePartnerCategories(): Promise<Set<string> | null> {
-  try {
-    const partners = await fetchAllPartners();
-    return new Set(partners.flatMap((partner) => partner.categories));
-  } catch (error) {
-    console.error("[partners] no se pudieron leer los rubros con negocios:", error);
-    return null;
-  }
-}
-
 export type FuelType = "gasoline" | "diesel" | "cng" | "electric" | "hybrid";
 const FUEL_TYPES: readonly FuelType[] = ["gasoline", "diesel", "cng", "electric", "hybrid"];
 
@@ -664,6 +693,8 @@ export type PartnerLinkKind =
   | "mercado_libre"
   | "x"
   | "tiktok"
+  | "linkedin"
+  | "youtube"
   | "other";
 const PARTNER_LINK_KINDS: readonly PartnerLinkKind[] = [
   "instagram",
@@ -672,6 +703,8 @@ const PARTNER_LINK_KINDS: readonly PartnerLinkKind[] = [
   "mercado_libre",
   "x",
   "tiktok",
+  "linkedin",
+  "youtube",
   "other",
 ];
 
@@ -695,8 +728,6 @@ export interface PartnerDetail extends PartnerSummary {
   readonly hours: string | null;
   /** Clave de `modalityLabel`: `en_local`, `a_domicilio` o `ambas`. */
   readonly modality: string | null;
-  /** Entra completo o no entra. */
-  readonly geo: { readonly latitude: number; readonly longitude: number } | null;
   /** Vacio = todos los combustibles. */
   readonly fuelTypes: readonly FuelType[];
   readonly links: readonly PartnerLink[];
@@ -725,7 +756,7 @@ export async function fetchPartnerBySlug(slug: string): Promise<PartnerLookup | 
   if (!PROFILE_SLUG_PATTERN.test(slug) || slug.length > 120) return null;
 
   const response = await fetch(`${apiBaseUrl()}/api/v1/partner-profiles/${slug}`, {
-    next: { revalidate: PARTNERS_REVALIDATE_SECONDS },
+    next: { revalidate: PARTNERS_REVALIDATE_SECONDS, tags: [PARTNER_PROFILES_TAG, partnerTag(slug)] },
   });
 
   if (response.status === 404) return null;
@@ -816,15 +847,7 @@ function parsePartnerProfile(value: unknown): PartnerDetail | null {
   );
 
   const address = isRecord(value.address) ? value.address : null;
-  const latitude = address?.latitude;
-  const longitude = address?.longitude;
-  const geo =
-    typeof latitude === "number" &&
-    typeof longitude === "number" &&
-    Number.isFinite(latitude) &&
-    Number.isFinite(longitude)
-      ? { latitude, longitude }
-      : null;
+  const geo = geoOf(value);
 
   const localities = isRecord(value.serviceArea)
     ? records(value.serviceArea.localities)
@@ -858,6 +881,7 @@ function parsePartnerProfile(value: unknown): PartnerDetail | null {
     categories,
     brands: selectionItems(value.brands),
     indexable: value.indexable === true,
+    updatedAt: isoDate(value.updatedAt),
     description: text(value.description),
     address: address ? text(address.full) : null,
     redirectLink: isRecord(value.contact) ? text(value.contact.whatsappUrl) : null,

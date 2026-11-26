@@ -19,7 +19,9 @@
     "test:partner-claims": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"scripts/partner-claims/**/*.test.ts\"",
     "typecheck:partner-claims": "tsc -p scripts/partner-claims/tsconfig.json",
     "test:partner-billing": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"scripts/partner-billing/**/*.test.ts\"",
-    "typecheck:partner-billing": "tsc -p scripts/partner-billing/tsconfig.json"
+    "typecheck:partner-billing": "tsc -p scripts/partner-billing/tsconfig.json",
+    "test:signup-intent": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"scripts/signup-intent/**/*.test.ts\"",
+    "typecheck:signup-intent": "tsc -p scripts/signup-intent/tsconfig.json"
   },
   "dependencies": {
     "@clerk/localizations": "^4.24.5",

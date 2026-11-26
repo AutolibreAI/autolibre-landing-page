@@ -16,6 +16,15 @@ export const PROVEEDORES_PATH = "/proveedores";
  * (301, `next.config.ts`).
  */
 export const PROVEEDORES_REGISTRO_PATH = `${PROVEEDORES_PATH}/registro`;
+/**
+ * `?alta=1`: abre el flujo del alta (cuenta → datos del negocio) en la misma
+ * ruta. Sin el parámetro, `/proveedores/registro` es la landing pública
+ * "Sumá tu negocio", estática y sin Clerk (rediseño 2026-11, fase 5). La URL
+ * con el parámetro tiene el mismo canonical (sin query): no se indexa aparte.
+ */
+export const PROVEEDORES_REGISTRO_FLOW_PARAM = "alta";
+/** Link al flujo del alta (los CTA de la landing, `/cuenta`, la contratación sin taller). */
+export const PROVEEDORES_REGISTRO_ALTA_PATH = `${PROVEEDORES_REGISTRO_PATH}?${PROVEEDORES_REGISTRO_FLOW_PARAM}=1`;
 /** Precios y planes pagos para proveedores: vive bajo el directorio. */
 export const PROVEEDORES_PLANES_PATH = `${PROVEEDORES_PATH}/planes`;
 /**
@@ -127,4 +136,27 @@ export function proveedoresHref(
 /** Perfil público de un negocio. */
 export function partnerPath(slug: string): string {
   return `${PROVEEDORES_PATH}/${encodeURIComponent(slug)}`;
+}
+
+/**
+ * Qué páginas se muestran en la paginación: la primera, la última, la actual
+ * y sus vecinas; el resto se resume en un `"gap"` ("…"). Con 7 páginas o
+ * menos van todas. Ej.: página 1 de 7 → 1 2 3 … 7; página 4 de 9 → 1 … 3 4 5
+ * … 9. Un hueco de una sola página se muestra como número: un "…" en lugar
+ * de un número no ahorra lugar.
+ */
+export function paginationItems(page: number, totalPages: number): (number | "gap")[] {
+  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+
+  const wanted = new Set([1, totalPages, page - 1, page, page + 1, ...(page <= 2 ? [2, 3] : [])]);
+  const pages = [...wanted].filter((n) => n >= 1 && n <= totalPages).sort((a, b) => a - b);
+
+  const items: (number | "gap")[] = [];
+  for (const n of pages) {
+    const previous = items[items.length - 1];
+    if (typeof previous === "number" && n - previous === 2) items.push(previous + 1);
+    else if (typeof previous === "number" && n - previous > 2) items.push("gap");
+    items.push(n);
+  }
+  return items;
 }

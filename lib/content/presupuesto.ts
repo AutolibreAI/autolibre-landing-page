@@ -1,6 +1,4 @@
 import type { IconName } from "@/lib/content/types";
-import type { ArWhatsappError } from "@/lib/phone";
-import { whatsappUrl } from "@/lib/whatsapp";
 
 /**
  * Fila con ícono: la usan los pasos de `/pedido` y la línea de tiempo del
@@ -14,11 +12,10 @@ type IconRow = {
 };
 
 /**
- * Mensaje precargado del chat de WhatsApp para pedir presupuesto. Lo usan la
- * home y `/pedido`. OJO: el QR de `/pedido` (`components/ui/qr-code.tsx`)
- * codifica la URL armada con este texto: si cambia, hay que regenerarlo.
+ * Mensaje precargado del chat de WhatsApp de `/pedido`: el mismo que el del
+ * módulo de pedido y la barra fija ("Pedir propuestas", DECISIONES 24-11).
  */
-const PEDIDO_WHATSAPP_TEXT = "¡Hola! Quiero pedir un presupuesto para mi auto.";
+const PEDIDO_WHATSAPP_TEXT = "¡Hola! Quiero pedir propuestas para mi auto.";
 
 /** Pregunta frecuente de `/pedido`. `link` convierte un tramo de la respuesta en link. */
 type PedidoFaqItem = {
@@ -28,52 +25,11 @@ type PedidoFaqItem = {
   readonly link?: { readonly text: string; readonly href: string };
 };
 
-/**
- * Errores del WhatsApp (ver `parseArWhatsapp` en `lib/phone.ts`). Los usan el
- * form de `/pedido`, el modal de la home y el alta de proveedores (form y
- * `/api/provider`). `{n}` = cantidad de dígitos.
- */
-const WHATSAPP_ERRORS = {
-  empty: "Ingresá tu WhatsApp con código de área. Ej: 11 2345-6789",
-  missing_area_code: "Falta el código de área. Ej: 11 2345-6789",
-  too_short_one: "Al número le falta 1 dígito.",
-  too_short: "Al número le faltan {n} dígitos.",
-  too_long_one: "El número tiene 1 dígito de más.",
-  too_long: "El número tiene {n} dígitos de más.",
-  invalid_area_code: "Revisá el código de área. Ej: 11, 221 o 351.",
-  fake: "Revisá el número: parece incompleto.",
-} as const;
+// Errores del WhatsApp: viven en `whatsapp-errors.ts` (ver ahí por qué).
+export { whatsappErrorMessage } from "./whatsapp-errors";
 
-/** Mensaje para un WhatsApp inválido, con la cantidad de dígitos si aplica. */
-export function whatsappErrorMessage(error: ArWhatsappError, diff = 0): string {
-  if (error === "too_short" || error === "too_long") {
-    return diff === 1
-      ? WHATSAPP_ERRORS[`${error}_one`]
-      : WHATSAPP_ERRORS[error].replace("{n}", String(diff));
-  }
-  return WHATSAPP_ERRORS[error];
-}
-
-/** Copy de la sección de presupuesto de la home (`QuotesSection`), del modal de pedido y de la página /pedido. */
+/** Copy del modal de pedido (`quote-flow`) y de la página /pedido. */
 export const presupuestoContent = {
-  section: {
-    titleLines: ["Resolvemos todo", "para tu auto."],
-    subtitle:
-      "Contanos qué necesita y te responden talleres cerca tuyo. Un minuto, sin vueltas.",
-    /**
-     * El botón principal de la sección no tiene etiqueta propia: usa
-     * `siteContent.nav.quoteLink` (la misma que el header, el hero y el footer).
-     *
-     * Salida secundaria por WhatsApp. Link propio y no
-     * `siteConfig.contact.whatsapp`: el genérico trae precargado "Me interesa
-     * comprar un escáner!", que acá no tiene sentido.
-     */
-    whatsapp: {
-      label: "Consultanos por WhatsApp",
-      href: whatsappUrl(PEDIDO_WHATSAPP_TEXT),
-    },
-  },
-
   modal: {
     title: "Pedí tu presupuesto",
     /** Mientras llega el chunk del formulario (se carga al abrir el modal). */
@@ -192,29 +148,27 @@ export const presupuestoContent = {
   },
 
   /**
-   * Landing `/pedido`: la que se comparte por WhatsApp y en anuncios. Un
-   * pedido de presupuesto a proveedores de la zona, por WhatsApp (CTA
-   * principal) o dejando los datos en un form.
+   * Landing `/pedido` (rediseño 2026-11, fase 4a: `Pedido` y
+   * `Pedido-celular` del lienzo). El formulario es el módulo de pedido
+   * (`components/modulo-pedido`); WhatsApp queda como segunda opción.
    *
-   * Vocabulario: "proveedores", no "talleres" (la red incluye servicios que
-   * no son talleres). Nada de métricas ni testimonios: solo lo que hoy es
-   * verdad (gratis, AMBA, respuesta en el día).
+   * Vocabulario: "Pedir propuestas" en botones y migas. "Presupuesto" queda
+   * solo en el H1 y el title, por SEO (DECISIONES 24-11). "Proveedores", no
+   * "talleres" (la red incluye servicios que no son talleres). Nada de
+   * métricas ni testimonios: solo lo que hoy es verdad (gratis, AMBA,
+   * respuesta en el día).
    */
   pedidoPage: {
     meta: {
       title: "Presupuestos gratis para tu auto, por WhatsApp",
       description:
-        "Contanos qué le pasa a tu auto y te pasamos Presupuestos de proveedores en tu zona en AMBA por WhatsApp. Te respondemos en el día, gratis y sin compromiso.",
-      breadcrumb: "Pedir presupuesto",
+        "Contanos qué le pasa a tu auto y recibí presupuestos de proveedores de tu zona en AMBA por WhatsApp. Te respondemos en el día, gratis y sin compromiso.",
+      breadcrumb: "Pedir propuestas",
       homeBreadcrumb: "Inicio",
+      breadcrumbLabel: "Migas de pan",
     },
 
-    /** Barra superior de la vista mobile del form (logo). */
-    header: {
-      logoAlt: "AutoLibre.AI",
-    },
-
-    /** Todos los botones de WhatsApp de la página abren el mismo chat. */
+    /** Todos los WhatsApp de la página abren el mismo chat (el del módulo). */
     whatsapp: {
       text: PEDIDO_WHATSAPP_TEXT,
       label: "Escribinos por WhatsApp",
@@ -222,86 +176,147 @@ export const presupuestoContent = {
 
     hero: {
       badge: "Gratis · Proveedores en AMBA",
-      title: "Presupuestos de proveedores en tu zona, por WhatsApp.",
+      title: "Presupuestos para tu auto, de proveedores en tu zona.",
       subtitle:
         "Contanos qué le pasa a tu auto y te respondemos en el día. Gratis y sin compromiso.",
-      /** Debajo del botón de WhatsApp: por qué elegir este camino. */
-      whatsappNote: "Lo más rápido: hablás directo con nosotros.",
-      divider: "o",
-      formCta: "Prefiero que me escriban",
       checks: [
         "Sin llamadas de proveedores: hablás con nosotros",
         "No hace falta bajar ninguna app",
+        "Solo le pagás al proveedor si hacés el trabajo",
       ],
-      qr: {
-        title: "¿Estás en la compu?",
-        body: "Escaneá el código con tu celular y seguí la charla desde WhatsApp.",
-        alt: "Código QR que abre el chat de WhatsApp de AutoLibre en tu celular",
+    },
+
+    /**
+     * "Así te llega la respuesta": el mismo pedido por WhatsApp y en la app,
+     * en paralelo. Del lado de la app, los videos reales del flujo nuevo
+     * (`public/videos/`); del lado de WhatsApp, un chat de muestra cuyos
+     * datos (pedido AL-22123, Toyota Corolla en Tigre, los tres talleres y
+     * sus precios) son los mismos que aparecen en los videos. Talleres,
+     * precios y mensajes son de ejemplo y se rotula a la vista (`note`):
+     * no son datos reales ni una promesa de precio.
+     */
+    example: {
+      title: "Así te llega la respuesta",
+      intro:
+        "Las propuestas te llegan por WhatsApp o en la app, como prefieras. Vos elegís: nada se confirma sin que lo decidas.",
+      whatsapp: { label: "Por WhatsApp" },
+      app: {
+        label: "En la app",
+        download: "Bajá la app gratis",
+        scan: "Escaneá el código con la cámara del celular.",
+        qrAlt: "Código QR para bajar la app de AutoLibre",
       },
+      compare: {
+        intro:
+          "Mirá cómo avanza el mismo pedido por WhatsApp y en la app, paso a paso.",
+        toggleLabel: "Ver cómo llega la respuesta",
+        chatName: "AutoLibre",
+        chatInitial: "A",
+        note: "Ejemplo ilustrativo: talleres, precios y mensajes son de muestra.",
+        typing: "escribiendo…",
+        pause: "Pausar",
+        play: "Reproducir",
+        beatsLabel: "Los pasos: tocá uno para verlo",
+        /** Un paso por video, en el mismo orden que `videos`. */
+        beats: [
+          { title: "Pedís", body: "Qué le pasa al auto, dónde y para cuándo." },
+          {
+            title: "Comparás las propuestas",
+            body: "Precio, distancia y qué incluye cada una.",
+          },
+          {
+            title: "Elegís",
+            body: "Coordinás el turno directo con el taller.",
+          },
+        ],
+        /**
+         * Videos reales de la app (sin audio). `start`/`end` en segundos:
+         * de `comparing-quote` se saltea la espera inicial (0 a 17 s).
+         */
+        videos: [
+          {
+            src: "/videos/creating-quote.mp4",
+            poster: "/videos/posters/creating-quote.webp",
+            start: 0.5,
+            end: 24.3,
+            label:
+              "La app: armás el pedido (qué, auto, dónde, cuándo y tu WhatsApp) y lo enviás.",
+          },
+          {
+            src: "/videos/comparing-quote.mp4",
+            poster: "/videos/posters/comparing-quote.webp",
+            start: 17,
+            end: 44.4,
+            label:
+              "La app: te llegan 3 propuestas y las comparás lado a lado antes de elegir.",
+          },
+          {
+            src: "/videos/choosing-quote.mp4",
+            poster: "/videos/posters/choosing-quote.webp",
+            start: 0,
+            end: 7.9,
+            label:
+              "La app: elegiste el taller y tenés cómo llegar y cómo escribirle.",
+          },
+        ],
+        /**
+         * Cuándo aparece cada mensaje del chat: en qué video (`clip`) y en qué
+         * segundo, atado a lo que pasa en la app en ese momento. `step` es el
+         * paso que usan los `data-on` del chat (ver `.cmp` en globals.css).
+         */
+        cues: [
+          { clip: 0, at: 2, step: 1 }, // Empezás a cargar el pedido.
+          { clip: 0, at: 19.3, step: 2 }, // "Tu pedido fue enviado".
+          { clip: 0, at: 22.5, step: 3 }, // "Estamos buscando quién te ayude".
+          { clip: 1, at: 20, step: 4 }, // "Te llegaron 3 propuestas".
+          { clip: 1, at: 41, step: 5 }, // "¿Elegís a Taller Isidro?".
+          { clip: 2, at: 1, step: 6 }, // Taller elegido.
+        ],
+      },
+      /** Quién habla en cada globo, solo para lectores de pantalla. */
+      you: "Vos:",
+      us: "AutoLibre:",
+      userMessage:
+        "Hola! Quiero hacer el service. Tengo un Toyota Corolla y estoy en Tigre.",
+      confirmation: {
+        intro:
+          "Hola! Te escribo desde AutoLibre.ai por el pedido AL-22123. Tenemos registrado:",
+        lines: ["Toyota Corolla · NHJ877", "Service", "Tigre, esta semana"],
+      },
+      proposalsIntro: "Te llegaron 3 propuestas:",
+      providers: [
+        { name: "1. Taller Isidro", price: "$ 225.000", detail: "12 km" },
+        {
+          name: "2. Hasser Performance",
+          price: "Desde $ 240.000",
+          detail: "18 km",
+        },
+        { name: "3. Mecánica JP", price: "A confirmar", detail: "49 km" },
+      ],
+      reply: "Me quedo con Taller Isidro.",
+      final:
+        "Listo. Te pasamos el contacto de Taller Isidro para que coordines el turno.",
     },
 
     steps: {
       title: "Cómo funciona",
       items: [
         {
-          icon: "chat",
-          title: "Nos escribís",
-          body: "Contanos qué necesitás y en qué zona.",
+          number: "01",
+          title: "Nos contás",
+          body: "Qué necesitás y en qué zona, por acá o por WhatsApp.",
         },
         {
-          icon: "pin",
+          number: "02",
           title: "Consultamos proveedores cerca tuyo",
           body: "Le pasamos tu pedido a los proveedores que trabajan en tu zona.",
         },
         {
-          icon: "receipt",
-          title: "Te pasamos los presupuestos",
+          number: "03",
+          title: "Te pasamos las propuestas",
           body: "Te llegan por WhatsApp y elegís vos. Sin compromiso.",
         },
-      ] as const satisfies readonly IconRow[],
-    },
-
-    /**
-     * Chat de ejemplo. Los proveedores, teléfonos y precios son INVENTADOS y
-     * así se rotula en pantalla ("Ejemplo ilustrativo", en el `figcaption`):
-     * no son datos reales ni una promesa de precio.
-     */
-    example: {
-      title: "Así te llega la respuesta",
-      caption: "Ejemplo ilustrativo",
-      /** Quién habla en cada globo, solo para lectores de pantalla. */
-      you: "Vos:",
-      us: "AutoLibre:",
-      userMessage:
-        "Hola! Quiero hacer el service. Tengo un Toyota Corolla y estoy en Tigre.",
-      confirmationLines: [
-        "Hola! Te escribo desde AutoLibre.ai por el pedido AL-1037.",
-        "Tenemos registrado:",
-        "- TOYOTA COROLLA XEI 1.8 M/T 2013",
-        "- Quiero hacer el service",
-        "- Tigre",
-        "Ya estamos trabajando, cualquier duda o corrección avisanos!",
       ],
-      providers: [
-        {
-          name: "1. Host Garage",
-          service: "Service completo: aceite y filtros",
-          address: "Av. Italia 100",
-          phone: "+54 9 11 1111-1111",
-          price: "$ 100.000",
-          eta: "Mañana",
-        },
-        {
-          name: "2. HyG Garage",
-          service: "Service completo: aceite y filtros",
-          address: "Solis 2000",
-          phone: "+54 9 11 2222-2222",
-          price: "$ 125.000",
-          eta: "Hoy",
-        },
-      ],
-      /** Decorativos: se ocultan a lectores de pantalla. */
-      emoji: { address: "📍", phone: "📞", price: "💵", eta: "⏱️" },
     },
 
     faq: {
@@ -320,112 +335,38 @@ export const presupuestoContent = {
         {
           question: "¿Qué datos necesitan?",
           answer:
-            "Tu WhatsApp y tu zona. La patente nos ahorra preguntas, pero es opcional.",
+            "Qué le pasa al auto, tu zona y tu WhatsApp. La patente es opcional, pero con ella ya sabemos marca, modelo y año, y te respondemos más rápido.",
         },
         {
           question: "¿Tengo que bajar una app?",
           answer:
-            "No. Todo pasa por WhatsApp. Pero si querés centralizar todo, es gratis.",
+            "No. Todo pasa por acá o por WhatsApp. Pero si querés centralizar todo, es gratis.",
           link: { text: "es gratis", href: "/descarga" },
         },
       ] as const satisfies readonly PedidoFaqItem[],
     },
 
+    /**
+     * Guías relacionadas (columna al lado de la FAQ). Slugs de notas reales
+     * del blog: si alguna deja de existir en Hygraph, no se muestra.
+     */
+    guides: {
+      title: "Guías que te pueden servir",
+      slugs: [
+        "vtv-pba-turno-que-llevar",
+        "que-hacer-si-chocas",
+        "consultar-y-pagar-multas",
+      ],
+      all: "Ver todas las guías",
+    },
+
     ctaBand: {
-      // Espacio duro entre "a" y "tu": si el título se parte, la preposición
-      // no queda colgando al final de la línea ("…le pasa / a tu vehículo").
-      title: "Contanos qué le pasa a tu vehículo",
+      title: "Contanos qué le pasa a tu vehículo",
       subtitle: "Te respondemos en el día.",
-      formCta: "Prefiero que me escriban",
+      formCta: "Hacé tu pedido",
     },
 
-    stickyBar: {
-      /** Nombre del landmark de la barra fija (lectores de pantalla). */
-      label: "Pedí tu presupuesto",
-      formCta: "o dejanos tus datos",
-    },
-
-    form: {
-      /** Es la alternativa al chat: el título lo dice (en desktop va al lado del botón de WhatsApp). */
-      title: "¿Preferís que te escribamos?",
-      subtitle: "Dejanos tus datos y te pasamos los presupuestos por WhatsApp en el día.",
-      back: "Volver",
-      optional: "(opcional)",
-      fields: {
-        zona: {
-          label: "¿En qué zona estás?",
-          placeholder: "Barrio o localidad",
-          error: "Contanos en qué zona estás.",
-        },
-        problema: {
-          label: "¿Qué le pasa al auto?",
-          placeholder: "O contalo con tus palabras. Ej: hace un ruido al frenar",
-          error: "Contanos qué le pasa al auto.",
-          /**
-           * Atajos para no tipear en el teléfono: cada uno suma (o saca) su
-           * texto en el campo. Son categorías de pedido, no un catálogo de
-           * servicios garantizados.
-           */
-          quickPicks: {
-            label: "Tocá lo que corresponda",
-            items: [
-              "Service",
-              "Frenos",
-              "Luz en el tablero",
-              "Batería",
-              "No arranca",
-              "Ruido raro",
-              "Neumáticos",
-              "Chapa y pintura",
-            ],
-          },
-        },
-        patente: {
-          label: "Patente",
-          placeholder: "AB 123 CD",
-          hint: "Si la ponés, ya sabemos marca, modelo y año.",
-          error: "Revisá la patente. Por ejemplo: AB123CD o ABC123.",
-          /** Estado del lookup en clasific.ar, debajo del campo. Nunca bloquea el envío. */
-          status: {
-            validating: "Validando patente…",
-            valid: "Patente validada",
-            unverified: "No pudimos validarla, podés enviar igual.",
-          },
-        },
-        whatsapp: {
-          label: "Tu WhatsApp",
-          prefix: "+54",
-          /** Lo que lee un lector de pantalla en lugar de "+54". */
-          prefixLabel: "Código de país +54.",
-          placeholder: "11 2345-6789",
-          hint: "Solo lo usamos para mandarte los presupuestos.",
-        },
-      },
-      submit: "Pedir presupuestos",
-      submitting: "Enviando…",
-      free: "Gratis y sin compromiso",
-      legal:
-        "Al pedir presupuestos aceptás que compartamos tu consulta con proveedores de nuestra red y te respondamos por WhatsApp.",
-      privacyLink: "Cómo cuidamos tus datos",
-      genericError:
-        "No pudimos mandar tu pedido. Probá de nuevo o escribinos por WhatsApp.",
-    },
-
-    confirmation: {
-      title: "¡Listo! Ya tenemos tu pedido",
-      /** Cumple lo que prometió el form ("te escribimos"): el chat es opcional. */
-      body: "Te escribimos por WhatsApp en el día con los presupuestos.",
-      whatsappLabel: "Mandanos un mensaje ahora",
-      /** `{code}` se reemplaza por el código del pedido (p. ej. `AL-1042`). */
-      whatsappTextWithCode:
-        "¡Hola! Hice el pedido {code} en la web de AutoLibre.",
-      whatsappText:
-        "¡Hola! Hice un pedido de presupuesto en la web de AutoLibre.",
-      fallback: "Es opcional: así nos tenés agendados y seguimos la charla por ahí.",
-      orderLabel: "Tu pedido",
-      /** `{code}` = código público del pedido (`AL-1042`): se muestra `#AL-1042`. */
-      orderCode: "#{code}",
-      noPlate: "sin patente",
-    },
+    /** Nombre del landmark de la barra fija en celular. */
+    mobileBarLabel: "Pedí propuestas",
   },
 } as const;

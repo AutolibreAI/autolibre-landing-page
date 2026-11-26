@@ -1,23 +1,18 @@
 import type { Metadata } from "next";
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader } from "@/components/layout/site-header";
+import { PageShell } from "@/components/layout/page-shell";
 import { JsonLd } from "@/components/seo/json-ld";
 import { AlliesSection } from "@/components/sections/home/allies";
-import { ClosingCtaSection } from "@/components/sections/home/closing-cta";
-import { DiagnosticsSection } from "@/components/sections/home/diagnostics";
-import { FaqSection } from "@/components/sections/home/faq";
-import { FeaturesSection } from "@/components/sections/home/features";
-import { HeroSection } from "@/components/sections/home/hero";
-import { HistorySection } from "@/components/sections/home/history";
+import { AppPanelSection } from "@/components/sections/home/app-panel";
+import { FaqSection, homeFaqItems } from "@/components/sections/home/faq";
+import { GuidesSection } from "@/components/sections/home/guides";
+import { HOME_PEDIDO_ID, HomeHero } from "@/components/sections/home/home-hero";
 import { HowItWorksSection } from "@/components/sections/home/how-it-works";
-import { LatestGuidesSection } from "@/components/sections/home/latest-guides";
-import { MarketplaceSection } from "@/components/sections/home/marketplace";
-import { ProblemSection } from "@/components/sections/home/problem";
-import { ProviderBandSection } from "@/components/sections/home/provider-band";
-import { QuotesSection } from "@/components/sections/home/quotes";
-import { siteConfig } from "@/lib/seo/config";
+import { PartnerBandSection } from "@/components/sections/home/partner-band";
+import { ServicesSection } from "@/components/sections/home/services";
+import { homeContent } from "@/lib/content/home";
 import { createMetadata } from "@/lib/seo/metadata";
 import {
+  breadcrumbSchema,
   faqPageSchema,
   graph,
   organizationSchema,
@@ -26,46 +21,58 @@ import {
   websiteSchema,
 } from "@/lib/seo/schema";
 
+const { meta } = homeContent;
+
+/**
+ * El Home es el único `page.tsx` del segmento raíz: no recibe el template
+ * `%s · AutoLibre` del layout, así que su `title` trae la marca.
+ */
 export const metadata: Metadata = createMetadata({
-  title: siteConfig.title,
-  description: siteConfig.description,
+  title: meta.title,
+  description: meta.description,
   path: "/",
 });
 
 const schema = graph(
   organizationSchema(),
   websiteSchema(),
-  webPageSchema({
-    name: siteConfig.title,
-    description: siteConfig.description,
-    path: "/",
-  }),
+  webPageSchema({ name: meta.title, description: meta.description, path: "/" }),
+  breadcrumbSchema([{ name: meta.breadcrumb, path: "/" }]),
   softwareApplicationSchema(),
-  faqPageSchema(),
+  faqPageSchema(homeFaqItems),
 );
 
+/**
+ * Home (rediseño 2026-11, fase 4a): hecho para que la visita pida
+ * propuestas. Server Component; las únicas islas de cliente son las del
+ * módulo de pedido (pestañas y form de Taller).
+ *
+ * Outline: h1 (hero) → h2 de los paneles del módulo → h2 por sección → h3
+ * por paso, aliado, función de la app, nota del blog y "Más guías".
+ *
+ * Enlazado interno: `/pedido` (header, servicios, barra fija), las notas del
+ * blog, `/blog`, `/proveedores` (banda para negocios), alta y planes.
+ */
 export default function HomePage() {
   return (
     <>
-      <SiteHeader currentPath="/" />
-
-      <main>
-        <HeroSection />
-        <QuotesSection />
-        <AlliesSection />
-        <ProblemSection />
-        <FeaturesSection />
-        <MarketplaceSection />
-        <HistorySection />
+      <PageShell
+        currentPath="/"
+        actionBar
+        actionBarQuoteHref={`#${HOME_PEDIDO_ID}`}
+        // La barra entra al scrollear: al cargar, el módulo ya es la acción
+        // y la barra tapaba sus chips (pendiente `target-size` de la 4a).
+        actionBarOptions={{ revealOnScroll: true }}
+      >
+        <HomeHero />
+        <ServicesSection />
         <HowItWorksSection />
-        <DiagnosticsSection />
-        <ProviderBandSection />
+        <AlliesSection />
+        <AppPanelSection />
+        <GuidesSection />
         <FaqSection />
-        <LatestGuidesSection />
-        <ClosingCtaSection />
-      </main>
-
-      <SiteFooter />
+        <PartnerBandSection />
+      </PageShell>
       <JsonLd schema={schema} />
     </>
   );

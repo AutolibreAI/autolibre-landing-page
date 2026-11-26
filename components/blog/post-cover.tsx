@@ -11,8 +11,16 @@ type PostCoverProps = {
   /**
    * `true` SOLO en la portada que es la imagen LCP de la página (la nota
    * destacada del listado). Nunca en las cards de la grilla.
+   *
+   * Va con `fetchPriority="high"` + `loading="eager"` y no con `preload`: en
+   * celular la portada destacada queda al borde del primer viewport (debajo
+   * del título, el buscador y los temas) y según el alto de la pantalla la
+   * LCP es ella o el `h1`. Para ese caso la doc de `next/image` y AGENTS.md
+   * piden prioridad en el `<img>` y no un `<link rel=preload>` en el
+   * `<head>`, que competiría con las fuentes. La línea base marcaba
+   * `lcp-discovery-insight` por la falta de `fetchpriority=high`.
    */
-  readonly preload?: boolean;
+  readonly lcp?: boolean;
   /** Tamaño del ícono de la portada sin imagen. */
   readonly iconSize?: "md" | "lg";
   readonly className?: string;
@@ -30,14 +38,14 @@ type PostCoverProps = {
 export function PostCover({
   post,
   sizes,
-  preload = false,
+  lcp = false,
   iconSize = "md",
   className,
 }: PostCoverProps) {
   return (
     <div
       className={cn(
-        "relative flex items-center justify-center overflow-clip rounded-card bg-surface-muted",
+        "relative flex items-center justify-center overflow-clip rounded-card bg-card-muted",
         className,
       )}
     >
@@ -47,14 +55,14 @@ export function PostCover({
           alt=""
           fill
           sizes={sizes}
-          preload={preload}
+          {...(lcp ? { fetchPriority: "high" as const, loading: "eager" as const } : {})}
           className="object-cover"
         />
       ) : (
         <span
           aria-hidden="true"
           className={cn(
-            "flex items-center justify-center rounded-card bg-surface text-brand-hover",
+            "flex items-center justify-center rounded-card bg-card text-brand-hover",
             iconSize === "lg" ? "size-24" : "size-18",
           )}
         >

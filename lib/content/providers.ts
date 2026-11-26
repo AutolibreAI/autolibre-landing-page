@@ -15,44 +15,216 @@ export const providersContent = {
       "Recibí consultas con la información del vehículo y el servicio solicitado. Registrá tu taller o servicio en AutoLibre y armá tu perfil en la app.",
   },
   /**
-   * `/proveedores/registro` (spec 212, US3; fusionada con el viejo
-   * `/formulario` el 2026-11-05): página indexable con el alta. El `<h1>`, la
-   * bajada y el aviso de "ya aparece" salen en el HTML del server; sin sesión,
-   * el login (copy compartida en `lib/content/partner-account.ts`); con
-   * sesión, el formulario. Página pública: NO se nombra el código de reclamo.
+   * `/proveedores/registro` sin el flujo abierto: la landing "Sumá tu negocio"
+   * (rediseño 2026-11, lienzo `Sumate`). Pública e indexable, Server
+   * Component y SIN Clerk: el flujo (cuenta → datos del negocio) se monta
+   * recién con `?alta=1`. Página pública: el código de reclamo no se explica
+   * acá; solo se enlaza la pantalla del canje.
    */
-  registerPage: {
-    breadcrumb: "Registro",
-    eyebrow: "Registro de talleres",
-    title: "Registrá tu taller",
-    intro:
-      "El registro de talleres y servicios en AutoLibre es gratis y se hace con tu cuenta de AutoLibre, la misma de la app. Completás los datos de tu taller y, cuando aprobamos la solicitud, el taller queda a tu nombre para administrarlo y contratar un plan desde tu cuenta.",
-    /**
-     * Para un taller que ya figura en la red: no se registra dos veces. No se
-     * explica cómo se verifica al dueño (lo maneja el equipo por WhatsApp).
-     */
-    listed: {
-      body: "¿Tu taller ya aparece en AutoLibre? No lo registres de nuevo.",
-      cta: "Escribinos para administrarlo",
-      whatsappMessage: "Hola! Mi taller ya aparece en AutoLibre y quiero administrarlo.",
+  sumate: {
+    breadcrumb: "Sumá tu negocio",
+    breadcrumbLabel: "Migas de pan",
+    hero: {
+      eyebrow: "Para talleres y servicios del auto",
+      title: "Sumá tu taller o servicio a AutoLibre",
+      lead: "Recibí consultas con la información del vehículo y el servicio que te piden. El registro es gratis.",
+      checks: [
+        "Aparecés en el directorio y en las recomendaciones de la IA",
+        "No cobramos comisión por trabajo",
+        "Usás la misma cuenta de la app de AutoLibre",
+      ],
+      primary: "Registrar mi negocio",
+      secondary: "Ver los planes",
+      /**
+       * Vista previa con MARCADORES, no un negocio inventado: así se ve tu
+       * perfil y así llega un pedido.
+       */
+      preview: {
+        monogram: "TN",
+        name: "[Tu negocio]",
+        meta: "[Zona] · [Cómo atendés]",
+        category: "[Rubro]",
+        requestLabel: "Nuevo pedido",
+        requestTitle: "[Servicio que piden]",
+        requestMeta: "[Marca, modelo y año] · [Zona]",
+        requestCta: "Responder con una propuesta",
+        caption: "Ejemplo ilustrativo de tu perfil y de un pedido.",
+      },
     },
-    formTitle: "Datos de tu taller",
-    /** Columna de contexto del login: qué viene después de entrar. */
-    steps: {
-      label: "Cómo es el registro",
+    /** "¿Ya aparecés?": buscar en el directorio antes de registrarse dos veces. */
+    listed: {
+      title: "¿Tu negocio ya aparece en AutoLibre?",
+      body: "Ya hay más de 150 negocios en la red. Si el tuyo está, no lo registres de nuevo: buscalo y pedí administrarlo.",
+      searchLabel: "Nombre de tu negocio",
+      searchPlaceholder: "Nombre de tu negocio",
+      searchSubmit: "Buscar",
+      whatsappCta: "Escribinos para administrarlo",
+      whatsappMessage: "Hola! Mi negocio ya aparece en AutoLibre y quiero administrarlo.",
+      claimPrefix: "¿Ya te mandamos un código?",
+      claimCta: "Canjealo acá",
+    },
+    benefits: {
+      title: "Qué tenés al sumarte",
       items: [
-        { id: "cuenta", label: "Entrá o creá tu cuenta", description: "La misma de la app de AutoLibre." },
         {
-          id: "datos",
-          label: "Completá los datos del taller",
-          description: "Servicios, marcas que atendés, dirección y horarios.",
+          icon: "chat" as const,
+          title: "Pedidos con contexto",
+          body: "Cada consulta llega con la información del vehículo y el servicio solicitado.",
         },
         {
-          id: "revision",
-          label: "Lo revisamos y lo publicamos",
-          description: "Te contactamos por WhatsApp para activar tu perfil.",
+          icon: "document" as const,
+          title: "Tu perfil en la red",
+          body: "Un perfil propio en el directorio, con tus servicios, zona, horarios y contacto.",
+        },
+        {
+          icon: "shield-check" as const,
+          title: "Sin comisión",
+          body: "Registrarte es gratis y no cobramos comisión por los trabajos que hacés.",
+        },
+        {
+          icon: "chart" as const,
+          title: "Métricas de tu perfil",
+          body: "Ves cuántos clics recibe tu perfil desde AutoLibre.",
         },
       ],
+    },
+    steps: {
+      title: "Cómo es el registro",
+      items: [
+        { title: "Entrá o creá tu cuenta", body: "La misma de la app de AutoLibre." },
+        { title: "Completá los datos de tu negocio", body: "Servicios, marcas que atendés, dirección y horarios." },
+        { title: "Lo revisamos y lo publicamos", body: "Te contactamos por WhatsApp para activar tu perfil." },
+      ],
+      cta: "Registrar mi negocio",
+      timelineTitle: "Después de enviar, seguís el estado desde tu cuenta",
+    },
+    plans: {
+      title: "Empezás gratis. Si querés más pedidos, hay planes.",
+      lead: "Precio fijo mensual. El plan no influye en la recomendación de la IA.",
+      cta: "Comparar los planes",
+    },
+    faq: {
+      title: "Antes de registrarte",
+      helpPrefix: "¿Otra duda?",
+      helpCta: "Escribinos por WhatsApp",
+      whatsappMessage: "Hola! Quiero sumar mi negocio a AutoLibre y tengo una consulta.",
+      items: [
+        {
+          question: "¿Cuánto cuesta registrarme?",
+          answer:
+            "Nada. El registro de talleres y servicios en AutoLibre es gratis. Los planes pagos son opcionales y suman pedidos por WhatsApp.",
+        },
+        {
+          question: "¿Necesito crear otra cuenta si ya uso la app?",
+          answer:
+            "No. El registro se hace con tu cuenta de AutoLibre, la misma de la app. Con esa cuenta seguís haciendo pedidos para tu auto y además administrás tu negocio.",
+        },
+        {
+          question: "¿Qué datos me van a pedir?",
+          answer:
+            "El nombre del negocio, los servicios que ofrecés, las marcas que atendés, la dirección, los horarios y un WhatsApp de contacto. El logo, la descripción y las redes son opcionales.",
+        },
+        {
+          question: "¿Cuándo queda publicado?",
+          answer:
+            "Cuando aprobamos la solicitud. El equipo revisa los datos y te contacta por WhatsApp para activar tu perfil.",
+        },
+        {
+          question: "¿Pagar un plan me hace aparecer primero?",
+          answer: "No. El plan no influye en la recomendación de la IA: el usuario siempre elige libremente.",
+        },
+      ],
+    },
+    /** Barra fija inferior en celular. */
+    mobileBar: { label: "Registrar mi negocio", primary: "Registrar mi negocio", secondary: "Planes" },
+  },
+
+  /**
+   * El flujo del alta (`/proveedores/registro?alta=1`, lienzos
+   * `IngresarNegocio` y `Alta`). Privado de hecho: lo que se ve depende de la
+   * sesión y nunca está en el HTML del server.
+   */
+  flow: {
+    /** Indicador de tres pasos arriba del login. */
+    signInSteps: {
+      label: "Pasos del registro",
+      items: [
+        { id: "cuenta", label: "Tu cuenta" },
+        { id: "negocio", label: "Tu negocio" },
+        { id: "revision", label: "Revisión" },
+      ],
+    },
+    signInIntro: "Para registrar tu negocio necesitás una cuenta de AutoLibre. Es la misma de la app.",
+    loading: "Cargando el registro…",
+    /** Con sesión, mientras se consulta si la cuenta ya tiene un negocio. */
+    checking: "Buscando tu negocio…",
+    /**
+     * La cuenta ya es dueña de al menos un negocio aprobado: en lugar del
+     * formulario vacío, se lo mostramos y lo llevamos a "Mi negocio".
+     */
+    existing: {
+      title: "Tu negocio ya está en AutoLibre",
+      body: "Tu cuenta ya administra estos negocios. Desde Mi negocio ves tu perfil y tu plan.",
+      listLabel: "Tus negocios",
+      goToAccount: "Ir a mi negocio",
+      continueCheckout: (plan: string) => `Seguir con el plan ${plan}`,
+      registerAnother: "Registrar otro negocio",
+    },
+    /** Refresh después de enviar, con la solicitud todavía sin aprobar. */
+    pendingBody: "Ya recibimos tu solicitud y el equipo la está revisando. Cuando la aprobemos, tu negocio aparece en Mi negocio.",
+    /** Columna de pasos del formulario (cuenta ya hecha). */
+    sidebar: {
+      title: "Registrá tu negocio",
+      label: "Pasos del registro",
+      items: [
+        { id: "cuenta", label: "Tu cuenta", description: "La misma de la app" },
+        { id: "negocio", label: "Datos de tu negocio", description: "Nombre, servicios y marcas" },
+        { id: "atencion", label: "Atención", description: "Modalidad, dirección y horarios" },
+        { id: "contacto", label: "Contacto", description: "WhatsApp, logo y redes" },
+        { id: "revision", label: "Revisión", description: "Te contactamos por WhatsApp" },
+      ],
+    },
+    progressLabel: (step: number, total: number) => `Paso ${step} de ${total}`,
+    /** Título y bajada de cada paso del formulario (en orden). */
+    stepHeads: [
+      {
+        title: "Datos de tu negocio",
+        intro: "Así va a aparecer tu negocio en la red. Después lo podés editar desde tu cuenta.",
+      },
+      { title: "Cómo y dónde atendés", intro: "Con esto te recomendamos a la gente de tu zona." },
+      { title: "Contacto", intro: "Lo último. Después revisamos la solicitud y te avisamos." },
+    ],
+    sections: {
+      name: "¿Cómo se llama tu negocio?",
+      services: "¿Qué servicios ofrecés?",
+      servicesHint: "Abrí las categorías que te tocan y marcá los rubros que hacés. Si hacés todo lo de una, tildá la categoría entera.",
+      vehicles: "¿Qué vehículos atienden?",
+      modality: "¿Cómo atendés?",
+      address: "¿Dónde estás?",
+      hours: "¿En qué horarios atendés?",
+      contact: "¿Cómo te contactamos?",
+      contactHint: "Te escribimos a este WhatsApp para activar tu perfil.",
+      extras: "Sumá tu logo y tus redes",
+      extrasHint: "Es opcional. Podés registrarte sin cargarlos y completarlos después.",
+      howFound: "¿Cómo se enteraron de AutoLibre?",
+    },
+    back: "Atrás",
+    next: "Continuar",
+    nameLabel: "Nombre del negocio",
+    namePlaceholder: "Ej: Taller San Martín",
+    nameRequired: "Escribí el nombre de tu negocio.",
+    descriptionLabel: "Descripción del negocio",
+    optional: "(opcional)",
+    howFoundLabel: "Elegí cómo se enteraron",
+    emailLabel: "Email del negocio",
+    help: {
+      label: "¿Dudas? Escribinos",
+      whatsappMessage: "Hola! Estoy registrando mi negocio en AutoLibre y tengo una consulta.",
+    },
+    session: {
+      signedInAs: "Entraste como",
+      switchAccount: "Usar otra cuenta",
+      signingOut: "Cerrando sesión…",
     },
   },
 
@@ -217,6 +389,8 @@ export const providersContent = {
       label: "Logo del negocio (opcional)",
       hint: "PNG, JPG o WebP, hasta 512 KB. Podés registrarte sin cargar un logo.",
       invalid: "Elegí una imagen PNG, JPG o WebP de hasta 512 KB.",
+      choose: "Elegir imagen",
+      empty: "Ningún archivo elegido",
       remove: "Quitar logo",
       readError: "No pudimos leer el logo. Volvé a elegirlo o quitalo para continuar.",
     },

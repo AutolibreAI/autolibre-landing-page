@@ -8,7 +8,9 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       // Los endpoints no aportan nada al índice. `/ingest/` es el proxy de
       // PostHog (ver `next.config.ts`): que ningún crawler lo pida.
-      disallow: ["/api/", "/ingest/"],
+      // `/proveedores-filtros` es la ruta interna del directorio con filtros:
+      // se sirve SIEMPRE como `/proveedores?…` (rewrite), nunca por su nombre.
+      disallow: ["/api/", "/ingest/", "/proveedores-filtros"],
     },
     sitemap: `${siteConfig.url}/sitemap.xml`,
     host: siteConfig.url,

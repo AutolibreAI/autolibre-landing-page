@@ -1,13 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { SuccessHead } from "@/components/proveedores/flow/flow-result";
 import { FlowSteps } from "@/components/proveedores/flow/flow-steps";
 import { ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
-import { accountContent } from "@/lib/content/account";
 import { providersContent } from "@/lib/content/providers";
+import { siteContent } from "@/lib/content/site";
 import { PROVEEDORES_PLANES_PATH } from "@/lib/proveedores/query";
 import { whatsappUrl } from "@/lib/whatsapp";
 
@@ -27,17 +27,18 @@ type RegistrationStatusProps = {
 };
 
 /**
- * Lo que ve el taller después de enviar el alta: una pantalla de ESTADO, no
- * un "gracias" con un botón al inicio. Línea de tiempo de tres pasos
- * (enviada ✓ → en revisión, ahora → publicada), qué pasa ahora, y qué puede
- * hacer mientras tanto (planes, o volver a la contratación si vino de ahí).
+ * Lo que ve el negocio después de enviar el alta (lienzo `Alta`, paso
+ * "Enviado"): una pantalla de ESTADO, no un "gracias" con un botón al inicio.
+ * Línea de tiempo de tres pasos (enviada ✓ → en revisión, ahora →
+ * publicada) y qué puede hacer mientras tanto (planes, o volver a la
+ * contratación si vino de ahí).
  *
  * El 409 "ya te teníamos anotado" usa la misma pantalla: la solicitud existe
  * y alguien la va a mirar. Mostrarlo como error haría que la persona
  * reintente o piense que el sitio no anda.
  *
- * El foco va al título al aparecer: reemplaza al formulario entero y el
- * lector de pantalla tiene que arrancar desde acá.
+ * El `<h1>` es el de la pantalla (el del paso se fue con el formulario). El
+ * foco va al título al aparecer: el lector de pantalla arranca desde acá.
  */
 export function RegistrationStatus({ alreadyRegisteredMessage, checkout }: RegistrationStatusProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -47,44 +48,44 @@ export function RegistrationStatus({ alreadyRegisteredMessage, checkout }: Regis
   }, []);
 
   return (
-    <div className="flex flex-col gap-8 rounded-card bg-surface p-6 sm:p-8">
-      <div className="flex flex-col items-start gap-4">
-        <span
-          aria-hidden="true"
-          className="flex size-12 items-center justify-center rounded-full bg-brand/10 text-brand-hover"
-        >
-          <Icon name="check" size={24} strokeWidth={2} />
-        </span>
-        <div className="flex flex-col gap-2">
-          <h2 ref={headingRef} tabIndex={-1} className="font-display text-2xl font-bold text-ink">
-            {alreadyRegisteredMessage ? success.alreadyRegisteredTitle : success.title}
-          </h2>
-          <p className="text-ink/72">{alreadyRegisteredMessage ?? success.description}</p>
-        </div>
-      </div>
-
-      <FlowSteps
-        orientation="vertical"
-        label={success.timeline.label}
-        steps={success.timeline.steps}
-        current={IN_REVIEW}
-        currentBadge={success.timeline.currentBadge}
+    // 640px como máximo: también se ve suelta (refresh con la solicitud en
+    // revisión), fuera de la columna del alta, y a lo ancho se desarma.
+    <div className="flex max-w-160 flex-col gap-6">
+      <SuccessHead
+        headingRef={headingRef}
+        title={alreadyRegisteredMessage ? success.alreadyRegisteredTitle : success.title}
+        body={alreadyRegisteredMessage ?? success.description}
       />
 
-      <div className="flex flex-col gap-4 border-t border-line pt-6">
-        <h3 className="font-display text-lg font-bold text-ink">{success.nextTitle}</h3>
+      <section aria-labelledby="alta-estado" className="flex flex-col gap-4 rounded-2xl bg-canvas p-5 sm:p-6">
+        <h2 id="alta-estado" className="text-sm font-semibold text-fg">
+          {success.timeline.label}
+        </h2>
+        <FlowSteps
+          orientation="vertical"
+          label={success.timeline.label}
+          steps={success.timeline.steps}
+          current={IN_REVIEW}
+          currentBadge={success.timeline.currentBadge}
+        />
+      </section>
+
+      <section aria-labelledby="alta-mientras" className="flex flex-col gap-3">
+        <h2 id="alta-mientras" className="font-display text-lg font-semibold text-fg">
+          {success.nextTitle}
+        </h2>
         {checkout ? (
           <>
-            <p className="text-[0.9375rem] leading-relaxed text-ink/72">{success.checkout.body(checkout.planName)}</p>
+            <p className="text-base text-fg-muted">{success.checkout.body(checkout.planName)}</p>
             {/* Sin prefetch: la contratación es otra pantalla privada. */}
-            <ButtonLink href={checkout.href} prefetch={false} variant="outline" className="min-h-11 self-start">
+            <ButtonLink href={checkout.href} prefetch={false} variant="primary" size="48" className="self-start">
               {success.checkout.cta(checkout.planName)}
             </ButtonLink>
           </>
         ) : (
           <>
-            <p className="text-[0.9375rem] leading-relaxed text-ink/72">{success.plans.body}</p>
-            <ButtonLink href={PROVEEDORES_PLANES_PATH} className="min-h-11 self-start">
+            <p className="text-base text-fg-muted">{success.plans.body}</p>
+            <ButtonLink href={PROVEEDORES_PLANES_PATH} variant="primary" size="48" className="self-start">
               {success.plans.cta}
             </ButtonLink>
           </>
@@ -95,21 +96,13 @@ export function RegistrationStatus({ alreadyRegisteredMessage, checkout }: Regis
           rel="noopener noreferrer"
           data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
           data-analytics-placement="registro_enviado"
-          className="inline-flex min-h-11 items-center gap-2 self-start font-semibold text-brand-hover underline-offset-4 hover:underline"
+          className="inline-flex min-h-11 items-center gap-2 self-start font-semibold text-fg underline underline-offset-4 transition-colors hover:text-brand-hover motion-reduce:transition-none"
         >
-          <Icon name="whatsapp" size={18} strokeWidth={1.8} />
+          <Icon name="chat" size={18} strokeWidth={1.8} className="text-brand-hover" />
           {success.help.label}
+          <span className="sr-only"> {siteContent.nav.externalHint}</span>
         </a>
-        {/* Sin prefetch: `/cuenta` es otra pantalla privada con su Clerk. */}
-        <Link
-          href={accountContent.link.href}
-          prefetch={false}
-          className="-mt-3 inline-flex min-h-11 items-center gap-2 self-start font-semibold text-brand-hover underline-offset-4 hover:underline"
-        >
-          <Icon name="user" size={18} strokeWidth={1.8} />
-          {accountContent.link.label}
-        </Link>
-      </div>
+      </section>
     </div>
   );
 }

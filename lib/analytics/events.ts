@@ -40,10 +40,30 @@ export const ANALYTICS_EVENTS = {
    * `page` desde que la home no abre más el modal.
    */
   quoteCtaClicked: "quote_cta_clicked",
-  /** Empezó un pedido de presupuesto en `/pedido`. Meta: `QuoteStart`. */
+  /**
+   * Empezó un pedido de presupuesto (form de `/pedido` o pestaña Taller del
+   * módulo de pedido, con `tab` y `placement`). Meta: `QuoteStart`.
+   */
   quoteStarted: "quote_started",
-  /** Vio un paso del modal de presupuesto. Meta: `PedidoPaso`. */
+  /**
+   * Vio un paso del modal de presupuesto o el paso 2 del módulo de pedido
+   * (con `tab` y `placement`). Meta: `PedidoPaso`.
+   */
   quoteStepViewed: "quote_step_viewed",
+  /**
+   * Eligió una pestaña del módulo de pedido (Taller, Auxilio, Multas,
+   * Seguro). Solo la elección de la persona: la pestaña inicial no cuenta.
+   * Sólo PostHog.
+   */
+  quoteTabSelected: "quote_tab_selected",
+  /** Tocó un chip de "Lo más pedido" del módulo de pedido. Sólo PostHog. */
+  quoteChipClicked: "quote_chip_clicked",
+  /**
+   * Click en el CTA de un aliado desde una pestaña del módulo de pedido
+   * (Auxilio → Asistir24, Multas → Sin Fotomultas). Es el "inicio del
+   * pedido" de esas pestañas, que no tienen form propio. Sólo PostHog.
+   */
+  quotePartnerClicked: "quote_partner_clicked",
   /**
    * Pedido registrado por el backend. En PostHog lo manda el SERVER (ver
    * `app/api/presupuesto/route.ts`); el navegador sólo manda el `Lead` de Meta
@@ -52,6 +72,25 @@ export const ANALYTICS_EVENTS = {
   quoteSubmitted: "quote_submitted",
   /** El envío del pedido falló (red o respuesta de error). Sólo PostHog. */
   quoteFailed: "quote_failed",
+  /**
+   * Se mostró el bloque "Así se ve en la app" del estado enviado del módulo de
+   * pedido (una vez por envío, al aparecer). Sólo PostHog.
+   */
+  pedidoAppPromoView: "pedido_app_promo_view",
+  /**
+   * Click en un botón de tienda de una superficie de descarga con `section`
+   * (hoy solo el estado enviado del módulo de pedido). Lo pidió la
+   * especificación del ajuste "pedido enviado" (2026-11-24). Viaja JUNTO con
+   * `app_store_clicked` en el mismo click (`data-analytics-event` con los
+   * dos nombres): ese sigue siendo el conteo de clicks a tienda de todo el
+   * sitio y no se corta. Sólo PostHog.
+   */
+  ctaDownloadClick: "cta_download_click",
+  /**
+   * El QR de descarga entró en pantalla (solo existe desde `lg`: en celular
+   * no se dibuja y no se manda). Una vez por envío. Sólo PostHog.
+   */
+  qrView: "qr_view",
   /**
    * Click en "Pedir presupuesto" del estado vacío del directorio de
    * proveedores (una búsqueda o un filtro sin negocios). Mide cuántas
@@ -87,7 +126,8 @@ export const ANALYTICS_EVENTS = {
   subscriptionCancelFailed: "subscription_cancel_failed",
   /**
    * Click en un link al alta de talleres desde otra pantalla (clickable, con
-   * `data-analytics-placement`, ej. `cuenta_otro_taller_cargar`). Sólo
+   * `data-analytics-placement`, ej. `cuenta_otro_taller_cargar`, o los
+   * "Sumá tu negocio" del layout: `header`, `account_menu`, `footer`). Sólo
    * PostHog. Hasta el 2026-11-05 lo mandaba también el botón "Registrar mi
    * taller" de `/proveedores/registro` (sin `placement`), que ya no existe:
    * la página es el formulario.
@@ -101,6 +141,33 @@ export const ANALYTICS_EVENTS = {
   partnerClaimStarted: "partner_claim_started",
   /** Canje exitoso de un código de reclamo (spec 211). Nunca el código. */
   partnerClaimRedeemed: "partner_claim_redeemed",
+  /**
+   * Alta en pasos de `/proveedores/registro?alta=1` (rediseño 2026-11): la
+   * persona pasó un paso del formulario con "Continuar" (`step`: 1 = datos
+   * del negocio, 2 = atención). El inicio del registro es
+   * `partner_register_started` (clicks a la landing o al flujo). Sólo PostHog.
+   */
+  partnerRegisterStepCompleted: "partner_register_step_completed",
+  /**
+   * Fin del registro: el backend aceptó la solicitud (o ya existía:
+   * `already_registered`). `from_checkout`: vino de contratar un plan. Nunca
+   * datos del negocio. Sólo PostHog.
+   */
+  partnerRegisterSubmitted: "partner_register_submitted",
+  /**
+   * Eligió "Soy cliente" o "Tengo un taller o negocio" (registro, decisión
+   * del 2026-11-24). `placement`: `cuenta_crear` (antes del `<SignUp>` en
+   * `/cuenta`) o `cuenta_nueva` (cuenta recién creada desde "Ingresar", sin
+   * elección). Los flujos de proveedor fijan `partner` sin preguntar y no lo
+   * mandan. Sólo PostHog.
+   */
+  signupIntentSelected: "signup_intent_selected",
+  /**
+   * Resultado de guardar el intent en Clerk (`POST /api/account/intent`):
+   * `saved`, `existing` (ya tenía uno), `rejected` (cuenta vieja) o `failed`
+   * (se reintenta en la próxima carga). Sólo PostHog. Nunca datos personales.
+   */
+  signupIntentSaved: "signup_intent_saved",
 } as const;
 
 export type AnalyticsEventName =
@@ -145,10 +212,94 @@ export const QUOTE_CTA_PLACEMENTS = {
   headerMenu: "header_menu",
   homeQuotes: "home_quotes",
   footer: "footer",
+  /** Barra fija inferior en celular (home, `/pedido` y directorio). */
+  mobileBar: "mobile_bar",
+  /** Tarjetas de "Todo lo que podés pedir" del Home (llevan a `/pedido`). */
+  homeServices: "home_services",
+  /** "Hacé tu pedido" de la banda de cierre de `/pedido` (sube al módulo). */
+  pedidoCtaBand: "pedido_cta_band",
+  /**
+   * "Pedir propuestas" de la banda "¿No sabés a quién elegir?" del directorio
+   * (`/proveedores`): lleva a `/pedido` con el texto ya cargado.
+   */
+  directoryBand: "directory_band",
+  /** Llamado "Pedí propuestas" dentro de una nota del blog (lleva a `/pedido`). */
+  blogArticle: "blog_article",
+  /** "Hacé tu pedido" del cierre de `/sobre-nosotros`. */
+  aboutClosing: "about_closing",
+  /** "Hacé tu pedido" de la cuenta de cliente en `/cuenta`. */
+  accountCustomer: "cuenta_cliente",
 } as const;
 
 export type QuoteCtaPlacement =
   (typeof QUOTE_CTA_PLACEMENTS)[keyof typeof QUOTE_CTA_PLACEMENTS];
+
+/**
+ * Ubicaciones del layout compartido (header, menú de cuenta, barra fija,
+ * footer y botón flotante). Viajan como `placement` de `whatsapp_clicked`
+ * (WhatsApp de AutoLibre, sin `lead_source`: en Meta es `Contact`) y de
+ * `partner_register_started` ("Sumá tu negocio"). Son strings libres en el
+ * listener; esta lista es la referencia para no inventar variantes.
+ */
+export const LAYOUT_PLACEMENTS = {
+  /** "Sumá tu negocio" del header (desde `lg`). */
+  header: "header",
+  /** "Sumá tu negocio" dentro del menú de cuenta (o del menú mobile). */
+  accountMenu: "account_menu",
+  /** Barra fija inferior en celular. */
+  mobileBar: "mobile_bar",
+  /** Links del footer. */
+  footer: "footer",
+  /** Botón flotante de WhatsApp. */
+  fab: "fab",
+} as const;
+
+/**
+ * Pestañas del módulo de pedido (`components/modulo-pedido`). Viaja como
+ * `tab`; el listener de `data-analytics-tab` y la route de
+ * `/api/presupuesto` descartan cualquier otro valor. Solo `taller` manda un
+ * pedido al backend; Auxilio y Multas llevan a un aliado. Sin `seguro`
+ * desde el 2026-11-24 (decisión de producto: no se ofrecen seguros por
+ * ahora); los eventos viejos con `tab: "seguro"` quedan en el histórico.
+ */
+export const QUOTE_TABS = {
+  taller: "taller",
+  auxilio: "auxilio",
+  multas: "multas",
+} as const;
+
+export type QuoteTab = (typeof QUOTE_TABS)[keyof typeof QUOTE_TABS];
+
+/**
+ * Dónde está montado el módulo de pedido. Viaja como `placement` de sus
+ * eventos (incluido `whatsapp_clicked`) y del `quote_submitted` del server.
+ */
+export const QUOTE_MODULE_PLACEMENTS = {
+  home: "modulo_home",
+  pedido: "modulo_pedido",
+} as const;
+
+export type QuoteModulePlacement =
+  (typeof QUOTE_MODULE_PLACEMENTS)[keyof typeof QUOTE_MODULE_PLACEMENTS];
+
+/** Chips de "Lo más pedido" del módulo. Viaja como `chip` (el id, nunca texto libre). */
+export const QUOTE_CHIPS = {
+  service: "service",
+  luzTablero: "luz_tablero",
+  alineacion: "alineacion_balanceo",
+  frenos: "frenos",
+  aire: "aire_acondicionado",
+} as const;
+
+export type QuoteChip = (typeof QUOTE_CHIPS)[keyof typeof QUOTE_CHIPS];
+
+/** Props comunes de los eventos del módulo de pedido. */
+type QuoteModuleProps = {
+  /** Pestaña del módulo. Solo en eventos del módulo de pedido. */
+  tab?: QuoteTab;
+  /** Dónde está montado el módulo. */
+  placement?: QuoteModulePlacement;
+};
 
 /**
  * Qué flujo de pedido: el form de `/pedido` (`page`) o el modal de la home
@@ -174,6 +325,20 @@ export const APP_STORES = {
 export type AppStore = (typeof APP_STORES)[keyof typeof APP_STORES];
 
 /**
+ * Superficie de descarga de `cta_download_click` y `qr_view`. Viaja como
+ * `section`; el listener de `data-analytics-section` descarta cualquier otro
+ * valor.
+ */
+export const DOWNLOAD_SECTIONS = {
+  /** Bloque de la app del estado enviado del módulo de pedido. */
+  pedidoEnviado: "pedido_enviado",
+  /** Columna "En la app" de "Así te llega la respuesta" en `/pedido`. */
+  pedidoRespuesta: "pedido_respuesta",
+} as const;
+
+export type DownloadSection = (typeof DOWNLOAD_SECTIONS)[keyof typeof DOWNLOAD_SECTIONS];
+
+/**
  * Planes pagos de proveedores: los `code` del backend (`GET /billing/plans`).
  * Viaja como `plan`; el listener de `data-analytics-plan` descarta cualquier
  * otro valor.
@@ -184,6 +349,17 @@ export const PARTNER_PLANS = {
 } as const;
 
 export type PartnerPlan = (typeof PARTNER_PLANS)[keyof typeof PARTNER_PLANS];
+
+/** Dónde se eligió el intent del registro (`signup_intent_selected`). */
+export const SIGNUP_INTENT_PLACEMENTS = {
+  /** "Crear cuenta" de `/cuenta`, antes del `<SignUp>`. */
+  accountCreate: "cuenta_crear",
+  /** Cuenta recién creada desde "Ingresar" (Google o email nuevo), sin elección. */
+  accountNew: "cuenta_nueva",
+} as const;
+
+export type SignupIntentPlacement =
+  (typeof SIGNUP_INTENT_PLACEMENTS)[keyof typeof SIGNUP_INTENT_PLACEMENTS];
 
 /** Props de cada evento. Tipados para que un typo no abra una columna nueva. */
 export type AnalyticsEventProps = {
@@ -196,6 +372,8 @@ export type AnalyticsEventProps = {
     pedido?: true;
     /** Slug del proveedor cuando el click es de su perfil público. */
     provider?: string;
+    /** Pestaña del módulo de pedido desde la que se abrió el chat. */
+    tab?: QuoteTab;
   };
   provider_action_clicked: {
     action: ProviderAction;
@@ -206,17 +384,39 @@ export type AnalyticsEventProps = {
   app_store_clicked: {
     store: AppStore;
     placement?: string;
+    /** Superficie de descarga, si la tiene (ver `cta_download_click`). */
+    section?: DownloadSection;
   };
   quote_cta_clicked: { placement: QuoteCtaPlacement };
-  quote_started: { flow: QuoteFlow };
-  quote_step_viewed: { flow: QuoteFlow; step: number };
-  quote_submitted: { flow: QuoteFlow; lead_source?: LeadSource };
+  quote_started: { flow: QuoteFlow } & QuoteModuleProps;
+  quote_step_viewed: { flow: QuoteFlow; step: number } & QuoteModuleProps;
+  quote_submitted: { flow: QuoteFlow; lead_source?: LeadSource } & QuoteModuleProps;
   quote_failed: {
     flow: QuoteFlow;
     /** `network`: no hubo respuesta. `server`: el backend respondió error. */
     reason: "network" | "server";
     status?: number;
+  } & QuoteModuleProps;
+  quote_tab_selected: { tab: QuoteTab; placement: QuoteModulePlacement };
+  pedido_app_promo_view: {
+    placement: QuoteModulePlacement;
+    /** Copy con el pedido ya en la app (`APP_VINCULADA`). Hoy siempre `false`. */
+    app_linked: boolean;
   };
+  cta_download_click: {
+    store: AppStore;
+    section: DownloadSection;
+    /** Dónde está montado el módulo (`modulo_home` o `modulo_pedido`). */
+    placement?: string;
+  };
+  qr_view: { section: DownloadSection; placement?: QuoteModulePlacement };
+  quote_chip_clicked: {
+    chip: QuoteChip;
+    placement: QuoteModulePlacement;
+    /** `true` si el toque lo dejó puesto; `false` si lo sacó. */
+    selected: boolean;
+  };
+  quote_partner_clicked: { tab: QuoteTab; placement?: string };
   directory_empty_quote_clicked: {
     /** Había una búsqueda por nombre. Sólo la presencia, nunca el texto. */
     has_query?: true;
@@ -257,6 +457,21 @@ export type AnalyticsEventProps = {
   partner_claim_redeemed: {
     /** El canje vino de la contratación de un plan (`?next`). */
     from_checkout?: true;
+  };
+  partner_register_step_completed: {
+    step: number;
+  };
+  partner_register_submitted: {
+    already_registered?: true;
+    from_checkout?: true;
+  };
+  signup_intent_selected: {
+    intent: "partner" | "customer";
+    placement: SignupIntentPlacement;
+  };
+  signup_intent_saved: {
+    intent: "partner" | "customer";
+    result: "saved" | "existing" | "rejected" | "failed";
   };
 };
 
@@ -347,6 +562,36 @@ export const ANALYTICS_CATALOG: Record<AnalyticsEventName, CatalogEntry> = {
     meta: () => null,
     clickable: false,
   },
+  quote_tab_selected: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  pedido_app_promo_view: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  cta_download_click: {
+    posthog: "client",
+    meta: () => null,
+    clickable: true,
+  },
+  qr_view: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  quote_chip_clicked: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  quote_partner_clicked: {
+    posthog: "client",
+    meta: () => null,
+    clickable: true,
+  },
   directory_empty_quote_clicked: {
     posthog: "client",
     meta: () => null,
@@ -393,6 +638,26 @@ export const ANALYTICS_CATALOG: Record<AnalyticsEventName, CatalogEntry> = {
     clickable: true,
   },
   partner_claim_redeemed: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  partner_register_step_completed: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  partner_register_submitted: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  signup_intent_selected: {
+    posthog: "client",
+    meta: () => null,
+    clickable: false,
+  },
+  signup_intent_saved: {
     posthog: "client",
     meta: () => null,
     clickable: false,

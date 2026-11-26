@@ -1,125 +1,99 @@
-import { ButtonLink, buttonVariants } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { ButtonAnchor, ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { providersPlansContent } from "@/lib/content/providers-plans";
-import { whatsappUrl } from "@/lib/whatsapp";
+import { siteContent } from "@/lib/content/site";
 import { cn } from "@/lib/utils";
+import { whatsappUrl } from "@/lib/whatsapp";
 
 /**
- * Cards de los planes de `/proveedores/planes`, más la card de contacto con
- * ventas. Ids de cada plan en `h3` para que el outline del documento quede
- * correcto (la página los referencia como hijos del `h2` de la sección).
+ * Tarjetas de los planes de `/proveedores/planes` (lienzo `Planes`): nombre,
+ * bajada, precio y botón, y recién después qué incluye (cada pago dice qué
+ * suma sobre el anterior). Debajo, "¿Necesitás más volumen…?" con ventas.
+ *
+ * Outline: un `h2` (solo para lectores) para la grilla y un `h3` por plan.
+ * Los planes pagos llevan a la contratación, que carga Clerk: sin prefetch
+ * (ni en viewport ni en hover), así esta página no baja nada de Clerk.
  */
 export function ProvidersPlansGrid() {
-  const { plans, notes, sales } = providersPlansContent;
+  const { plans, sales, gridTitle } = providersPlansContent;
 
   return (
-    <div className="mx-auto max-w-275">
-      <ul className="grid gap-6 md:grid-cols-3">
-        {plans.map((plan) => (
-          <Card
-            key={plan.id}
-            as="li"
-            variant={plan.highlighted ? "elevated" : "outline"}
-            className={cn(
-              "flex flex-col gap-6 p-8",
-              plan.highlighted && "border-2 border-brand",
-            )}
-          >
-            <div>
-              <h3 className="font-display text-lg font-bold text-ink">
-                {plan.name}
-              </h3>
-              <p className="mt-4 flex items-baseline gap-1.5">
-                <span className="font-display text-3xl font-bold text-ink tabular-nums">
-                  {plan.price}
-                </span>
-                {plan.priceNote ? (
-                  <span className="text-[0.9375rem] text-ink/60">
-                    {plan.priceNote}
-                  </span>
-                ) : null}
-              </p>
-              <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink/70">
-                {plan.description}
-              </p>
-            </div>
-
-            <ul className="flex flex-1 flex-col gap-3">
-              {plan.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-2.5">
-                  <Icon
-                    name="check"
-                    size={18}
-                    className="mt-0.5 shrink-0 text-brand"
-                  />
-                  <span className="text-[0.9375rem] leading-relaxed text-ink/80">
-                    {feature}
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            {/* El plan gratis lleva al alta (`/proveedores/registro`, el
-                formulario); los pagos, a la contratación online (spec 212).
-                Las dos cargan Clerk: sin prefetch (ni en viewport ni en
-                hover), así esta página no baja nada de Clerk (SC-005). */}
-            <ButtonLink
-              href={plan.cta.href}
-              prefetch={false}
-              variant={plan.highlighted ? "primary" : "outline"}
-              block
-              {...("analyticsPlan" in plan.cta
-                ? {
-                    "data-analytics-event": ANALYTICS_EVENTS.planCheckoutStarted,
-                    "data-analytics-plan": plan.cta.analyticsPlan,
-                  }
-                : {})}
+    <div className="flex flex-col gap-4">
+      <h2 id="planes-grilla" className="sr-only">
+        {gridTitle}
+      </h2>
+      <ul aria-labelledby="planes-grilla" className="grid gap-4 md:grid-cols-3 lg:gap-6">
+        {plans.map((plan) => {
+          const paid = "analyticsPlan" in plan.cta;
+          return (
+            <li
+              key={plan.id}
+              className={cn(
+                "flex flex-col gap-6 rounded-3xl bg-card p-6 lg:p-7",
+                plan.highlighted ? "border-2 border-action" : "border border-card-line",
+              )}
             >
-              {plan.cta.label}
-            </ButtonLink>
-          </Card>
-        ))}
+              <div className="flex flex-col gap-2">
+                <h3 className="font-display text-2xl font-semibold text-fg">{plan.name}</h3>
+                <p className="text-base text-fg-muted">{plan.description}</p>
+              </div>
+              <p className="flex flex-col">
+                <span className="font-display text-4xl font-bold tracking-tight text-fg tabular-nums">{plan.price}</span>
+                {plan.priceNote ? <span className="text-sm text-fg-muted">{plan.priceNote}</span> : null}
+              </p>
+              <ButtonLink
+                href={plan.cta.href}
+                prefetch={paid ? false : undefined}
+                variant={plan.highlighted ? "primary" : "outline"}
+                size="48"
+                block
+                {...(paid
+                  ? {
+                      "data-analytics-event": ANALYTICS_EVENTS.planCheckoutStarted,
+                      "data-analytics-plan": plan.cta.analyticsPlan,
+                    }
+                  : {
+                      "data-analytics-event": ANALYTICS_EVENTS.partnerRegisterStarted,
+                      "data-analytics-placement": "planes_gratis",
+                    })}
+              >
+                {plan.cta.label}
+              </ButtonLink>
+              <div className="flex flex-col gap-3 border-t border-card-line pt-5">
+                <p className="text-sm font-semibold text-fg">{plan.includesLabel}</p>
+                <ul className="flex flex-col gap-2.5">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-2.5 text-control text-fg-muted">
+                      <Icon name="check" size={18} strokeWidth={2.2} className="mt-0.5 shrink-0 text-brand-hover" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
 
-        <Card
-          as="li"
+      <div className="flex flex-col gap-4 rounded-3xl bg-canvas p-6 md:flex-row md:items-center md:justify-between md:gap-8 lg:px-7">
+        <h3 className="font-display text-xl font-semibold text-fg md:max-w-70">{sales.title}</h3>
+        <p className="text-base text-fg-muted md:max-w-100 md:flex-1">{sales.description}</p>
+        <ButtonAnchor
+          href={whatsappUrl(sales.whatsappMessage)}
+          target="_blank"
+          rel="noopener noreferrer"
           variant="outline"
-          className="flex flex-col gap-4 p-8 md:col-span-3 md:flex-row md:items-center md:justify-between"
+          size="48"
+          data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
+          data-analytics-placement="proveedores_planes_ventas"
+          className="shrink-0 self-start md:self-auto"
         >
-          <div>
-            <h3 className="font-display text-lg font-bold text-ink">
-              {sales.title}
-            </h3>
-            <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink/70">
-              {sales.description}
-            </p>
-          </div>
-          {/* `<a>` nativo: sale del sitio a WhatsApp, igual criterio que el
-              resto de los links de WhatsApp del sitio. */}
-          <a
-            href={whatsappUrl(sales.whatsappMessage)}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
-            data-analytics-placement="proveedores_planes_ventas"
-            className={cn(buttonVariants({ variant: "outline" }), "shrink-0")}
-          >
-            {sales.cta.label}
-          </a>
-        </Card>
-      </ul>
-
-      <ul className="mt-6 flex flex-col gap-1.5">
-        {notes.map((note) => (
-          <li
-            key={note}
-            className="text-label leading-relaxed text-ink/65"
-          >
-            {note}
-          </li>
-        ))}
-      </ul>
+          <Icon name="chat" size={18} strokeWidth={1.8} className="text-brand-hover" />
+          {sales.cta.label}
+          <span className="sr-only"> {siteContent.nav.externalHint}</span>
+        </ButtonAnchor>
+      </div>
     </div>
   );
 }

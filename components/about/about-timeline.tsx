@@ -1,140 +1,65 @@
-import { SectionHeading } from "@/components/ui/heading";
-import { Icon } from "@/components/ui/icon";
+import { aboutSectionTitle } from "@/components/about/styles";
 import { Section } from "@/components/ui/section";
-import { aboutContent, type AboutMilestone, type MilestoneStatus } from "@/lib/content/about";
+import { aboutContent } from "@/lib/content/about";
 import { cn } from "@/lib/utils";
 
 /**
- * Marcador de cada hito sobre la línea (el de `current` es el pin, aparte).
- * Cumplido: punto verde de 12px con un aro del color del fondo que lo
- * "recorta" de la ruta, como una parada. Lo que viene: hueco, solo el
- * contorno.
- */
-const markers: Record<Exclude<MilestoneStatus, "current">, string> = {
-  done: "size-3 bg-brand ring-4 ring-surface",
-  next: "size-3 border-2 border-ink/40 bg-surface",
-};
-
-/**
- * Tramo de la ruta. Recorrido: 2px en `brand/60`, el mismo verde de la ruta
- * del hero de la home. Por recorrer: el hairline neutro de siempre.
+ * "Cómo llegamos hasta acá" (referencia Hims, "Company milestones"): título
+ * fijo a la izquierda desde `lg` y, a la derecha, una `<ol>` sobre una línea
+ * fina con fecha, título y texto. Todo en el DOM, sin carrusel ni tabs.
  *
- * Liso y no punteado como en la home: cada tramo es un nodo propio por
- * renglón, y un punteado arrancaría su patrón en cada uno y dejaría puntos
- * pegados en las uniones. El punteado queda para la ilustración del hero.
- */
-function segmentClass(travelled: boolean) {
-  return travelled ? "w-0.5 bg-brand/60" : "w-px bg-line";
-}
-
-/** Un tramo está recorrido si el hito al que LLEGA ya se alcanzó. */
-function isReached(milestone: AboutMilestone | undefined) {
-  return milestone !== undefined && milestone.status !== "next";
-}
-
-/**
- * Línea de tiempo en una `<ol>` vertical, todo en el DOM (sin carrusel ni
- * tabs). La línea es la ruta de la home (decisión 2026-10-02): verde desde el
- * primer hito hasta el de hoy, que se marca con el pin donde termina la
- * ruta; si hay hitos `next`, su tramo sigue neutro. Cada renglón dibuja dos
- * tramos, del borde de arriba al marcador y del marcador al de abajo, así
- * el color cambia justo en el hito. Desde `sm`, tres columnas: fecha · marcador · texto. En mobile el
- * bloque de texto (`sm:contents`) junta fecha, título y descripción en una
- * columna al lado del marcador; desde `sm` ese mismo bloque "desaparece" y
- * sus hijos se ordenan en la fila con `order`, sin duplicar la fecha.
+ * Cada hito es un `h3` (cuelga del `h2`). El hito de hoy lleva el marcador
+ * relleno y la etiqueta visible "Hoy"; los demás, el aro. Los marcadores son
+ * decorativos. La línea es `control-line-strong` (4.79:1 sobre `card`).
  */
 export function AboutTimeline() {
   const { title, intro, milestones, statusLabel } = aboutContent.timeline;
 
   return (
-    <Section spacing="md" aria-labelledby="como-llegamos">
-      {/* Regla gruesa en tinta bajo el encabezado, como "Últimas notas" del
-          blog. La bajada se acota desde afuera (`[&>p]`): `SectionHeading`
-          es compartido y no se toca para una página. */}
-      <SectionHeading
-        as="h2"
-        size="md"
-        id="como-llegamos"
-        title={title}
-        subtitle={intro}
-        className="border-b border-ink pb-6 [&>p]:max-w-150"
-      />
+    <Section
+      spacing="md"
+      aria-labelledby="como-llegamos"
+      className="bg-card pt-12 pb-6 md:pt-22 md:pb-10"
+    >
+      <div className="flex flex-wrap items-start gap-x-18 gap-y-8">
+        <div className="min-w-0 flex-[1_1_20rem] lg:sticky lg:top-24">
+          <h2 id="como-llegamos" className={aboutSectionTitle}>
+            {title}
+          </h2>
+          <p className="mt-3.5 max-w-90 text-lead text-fg-muted">{intro}</p>
+        </div>
 
-      <ol className="reveal-group">
-        {milestones.map((milestone, index) => {
-          const isFuture = milestone.status === "next";
-          const dateClass =
-            "font-display text-lg font-bold text-ink tabular-nums sm:order-1 sm:w-40 sm:shrink-0";
-
-          return (
-            <li
-              key={milestone.id}
-              className="group relative flex gap-5 border-b border-line py-8 last:border-b-0 sm:gap-8"
-            >
-              {/* Ruta + marcador: decorativos, el estado va en texto (sr-only
-                  o visible). El marcador se ancla a 44px (`top-11`) del
-                  borde del renglón: con el `-my-8`, a la altura de la fecha. */}
-              <div aria-hidden="true" className="relative -my-8 w-4 shrink-0 sm:order-2">
+        <ol className="mt-1.5 ml-1.5 min-w-0 flex-[1.5_1_28rem] border-l border-control-line-strong">
+          {milestones.map((milestone) => {
+            const isCurrent = milestone.status === "current";
+            return (
+              <li key={milestone.id} className="relative pb-7.5 pl-8">
                 <span
+                  aria-hidden="true"
                   className={cn(
-                    "absolute top-0 left-1/2 h-11 -translate-x-1/2 group-first:hidden",
-                    segmentClass(isReached(milestone)),
+                    "absolute top-1.5 -left-1.5 size-3 rounded-full",
+                    isCurrent ? "bg-action" : "border-2 border-action bg-card",
                   )}
                 />
-                <span
-                  className={cn(
-                    "absolute top-11 bottom-0 left-1/2 -translate-x-1/2 group-last:hidden",
-                    segmentClass(isReached(milestones[index + 1])),
-                  )}
-                />
-                {milestone.status === "current" ? (
-                  // El pin del final de la ruta: su punta (12, 21 de 24)
-                  // cae en el ancla, donde termina el tramo verde.
-                  <Icon
-                    name="pin"
-                    size={28}
-                    strokeWidth={2}
-                    className="absolute top-11 left-1/2 -translate-x-1/2 -translate-y-7/8 text-brand"
-                  />
-                ) : (
-                  <span
-                    className={cn(
-                      "absolute top-11 left-1/2 -translate-1/2 rounded-full",
-                      markers[milestone.status],
-                    )}
-                  />
-                )}
-              </div>
-
-              <div className="flex min-w-0 flex-1 flex-col gap-2 sm:contents">
-                {milestone.date ? (
-                  <time dateTime={milestone.date} className={dateClass}>
-                    {milestone.dateLabel}
-                  </time>
-                ) : (
-                  <p className={cn(dateClass, "text-ink/60")}>{milestone.dateLabel}</p>
-                )}
-
-                <div className="sm:order-3 sm:min-w-0 sm:flex-1">
-                  {milestone.status === "done" ? (
-                    <p className="sr-only">{statusLabel.done}</p>
+                <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm font-semibold text-fg-muted">
+                  {milestone.date ? (
+                    <time dateTime={milestone.date}>{milestone.dateLabel}</time>
                   ) : (
-                    <p className="mb-1 text-label font-semibold text-brand-hover">
-                      {statusLabel[milestone.status]}
-                    </p>
+                    milestone.dateLabel
                   )}
-                  <h3 className={cn("text-xl leading-snug", isFuture ? "text-ink/70" : "text-ink")}>
-                    {milestone.title}
-                  </h3>
-                  <p className="mt-2 max-w-150 text-base leading-relaxed text-ink/70">
-                    {milestone.description}
-                  </p>
-                </div>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
+                  {isCurrent ? (
+                    <span className="rounded-full bg-action px-2.5 py-0.5 text-xs font-semibold text-white">
+                      {statusLabel.current}
+                    </span>
+                  ) : null}
+                </p>
+                <h3 className="mt-1 text-xl leading-snug text-fg">{milestone.title}</h3>
+                <p className="mt-1 max-w-140 text-base text-fg-muted">{milestone.description}</p>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
     </Section>
   );
 }

@@ -15,13 +15,13 @@ export function LatestList({ posts, seeAllHref }: LatestListProps) {
 
   return (
     <aside aria-labelledby="ultimas-notas">
-      <div className="flex items-baseline justify-between gap-4 border-b border-ink pb-4">
-        <h2 id="ultimas-notas" className="text-2xl text-ink">
+      <div className="flex items-baseline justify-between gap-4 border-b border-action pb-4">
+        <h2 id="ultimas-notas" className="text-2xl text-fg">
           {blogContent.latest.heading}
         </h2>
         <Link
           href={seeAllHref}
-          className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-hover hover:text-brand"
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-hover hover:text-fg"
         >
           {blogContent.latest.seeAll}
         </Link>
@@ -30,15 +30,15 @@ export function LatestList({ posts, seeAllHref }: LatestListProps) {
         {posts.map((post) => {
           const date = formatPostDate(post.date);
           return (
-            <li key={post.id} className="border-b border-line last:border-b-0">
+            <li key={post.id} className="border-b border-card-line last:border-b-0">
               <article>
                 <Link href={postPath(post)} className="group flex flex-col gap-1.5 py-5">
                   <p className="text-label font-semibold text-brand-hover">{post.category.name}</p>
-                  <h3 className="text-xl leading-snug text-ink transition-colors group-hover:text-brand-hover">
+                  <h3 className="text-xl leading-snug text-fg transition-colors group-hover:text-brand-hover">
                     {post.title}
                   </h3>
                   {date ? (
-                    <p className="text-label text-ink/60">
+                    <p className="text-label text-fg-muted">
                       <time dateTime={post.date}>{date}</time>
                     </p>
                   ) : null}

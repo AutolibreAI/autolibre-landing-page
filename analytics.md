@@ -49,21 +49,36 @@ Todos los eventos de PostHog llevan `app: "landing"`, y los de la sesión incluy
 
 ## 3. Eventos explícitos, página por página
 
-### 🌐 Header (todas las páginas excepto `/pedido`)
+### 🌐 Header, menú de cuenta, barra fija, footer y botón flotante (layout compartido)
 
-| Botón                                             | Evento PostHog      | Props                               | Meta | Cuándo                                                      |
-| ------------------------------------------------- | ------------------- | ----------------------------------- | ---- | ----------------------------------------------------------- |
-| "Descargar" en el header, desktop (`DownloadCta`) | `app_store_clicked` | `store`, `placement: "header"`      | —    | Click. Muestra App Store o Google Play según el dispositivo |
-| "Descargar" en el menú mobile                     | `app_store_clicked` | `store`, `placement: "header_menu"` | —    | Click                                                       |
+Desde la fase 2 del rediseño (2026-11-24) el header ya no tiene "Descargar la app": los `app_store_clicked` con `placement: "header"` y `"header_menu"` dejan de llegar desde esa fecha. Su acción principal es "Hacé tu pedido" (salvo en `/pedido`, `/proveedores/planes` y `/proveedores/registro`, que la piden sin ella). Los placements del layout están en `LAYOUT_PLACEMENTS` y `QUOTE_CTA_PLACEMENTS` (`lib/analytics/events.ts`).
+
+| Botón                                                            | Evento PostHog             | Props                           | Meta                  | Cuándo |
+| ---------------------------------------------------------------- | -------------------------- | ------------------------------- | --------------------- | ------ |
+| "Hacé tu pedido" del header (desde `lg`)                         | `quote_cta_clicked`        | `placement: "header"`           | —                     | Click  |
+| "Hacé tu pedido" del menú mobile                                 | `quote_cta_clicked`        | `placement: "header_menu"`      | —                     | Click  |
+| "Hacé tu pedido" de la barra fija en celular (home, directorio)  | `quote_cta_clicked`        | `placement: "mobile_bar"`       | —                     | Click  |
+| "Hacé tu pedido" del footer                                      | `quote_cta_clicked`        | `placement: "footer"`           | —                     | Click  |
+| WhatsApp de la barra fija en celular                             | `whatsapp_clicked`         | `placement: "mobile_bar"`       | `Contact {placement}` | Click  |
+| WhatsApp del footer                                              | `whatsapp_clicked`         | `placement: "footer"`           | `Contact {placement}` | Click  |
+| Botón flotante de WhatsApp                                       | `whatsapp_clicked`         | `placement: "fab"`              | `Contact {placement}` | Click  |
+| "Sumá tu negocio" del header (desde `lg`, sin sesión o cliente)  | `partner_register_started` | `placement: "header"`           | —                     | Click  |
+| "Sumá tu negocio" del menú de cuenta (o del menú mobile)         | `partner_register_started` | `placement: "account_menu"`     | —                     | Click  |
+| "Sumate como proveedor" del footer                               | `partner_register_started` | `placement: "footer"`           | —                     | Click  |
+
+"Ir a mi negocio" (proveedor) y el resto de las opciones del menú de cuenta no tienen evento propio: se ve el `$pageview` de destino. Ningún prop dice si la persona tiene sesión ni su rol.
 
 ### 🏠 Home `/`
 
-| Botón / zona                           | Evento PostHog                  | Props                               | Meta                  | Cuándo |
-| -------------------------------------- | ------------------------------- | ----------------------------------- | --------------------- | ------ |
-| Botones de tienda del hero             | `app_store_clicked`             | `store`, `placement: "hero"`        | —                     | Click  |
-| Botones de tienda del CTA de cierre    | `app_store_clicked`             | `store`, `placement: "closing_cta"` | —                     | Click  |
-| WhatsApp en la sección de presupuestos | `whatsapp_clicked`              | `placement: "home_quotes"`          | `Contact {placement}` | Click  |
-| "Pedir presupuesto" (abre el modal)    | (sin evento propio) → ver modal |                                     |                       |        |
+Desde el 2026-11-24 (rediseño, fase 4a) el Home monta el módulo de pedido (`placement: "modulo_home"`, ver más abajo). Dejan de llegar `app_store_clicked` `hero` y `closing_cta` del Home, y `whatsapp_clicked` / `quote_cta_clicked` `home_quotes` (esas secciones ya no existen; `closing_cta` sigue llegando desde `/blog` y `/sobre-nosotros`).
+
+| Botón / zona                                        | Evento PostHog             | Props                                  | Meta                  | Cuándo |
+| --------------------------------------------------- | -------------------------- | -------------------------------------- | --------------------- | ------ |
+| Tarjetas y links de "Todo lo que podés pedir"       | `quote_cta_clicked`        | `placement: "home_services"`           | —                     | Click (llevan a `/pedido`) |
+| "Hacé tu pedido" de la barra fija (sube al módulo)  | `quote_cta_clicked`        | `placement: "mobile_bar"`              | —                     | Click  |
+| Botones de tienda del panel de la app               | `app_store_clicked`        | `store`, `placement: "home_app"`       | —                     | Click  |
+| WhatsApp del texto de la FAQ                        | `whatsapp_clicked`         | `placement: "home_faq"`                | `Contact {placement}` | Click  |
+| "Sumate a AutoLibre" de la banda para negocios      | `partner_register_started` | `placement: "home_band"`               | —                     | Click  |
 
 ### 🪟 Modal de presupuesto (se abre desde la home), 4 pasos
 
@@ -78,19 +93,41 @@ Todos los eventos de PostHog llevan `app: "landing"`, y los de la sesión incluy
 
 ### 📝 `/pedido`, la página de la campaña
 
-Hasta el 2026-11-05 el header de `/pedido` tenía un botón de WhatsApp (`placement: "header"` y `"header_menu"`, con `lead_source: "whatsapp"`). Ya no existe: el header muestra el CTA de descarga de siempre, así que esos placements de `whatsapp_clicked` dejan de llegar desde esa fecha.
+Hasta el 2026-11-05 el header de `/pedido` tenía un botón de WhatsApp (`placement: "header"` y `"header_menu"`, con `lead_source: "whatsapp"`). Ya no existe, así que esos placements de `whatsapp_clicked` (con `lead_source`) dejan de llegar desde esa fecha. Desde el 2026-11-24 el header de `/pedido` va sin acción principal (la página ES el pedido).
 
-| Botón / zona                                                               | Evento PostHog     | Props                                                    | Meta                                                                       | Cuándo                           |
-| -------------------------------------------------------------------------- | ------------------ | -------------------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------- |
-| WhatsApp del hero                                                          | `whatsapp_clicked` | `placement: "hero"`, `lead_source: "whatsapp"`           | `Lead`                                                                     | Click                            |
-| WhatsApp de la barra fija (sticky)                                         | `whatsapp_clicked` | `placement: "sticky_bar"`, `lead_source: "whatsapp"`     | `Lead`                                                                     | Click                            |
-| WhatsApp de la banda CTA                                                   | `whatsapp_clicked` | `placement: "cta_band"`, `lead_source: "whatsapp"`       | `Lead`                                                                     | Click                            |
-| Primera interacción con el formulario (foco en un campo o un atajo rápido) | `quote_started`    | `flow: "page"`                                           | `QuoteStart` (custom)                                                      | Una vez por carga del formulario |
-| Pedido registrado                                                          | `quote_submitted`  | server, ver [sección 4](#4-quote_submitted-en-el-server) | `Lead {lead_source: "form"}` + `eventID` compartido con la Conversions API | Solo con OK del backend          |
-| Envío fallido                                                              | `quote_failed`     | `flow: "page"`, `reason`, `status?`                      | —                                                                          | Error                            |
-| WhatsApp de la confirmación                                                | `whatsapp_clicked` | `placement: "confirmation"`, `pedido: true`              | `Contact` (no Lead)                                                        | Click después de pedir           |
+Desde el 2026-11-24 (rediseño, fase 4a) el formulario de `/pedido` es el módulo de pedido (`placement: "modulo_pedido"`, ver abajo). Se fueron el form viejo (`flow: "page"` sin `tab`), el hero con WhatsApp y QR y la barra fija vieja: dejan de llegar `whatsapp_clicked` `hero`, `sticky_bar` y `confirmation`.
 
-> **Clave para Ads:** en `/pedido` la campaña optimiza sobre un solo `Lead`, que llega por dos caminos y se separa con `lead_source`: `whatsapp` (clicks) o `form` (pedido registrado).
+| Botón / zona                                          | Evento PostHog      | Props                                                    | Meta     | Cuándo |
+| ----------------------------------------------------- | ------------------- | -------------------------------------------------------- | -------- | ------ |
+| WhatsApp de la barra fija en celular                  | `whatsapp_clicked`  | `placement: "mobile_bar"`, `lead_source: "whatsapp"`     | `Lead`   | Click  |
+| "Hacé tu pedido" de la barra fija (sube al módulo)    | `quote_cta_clicked` | `placement: "mobile_bar"`                                | —        | Click  |
+| WhatsApp de la banda de cierre                        | `whatsapp_clicked`  | `placement: "cta_band"`, `lead_source: "whatsapp"`       | `Lead`   | Click  |
+| "Hacé tu pedido" de la banda de cierre (sube al módulo) | `quote_cta_clicked` | `placement: "pedido_cta_band"`                         | —        | Click  |
+| Pedido, inicio, paso 2, envío, WhatsApp del módulo    | ver Módulo de pedido | `placement: "modulo_pedido"`                            |          |        |
+
+> **Clave para Ads:** en `/pedido` la campaña optimiza sobre un solo `Lead`, que llega por dos caminos y se separa con `lead_source`: `whatsapp` (clicks) o `form` (pedido registrado). `PedidoPaso` (`quote_step_viewed`, `step: 2`) ahora lo manda el módulo en el Home y en `/pedido`: hay que avisarle a marketing.
+
+### 🧩 Módulo de pedido (`components/modulo-pedido`, rediseño fase 3)
+
+Pestañas Taller / Auxilio / Multas (Seguro se sacó el 2026-11-24, decisión de producto: no se ofrecen seguros por ahora; los eventos viejos con `tab: "seguro"` quedan en el histórico de la vista previa). Montado en el Home (`placement: "modulo_home"`) y en `/pedido` (`placement: "modulo_pedido"`) desde la fase 4a (2026-11-24); la vista previa `/pedido/modulo` se borró. El paso 2 tiene un checkbox de consentimiento desmarcado y obligatorio: `consent` viaja con su valor real. Valores cerrados en `QUOTE_TABS`, `QUOTE_MODULE_PLACEMENTS` y `QUOTE_CHIPS` (`lib/analytics/events.ts`). Solo Taller registra un pedido; el `flow` sigue siendo `page` (mismo body y misma route que el form de `/pedido`), y `tab` + `placement` son lo que lo separa.
+
+| Botón / momento                                                         | Evento PostHog          | Props                                                                     | Meta                                                    | Cuándo |
+| ----------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------- | ------ |
+| Elige una pestaña                                                       | `quote_tab_selected`    | `tab`, `placement`                                                        | —                                                       | Click o flechas. La pestaña inicial (Taller) no cuenta |
+| Primera interacción con Taller (foco en un campo o un chip)             | `quote_started`         | `flow: "page"`, `tab: "taller"`, `placement`                              | `QuoteStart` (custom, sin params)                       | Una vez por carga del módulo |
+| Toca un chip de "Lo más pedido"                                         | `quote_chip_clicked`    | `chip` (id: `service`, `luz_tablero`, `alineacion_balanceo`, `frenos`, `aire_acondicionado`), `placement`, `selected` | — | Click |
+| Pasa al paso 2 (WhatsApp y patente)                                     | `quote_step_viewed`     | `flow: "page"`, `step: 2`, `tab: "taller"`, `placement`                   | `PedidoPaso {step}` (custom)                            | Una vez por carga del módulo |
+| Pedido registrado                                                       | `quote_submitted`       | server, ver [sección 4](#4-quote_submitted-en-el-server) (con `tab` y `placement`) | `Lead {lead_source: "form"}` + `eventID` compartido | Solo con OK del backend |
+| Envío fallido                                                           | `quote_failed`          | `flow: "page"`, `tab`, `placement`, `reason`, `status?`                   | —                                                       | Error |
+| "Pedilo por WhatsApp" (Taller)                                          | `whatsapp_clicked`      | `placement`, `tab: "taller"`, `lead_source: "whatsapp"` solo en `modulo_pedido` | `Lead` en `modulo_pedido`; `Contact` en `modulo_home` | Click |
+| "Pedí auxilio" (Asistir24) / "Consultá tu caso" (Sin Fotomultas)        | `quote_partner_clicked` | `tab: "auxilio"` / `"multas"`, `placement`                                | —                                                       | Click. Es el "inicio del pedido" de esas pestañas |
+| Aparece el bloque "Así se ve en la app" del enviado                     | `pedido_app_promo_view` | `placement`, `app_linked` (`APP_VINCULADA`, hoy `false`)                  | —                                                       | Una vez por envío, al mostrarse |
+| El QR de descarga del enviado entra en pantalla                         | `qr_view`               | `section: "pedido_enviado"`, `placement`                                  | —                                                       | Una vez por envío. Solo escritorio (el QR existe desde `lg`; en celular no se dibuja) |
+| Botón de tienda del enviado (App Store / Google Play)                   | `cta_download_click` **y** `app_store_clicked` | los dos con `store`, `section: "pedido_enviado"`, `placement` | —                                              | Click. Mismo click, dos eventos (ver nota) |
+
+Estado enviado (ajuste del 2026-11-24): "Bajar la app" se reemplazó por el bloque de la app, con el QR a `/descarga?utm_source=web&utm_medium=pedido_enviado` (los escaneos se ven como `$pageview` de `/descarga` con esos UTM) y los botones de tienda (en un iPhone solo App Store y en un Android solo Google Play, por `data-platform`). **`cta_download_click` y `app_store_clicked` salen juntos**: `cta_download_click` lo pide la especificación del ajuste (evento de descarga con `section`), y `app_store_clicked` es el conteo histórico de clicks a tienda de todo el sitio; mandar solo el nuevo cortaría esa serie. Para contar descargas del sitio, usar `app_store_clicked`; para esta superficie, cualquiera de los dos filtrado por `section`. El listener acepta varios nombres en `data-analytics-event` separados por espacio.
+
+`lead_source`: el pedido registrado es `Lead {lead_source: "form"}` en las dos ubicaciones (igual que lo que manda la route a PostHog para todo `flow: "page"`). El WhatsApp sigue la regla de `/pedido`: en `modulo_pedido` es `Lead {lead_source: "whatsapp"}`; en `modulo_home`, un `Contact`, como el resto de los WhatsApp del Home. Ningún prop lleva lo que escribe la persona: el chip viaja por id.
 
 ### 📲 `/descarga`
 
@@ -98,11 +135,35 @@ Hasta el 2026-11-05 el header de `/pedido` tenía un botón de WhatsApp (`placem
 | ----------------- | ------------------- | -------------------------------- | ---- | ------ |
 | Botones de tienda | `app_store_clicked` | `store`, `placement: "descarga"` | —    | Click  |
 
-### 🏪 `/proveedores`
+### 🏪 `/proveedores` y perfiles `/proveedores/[slug]`
+
+Desde el 2026-11-24 (rediseño, fase 4b). El directorio usa la barra fija compartida (`quote_cta_clicked` / `whatsapp_clicked` `mobile_bar`, ver Layout). Los eventos del perfil (`provider_action_clicked` y el WhatsApp con `provider`) ya estaban en el catálogo desde la spec 209 pero el perfil vigente no los mandaba: desde esta fecha llegan. Ningún prop lleva lo que escribe la persona: el texto de "¿Qué le pasa?" viaja a `/pedido` por `sessionStorage`, nunca por la URL.
 
 | Botón / zona                                                                            | Evento PostHog                  | Props                                               | Meta | Cuándo                                                                                                                                                             |
 | --------------------------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| "Pedir presupuesto" del estado vacío (búsqueda, zona o rubro sin negocios, no un error) | `directory_empty_quote_clicked` | `has_query?`, `has_zone?`, `has_category?` (`true`) | —    | Click. Dice qué filtros había, nunca su valor: ni el texto buscado ni la zona. Sirve para medir cuántas búsquedas sin resultados se rescatan pidiendo presupuesto |
+| "Pedir propuestas" de la banda "¿No sabés a quién elegir?" (directorio)                  | `quote_cta_clicked`             | `placement: "directory_band"` (nuevo valor de `QUOTE_CTA_PLACEMENTS`) | — | Click (o Enter en el campo). Lleva a `/pedido` con el texto cargado en el módulo |
+| "Sumar mi negocio" de la tarjeta para negocios (directorio)                              | `partner_register_started`      | `placement: "directory_card"`                       | —    | Click |
+| "Pedir propuestas" del estado vacío (búsqueda, zona o rubro sin negocios, no un error) | `directory_empty_quote_clicked` | `has_query?`, `has_zone?`, `has_category?` (`true`) | —    | Click. Dice qué filtros había, nunca su valor: ni el texto buscado ni la zona. Sirve para medir cuántas búsquedas sin resultados se rescatan pidiendo propuestas |
+| "Pedile una propuesta" de la cabecera del perfil                                         | `provider_action_clicked`       | `action: "proposal"`, `provider` (slug), `placement: "profile_head"` | — | Click. Lleva a `/pedido` |
+| "Pedir propuesta" de la tarjeta del costado del perfil                                   | `provider_action_clicked`       | `action: "proposal"`, `provider`, `placement: "profile_aside"` | — | Click (o Enter). Lleva a `/pedido` con el texto cargado |
+| "Pedir propuesta" de la barra fija del perfil (celular)                                  | `provider_action_clicked`       | `action: "proposal"`, `provider`, `placement: "mobile_bar"` | — | Click |
+| WhatsApp del negocio (cabecera o barra fija del perfil)                                  | `whatsapp_clicked`              | `provider`, `placement: "profile_head"` / `"mobile_bar"` | `Contact` | Click. Sin `lead_source`: es el WhatsApp del negocio, no un pedido a AutoLibre. Si el negocio no tiene WhatsApp, la barra lleva el de AutoLibre (sin `provider`) |
+| "Cómo llegar" (Google Maps)                                                              | `provider_action_clicked`       | `action: "directions"`, `provider`                  | —    | Click |
+| "Sumate a AutoLibre" de la banda oscura del perfil                                       | `partner_register_started`      | `placement: "profile_band"`                         | —    | Click |
+
+Ya no llegan: el "Pedir presupuesto" del estado vacío cambió de texto ("Pedir propuestas"), mismo evento. La barra fija vieja del perfil (solo WhatsApp, sin evento) se reemplazó por la compartida.
+
+### 📰 Blog y `/sobre-nosotros` (rediseño, fase 4c)
+
+Desde el 2026-11-24. Los `placement` de las tiendas se conservan: `closing_cta` (cierre del listado, las categorías y `/sobre-nosotros`) y `blog_article` (panel de descarga de la nota, que pasó del final del cuerpo al final de la página). La barra fija de celular del blog ("Descargar la app gratis", a `/descarga`) sigue sin evento propio: es navegación interna.
+
+| Botón / zona                                                        | Evento PostHog             | Props                                                       | Meta | Cuándo |
+| ------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------------- | ---- | ------ |
+| "Hacé tu pedido" del llamado dentro de la nota ("Pedí propuestas…") | `quote_cta_clicked`        | `placement: "blog_article"` (nuevo valor de `QUOTE_CTA_PLACEMENTS`) | —    | Click (lleva a `/pedido`) |
+| Tiendas del panel de descarga del blog                              | `app_store_clicked`        | `store`, `placement: "closing_cta"` / `"blog_article"`      | —    | Click  |
+| "Hacé tu pedido" del cierre de `/sobre-nosotros`                    | `quote_cta_clicked`        | `placement: "about_closing"` (nuevo valor)                  | —    | Click  |
+| "Sumá tu negocio" del cierre de `/sobre-nosotros`                   | `partner_register_started` | `placement: "about_closing"`                                | —    | Click  |
+| Links "App Store" / "Google Play" del cierre de `/sobre-nosotros`    | `app_store_clicked`        | `store`, `placement: "closing_cta"`                         | —    | Click  |
 
 ### 🧾 Talleres: registro, reclamo y contratación de planes (specs 211 y 212)
 
@@ -115,8 +176,36 @@ Embudo de contratación: `plan_checkout_started` → `plan_checkout_redirected` 
 | La pantalla de resultado confirma la suscripción (`/contratar/resultado`) | `plan_checkout_confirmed`  | `plan`, `trial` (arrancó en prueba)    | —    | Estado del backend, nunca los params de MP. Una vez por checkout: solo si esa pestaña tenía un checkout pendiente (recargar no lo repite)     |
 | "Cargar otro taller" en `/cuenta` ("¿Tenés otro taller?")                | `partner_register_started` | `placement: "cuenta_otro_taller_cargar"` | —  | Click. Hasta el 2026-11-05 también lo mandaba "Registrar mi taller" de `/proveedores/registro` (sin `placement`); ese botón ya no existe porque la página es el formulario. El envío del formulario no tiene evento propio |
 | "Reclamar un taller" en `/cuenta` ("¿Tenés otro taller?")                | `partner_claim_started`    | `placement: "cuenta_otro_taller_reclamar"` | — | Click. Nunca el código                                                                                                                     |
+| "Contratar el plan Plus" en `/cuenta` (Resumen y pestaña Plan, plan Gratis) | `plan_checkout_started` | `plan: "plus"`, `placement: "cuenta_resumen" \| "cuenta_plan"` | — | Click (fase 6 del rediseño, 2026-11-24). Ahora "Cargar otro taller" y "Reclamar un taller" viven en "Cambiar de negocio", con los mismos placements |
+| WhatsApp de `/cuenta`: pendientes de "Completá tu perfil", "Agregar"/"Pedir cambio" de la pestaña Perfil, "¿Necesitás una mano?" | `whatsapp_clicked` | `placement: "cuenta_completar_perfil" \| "cuenta_perfil" \| "cuenta_ayuda"` | `Contact` | Click. No hay edición del perfil desde la web: el cambio se pide por WhatsApp. Nunca viaja qué dato ni el negocio |
 | Canje exitoso de un código en `/proveedores/reclamar`                    | `partner_claim_redeemed`   | `from_checkout?` (`true`)              | —    | Al recibir el OK del backend. `from_checkout`: el reclamo venía de contratar un plan                                                        |
 | "Hablar con ventas" en `/proveedores/planes`                             | `whatsapp_clicked`         | `placement: "proveedores_planes_ventas"` | `Contact {placement}` | Click                                                                                                                    |
+| "Registrar mi negocio" de la landing `/proveedores/registro` (hero, "Cómo es el registro", barra fija en celular) | `partner_register_started` | `placement: "registro_hero"` / `"registro_pasos"` / `"registro_barra"` | — | Click. Inicio del registro: abre el flujo (`?alta=1`). Fase 5 del rediseño (2026-11-24) |
+| "Registrate gratis" (tarjeta Gratis) y "Sumá tu negocio" (banda de cierre) en `/proveedores/planes` | `partner_register_started` | `placement: "planes_gratis"` / `"planes_cierre"` | — | Click |
+| "Canjealo acá" en "¿Tu negocio ya aparece?" de la landing | `partner_claim_started` | `placement: "registro_ya_aparece"` | — | Click. Nunca el código |
+| El negocio pasó un paso del alta con "Continuar" (`/proveedores/registro?alta=1`) | `partner_register_step_completed` | `step` (1 = datos del negocio, 2 = atención) | — | Al pasar el paso (ya validado). Con `partner_register_started` y `partner_register_submitted` arma el embudo del alta |
+| El backend aceptó la solicitud de alta (o ya existía) | `partner_register_submitted` | `already_registered?` (`true`), `from_checkout?` (`true`) | — | Fin del registro: al recibir el OK de `/api/provider`. Nunca datos del negocio. Desde la fase 5, el envío del formulario SÍ tiene evento propio |
+| WhatsApp "¿Tu negocio ya aparece? Escribinos" / "¿Otra duda?" de la landing | `whatsapp_clicked` | `placement: "registro_ya_aparece"` / `"registro_faq"` | `Contact {placement}` | Click |
+| "¿Dudas? Escribinos" del encabezado de foco de los flujos (alta, contratar, su resultado, reclamar) | `whatsapp_clicked` | `placement: "registro_encabezado"` / `"contratar_encabezado"` / `"contratar_resultado_encabezado"` / `"reclamar_encabezado"` | `Contact {placement}` | Click |
+
+La pista de rol del header (`al_role`, ver `lib/auth/role-hint.ts`) ahora también la escriben el canje de un código (`partner_claim_redeemed`) y la confirmación de un plan (`plan_checkout_confirmed`): en los dos casos la persona ya es dueña de un negocio. El alta NO la escribe: la solicitud queda en revisión y el negocio todavía no es suyo. No es un evento: es solo lo que pinta el header.
+
+### 👤 Registro: cliente o taller, y "Mi cuenta" del cliente (2026-11-24)
+
+Al crear una cuenta en `/cuenta`, la persona elige "Soy cliente" o "Tengo un taller o negocio". La elección se guarda en Clerk (`publicMetadata.signupIntent`) desde el server de la landing (`POST /api/account/intent`). Los flujos de proveedor (alta, reclamo, contratar) fijan `partner` sin preguntar y no mandan `signup_intent_selected`. Ninguno lleva datos personales.
+
+| Botón / momento | Evento PostHog | Props | Meta | Cuándo |
+| --- | --- | --- | --- | --- |
+| "Continuar" después de elegir cliente o taller, antes del registro de Clerk | `signup_intent_selected` | `intent: partner\|customer`, `placement: "cuenta_crear"` | — | Click en "Continuar" (no al mover la selección) |
+| "Guardar" en la elección de una cuenta recién creada desde "Ingresar" (Google o email nuevo) | `signup_intent_selected` | `intent`, `placement: "cuenta_nueva"` | — | Click. Solo se ofrece en los primeros 30 minutos de la cuenta |
+| El server respondió al guardar el intent | `signup_intent_saved` | `intent`, `result: saved\|existing\|rejected\|failed` | — | Una vez por intento. `failed` se reintenta en la próxima carga de una pantalla con Clerk; `existing` trae el intent vigente, no el pedido |
+| "Hacé tu pedido" de la cuenta de cliente | `quote_cta_clicked` | `placement: "cuenta_cliente"` | — | Click |
+| App Store / Google Play de la cuenta de cliente | `app_store_clicked` | `store`, `placement: "cuenta_cliente"` | — | Click |
+| WhatsApp "Escribinos" de la cuenta de cliente | `whatsapp_clicked` | `placement: "cuenta_cliente_ayuda"` | `Contact {placement}` | Click |
+| "Sumá tu negocio" de la cuenta de cliente | `partner_register_started` | `placement: "cuenta_cliente_sumar"` | — | Click |
+| "Registrar mi negocio" / "Canjear mi código" del alta pendiente de proveedor (`/cuenta` sin taller, intent `partner`) | `partner_register_started` / `partner_claim_started` | `placement: "cuenta_onboarding_registrar"` / `"cuenta_onboarding_reclamar"` | — | Click |
+
+La pista de rol del header (`al_role`) también dice "proveedor" si la cuenta se registró como proveedor (`signupIntent = "partner"`), aunque todavía no tenga un taller aprobado: así el header muestra "Ir a mi negocio".
 
 ---
 
@@ -131,6 +220,8 @@ Embudo de contratación: `plan_checkout_started` → `plan_checkout_redirected` 
 | Prop                                              | Qué es                                         |
 | ------------------------------------------------- | ---------------------------------------------- |
 | `flow`                                            | `modal` o `page`                               |
+| `tab`                                             | Solo desde el módulo de pedido: pestaña (`taller`) |
+| `placement`                                       | Solo desde el módulo de pedido: `modulo_home` o `modulo_pedido` |
 | `lead_source`                                     | `form` solo en `/pedido`; el modal va sin él (igual que el `Lead` del Pixel) |
 | `has_plate`                                       | Si puso patente                                |
 | `vehicle_identified`                              | Si se identificó el auto                       |
@@ -147,5 +238,5 @@ La Conversions API de Meta sale en paralelo con el mismo `eventID` que el Pixel,
 
 - **Abrir el modal** no tiene evento propio: se aproxima con `quote_step_viewed step: 1`.
 - **Envío del formulario de proveedores (`/proveedores/registro`):** no tiene evento propio; se aproxima con el `$pageview` de la página. Desde el 2026-11-05 el formulario vive otra vez en `/proveedores/registro` (la página ES el formulario); entre la spec 212 y esa fecha vivió en `/proveedores/registro/formulario`, que hoy redirige (301) a `/proveedores/registro`. Hasta el release de AUT-137 el formulario vivía en `/proveedores`: los `$pageview` de esa ruta anteriores a la fecha de salida (completar al deployar: ____) son del formulario y los posteriores son del directorio; la serie nueva arranca en `/proveedores/registro`.
-- **Links de navegación** (el menú y el link de texto "Pedir presupuesto" a `/pedido`): solo se ve el `$pageview` de destino.
+- **Links de navegación** (los links de página del header y del menú, y las opciones del menú de cuenta salvo "Sumá tu negocio"): solo se ve el `$pageview` de destino.
 - **UTMs dentro del pedido:** hay un TODO porque el DTO del backend rechaza campos desconocidos. Igual, PostHog guarda los UTMs de la sesión, así que el funnel sí se puede cortar por campaña.

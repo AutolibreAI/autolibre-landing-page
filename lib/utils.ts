@@ -17,6 +17,7 @@ const twMerge = extendTailwindMerge({
         "lead",
         "lead-lg",
         "label",
+        "control",
       ],
     },
   },

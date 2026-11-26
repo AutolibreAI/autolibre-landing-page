@@ -32,19 +32,19 @@ export function PostCard({ post, headingLevel: Heading = "h3" }: PostCardProps) 
         <p className="text-label font-semibold text-brand-hover">
           {post.category.name}
           {date ? (
-            <span className="font-normal text-ink/60">
+            <span className="font-normal text-fg-muted">
               {" · "}
               <time dateTime={post.date}>{date}</time>
             </span>
           ) : null}
         </p>
 
-        <Heading className="text-xl leading-snug text-ink transition-colors group-hover:text-brand-hover md:text-2xl">
+        <Heading className="text-xl leading-snug text-fg transition-colors group-hover:text-brand-hover md:text-2xl">
           {post.title}
         </Heading>
 
         {post.excerpt ? (
-          <p className="line-clamp-3 text-base leading-relaxed text-ink/70">{post.excerpt}</p>
+          <p className="line-clamp-3 text-base leading-relaxed text-fg-muted">{post.excerpt}</p>
         ) : null}
       </Link>
     </article>

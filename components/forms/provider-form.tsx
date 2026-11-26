@@ -3,19 +3,23 @@
 import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { ServiceFamilyPicker } from "@/components/forms/service-family-picker";
-import { ChoicePill, ChoiceRow } from "@/components/ui/choice";
-import {
-  Field,
-  FieldGroup,
-  Input,
-  Select,
-  Textarea,
-} from "@/components/ui/form-controls";
+import { Input, Select, Textarea } from "@/components/ui/form-controls";
 import { FormError } from "@/components/ui/form-feedback";
 import { WhatsappInput } from "@/components/ui/whatsapp-input";
+import {
+  AltaChip,
+  AltaField,
+  altaGroupLabel,
+  altaInput,
+  altaSectionHint,
+  altaSectionTitle,
+  altaSelect,
+  altaTextarea,
+} from "@/components/proveedores/registro/alta-controls";
 import { RegistrationStatus } from "@/components/proveedores/registro/registration-status";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { track } from "@/lib/analytics/track";
 import { whatsappErrorMessage } from "@/lib/content/presupuesto";
 import { parseArWhatsapp } from "@/lib/phone";
 import { cn } from "@/lib/utils";
@@ -69,8 +73,60 @@ type SubmitState = "idle" | "loading" | "success" | "error";
 
 const GENERIC_ERROR = "Algo salió mal. Por favor intentá de nuevo.";
 
+/** Pasos del formulario: negocio (0), atención (1), contacto (2). */
+export const PROVIDER_FORM_STEPS = 3;
+const STEP = { business: 0, attention: 1, contact: 2 } as const;
+
+const { form: copy, flow } = providersContent;
+
 /**
- * Alta de proveedores.
+ * Píldora con prefijo (el +54 del WhatsApp, el nombre de cada red): 48px,
+ * borde en `action` al enfocar. El anillo de foco va en el contenedor
+ * (`has-[:focus-visible]`) porque el `overflow-clip` recorta el del input.
+ */
+const socialPill =
+  "flex h-12 overflow-clip rounded-full border bg-card transition-colors focus-within:border-action motion-reduce:transition-none has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand";
+
+/** El `<input>` adentro de `socialPill` (sin borde ni fondo propios). */
+const pillInnerInput =
+  "h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 py-0 text-base text-fg placeholder:text-fg-subtle";
+
+/** Botón "×" de una marca elegida (44px de área táctil). */
+function RemoveBrandButton({ brand, onClick }: { readonly brand: string; readonly onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label={copy.brands.remove(brand)}
+      onClick={onClick}
+      className="flex size-11 items-center justify-center rounded-full text-fg-muted transition-colors hover:bg-alert-bg hover:text-status-alert motion-reduce:transition-none"
+    >
+      <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true">
+        <line x1="2" y1="2" x2="10" y2="10" />
+        <line x1="10" y1="2" x2="2" y2="10" />
+      </svg>
+    </button>
+  );
+}
+
+/** Marca elegida, en píldora, con su botón para quitarla. */
+function BrandTag({ brand, onRemove }: { readonly brand: string; readonly onRemove: () => void }) {
+  return (
+    <li className="inline-flex items-center gap-0.5 rounded-full border border-action bg-brand-50 py-0 pr-0 pl-4 text-control font-medium text-fg">
+      {brand}
+      <RemoveBrandButton brand={brand} onClick={onRemove} />
+    </li>
+  );
+}
+
+/**
+ * Alta de proveedores, en TRES pasos (rediseño 2026-11, lienzo `Alta`):
+ * datos del negocio (nombre, descripción, servicios, marcas, vehículos) →
+ * atención (modalidad, dirección, horarios) → contacto (WhatsApp, email,
+ * logo, redes, cómo se enteraron). Un solo `<form>`: los pasos que no se ven
+ * quedan montados con `hidden`, así lo escrito no se pierde al ir y volver, y
+ * el envío lee todos los campos igual que antes. "Continuar" valida SOLO el
+ * paso a la vista; el envío final vuelve a validar todo y, si algo de un paso
+ * anterior falla, vuelve a ese paso.
  *
  * Contrato con la API (no cambiar sin migrar `/api/provider`): POST { taller,
  * whatsapp, email, direccion, works_all_brands, brands[], specialized_brands[],
@@ -80,71 +136,35 @@ const GENERIC_ERROR = "Algo salió mal. Por favor intentá de nuevo.";
  * El destino de esos datos ya NO es la Google Sheet: `/api/provider` los manda
  * al backend, que los guarda en `partner_applications`.
  *
- * ── `services[]` ahora son slugs del catalogo, no labels ────────────────────
+ * ── `services[]` son slugs de RUBRO del catálogo, no labels ─────────────────
  *
- * Antes este formulario tenia sus propios 17 nombres de servicio hardcodeados,
- * que no coincidian con las 16 familias y 79 rubros del catalogo del backend.
- * O sea: un tercer vocabulario, que obligaba a traducir a mano en SQL cada vez
- * que se aprobaba un taller — y cuando la traduccion no se hacia, el taller
- * quedaba aprobado pero sin categorias, invisible en la app.
- *
- * Las opciones ahora vienen del backend (`serviceFamilies`, resueltas en el
- * servidor por la pagina) y lo que viaja es el `slug`. El `name` se muestra y
- * nada mas. El unico texto libre que queda es `service_other`, que es
- * justamente lo que el catalogo todavia no cubre.
- *
- * ── Se marcan RUBROS, agrupados por familia ─────────────────────────────────
- *
- * El endpoint devuelve las 16 familias con sus 79 rubros adentro, y este
- * formulario usa los DOS niveles: la familia agrupa en pantalla, el rubro es
- * lo que se marca y lo que viaja en `services[]`.
- *
- * Durante un tiempo se mandaron familias, con el argumento de que 79 casillas
- * son fricción que se paga en abandonos. El diagnostico era correcto; la
- * conclusion no. Lo que asusta no son los 79 rubros, es tenerlos los 79
- * DESPLEGADOS — y eso lo arregla la pantalla, no el recorte del dato. Con el
- * acordeon (`ServiceFamilyPicker`) el taller sigue viendo 16 filas, igual que
- * antes, y abre las dos o tres que le tocan.
- *
- * Ademas la taxonomia del equipo siempre dijo esto: en la planilla del
- * catalogo, la leyenda del rubro es literalmente "Formulario de pagina web".
- * Mandar familias era la excepcion, no la regla.
- *
- * Lo que se gana es que el taller queda clasificado FINO desde el alta, sin
- * depender de que alguien traduzca a mano al aprobar — que es exactamente el
- * paso que en el legacy nunca se ejecutaba y dejaba talleres aprobados pero
- * invisibles en la app. Y `partner_services` ya apuntaba a rubros, asi que el
- * dato declarado ahora habla el mismo idioma que el dato publicado.
- *
- * Lo que tambien cambio en su momento: ahora hay errores que la persona puede
- * corregir, y por eso el cartel dejo de ser uno solo y generico — el backend
- * valida el WhatsApp de verdad y avisa cuando ese email ya tiene una solicitud
- * abierta.
+ * Las opciones vienen del backend (`serviceFamilies`, resueltas en el
+ * servidor por la página) y lo que viaja es el `slug` del rubro. La familia
+ * agrupa en pantalla (`ServiceFamilyPicker`, acordeón) y no viaja. El único
+ * texto libre es `service_other`, lo que el catálogo todavía no cubre.
  *
  * ── El WhatsApp se arregla acá, no se rebota ────────────────────────────────
  *
- * El backend (`WhatsappNumber`) rechaza con razon un numero con el 15 local,
- * pero este campo era un input pelado que mandaba lo que se tipeaba: un taller
- * de Tucuman que escribio `0381 15 456-7890` —un numero perfectamente bueno—
- * se comio el cartel generico de "formato que no podemos aceptar", sin saber
- * que campo era. Ahora es el mismo `WhatsappInput` de `/pedido`: saca el +54,
- * el 0 y el 15 mientras se escribe, valida con `parseArWhatsapp` al salir del
- * campo y al enviar, y si algo falta lo dice en el campo. `/api/provider`
- * vuelve a validar y manda la forma canonica (`549…`) al backend.
+ * Es el mismo `WhatsappInput` de `/pedido`: saca el +54, el 0 y el 15
+ * mientras se escribe, valida con `parseArWhatsapp` al salir del campo y al
+ * enviar, y si algo falta lo dice en el campo. `/api/provider` vuelve a
+ * validar y manda la forma canónica (`549…`) al backend.
  *
  * ── Alta con dueño (spec 212, US3) ──────────────────────────────────────────
  *
- * Vive en `/proveedores/registro`, detras del login. Cada envio
- * lleva `Authorization: Bearer <token de Clerk>` (`submitWithOwnerToken`): el
- * backend deja esa cuenta como dueña del taller cuando aprueba la solicitud.
- * Ante un 401 se renueva el token y se reintenta UNA vez, siempre con el
- * header; si igual falla, se pide volver a entrar SIN borrar lo escrito.
+ * Cada envío lleva `Authorization: Bearer <token de Clerk>`
+ * (`submitWithOwnerToken`): el backend deja esa cuenta como dueña del taller
+ * cuando aprueba la solicitud. Ante un 401 se renueva el token y se reintenta
+ * UNA vez; si igual falla, se pide volver a entrar SIN borrar lo escrito.
  */
 export function ProviderForm({
   serviceFamilies,
   getToken,
   reauthHref,
   checkout = null,
+  step,
+  onStepChange,
+  onDone,
 }: {
   readonly serviceFamilies: readonly ServiceFamilyOption[];
   /** `getToken` de `useAuth()` de Clerk. */
@@ -156,6 +176,11 @@ export function ProviderForm({
    * la pantalla de estado se lo recuerda y ofrece volver.
    */
   readonly checkout?: { readonly href: string; readonly planName: string } | null;
+  /** Paso a la vista (0 a 2). Lo tiene el padre: pinta la barra y la columna de pasos. */
+  readonly step: number;
+  readonly onStepChange: (step: number) => void;
+  /** La solicitud salió (o ya existía): el padre pasa a "Revisión". */
+  readonly onDone?: () => void;
 }) {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMessage, setErrorMessage] = useState(GENERIC_ERROR);
@@ -166,9 +191,8 @@ export function ProviderForm({
    * alguien la va a mirar. Mostrarlo en rojo haria que la persona reintente o
    * piense que el sitio no anda.
    */
-  const [alreadyRegistered, setAlreadyRegistered] = useState<string | null>(
-    null,
-  );
+  const [alreadyRegistered, setAlreadyRegistered] = useState<string | null>(null);
+  const [name, setName] = useState("");
   const [worksAllBrands, setWorksAllBrands] = useState(true);
   const [brands, setBrands] = useState<string[]>([]);
   const [specializedBrands, setSpecializedBrands] = useState<string[]>([]);
@@ -179,16 +203,12 @@ export function ProviderForm({
   /**
    * Redes con un link que el backend rechazaria. Se marca al salir del campo
    * (no mientras se tipea) y, una vez marcado, se re-chequea en vivo para que
-   * el error se vaya apenas el link sirve. Es un Set porque pueden fallar
-   * varias a la vez y se marcan todas.
+   * el error se vaya apenas el link sirve.
    */
-  const [invalidSocial, setInvalidSocial] = useState<
-    ReadonlySet<ProviderSocialKey>
-  >(new Set());
+  const [invalidSocial, setInvalidSocial] = useState<ReadonlySet<ProviderSocialKey>>(new Set());
 
   function checkSocialLink(key: ProviderSocialKey, value: string): boolean {
-    const invalid =
-      value.trim() !== "" && normalizeProviderSocialLink(key, value) === null;
+    const invalid = value.trim() !== "" && normalizeProviderSocialLink(key, value) === null;
     setInvalidSocial((current) => {
       if (current.has(key) === invalid) return current;
       const next = new Set(current);
@@ -198,31 +218,21 @@ export function ProviderForm({
     });
     return invalid;
   }
+  const formRef = useRef<HTMLFormElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const brandsRef = useRef<HTMLFieldSetElement>(null);
-  /**
-   * Slugs de RUBRO del catalogo (`frenos`, `gomeria`, `patentamiento`).
-   * Nunca labels, nunca familias, nunca el "Otro" — ese ultimo va aparte.
-   *
-   * La familia no se guarda: se deriva de los rubros marcados. Ver
-   * `ServiceFamilyPicker`.
-   */
+  /** Slugs de RUBRO del catalogo. Nunca labels, nunca familias, nunca el "Otro". */
   const [services, setServices] = useState<string[]>([]);
-  /**
-   * "Otro" salio del array de servicios a proposito. Cuando estaba adentro, el
-   * literal "Otro" viajaba mezclado con los servicios reales y no habia forma
-   * de distinguir un rubro de un placeholder sin comparar strings del otro
-   * lado. Ahora `services` solo tiene slugs validos y el texto libre viaja en
-   * su propio campo (`service_other`).
-   */
+  /** "Otro" va aparte: el texto libre viaja en su propio campo (`service_other`). */
   const [wantsOtherService, setWantsOtherService] = useState(false);
   const [otherService, setOtherService] = useState("");
   /**
-   * Se prende en el primer intento de envio. Antes de eso el formulario no
-   * reta a nadie: marcar en rojo un campo que la persona todavia no llego a
-   * completar es hostil y no informa nada.
+   * Pasos que la persona ya intentó pasar. Antes de eso el formulario no reta
+   * a nadie: marcar en rojo un campo que todavía no llegó a completar es
+   * hostil y no informa nada.
    */
-  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [attempted, setAttempted] = useState<ReadonlySet<number>>(new Set());
   const [vehicleTypes, setVehicleTypes] = useState<string[]>([]);
   const [fuelTypes, setFuelTypes] = useState<string[]>([]);
   const [howFound, setHowFound] = useState("");
@@ -230,44 +240,25 @@ export function ProviderForm({
   /**
    * Geocode de la dirección, capturado al elegir una sugerencia de Google
    * Places. Se resetea a `EMPTY_GEO` si la persona edita el texto después de
-   * elegir una sugerencia (ver el `onChange` del input de dirección) — nunca
-   * viaja un geocode que ya no corresponde a lo que se ve en el campo.
+   * elegir una sugerencia: nunca viaja un geocode que no corresponde a lo que
+   * se ve en el campo.
    */
   const [geo, setGeo] = useState<PlaceGeo>(EMPTY_GEO);
   const [mapsReady, setMapsReady] = useState(false);
   const [modality, setModality] = useState<PartnerModality | "">("");
-  /**
-   * Solo se llena al enviar y se borra apenas la persona vuelve a escribir: no
-   * se reta mientras tipea, se reta cuando intenta mandar.
-   */
+  /** Solo se llena al intentar pasar el paso y se borra apenas se vuelve a escribir. */
   const [addressError, setAddressError] = useState<string | null>(null);
-  /**
-   * Mismo criterio que `addressError`. Hace falta porque el `<form>` va con
-   * `noValidate`: el `type="email"` del input no frena nada, y antes un email
-   * sin `.com` llegaba al backend y volvia como el cartel generico.
-   */
   const [emailError, setEmailError] = useState<string | null>(null);
   const emailInputRef = useRef<HTMLInputElement>(null);
-  /**
-   * Lo que se ve en el campo, ya formateado (`381 456-7890`). Controlado porque
-   * `WhatsappInput` reescribe el valor mientras se tipea.
-   */
+  /** Lo que se ve en el campo, ya formateado (`381 456-7890`). */
   const [whatsapp, setWhatsapp] = useState("");
-  /**
-   * Mismo criterio que `/pedido`: el error aparece recien al salir del campo
-   * (o al intentar enviar) y desde ahi se corrige en vivo. Retar a mitad del
-   * numero, cuando todavia faltan digitos porque la persona no termino, no
-   * informa nada.
-   */
+  /** El error aparece recién al salir del campo (o al intentar enviar). */
   const [whatsappTouched, setWhatsappTouched] = useState(false);
 
   const servicesErrorRef = useRef<HTMLParagraphElement>(null);
   const addressInputRef = useRef<HTMLInputElement>(null);
   const whatsappInputRef = useRef<HTMLInputElement>(null);
   /**
-   * Refs y no state porque solo se leen en el submit y en el listener de
-   * Google — no cambian nada de lo que se pinta.
-   *
    * `autocompleteRef` distingue "Places anda" de "no hay key o el script no
    * cargó": solo en el primer caso se puede exigir que la dirección salga de
    * la lista. `pickedImpreciseRef` separa "no eligió nada" de "eligió algo que
@@ -275,24 +266,19 @@ export function ProviderForm({
    */
   const autocompleteRef = useRef<unknown>(null);
   const pickedImpreciseRef = useRef(false);
-  /**
-   * Si el submit ya mandó el foco a un campo (WhatsApp o dirección), el scroll
-   * al error de servicios (más abajo) no tiene que llevarse la pantalla a otro
-   * lado.
-   */
-  const fieldFocusedOnSubmitRef = useRef(false);
+  /** Campo a enfocar después de cambiar de paso (el `hidden` se va en ese render). */
+  const pendingFocusRef = useRef<HTMLElement | null>(null);
 
   const whatsappResult = parseArWhatsapp(whatsapp);
-  /** Derivado, como `missingServices`: se borra solo apenas el número sirve. */
   const whatsappError =
-    !whatsappResult.ok && (whatsappTouched || submitAttempted)
+    !whatsappResult.ok && (whatsappTouched || attempted.has(STEP.contact))
       ? whatsappErrorMessage(whatsappResult.error, whatsappResult.diff)
       : null;
+  const nameError = attempted.has(STEP.business) && name.trim() === "" ? flow.nameRequired : null;
 
-  // El Autocomplete pide direcciones puntuales ("address"), no zonas: acá
-  // importa la puerta del local, porque de eso depende que el orden por
-  // cercanía en los pedidos de presupuesto sirva (ver AUT-81). Compárese con
-  // components/quote-flow/use-quote-flow.ts, que usa "(regions)" a propósito.
+  // El Autocomplete pide direcciones puntuales ("address"), no zonas: importa
+  // la puerta del local, porque de eso depende el orden por cercanía en los
+  // pedidos (ver AUT-81).
   useEffect(() => {
     if (!mapsReady) return;
     const input = addressInputRef.current;
@@ -313,26 +299,16 @@ export function ProviderForm({
       const locality =
         findAddressComponent(place.address_components, "locality") ??
         findAddressComponent(place.address_components, "sublocality");
-      const province = findAddressComponent(
-        place.address_components,
-        "administrative_area_level_1",
-      );
+      const province = findAddressComponent(place.address_components, "administrative_area_level_1");
 
       // Todo o nada: sin localidad o provincia no guardamos coordenadas
       // sueltas (ver specs/004-partner-approval-data/contracts).
       if (latitude === null || longitude === null || !locality || !province) {
         setGeo(EMPTY_GEO);
-        // Sin `geometry` no hubo sugerencia: Google también dispara este
-        // evento cuando se aprieta Enter sobre texto libre. Eso es "no eligió
-        // nada", no "eligió algo impreciso".
+        // Sin `geometry` no hubo sugerencia (Enter sobre texto libre).
         pickedImpreciseRef.current = place.geometry !== undefined;
-        // Si ya había un error a la vista, que diga el motivo correcto.
         if (pickedImpreciseRef.current) {
-          setAddressError((current) =>
-            current === null
-              ? null
-              : providersContent.form.addressImpreciseError,
-          );
+          setAddressError((current) => (current === null ? null : copy.addressImpreciseError));
         }
         return;
       }
@@ -349,171 +325,161 @@ export function ProviderForm({
   }, [mapsReady]);
 
   /**
-   * Un taller sin nada declarado no se puede publicar ni recomendar: no entra
-   * en ninguna busqueda y no le sirve a nadie, ni a el. El backend igual lo
-   * acepta —y hace bien, porque el equipo puede completarlo despues por
-   * WhatsApp—, asi que la exigencia vive acá, que es donde sale barata:
-   * preguntarlo ahora, con la persona mirando el formulario, cuesta un tilde;
-   * perseguirlo despues cuesta una conversacion.
-   *
-   * "Otro" con texto cuenta como declarar: si el taller hace algo que el
-   * catalogo no cubre, la respuesta correcta es dejarlo pasar, no trabarlo.
+   * Un taller sin nada declarado no se puede publicar ni recomendar. "Otro"
+   * con texto cuenta como declarar: si el taller hace algo que el catálogo no
+   * cubre, la respuesta correcta es dejarlo pasar, no trabarlo.
    */
   const hasDeclaredServices = services.length > 0 || otherService.trim() !== "";
-  /**
-   * Derivado, no un `useState` que haya que limpiar a mano en cada uno de los
-   * tres lugares donde se puede declarar un servicio. Apenas la persona marca
-   * algo, el error desaparece solo.
-   */
-  const missingServices = submitAttempted && !hasDeclaredServices;
+  const missingServices = attempted.has(STEP.business) && !hasDeclaredServices;
 
-  /**
-   * El bloque de servicios queda arriba del boton, asi que sin esto el submit
-   * no hace nada visible: la persona aprieta, no pasa nada y concluye que el
-   * formulario esta roto.
-   */
+  // Campo a enfocar después de cambiar de paso: ya sin `hidden`.
   useEffect(() => {
-    if (missingServices && !fieldFocusedOnSubmitRef.current) {
-      servicesErrorRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }
-  }, [missingServices]);
+    if (!pendingFocusRef.current) return;
+    pendingFocusRef.current.focus();
+    pendingFocusRef.current = null;
+  }, [step]);
 
-  function toggle(
-    list: string[],
-    setList: (value: string[]) => void,
-    value: string,
-  ) {
-    setList(
-      list.includes(value)
-        ? list.filter((item) => item !== value)
-        : [...list, value],
-    );
+  function toggle(list: string[], setList: (value: string[]) => void, value: string) {
+    setList(list.includes(value) ? list.filter((item) => item !== value) : [...list, value]);
   }
 
   function addSpecialty(value: string) {
     if (specializedBrands.length >= PROVIDER_BRAND_MAX_COUNT) return;
     const trimmed = value.trim().replace(/\s+/g, " ");
-    const brand = PROVIDER_BRANDS.find((item) => item.toLocaleLowerCase("es-AR") === trimmed.toLocaleLowerCase("es-AR")) ?? trimmed;
+    const brand =
+      PROVIDER_BRANDS.find((item) => item.toLocaleLowerCase("es-AR") === trimmed.toLocaleLowerCase("es-AR")) ?? trimmed;
     setSpecializedBrands((current) => appendProviderBrand(current, brand));
     if (!worksAllBrands) setBrands((current) => appendProviderBrand(current, brand, Infinity));
     setOtherSpecialty("");
   }
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSubmitAttempted(true);
-    const form = event.currentTarget;
-
-    // Los cuatro campos de geocode viajan juntos o ninguno — `geo` ya
-    // garantiza eso (ver el efecto de arriba), así que alcanza con chequear
-    // uno para decidir si se manda el bloque completo.
-    const hasGeo = geo.latitude !== null && geo.longitude !== null;
-
-    // Con Places andando, la dirección tiene que salir de la lista: de ese
-    // geocode depende el orden por cercanía (AUT-81). Sin key o si el script
-    // no cargó no hay lista de donde elegir, y trabar el alta por eso seria
-    // perder al taller por un problema nuestro — ahí sigue el texto libre.
-    const addressInvalid = autocompleteRef.current !== null && !hasGeo;
-    const whatsappInvalid = !whatsappResult.ok;
-    const emailInvalid = !isValidProviderEmail(
-      (form.elements.namedItem("email") as HTMLInputElement).value,
-    );
-    // Las redes se chequean ACÁ, con el resto, y no despues del return de
-    // abajo: antes, si fallaba cualquier otro campo, el error de la red no
-    // aparecia hasta el siguiente intento.
-    const socialInputs = PROVIDER_SOCIAL_KEYS.map(
-      (key) =>
-        [key, form.elements.namedItem(`social_${key}`) as HTMLInputElement] as const,
-    );
-    const firstInvalidSocial = socialInputs
-      .filter(([key, input]) => checkSocialLink(key, input.value))
-      .at(0)?.[1];
-    const socialInvalid = firstInvalidSocial !== undefined;
-
-    if (emailInvalid) setEmailError(providersContent.form.email.invalid);
-    if (addressInvalid) {
-      setAddressError(
-        pickedImpreciseRef.current
-          ? providersContent.form.addressImpreciseError
-          : providersContent.form.addressNotPickedError,
-      );
-    }
-    // Si fallan varios, el foco va al primero en el orden de la pantalla. El
-    // error de cada uno se muestra igual.
-    const firstInvalidField = socialInvalid
-      ? firstInvalidSocial
-      : whatsappInvalid
-        ? whatsappInputRef.current
-        : emailInvalid
-          ? emailInputRef.current
-          : addressInvalid
-            ? addressInputRef.current
-            : null;
-    fieldFocusedOnSubmitRef.current = firstInvalidField !== null;
-    firstInvalidField?.focus();
-
-    // Ojo: el <form> va con `noValidate`, asi que los `required` de los inputs
-    // son semantica para lectores de pantalla y no cortan nada. Lo unico que
-    // frena el envio es este return.
+  /** Marcas que se mandarían ahora (incluye la especialidad escrita y no agregada). */
+  function brandSelection() {
     const pendingText = otherSpecialty.trim().replace(/\s+/g, " ");
-    const pendingSpecialty = PROVIDER_BRANDS.find((item) => item.toLocaleLowerCase("es-AR") === pendingText.toLocaleLowerCase("es-AR")) ?? pendingText;
+    const pendingSpecialty =
+      PROVIDER_BRANDS.find((item) => item.toLocaleLowerCase("es-AR") === pendingText.toLocaleLowerCase("es-AR")) ??
+      pendingText;
     const submittedSpecialties = appendProviderBrand(specializedBrands, pendingSpecialty);
     const submittedBrands = worksAllBrands ? brands : appendProviderBrand(brands, pendingSpecialty, Infinity);
-    const brandsInvalid = !validBrandSelection(
-      worksAllBrands,
-      submittedBrands,
+    return {
       submittedSpecialties,
+      submittedBrands,
+      valid: validBrandSelection(worksAllBrands, submittedBrands, submittedSpecialties),
+    };
+  }
+
+  /**
+   * Valida UN paso, muestra sus errores y devuelve el primer campo con
+   * problema (para el foco), `"block"` si falla algo que no es un campo
+   * (servicios), o `null` si el paso está bien.
+   */
+  function validateStep(target: number, form: HTMLFormElement): HTMLElement | "block" | null {
+    setAttempted((current) => (current.has(target) ? current : new Set([...current, target])));
+
+    if (target === STEP.business) {
+      if (name.trim() === "") return nameInputRef.current;
+      if (!hasDeclaredServices) return servicesErrorRef.current ?? "block";
+      if (!brandSelection().valid) return brandsRef.current;
+      return null;
+    }
+
+    if (target === STEP.attention) {
+      // Con Places andando, la dirección tiene que salir de la lista: de ese
+      // geocode depende el orden por cercanía (AUT-81). Sin key o si el script
+      // no cargó no hay lista: ahí sigue el texto libre.
+      const hasGeo = geo.latitude !== null && geo.longitude !== null;
+      const direccion = (form.elements.namedItem("direccion") as HTMLInputElement).value.trim();
+      if (autocompleteRef.current !== null && !hasGeo) {
+        setAddressError(pickedImpreciseRef.current ? copy.addressImpreciseError : copy.addressNotPickedError);
+        return addressInputRef.current;
+      }
+      if (direccion === "") {
+        setAddressError(copy.addressNotPickedError);
+        return addressInputRef.current;
+      }
+      return null;
+    }
+
+    // Contacto: las redes se chequean todas (se marcan todas las que fallan).
+    const socialInputs = PROVIDER_SOCIAL_KEYS.map(
+      (key) => [key, form.elements.namedItem(`social_${key}`) as HTMLInputElement] as const,
     );
-    if (
-      socialInvalid ||
-      whatsappInvalid ||
-      emailInvalid ||
-      addressInvalid ||
-      !hasDeclaredServices ||
-      brandsInvalid ||
-      logoError
-    ) {
-      if (firstInvalidField === null && hasDeclaredServices) {
-        if (logoError) logoInputRef.current?.focus();
-        else if (brandsInvalid) brandsRef.current?.focus();
+    const firstInvalidSocial = socialInputs.filter(([key, input]) => checkSocialLink(key, input.value)).at(0)?.[1];
+    const emailInvalid = !isValidProviderEmail((form.elements.namedItem("email") as HTMLInputElement).value);
+    if (emailInvalid) setEmailError(copy.email.invalid);
+    if (!whatsappResult.ok) return whatsappInputRef.current;
+    if (emailInvalid) return emailInputRef.current;
+    if (logoError) return logoInputRef.current;
+    if (firstInvalidSocial) return firstInvalidSocial;
+    return null;
+  }
+
+  /** Lleva a la persona a `target` y enfoca `focus` (o el título del paso, que enfoca el padre). */
+  function goTo(target: number, focus: HTMLElement | null = null) {
+    pendingFocusRef.current = focus;
+    onStepChange(target);
+  }
+
+  function handleContinue() {
+    const form = formRef.current;
+    if (!form) return;
+    const invalid = validateStep(step, form);
+    if (invalid === "block") return;
+    if (invalid) {
+      if (invalid === servicesErrorRef.current) {
+        invalid.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else {
+        invalid.focus();
       }
       return;
     }
+    track(ANALYTICS_EVENTS.partnerRegisterStepCompleted, { step: step + 1 });
+    goTo(step + 1);
+  }
 
-    // Las redes ya se chequearon arriba, asi que acá solo puede fallar la
-    // descripcion (y el textarea ya trae `maxLength`). Se arma igual con la
-    // misma funcion que usa `/api/provider`, que es la que normaliza los links.
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    // Enter en un campo de un paso intermedio es "Continuar", no "enviar".
+    if (step < STEP.contact) {
+      handleContinue();
+      return;
+    }
+    const form = event.currentTarget;
+
+    // Se revalida TODO: si algo de un paso anterior falla, se vuelve ahí.
+    for (const target of [STEP.business, STEP.attention, STEP.contact]) {
+      const invalid = validateStep(target, form);
+      if (invalid === null) continue;
+      if (target !== step) goTo(target, invalid === "block" ? null : invalid);
+      else if (invalid !== "block") invalid.focus();
+      return;
+    }
+
+    const { submittedBrands, submittedSpecialties } = brandSelection();
+    const hasGeo = geo.latitude !== null && geo.longitude !== null;
+    const socialInputs = PROVIDER_SOCIAL_KEYS.map(
+      (key) => [key, form.elements.namedItem(`social_${key}`) as HTMLInputElement] as const,
+    );
+
+    // Se arma con la misma función que usa `/api/provider`, que es la que
+    // normaliza los links de las redes.
     const profile = parseProviderProfileFields(
       description,
       Object.fromEntries(socialInputs.map(([key, input]) => [key, input.value])),
     );
     if (!profile.ok) {
       setSubmitState("error");
-      setErrorMessage(
-        profile.kind === "description"
-          ? providersContent.form.description.invalid
-          : providersContent.form.social.invalid,
-      );
+      setErrorMessage(profile.kind === "description" ? copy.description.invalid : copy.social.invalid);
       return;
     }
 
-    const taller = (form.elements.namedItem("taller") as HTMLInputElement)
-      .value;
-    const email = (
-      form.elements.namedItem("email") as HTMLInputElement
-    ).value.trim();
-    const direccion = (form.elements.namedItem("direccion") as HTMLInputElement)
-      .value;
-    const hours = (
-      form.elements.namedItem("hours") as HTMLInputElement
-    ).value.trim();
+    const taller = name;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value.trim();
+    const direccion = (form.elements.namedItem("direccion") as HTMLInputElement).value;
+    const hours = (form.elements.namedItem("hours") as HTMLInputElement).value.trim();
 
-    // Los inputs ya traen `maxLength`, asi que esto casi nunca salta. Queda
-    // por si un autocompletado o una extension mete mas texto que el que se
-    // puede tipear: mejor decirlo acá que comerse el 400 del backend.
+    // Los inputs ya traen `maxLength`: esto queda por si un autocompletado o
+    // una extensión mete más texto del que se puede tipear.
     const tooLong = findTooLongProviderText({
       taller,
       direccion,
@@ -523,7 +489,7 @@ export function ProviderForm({
       how_found_other: otherHowFound,
     });
     if (tooLong) {
-      setErrorMessage(providersContent.form.textTooLong[tooLong]);
+      setErrorMessage(copy.textTooLong[tooLong]);
       setSubmitState("error");
       return;
     }
@@ -539,16 +505,13 @@ export function ProviderForm({
         try {
           logoDataUrl = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = () =>
-              typeof reader.result === "string"
-                ? resolve(reader.result)
-                : reject();
+            reader.onload = () => (typeof reader.result === "string" ? resolve(reader.result) : reject());
             reader.onerror = () => reject();
             reader.onabort = () => reject();
             reader.readAsDataURL(logo);
           });
         } catch {
-          setErrorMessage(providersContent.form.logo.readError);
+          setErrorMessage(copy.logo.readError);
           setSubmitState("error");
           return;
         }
@@ -587,7 +550,7 @@ export function ProviderForm({
 
       // Nada se resetea: el formulario sigue montado con todo lo escrito.
       if (outcome.kind === "unauthenticated") {
-        setErrorMessage(providersContent.form.session.expired);
+        setErrorMessage(copy.session.expired);
         setSessionExpired(true);
         setSubmitState("error");
         return;
@@ -601,17 +564,21 @@ export function ProviderForm({
       };
 
       if (!response.ok) {
-        // El mensaje lo arma la ruta, que es la que conoce los codigos del
-        // backend. Acá solo se muestra — si algun dia falta, queda el generico.
+        // El mensaje lo arma la ruta, que conoce los códigos del backend.
         setErrorMessage(payload.error ?? GENERIC_ERROR);
         setSubmitState("error");
         return;
       }
 
-      if (payload.alreadyRegistered && payload.message) {
-        setAlreadyRegistered(payload.message);
-      }
+      const already = Boolean(payload.alreadyRegistered && payload.message);
+      if (already && payload.message) setAlreadyRegistered(payload.message);
+      // Fin del registro. Nunca datos del negocio: solo si ya existía y si vino de contratar.
+      track(ANALYTICS_EVENTS.partnerRegisterSubmitted, {
+        ...(already ? { already_registered: true } : {}),
+        ...(checkout ? { from_checkout: true } : {}),
+      });
       setSubmitState("success");
+      onDone?.();
     } catch {
       setErrorMessage(GENERIC_ERROR);
       setSubmitState("error");
@@ -619,21 +586,14 @@ export function ProviderForm({
   }
 
   if (submitState === "success") {
-    return (
-      <RegistrationStatus
-        alreadyRegisteredMessage={alreadyRegistered}
-        checkout={checkout}
-      />
-    );
+    return <RegistrationStatus alreadyRegisteredMessage={alreadyRegistered} checkout={checkout} />;
   }
+
+  const loading = submitState === "loading";
+  const brandsMissing = attempted.has(STEP.business) && !worksAllBrands && brands.length === 0;
 
   return (
     <>
-      {/* El título del formulario vive acá y no en la página: cuando el
-          formulario se reemplaza por la pantalla de estado, se va con él. */}
-      <h2 className="mb-6 font-display text-xl font-bold text-ink">
-        {providersContent.registerPage.formTitle}
-      </h2>
       {GOOGLE_MAPS_API_KEY ? (
         <Script
           id="google-maps-places"
@@ -643,493 +603,97 @@ export function ProviderForm({
         />
       ) : null}
 
-      <form onSubmit={handleSubmit} noValidate>
-      <Card variant="solid" className="p-6 md:p-8">
-        <div className="flex flex-col gap-6">
-          <Field label="Nombre del taller" htmlFor="prov-name" required>
-            <Input
-              id="prov-name"
-              name="taller"
-              type="text"
-              placeholder="Ej: Taller Belgrano"
-              autoComplete="organization"
-              maxLength={PROVIDER_TEXT_MAX_LENGTH.taller}
-              required
-            />
-          </Field>
-
-          <Field
-            label={providersContent.form.logo.label}
-            htmlFor="prov-logo"
-            hint={providersContent.form.logo.hint}
-            hintId="prov-logo-hint"
-            error={logoError}
-            errorId="prov-logo-error"
-          >
-            <Input
-              id="prov-logo"
-              name="logo"
-              type="file"
-              ref={logoInputRef}
-              accept={PROVIDER_LOGO_TYPES.join(",")}
-              disabled={submitState === "loading"}
-              className="min-h-11 text-base"
-              aria-invalid={logoError !== null}
-              aria-describedby={
-                logoError
-                  ? "prov-logo-hint prov-logo-error"
-                  : "prov-logo-hint"
-              }
-              onChange={(event) => {
-                const file = event.target.files?.[0] ?? null;
-                setLogo(file && validProviderLogo(file) ? file : null);
-                setLogoError(
-                  file && !validProviderLogo(file)
-                    ? providersContent.form.logo.invalid
-                    : null,
-                );
-              }}
-            />
-            {logo || logoError ? (
-              <button
-                type="button"
-                className="min-h-11 self-start text-sm font-semibold text-brand underline underline-offset-4"
-                disabled={submitState === "loading"}
-                onClick={() => {
-                  setLogo(null);
-                  setLogoError(null);
-                  if (logoInputRef.current) logoInputRef.current.value = "";
-                }}
-              >
-                {providersContent.form.logo.remove}
-              </button>
-            ) : null}
-          </Field>
-
-          <Field label={providersContent.form.description.label} htmlFor="prov-description"
-            hint={providersContent.form.description.hint} hintId="prov-description-hint">
-            <Textarea id="prov-description" name="description" rows={3}
-              className="text-base" maxLength={PROVIDER_DESCRIPTION_MAX_LENGTH}
-              placeholder={providersContent.form.description.placeholder}
-              value={description} onChange={(event) => setDescription(event.target.value)}
-              aria-describedby="prov-description-hint prov-description-count" />
-            <p id="prov-description-count" className="text-right text-xs text-ink/70">
-              {providersContent.form.description.count(description.length)}
-            </p>
-          </Field>
-
-          <fieldset className="border-t border-line pt-5" aria-describedby="prov-social-hint">
-            <legend className="font-display text-base font-bold text-ink">{providersContent.form.social.title}</legend>
-            <p id="prov-social-hint" className="mb-4 text-sm text-ink/70">{providersContent.form.social.hint}</p>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {providersContent.form.social.networks.map(({ key, label, placeholder, invalid }) => (
-                <Field key={key} label={label} htmlFor={`prov-social-${key}`}
-                  error={invalidSocial.has(key) ? invalid : undefined}
-                  errorId={`prov-social-${key}-error`}>
-                  {/* `text` y no `url`: se puede escribir el usuario (`@tutaller`),
-                      y el teclado de `url` en iOS esconde la arroba. */}
-                  <Input id={`prov-social-${key}`} name={`social_${key}`} type="text"
-                    className="min-h-11 text-base" maxLength={2048} autoCapitalize="none" autoCorrect="off" spellCheck={false}
-                    placeholder={placeholder}
-                    aria-invalid={invalidSocial.has(key)}
-                    aria-describedby={invalidSocial.has(key) ? `prov-social-hint prov-social-${key}-error` : "prov-social-hint"}
-                    onBlur={(event) => {
-                      // Si se pudo armar el link, se muestra en el campo: la
-                      // persona ve lo que vamos a guardar y lo puede corregir.
-                      const link = normalizeProviderSocialLink(key, event.target.value);
-                      if (link) event.target.value = link;
-                      checkSocialLink(key, event.target.value);
-                    }}
-                    onChange={(event) => { if (invalidSocial.has(key)) checkSocialLink(key, event.target.value); }} />
-                </Field>
-              ))}
-            </div>
-          </fieldset>
-
-          <div className="grid gap-4 sm:grid-cols-2 sm:items-start">
-            <Field
-              label={providersContent.form.whatsapp.label}
-              htmlFor="prov-phone"
-              required
-              hint={providersContent.form.whatsapp.hint}
-              hintId="prov-phone-hint"
-              error={whatsappError}
-              errorId="prov-phone-error"
-            >
-              {/* Mismo control que /pedido: el `+54` es parte del campo, así
-                  que se escribe el número nacional y nada más. Borde, fondo,
-                  radio y foco son los de `Input` (form-controls). */}
-              <div
-                className={cn(
-                  "flex overflow-clip rounded-field border bg-surface-subtle transition-colors focus-within:border-brand",
-                  whatsappError ? "border-danger" : "border-line",
-                )}
-              >
-                <span
-                  id="prov-phone-prefix"
-                  className="flex shrink-0 items-center border-r border-line bg-surface-muted px-3.5 text-base text-ink/70"
-                >
-                  <span aria-hidden="true">
-                    {providersContent.form.whatsapp.prefix}
-                  </span>
-                  <span className="sr-only">
-                    {providersContent.form.whatsapp.prefixLabel}
-                  </span>
-                </span>
-                <WhatsappInput
-                  id="prov-phone"
-                  name="whatsapp"
-                  ref={whatsappInputRef}
-                  autoComplete="tel-national"
-                  required
-                  value={whatsapp}
-                  onValueChange={setWhatsapp}
-                  onBlur={() => setWhatsappTouched(true)}
-                  placeholder={providersContent.form.whatsapp.placeholder}
-                  disabled={submitState === "loading"}
-                  aria-invalid={whatsappError ? true : undefined}
-                  aria-describedby={
-                    whatsappError
-                      ? "prov-phone-prefix prov-phone-hint prov-phone-error"
-                      : "prov-phone-prefix prov-phone-hint"
-                  }
-                  // `text-base` (16px) y no los 15px de `Input`: con menos,
-                  // iOS hace zoom al enfocar.
-                  className="min-h-11 min-w-0 flex-1 rounded-none border-0 text-base placeholder:text-ink/65"
-                />
-              </div>
-            </Field>
-            <Field
-              label="Email"
-              htmlFor="prov-email"
-              required
-              error={emailError}
-              errorId="prov-email-error"
+      {/* Ritmo (densidad 2026-11): 32px entre bloques, 12-16px entre el
+          título de un bloque y sus campos, 8px entre rótulo y campo. */}
+      <form ref={formRef} onSubmit={handleSubmit} noValidate className="flex flex-col gap-8">
+        {/* ── Paso 1: datos del negocio ─────────────────────────────── */}
+        <div hidden={step !== STEP.business} className="flex flex-col gap-8">
+          <section aria-labelledby="alta-nombre" className="flex flex-col gap-4">
+            <h2 id="alta-nombre" className={altaSectionTitle}>
+              {flow.sections.name}
+            </h2>
+            <AltaField
+              label={flow.nameLabel}
+              htmlFor="prov-name"
+              error={nameError}
+              errorId="prov-name-error"
             >
               <Input
-                id="prov-email"
-                name="email"
-                type="email"
-                ref={emailInputRef}
-                placeholder="tuemail@negocio.com"
-                autoComplete="email"
-                autoCapitalize="none"
-                spellCheck={false}
-                maxLength={PROVIDER_EMAIL_MAX_LENGTH}
-                onChange={() => setEmailError(null)}
-                aria-invalid={emailError !== null}
-                aria-describedby={
-                  emailError !== null ? "prov-email-error" : undefined
-                }
+                ref={nameInputRef}
+                id="prov-name"
+                name="taller"
+                type="text"
+                placeholder={flow.namePlaceholder}
+                autoComplete="organization"
+                maxLength={PROVIDER_TEXT_MAX_LENGTH.taller}
+                value={name}
+                onChange={(event) => setName(event.target.value)}
                 required
+                aria-invalid={nameError ? true : undefined}
+                aria-describedby={nameError ? "prov-name-error" : undefined}
+                className={altaInput}
               />
-            </Field>
-          </div>
-
-          <Field
-            label="Dirección"
-            htmlFor="prov-address"
-            required
-            hint={providersContent.form.addressHelper}
-          >
-            <Input
-              id="prov-address"
-              name="direccion"
-              type="text"
-              placeholder="Calle y número"
-              autoComplete="street-address"
-              maxLength={PROVIDER_TEXT_MAX_LENGTH.direccion}
-              ref={addressInputRef}
-              onChange={() => {
-                setGeo(EMPTY_GEO);
-                pickedImpreciseRef.current = false;
-                setAddressError(null);
-              }}
-              aria-invalid={addressError !== null}
-              aria-describedby={
-                addressError !== null ? "prov-address-error" : undefined
-              }
-              required
-            />
-            {addressError !== null ? (
-              <p
-                id="prov-address-error"
-                role="alert"
-                className="text-sm font-medium text-danger"
-              >
-                {addressError}
-              </p>
-            ) : null}
-          </Field>
-
-          <Field
-            label={providersContent.form.hoursLabel}
-            htmlFor="prov-hours"
-          >
-            <Input
-              id="prov-hours"
-              name="hours"
-              type="text"
-              placeholder={providersContent.form.hoursPlaceholder}
-              maxLength={PROVIDER_TEXT_MAX_LENGTH.hours}
-            />
-          </Field>
-
-          <FieldGroup title={providersContent.form.modalityTitle}>
-            <div className="flex flex-col gap-2">
-              {PROVIDER_MODALITY_OPTIONS.map((option) => (
-                <ChoiceRow
-                  key={option.value}
-                  type="radio"
-                  name="modality"
-                  label={option.label}
-                  checked={modality === option.value}
-                  onChange={() => setModality(option.value)}
-                />
-              ))}
-            </div>
-          </FieldGroup>
-
-          <fieldset
-            ref={brandsRef}
-            tabIndex={-1}
-            className="border-t border-line pt-5"
-          >
-            <legend className="font-display text-base font-bold text-ink">
-              {providersContent.form.brands.title}
-            </legend>
-            <div className="flex flex-col gap-2">
-              <ChoiceRow
-                type="radio"
-                name="works_all_brands"
-                label={providersContent.form.brands.all}
-                checked={worksAllBrands}
-                onChange={() => setWorksAllBrands(true)}
+            </AltaField>
+            <AltaField label={flow.descriptionLabel} optional={flow.optional} htmlFor="prov-description">
+              <Textarea
+                id="prov-description"
+                name="description"
+                rows={2}
+                maxLength={PROVIDER_DESCRIPTION_MAX_LENGTH}
+                placeholder={copy.description.placeholder}
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                aria-describedby="prov-description-hint prov-description-count"
+                className={altaTextarea}
               />
-              <ChoiceRow
-                type="radio"
-                name="works_all_brands"
-                label={providersContent.form.brands.specific}
-                checked={!worksAllBrands}
-                onChange={() => {
-                  setWorksAllBrands(false);
-                  setBrands((current) => specializedBrands.reduce((all, brand) => appendProviderBrand(all, brand, Infinity), current));
-                }}
-              />
-            </div>
-
-            {!worksAllBrands ? (
-              <div className="mt-3 flex flex-col gap-2">
-                <label htmlFor="prov-brand-picker" className="sr-only">
-                  {providersContent.form.brands.picker}
-                </label>
-                <Select
-                  id="prov-brand-picker"
-                  className="min-h-11 text-base"
-                  aria-invalid={submitAttempted && brands.length === 0}
-                  aria-describedby={
-                    submitAttempted && brands.length === 0
-                      ? "prov-brands-error"
-                      : undefined
-                  }
-                  value=""
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    if (value && !brands.includes(value)) {
-                      setBrands([...brands, value]);
-                    }
-                  }}
-                >
-                  <option value="" disabled>
-                    {providersContent.form.brands.placeholder}
-                  </option>
-                  {PROVIDER_BRANDS.filter(
-                    (brand) => !brands.includes(brand),
-                  ).map((brand) => (
-                    <option key={brand} value={brand}>
-                      {brand}
-                    </option>
-                  ))}
-                </Select>
-
-                {brands.length > 0 ? (
-                  <ul className="flex flex-wrap gap-1.5">
-                    {brands.map((brand) => (
-                      <li
-                        key={brand}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand/8 py-1 pr-1.5 pl-3 text-sm font-semibold text-ink"
-                      >
-                        {brand}
-                        <button
-                          type="button"
-                          aria-label={providersContent.form.brands.remove(
-                            brand,
-                          )}
-                          onClick={() => {
-                            setBrands(
-                              brands.filter((item) => item !== brand),
-                            );
-                            setSpecializedBrands(
-                              specializedBrands.filter(
-                                (item) => item !== brand,
-                              ),
-                            );
-                          }}
-                          className="flex size-11 items-center justify-center rounded-full bg-ink/10 text-ink/60 transition-colors hover:bg-alert-bg hover:text-alert-fg"
-                        >
-                          <svg
-                            width="9"
-                            height="9"
-                            viewBox="0 0 12 12"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                            strokeLinecap="round"
-                            aria-hidden="true"
-                          >
-                            <line x1="2" y1="2" x2="10" y2="10" />
-                            <line x1="10" y1="2" x2="2" y2="10" />
-                          </svg>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p
-                    id="prov-brands-error"
-                    role={submitAttempted ? "alert" : undefined}
-                    className={
-                      submitAttempted
-                        ? "text-sm text-danger"
-                        : "text-sm text-ink/65"
-                    }
-                  >
-                    {providersContent.form.brands.missing}
-                  </p>
-                )}
+              {/* Ayuda y contador en la misma línea: dos renglones menos. */}
+              <div className="-mt-0.5 flex items-start justify-between gap-4 text-label text-fg-muted">
+                <p id="prov-description-hint">{copy.description.hint}</p>
+                <p id="prov-description-count" className="shrink-0 tabular-nums">
+                  {copy.description.count(description.length)}
+                </p>
               </div>
-            ) : null}
-          </fieldset>
+            </AltaField>
+          </section>
 
-          <fieldset
-            className="border-t border-line pt-5"
-            aria-describedby="prov-specialties-hint"
-          >
-            <legend className="font-display text-base font-bold text-ink">
-              {providersContent.form.brands.specialtiesTitle}
-            </legend>
-            <p
-              id="prov-specialties-hint"
-              className="mb-3 text-sm text-ink/70"
-            >
-              {worksAllBrands
-                ? providersContent.form.brands.specialtiesHint
-                : providersContent.form.brands.specialtiesSpecificHint}
-            </p>
-            <div className="flex flex-col gap-3">
-              <label htmlFor="prov-specialty-picker" className="sr-only">{providersContent.form.brands.specialtiesPicker}</label>
-              <Select id="prov-specialty-picker" className="min-h-11 text-base" value=""
-                disabled={submitState === "loading" || specializedBrands.length >= PROVIDER_BRAND_MAX_COUNT}
-                onChange={(event) => addSpecialty(event.target.value)}>
-                <option value="" disabled>{providersContent.form.brands.placeholder}</option>
-                {PROVIDER_BRANDS.filter((brand) => !specializedBrands.includes(brand)).map((brand) => <option key={brand} value={brand}>{brand}</option>)}
-              </Select>
-              {specializedBrands.length ? (
-                <ul className="flex flex-wrap gap-1.5">
-                  {specializedBrands.map((brand) => <li key={brand} className="inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand/8 py-1 pr-1.5 pl-3 text-sm font-semibold text-ink">
-                    {brand}
-                    <button type="button" aria-label={providersContent.form.brands.remove(brand)}
-                      className="flex size-11 items-center justify-center rounded-full bg-ink/10 text-ink/60 transition-colors hover:bg-alert-bg hover:text-alert-fg"
-                      onClick={() => setSpecializedBrands((current) => current.filter((item) => item !== brand))}>
-                      <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><line x1="2" y1="2" x2="10" y2="10" /><line x1="10" y1="2" x2="2" y2="10" /></svg>
-                    </button>
-                  </li>)}
-                </ul>
-              ) : null}
-              <Field label={providersContent.form.brands.otherLabel} htmlFor="prov-specialty-other">
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <Input id="prov-specialty-other" className="min-h-11 text-base placeholder:text-ink/70" value={otherSpecialty}
-                    maxLength={PROVIDER_BRAND_MAX_LENGTH} placeholder={providersContent.form.brands.otherPlaceholder}
-                    disabled={submitState === "loading" || specializedBrands.length >= PROVIDER_BRAND_MAX_COUNT}
-                    onChange={(event) => setOtherSpecialty(event.target.value)}
-                    onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addSpecialty(otherSpecialty); } }} />
-                  <Button type="button" variant="outline" className="min-h-11 shrink-0"
-                    disabled={submitState === "loading" || !otherSpecialty.trim() || specializedBrands.length >= PROVIDER_BRAND_MAX_COUNT}
-                    onClick={() => addSpecialty(otherSpecialty)}>{providersContent.form.brands.add}</Button>
-                </div>
-              </Field>
-              {specializedBrands.length >= PROVIDER_BRAND_MAX_COUNT ? <p className="text-sm text-ink/70">{providersContent.form.brands.maximum}</p> : null}
+          <section aria-labelledby="alta-servicios" className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1">
+              <h2 id="alta-servicios" className={altaSectionTitle}>
+                {flow.sections.services}
+              </h2>
+              {serviceFamilies.length > 0 ? <p className={altaSectionHint}>{flow.sections.servicesHint}</p> : null}
             </div>
-          </fieldset>
-
-          <FieldGroup title="Servicios que ofrecen">
             {serviceFamilies.length > 0 ? (
               <>
-                <p className="mb-3 text-xs text-ink/65">
-                  Abrí las categorías que te tocan y marcá los rubros que
-                  hacés. Si hacés todo lo de una, tildá la categoría entera.
-                </p>
-
-                <ServiceFamilyPicker
-                  families={serviceFamilies}
-                  selected={services}
-                  onChange={setServices}
+                <ServiceFamilyPicker families={serviceFamilies} selected={services} onChange={setServices} />
+                {/* "Otro" va DEBAJO del acordeón y suelto: es el único valor de
+                    esta sección que no sale del catálogo (`service_other`). */}
+                <AltaChip
+                  type="checkbox"
+                  label={`${OTHER_OPTION}: hacemos algo que no está en la lista`}
+                  checked={wantsOtherService}
+                  onChange={() => {
+                    const next = !wantsOtherService;
+                    setWantsOtherService(next);
+                    if (!next) setOtherService("");
+                  }}
+                  className="self-start"
                 />
-
-                {/* "Otro" va DEBAJO del acordeon y suelto, no como una fila
-                  mas de la lista: puesto adentro se lee como una categoria
-                  del catalogo, y es justamente lo contrario — es el unico
-                  valor de esta seccion que no sale del catalogo, y el unico
-                  que viaja como texto libre (`service_other`). */}
-                <div className="mt-2.5">
-                  <ChoicePill
-                    type="checkbox"
-                    label={`${OTHER_OPTION}: hacemos algo que no está en la lista`}
-                    checked={wantsOtherService}
-                    onChange={() => {
-                      const next = !wantsOtherService;
-                      setWantsOtherService(next);
-                      if (!next) setOtherService("");
-                    }}
-                  />
-                </div>
               </>
             ) : (
-              /**
-               * El catalogo no cargo. No se puede inventar una lista de rubros
-               * —los slugs los define el backend y mandar labels sueltos es
-               * exactamente el problema que este cambio vino a matar—, asi que
-               * el formulario avisa y abre el texto libre.
-               *
-               * Por que degradar y no bloquear el envio: del otro lado hay un
-               * taller que se estaba anotando. Perderlo porque un endpoint
-               * secundario no contesto es peor que recibirlo con los rubros sin
-               * normalizar, que es un trabajo de un minuto en la aprobacion.
-               * Lo que no se hace es callarse: sin este cartel, la persona ve
-               * un formulario al que le falta una seccion entera y no tiene
-               * forma de saber que eso no es lo normal.
-               */
-              <div
-                role="alert"
-                className="rounded-field border border-line bg-surface-subtle p-3.5"
-              >
-                <p className="text-sm font-semibold text-ink">
-                  No pudimos cargar el listado de servicios.
-                </p>
-                <p className="mt-1 text-[0.8125rem] text-ink/65">
-                  Es un problema nuestro, no tuyo, y no te frena: escribinos
-                  acá abajo qué servicios ofrecés y los cargamos nosotros al
-                  activarte el perfil.
+              /* El catálogo no cargó: no se inventa una lista de rubros (los
+                 slugs los define el backend). Se avisa y se abre el texto libre. */
+              <div role="alert" className="rounded-2xl bg-canvas p-4">
+                <p className="text-base font-semibold text-fg">No pudimos cargar el listado de servicios.</p>
+                <p className="mt-1 text-sm text-fg-muted">
+                  Es un problema nuestro, no tuyo, y no te frena: escribinos acá abajo qué servicios ofrecés y los
+                  cargamos nosotros al activarte el perfil.
                 </p>
               </div>
             )}
 
             {missingServices ? (
-              <p
-                ref={servicesErrorRef}
-                role="alert"
-                className="mt-2.5 text-sm font-medium text-danger"
-              >
+              <p ref={servicesErrorRef} tabIndex={-1} role="alert" className="text-sm font-medium text-status-alert">
                 {serviceFamilies.length > 0
                   ? 'Abrí una categoría y marcá al menos un rubro, o tildá "Otro" y contanos qué hacés.'
                   : "Contanos qué servicios ofrecés para que podamos activarte el perfil."}
@@ -1143,62 +707,488 @@ export function ProviderForm({
                 </label>
                 <Input
                   id="prov-service-other"
-                  className="mt-2.5"
                   type="text"
                   placeholder="Contanos qué otro servicio ofrecés"
                   value={otherService}
                   maxLength={PROVIDER_TEXT_MAX_LENGTH.service_other}
                   onChange={(event) => setOtherService(event.target.value)}
                   required
+                  className={altaInput}
                 />
               </>
             ) : null}
-          </FieldGroup>
+          </section>
 
-          <FieldGroup title="Tipos de vehículo que atienden">
+          <fieldset ref={brandsRef} tabIndex={-1} className="flex flex-col gap-3">
+            <legend className={cn(altaSectionTitle, "mb-3")}>{copy.brands.title}</legend>
+            {/* Opciones cortas: chips de radio, uno al lado del otro también en celular. */}
             <div className="flex flex-wrap gap-2">
-              {PROVIDER_VEHICLE_TYPES.map((type) => (
-                <ChoicePill
-                  key={type}
-                  type="checkbox"
-                  label={type}
-                  checked={vehicleTypes.includes(type)}
-                  onChange={() => toggle(vehicleTypes, setVehicleTypes, type)}
-                />
-              ))}
+              <AltaChip
+                type="radio"
+                name="works_all_brands"
+                label={copy.brands.all}
+                checked={worksAllBrands}
+                onChange={() => setWorksAllBrands(true)}
+              />
+              <AltaChip
+                type="radio"
+                name="works_all_brands"
+                label={copy.brands.specific}
+                checked={!worksAllBrands}
+                onChange={() => {
+                  setWorksAllBrands(false);
+                  setBrands((current) =>
+                    specializedBrands.reduce((all, brand) => appendProviderBrand(all, brand, Infinity), current),
+                  );
+                }}
+              />
             </div>
-          </FieldGroup>
 
-          <FieldGroup title="Motorizaciones que atienden">
-            <div className="flex flex-wrap gap-2">
-              {PROVIDER_FUEL_TYPES.map((fuel) => (
-                <ChoicePill
-                  key={fuel}
-                  type="checkbox"
-                  label={fuel}
-                  checked={fuelTypes.includes(fuel)}
-                  onChange={() => toggle(fuelTypes, setFuelTypes, fuel)}
-                />
-              ))}
-            </div>
-          </FieldGroup>
+            {!worksAllBrands ? (
+              <div className="flex flex-col gap-3">
+                <label htmlFor="prov-brand-picker" className="sr-only">
+                  {copy.brands.picker}
+                </label>
+                <Select
+                  id="prov-brand-picker"
+                  className={altaSelect}
+                  aria-invalid={brandsMissing}
+                  aria-describedby={brandsMissing ? "prov-brands-error" : undefined}
+                  value=""
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    if (value && !brands.includes(value)) setBrands([...brands, value]);
+                  }}
+                >
+                  <option value="" disabled>
+                    {copy.brands.placeholder}
+                  </option>
+                  {PROVIDER_BRANDS.filter((brand) => !brands.includes(brand)).map((brand) => (
+                    <option key={brand} value={brand}>
+                      {brand}
+                    </option>
+                  ))}
+                </Select>
+                {brands.length > 0 ? (
+                  <ul className="flex flex-wrap gap-2">
+                    {brands.map((brand) => (
+                      <BrandTag
+                        key={brand}
+                        brand={brand}
+                        onRemove={() => {
+                          setBrands(brands.filter((item) => item !== brand));
+                          setSpecializedBrands(specializedBrands.filter((item) => item !== brand));
+                        }}
+                      />
+                    ))}
+                  </ul>
+                ) : (
+                  <p
+                    id="prov-brands-error"
+                    role={brandsMissing ? "alert" : undefined}
+                    className={brandsMissing ? "text-sm font-medium text-status-alert" : "text-sm text-fg-muted"}
+                  >
+                    {copy.brands.missing}
+                  </p>
+                )}
+              </div>
+            ) : null}
+          </fieldset>
 
-          <div className="border-t border-line pt-5">
-            <Field
-              label="¿Cómo se enteraron de AutoLibre?"
-              htmlFor="prov-how"
-              required
+          {/* Sub-pregunta opcional de las marcas: rótulo de grupo y 24px arriba
+              (el `gap-8` del paso menos 8), para que se lea pegada a "¿Qué marcas…?". */}
+          <fieldset className="-mt-2 flex flex-col gap-3" aria-describedby="prov-specialties-hint">
+            <legend className={cn(altaGroupLabel, "mb-1")}>{copy.brands.specialtiesTitle}</legend>
+            <p id="prov-specialties-hint" className={altaSectionHint}>
+              {worksAllBrands ? copy.brands.specialtiesHint : copy.brands.specialtiesSpecificHint}
+            </p>
+            <label htmlFor="prov-specialty-picker" className="sr-only">
+              {copy.brands.specialtiesPicker}
+            </label>
+            <Select
+              id="prov-specialty-picker"
+              className={altaSelect}
+              value=""
+              disabled={loading || specializedBrands.length >= PROVIDER_BRAND_MAX_COUNT}
+              onChange={(event) => addSpecialty(event.target.value)}
             >
+              <option value="" disabled>
+                {copy.brands.placeholder}
+              </option>
+              {PROVIDER_BRANDS.filter((brand) => !specializedBrands.includes(brand)).map((brand) => (
+                <option key={brand} value={brand}>
+                  {brand}
+                </option>
+              ))}
+            </Select>
+            {specializedBrands.length ? (
+              <ul className="flex flex-wrap gap-2">
+                {specializedBrands.map((brand) => (
+                  <BrandTag
+                    key={brand}
+                    brand={brand}
+                    onRemove={() => setSpecializedBrands((current) => current.filter((item) => item !== brand))}
+                  />
+                ))}
+              </ul>
+            ) : null}
+            <AltaField label={copy.brands.otherLabel} htmlFor="prov-specialty-other">
+              {/* Campo y "Agregar" en la misma fila en todos los anchos. */}
+              <div className="flex gap-2">
+                <Input
+                  id="prov-specialty-other"
+                  className={altaInput}
+                  value={otherSpecialty}
+                  maxLength={PROVIDER_BRAND_MAX_LENGTH}
+                  placeholder={copy.brands.otherPlaceholder}
+                  disabled={loading || specializedBrands.length >= PROVIDER_BRAND_MAX_COUNT}
+                  onChange={(event) => setOtherSpecialty(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      addSpecialty(otherSpecialty);
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="48"
+                  className="shrink-0"
+                  disabled={loading || !otherSpecialty.trim() || specializedBrands.length >= PROVIDER_BRAND_MAX_COUNT}
+                  onClick={() => addSpecialty(otherSpecialty)}
+                >
+                  {copy.brands.add}
+                </Button>
+              </div>
+            </AltaField>
+            {specializedBrands.length >= PROVIDER_BRAND_MAX_COUNT ? (
+              <p className="text-sm text-fg-muted">{copy.brands.maximum}</p>
+            ) : null}
+          </fieldset>
+
+          <section aria-labelledby="alta-vehiculos" className="flex flex-col gap-4">
+            <h2 id="alta-vehiculos" className={altaSectionTitle}>
+              {flow.sections.vehicles}
+            </h2>
+            <fieldset>
+              <legend className={cn(altaGroupLabel, "mb-2")}>Tipos de vehículo que atienden</legend>
+              <div className="flex flex-wrap gap-2">
+                {PROVIDER_VEHICLE_TYPES.map((type) => (
+                  <AltaChip
+                    key={type}
+                    type="checkbox"
+                    label={type}
+                    checked={vehicleTypes.includes(type)}
+                    onChange={() => toggle(vehicleTypes, setVehicleTypes, type)}
+                  />
+                ))}
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend className={cn(altaGroupLabel, "mb-2")}>Motorizaciones que atienden</legend>
+              <div className="flex flex-wrap gap-2">
+                {PROVIDER_FUEL_TYPES.map((fuel) => (
+                  <AltaChip
+                    key={fuel}
+                    type="checkbox"
+                    label={fuel}
+                    checked={fuelTypes.includes(fuel)}
+                    onChange={() => toggle(fuelTypes, setFuelTypes, fuel)}
+                  />
+                ))}
+              </div>
+            </fieldset>
+          </section>
+        </div>
+
+        {/* ── Paso 2: atención ──────────────────────────────────────── */}
+        <div hidden={step !== STEP.attention} className="flex flex-col gap-8">
+          <fieldset>
+            <legend className={cn(altaSectionTitle, "mb-3")}>{flow.sections.modality}</legend>
+            <div className="flex flex-wrap gap-2">
+              {PROVIDER_MODALITY_OPTIONS.map((option) => (
+                <AltaChip
+                  key={option.value}
+                  type="radio"
+                  name="modality"
+                  label={option.label}
+                  checked={modality === option.value}
+                  onChange={() => setModality(option.value)}
+                />
+              ))}
+            </div>
+          </fieldset>
+
+          <section aria-labelledby="alta-direccion" className="flex flex-col gap-4">
+            <h2 id="alta-direccion" className={altaSectionTitle}>
+              {flow.sections.address}
+            </h2>
+            <AltaField
+              label="Dirección"
+              htmlFor="prov-address"
+              hint={copy.addressHelper}
+              hintId="prov-address-hint"
+              error={addressError}
+              errorId="prov-address-error"
+            >
+              <Input
+                id="prov-address"
+                name="direccion"
+                type="text"
+                placeholder="Calle y número"
+                autoComplete="street-address"
+                maxLength={PROVIDER_TEXT_MAX_LENGTH.direccion}
+                ref={addressInputRef}
+                onChange={() => {
+                  setGeo(EMPTY_GEO);
+                  pickedImpreciseRef.current = false;
+                  setAddressError(null);
+                }}
+                aria-invalid={addressError !== null}
+                aria-describedby={addressError !== null ? "prov-address-hint prov-address-error" : "prov-address-hint"}
+                required
+                className={altaInput}
+              />
+            </AltaField>
+          </section>
+
+          <section aria-labelledby="alta-horarios" className="flex flex-col gap-4">
+            <h2 id="alta-horarios" className={altaSectionTitle}>
+              {flow.sections.hours}
+            </h2>
+            <AltaField label={copy.hoursLabel} htmlFor="prov-hours">
+              <Input
+                id="prov-hours"
+                name="hours"
+                type="text"
+                placeholder={copy.hoursPlaceholder}
+                maxLength={PROVIDER_TEXT_MAX_LENGTH.hours}
+                className={altaInput}
+              />
+            </AltaField>
+          </section>
+        </div>
+
+        {/* ── Paso 3: contacto ──────────────────────────────────────── */}
+        <div hidden={step !== STEP.contact} className="flex flex-col gap-8">
+          <section aria-labelledby="alta-contacto" className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+              <h2 id="alta-contacto" className={altaSectionTitle}>
+                {flow.sections.contact}
+              </h2>
+              <p className={altaSectionHint}>{flow.sections.contactHint}</p>
+            </div>
+            {/* WhatsApp y email lado a lado desde `sm`: son cortos y van juntos. */}
+            <div className="grid gap-4 sm:grid-cols-2 sm:items-start">
+            <AltaField
+              label={copy.whatsapp.label}
+              htmlFor="prov-phone"
+              hint={copy.whatsapp.hint}
+              hintId="prov-phone-hint"
+              error={whatsappError}
+              errorId="prov-phone-error"
+            >
+              {/* Mismo control que /pedido: el `+54` es parte del campo. */}
+              <div
+                className={cn(
+                  socialPill,
+                  whatsappError ? "border-status-alert" : "border-control-line-strong hover:border-fg-muted",
+                )}
+              >
+                <span
+                  id="prov-phone-prefix"
+                  className="flex shrink-0 items-center border-r border-card-line pr-3 pl-5 text-base text-fg-muted"
+                >
+                  <span aria-hidden="true">{copy.whatsapp.prefix}</span>
+                  <span className="sr-only">{copy.whatsapp.prefixLabel}</span>
+                </span>
+                <WhatsappInput
+                  id="prov-phone"
+                  name="whatsapp"
+                  ref={whatsappInputRef}
+                  autoComplete="tel-national"
+                  required
+                  value={whatsapp}
+                  onValueChange={setWhatsapp}
+                  onBlur={() => setWhatsappTouched(true)}
+                  placeholder={copy.whatsapp.placeholder}
+                  disabled={loading}
+                  aria-invalid={whatsappError ? true : undefined}
+                  aria-describedby={
+                    whatsappError
+                      ? "prov-phone-prefix prov-phone-hint prov-phone-error"
+                      : "prov-phone-prefix prov-phone-hint"
+                  }
+                  className={pillInnerInput}
+                />
+              </div>
+            </AltaField>
+            <AltaField label={flow.emailLabel} htmlFor="prov-email" error={emailError} errorId="prov-email-error">
+              <Input
+                id="prov-email"
+                name="email"
+                type="email"
+                ref={emailInputRef}
+                placeholder="tuemail@negocio.com"
+                autoComplete="email"
+                autoCapitalize="none"
+                spellCheck={false}
+                maxLength={PROVIDER_EMAIL_MAX_LENGTH}
+                onChange={() => setEmailError(null)}
+                aria-invalid={emailError !== null}
+                aria-describedby={emailError !== null ? "prov-email-error" : undefined}
+                required
+                className={altaInput}
+              />
+            </AltaField>
+            </div>
+          </section>
+
+          <section aria-labelledby="alta-extras" className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+              <h2 id="alta-extras" className={altaSectionTitle}>
+                {flow.sections.extras}
+              </h2>
+              <p className={altaSectionHint}>{flow.sections.extrasHint}</p>
+            </div>
+            <AltaField
+              label={copy.logo.label}
+              htmlFor="prov-logo"
+              hint={copy.logo.hint}
+              hintId="prov-logo-hint"
+              error={logoError}
+              errorId="prov-logo-error"
+            >
+              {/* El texto del control nativo ("Choose File / No file chosen") sale en el
+                  idioma del navegador: se dibuja una píldora propia en español y el
+                  input real queda encima, transparente, para conservar el foco, el
+                  teclado y el nombre accesible del `<label>`. */}
+              <div
+                className={cn(
+                  "relative flex h-12 items-center gap-4 rounded-full border bg-card pr-5 pl-1.5 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand",
+                  logoError ? "border-status-alert" : "border-control-line-strong hover:border-fg-muted",
+                )}
+              >
+                <span
+                  aria-hidden="true"
+                  className="inline-flex h-9 shrink-0 items-center rounded-full border border-action px-4 font-display text-control font-semibold text-fg"
+                >
+                  {copy.logo.choose}
+                </span>
+                <span aria-hidden="true" className="min-w-0 truncate text-base text-fg-muted">
+                  {logo ? logo.name : copy.logo.empty}
+                </span>
+                <input
+                  id="prov-logo"
+                  name="logo"
+                  type="file"
+                  ref={logoInputRef}
+                  accept={PROVIDER_LOGO_TYPES.join(",")}
+                  disabled={loading}
+                  className="absolute inset-0 size-full cursor-pointer rounded-full opacity-0 disabled:cursor-not-allowed"
+                  aria-invalid={logoError !== null}
+                  aria-describedby={logoError ? "prov-logo-hint prov-logo-error" : "prov-logo-hint"}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0] ?? null;
+                    setLogo(file && validProviderLogo(file) ? file : null);
+                    setLogoError(file && !validProviderLogo(file) ? copy.logo.invalid : null);
+                  }}
+                />
+              </div>
+              {logo || logoError ? (
+                <button
+                  type="button"
+                  className="min-h-11 self-start text-sm font-semibold text-fg underline underline-offset-4"
+                  disabled={loading}
+                  onClick={() => {
+                    setLogo(null);
+                    setLogoError(null);
+                    if (logoInputRef.current) logoInputRef.current.value = "";
+                  }}
+                >
+                  {copy.logo.remove}
+                </button>
+              ) : null}
+            </AltaField>
+
+            <fieldset className="flex flex-col gap-3" aria-describedby="prov-social-hint">
+              <legend className={cn(altaGroupLabel, "mb-1")}>{copy.social.title}</legend>
+              <p id="prov-social-hint" className={altaSectionHint}>
+                {copy.social.hint}
+              </p>
+              {/* El nombre de la red va DENTRO de la píldora, como el +54 del
+                  WhatsApp, y es el `<label>` del campo: una fila por red en
+                  lugar de dos (rótulo + campo). */}
+              <div className="grid gap-3 sm:grid-cols-2 sm:items-start">
+                {copy.social.networks.map(({ key, label, placeholder, invalid }) => (
+                  <div key={key} className="flex flex-col gap-1.5">
+                    <div
+                      className={cn(
+                        socialPill,
+                        invalidSocial.has(key) ? "border-status-alert" : "border-control-line-strong hover:border-fg-muted",
+                      )}
+                    >
+                      <label
+                        htmlFor={`prov-social-${key}`}
+                        className="flex w-28 shrink-0 items-center border-r border-card-line pr-3 pl-5 text-control font-semibold text-fg"
+                      >
+                        {label}
+                      </label>
+                    {/* `text` y no `url`: se puede escribir el usuario (`@tutaller`),
+                        y el teclado de `url` en iOS esconde la arroba. */}
+                    <Input
+                      id={`prov-social-${key}`}
+                      name={`social_${key}`}
+                      type="text"
+                      className={pillInnerInput}
+                      maxLength={2048}
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      placeholder={placeholder}
+                      aria-invalid={invalidSocial.has(key)}
+                      aria-describedby={
+                        invalidSocial.has(key) ? `prov-social-hint prov-social-${key}-error` : "prov-social-hint"
+                      }
+                      onBlur={(event) => {
+                        // Si se pudo armar el link, se muestra en el campo: la
+                        // persona ve lo que vamos a guardar.
+                        const link = normalizeProviderSocialLink(key, event.target.value);
+                        if (link) event.target.value = link;
+                        checkSocialLink(key, event.target.value);
+                      }}
+                      onChange={(event) => {
+                        if (invalidSocial.has(key)) checkSocialLink(key, event.target.value);
+                      }}
+                    />
+                    </div>
+                    {invalidSocial.has(key) ? (
+                      <p id={`prov-social-${key}-error`} className="text-label font-medium text-status-alert">
+                        {invalid}
+                      </p>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </fieldset>
+          </section>
+
+          <section aria-labelledby="alta-como" className="flex flex-col gap-4">
+            <h2 id="alta-como" className={altaSectionTitle}>
+              {flow.sections.howFound}
+            </h2>
+            {/* El `<h2>` ya hace la pregunta: el rótulo queda para lectores de pantalla. */}
+            <AltaField label={flow.howFoundLabel} htmlFor="prov-how" hideLabel>
               <Select
                 id="prov-how"
                 name="how_found"
                 value={howFound}
                 onChange={(event) => {
                   setHowFound(event.target.value);
-                  if (event.target.value !== OTHER_OPTION)
-                    setOtherHowFound("");
+                  if (event.target.value !== OTHER_OPTION) setOtherHowFound("");
                 }}
-                required
+                className={altaSelect}
               >
                 <option value="" disabled>
                   Elegí una opción
@@ -1209,7 +1199,7 @@ export function ProviderForm({
                   </option>
                 ))}
               </Select>
-            </Field>
+            </AltaField>
             {howFound === OTHER_OPTION ? (
               <>
                 <label htmlFor="prov-how-other" className="sr-only">
@@ -1217,17 +1207,16 @@ export function ProviderForm({
                 </label>
                 <Input
                   id="prov-how-other"
-                  className="mt-2.5"
                   type="text"
                   placeholder="Contanos cómo te enteraste..."
                   value={otherHowFound}
                   maxLength={PROVIDER_TEXT_MAX_LENGTH.how_found_other}
                   onChange={(event) => setOtherHowFound(event.target.value)}
-                  required
+                  className={altaInput}
                 />
               </>
             ) : null}
-          </div>
+          </section>
 
           {submitState === "error" ? (
             <div className="flex flex-col items-start gap-2">
@@ -1237,30 +1226,54 @@ export function ProviderForm({
                   href={reauthHref}
                   target="_blank"
                   rel="noopener"
-                  className="inline-flex min-h-11 items-center font-semibold text-brand-hover underline underline-offset-4"
+                  className="inline-flex min-h-11 items-center font-semibold text-fg underline underline-offset-4"
                 >
-                  {providersContent.form.session.reauthLink}
+                  {copy.session.reauthLink}
                 </a>
               ) : null}
             </div>
           ) : null}
         </div>
-      </Card>
 
-        <Button
-          type="submit"
-          size="lg"
-          block
-          className="mt-7"
-          disabled={submitState === "loading"}
-        >
-          {submitState === "loading"
-            ? providersContent.form.submitLoadingLabel
-            : providersContent.form.submitLabel}
-        </Button>
-
-        <p className="mt-3.5 text-center text-[0.8125rem] text-ink/65">
-          {providersContent.form.note}
+        {/* Acciones del paso: barra fija abajo en celular (siempre a mano y,
+            sin el WhatsApp flotante en el flujo, nunca tapada), con el área
+            segura del iPhone; desde `md`, a continuación del último campo,
+            con la acción principal a la derecha. El `calc` con `env()` no
+            tiene utility canónica (mismo patrón que las barras fijas al pie). */}
+        <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4 border-t border-card-line bg-card pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:static md:border-t-0 md:py-0">
+          <button
+            type="button"
+            onClick={() => goTo(step - 1)}
+            className={cn(
+              "inline-flex min-h-11 items-center px-2 font-display text-control font-semibold text-fg underline underline-offset-4",
+              step === STEP.business && "invisible",
+            )}
+            aria-hidden={step === STEP.business ? true : undefined}
+            tabIndex={step === STEP.business ? -1 : undefined}
+          >
+            {flow.back}
+          </button>
+          {/* `key` distinto: si React reusara el mismo `<button>` y le cambiara
+              el `type` a `submit` durante el click de "Continuar", el browser
+              enviaría el formulario al terminar ese mismo click. */}
+          <div className="flex items-center gap-4">
+            {/* Desde `md`, la nota va al lado del envío; en celular, debajo de la barra. */}
+            <p hidden={step !== STEP.contact} className="text-label text-fg-muted max-md:hidden">
+              {copy.note}
+            </p>
+            {step < STEP.contact ? (
+              <Button key="continuar" type="button" variant="primary" size="48" onClick={handleContinue}>
+                {flow.next}
+              </Button>
+            ) : (
+              <Button key="enviar" type="submit" variant="primary" size="48" disabled={loading}>
+                {loading ? copy.submitLoadingLabel : copy.submitLabel}
+              </Button>
+            )}
+          </div>
+        </div>
+        <p hidden={step !== STEP.contact} className="-mt-6 text-center text-label text-fg-muted md:hidden">
+          {copy.note}
         </p>
       </form>
     </>

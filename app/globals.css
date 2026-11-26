@@ -54,6 +54,56 @@
   --color-status-ok-bg: #e0f5ec;
   --color-rating: #f59e0b; /* estrellas de la puntuación */
 
+  /* ── Sistema "AutoLibre AI" (rediseño 2026-11, fase 1) ──
+     Es el sistema VIGENTE (ver DESIGN.md). Reusa los tokens de arriba como
+     base global: `canvas` (fondo de página), `card` (superficies),
+     `card-line` (bordes de tarjetas), `brand-50` (seleccionados, bandas
+     suaves), `status-ok`/`status-ok-bg`. El verde `brand` queda SOLO como
+     acento (puntos, tildes, íconos): nunca de fondo de botón. El texto verde
+     chico va en `brand-hover` (#23752f: 5.69:1 sobre `card`, 5.11:1 sobre
+     `canvas`, 5.10:1 sobre `brand-50`). Contrastes medidos con la fórmula de
+     WCAG 2.1 (script de node), no a ojo.
+     Los de abajo son NUEVOS y no pisan nada: la migración de las páginas va
+     en las fases siguientes. Si cambia alguno de los compartidos con el
+     perfil, cambiarlo también en `lib/provider-profile/og-tokens.ts`. */
+
+  /* Acción principal: verde casi negro con texto blanco. */
+  --color-action: #1c2b1c; /* blanco encima: 14.88:1 */
+  --color-action-hover: #2a3a2a; /* blanco encima: 12.09:1 */
+
+  /* Texto sobre fondos claros (`card`, `canvas`, `brand-50`). */
+  --color-fg: #111827; /* títulos y texto fuerte: 17.58 card · 15.80 canvas · 15.76 brand-50 · 11.70 brand-200 */
+  --color-fg-muted: #374151; /* texto corrido: 10.21 card · 9.18 canvas · 9.16 brand-50 */
+  /* Texto secundario chico (metadatos, "2,4 km"). 4.79:1 sobre `card`, pero
+     4.30:1 sobre `canvas`: NO usar en texto chico sobre `canvas`. */
+  --color-fg-subtle: #6b7280;
+
+  /* Texto sobre fondo oscuro (`action`/`ink`). */
+  --color-on-dark: #dcdedc; /* 11.00:1 */
+  --color-on-dark-muted: #b8bcb8; /* 7.74:1 */
+  --color-on-dark-subtle: #8c968c; /* 4.86:1 — también borde de outline sobre oscuro */
+
+  /* Verde suave fuerte: bandas y eyebrows sobre oscuro (9.81:1 sobre `ink`).
+     `fg` encima: 11.70:1. */
+  --color-brand-200: #a8dfb0;
+
+  /* Bordes de controles. Son bordes, no texto (WCAG 1.4.11 pide 3:1 cuando
+     el borde es lo único que identifica al control):
+     - `control-line` 1.46:1 sobre `card`: chips y tarjetas de opción, que se
+       identifican por su texto y su fondo.
+     - `control-line-strong` 4.79:1 sobre `card` y 4.30:1 sobre `canvas`:
+       borde de los inputs, que SOLO se delimitan por él. El diseño pedía
+       #9ca3af (2.52:1, no llega a 3:1); se subió al gris de `fg-subtle`
+       (fase 2 del rediseño, ver INFORME). */
+  --color-control-line: #d1d5db;
+  --color-control-line-strong: #6b7280;
+
+  /* Pills de estado (texto 13px semibold): ok = `status-ok` sobre
+     `status-ok-bg` (4.70:1); neutro = `fg-muted` sobre `canvas` (9.18:1). */
+  --color-status-pending: #78350f; /* sobre `status-pending-bg`: 8.15:1 */
+  --color-status-pending-bg: #fef3c7;
+  --color-status-alert: #b91c1c; /* sobre `alert-bg`: 5.26:1 (el viejo `alert-fg` da 3.93:1) */
+
   /* Estados */
   --color-alert-bg: #fbe2e2;
   --color-alert-fg: #c24949;
@@ -82,98 +132,7 @@
   --text-lead: 1.0625rem; /* 17px — bajadas en mobile */
   --text-lead-lg: 1.1875rem; /* 19px — bajadas desde md */
   --text-label: 0.8125rem; /* 13px — notas, hints, labels */
-
-  /* ── Animación del hero ──
-     Dos ciclos INDEPENDIENTES (palabras 20s, pantallas 24s: distintos a
-     propósito para que no cambien juntas). Los % de cada keyframe asumen una cantidad fija de
-     pasos: si cambia el largo de `homeContent.hero.words` o `.screens`,
-     cambian estos %. Cada elemento arranca con un `animation-delay`
-     negativo (paso × duración − ciclo): la animación ya corre al cargar,
-     sin estado inicial vacío. */
-
-  /* Palabras: 8 pasos de 2,5s → cada una ocupa el 12,5% del ciclo.
-     Solo `transform` y `opacity`: corren en el compositor, sin repintar. */
-  --animate-hero-word: hero-word 20s infinite;
-  /* Variante para `prefers-reduced-motion`: mismas ventanas que `hero-word`,
-     solo `opacity`, sin desplazamiento. */
-  --animate-hero-word-fade: hero-word-fade 20s linear infinite;
-  /* Pantallas: 8 pasos de 3s → cada una es visible el 12,5% del ciclo. */
-  --animate-hero-screen: hero-screen 24s linear infinite;
-
-  /* Entra desde abajo pasándose un poco (0–2,4%), rebota a su lugar
-     (2,4–3,4%), queda (hasta 10,5%) y sale hacia arriba (10,5–12,5%)
-     mientras la siguiente ya viene subiendo. */
-  @keyframes hero-word {
-    0% {
-      opacity: 0;
-      transform: translateY(100%);
-      animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    2.4% {
-      opacity: 1;
-      transform: translateY(-12%);
-      animation-timing-function: ease-in-out;
-    }
-    3.4%,
-    10.5% {
-      opacity: 1;
-      transform: translateY(0);
-      animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
-    }
-    12.5%,
-    100% {
-      opacity: 0;
-      transform: translateY(-100%);
-    }
-  }
-
-  @keyframes hero-word-fade {
-    0% {
-      opacity: 0;
-    }
-    2%,
-    10.5% {
-      opacity: 1;
-    }
-    12.5%,
-    100% {
-      opacity: 0;
-    }
-  }
-
-  /* Fundido cruzado de 0,4s entre pantallas (1,7% de 24s). */
-  @keyframes hero-screen {
-    0%,
-    10.8% {
-      opacity: 1;
-    }
-    12.5%,
-    98.3% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  /* ── Franja de verticales (home) ──
-     Ticker infinito, CSS puro: el track lleva la lista DOS veces y se corre
-     de 0 a -50% (exactamente una copia), así el final empalma con el
-     principio sin salto. Lineal y sin pausa entre vueltas. 85s por copia:
-     ~60px/s con el texto de desktop, ~30px/s en mobile (lento, se lee
-     como textura).
-     Excepción de `prefers-reduced-motion` aprobada por producto (ver
-     `motion-exempt`). */
-  --animate-marquee: marquee 85s linear infinite;
-
-  @keyframes marquee {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
-  }
+  --text-control: 0.9375rem; /* 15px — botones y chips de 44-48px (AutoLibre AI) */
 
   /* Celulares angostos (< 384px, p. ej. 360px): el titular del hero baja a
      `display-xs` para que "Mantenimientos" no se coma el margen lateral. */
@@ -184,10 +143,26 @@
      arbitrarias antes que `sm:`…`2xl:` y `sm:min-h-120` le ganaba. */
   --breakpoint-banner: 90rem;
 
-  /* ── Radios ── */
-  --radius-field: 0.625rem; /* 10px — inputs y botones */
+  /* ── Radios ──
+     AutoLibre AI: botones, inputs, chips y pills en píldora (`rounded-full`);
+     tarjetas de 16 a 24 (`rounded-card`, `rounded-panel`, `rounded-3xl`).
+     `field` (10px) es del sistema anterior: deprecado, no usar en código nuevo. */
+  --radius-field: 0.625rem; /* 10px — inputs y botones (deprecado) */
   --radius-card: 1rem; /* 16px — tarjetas */
   --radius-panel: 1.25rem; /* 20px — paneles grandes */
+
+  /* Portada con monograma de la app (tono "gray"), para la vista previa
+     "Así te ven en la app" de /cuenta: los mismos valores que
+     `monogramGray` y `monogramInkOnGray` de autolibre-mobile. Los otros dos
+     tonos usan `action`/`brand-200` y `brand-50`/`brand`. */
+  --color-monogram-gray: #eff0ef;
+  --color-monogram-ink-gray: #5c6b5c;
+
+  /* Comparador "Así te llega la respuesta" (experimento 2026-11-25): el chat
+     de WhatsApp dibujado. `fg` encima: 14.2:1 sobre el fondo, 16.4:1 sobre
+     el globo propio. */
+  --color-wa-wallpaper: #efeae2;
+  --color-wa-out: #d9fdd3;
 }
 
 /* ── Plataforma del visitante ──
@@ -237,6 +212,33 @@
   @apply reveal-stagger;
 }
 
+
+/* ── Barra fija que entra al scrollear (`MobileActionBar revealOnScroll`) ──
+   Home y `/pedido`: el módulo de pedido está arriba de todo y la barra repite
+   su acción. Al cargar queda fuera de la pantalla (y `visibility: hidden`:
+   no se puede enfocar ni tapa nada) y entra en los primeros 12rem de scroll,
+   atada al scroll y sin JS (`animation-timeline: scroll()`). Sin soporte, o
+   con `prefers-reduced-motion`, la barra está desde la carga como siempre. */
+@keyframes bar-reveal {
+  from {
+    transform: translateY(100%);
+    visibility: hidden;
+  }
+  to {
+    transform: none;
+    visibility: visible;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    [data-reveal-on-scroll] {
+      animation: bar-reveal linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 12rem;
+    }
+  }
+}
 
 @layer base {
   html {
@@ -316,17 +318,12 @@
       scroll-behavior: auto;
     }
 
-    /* `motion-exempt` = excepción de producto explícita. Son DOS, y no se
-       suman otras sin decisión de producto:
-       - Palabras del hero (2026-09-23). Con esta preferencia NO suben ni
-         rebotan: cambian con un fundido en el lugar (`hero-word-fade`), sin
-         desplazamiento, que es lo que marea.
-       - Track de la franja de verticales de la home (2026-10-03): sigue
-         corriendo igual (`marquee`). Es texto informativo, sin nada
-         interactivo adentro.
-       La clase va SOLO en el elemento animado: sus hijos no la heredan y
-       quedan frenados como todo lo demás. */
-    *:not(.motion-exempt),
+    /* Sin excepciones: con esta preferencia no corre ninguna animación ni
+       transición. Hasta la fase 4a del rediseño (2026-11-24) había dos
+       (`motion-exempt`: palabras del hero y franja de verticales); las dos
+       secciones se fueron del Home. Una animación nueva que no respete esta
+       preferencia necesita una decisión explícita de producto (AGENTS.md §3). */
+    *,
     *::before,
     *::after {
       animation-duration: 0.01ms !important;
@@ -334,4 +331,84 @@
       transition-duration: 0.01ms !important;
     }
   }
+}
+
+/* ── Comparador WhatsApp / app de `/pedido` (experimento 2026-11-25) ──
+   `CompareStage` pone `data-step` (0 a 6) en `.cmp`; cada pieza animada
+   lista en `data-on` los pasos en los que se ve. Solo opacidad, transform y
+   `grid-template-rows` dentro de un escenario de alto fijo: no mueve nada
+   fuera de él (CLS 0). Con `prefers-reduced-motion` la isla no avanza y la
+   regla global apaga las transiciones: queda el paso 4 quieto. */
+.cmp [data-on] {
+  opacity: 0;
+  transition:
+    opacity 0.35s ease,
+    transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    grid-template-rows 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* Globos: colapsados hasta que llegan (el chat crece desde abajo). */
+.cmp .cmp-msg {
+  display: grid;
+  grid-template-rows: 0fr;
+  transform: translateY(0.5rem) scale(0.98);
+}
+.cmp .cmp-msg > * {
+  min-height: 0;
+  overflow: hidden;
+}
+/* El teléfono de cada mitad: mismo marco y medida en las dos, con la
+   proporción de los videos de la app (576 x 1248), de alto completo. */
+.cmp .cmp-phone {
+  position: absolute;
+  /* En celular no hay etiqueta arriba (la reemplaza el toggle): más teléfono. */
+  top: 1.5rem;
+  bottom: 1.5rem;
+  left: 50%;
+  translate: -50% 0;
+  aspect-ratio: 576 / 1248;
+  display: flex;
+  flex-direction: column;
+  overflow: clip;
+  border-width: 7px;
+  border-radius: 2rem;
+}
+@media (min-width: 64rem) {
+  .cmp .cmp-phone {
+    top: 3.5rem;
+  }
+}
+.cmp[data-step="0"] [data-on~="0"] {
+  opacity: 1;
+  transform: none;
+  grid-template-rows: 1fr;
+}
+.cmp[data-step="1"] [data-on~="1"] {
+  opacity: 1;
+  transform: none;
+  grid-template-rows: 1fr;
+}
+.cmp[data-step="2"] [data-on~="2"] {
+  opacity: 1;
+  transform: none;
+  grid-template-rows: 1fr;
+}
+.cmp[data-step="3"] [data-on~="3"] {
+  opacity: 1;
+  transform: none;
+  grid-template-rows: 1fr;
+}
+.cmp[data-step="4"] [data-on~="4"] {
+  opacity: 1;
+  transform: none;
+  grid-template-rows: 1fr;
+}
+.cmp[data-step="5"] [data-on~="5"] {
+  opacity: 1;
+  transform: none;
+  grid-template-rows: 1fr;
+}
+.cmp[data-step="6"] [data-on~="6"] {
+  opacity: 1;
+  transform: none;
+  grid-template-rows: 1fr;
 }

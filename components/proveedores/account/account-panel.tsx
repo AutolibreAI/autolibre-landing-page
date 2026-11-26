@@ -1,329 +1,128 @@
 "use client";
 
-import { useAuth, useClerk } from "@clerk/nextjs";
-import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { AccountBar } from "@/components/proveedores/account/account-bar";
-import { CancelSubscription } from "@/components/proveedores/account/cancel-subscription";
-import { NoPartnerOptions } from "@/components/proveedores/account/no-partner-options";
+import { useAuth } from "@clerk/nextjs";
+import { useEffect, useSyncExternalStore } from "react";
+import { ACCOUNT_SECTION_CLASS, BusinessAccount } from "@/components/cuenta/business-account";
+import { BusinessDashboardSkeleton } from "@/components/cuenta/business-dashboard";
+import { CustomerAccountSkeleton } from "@/components/cuenta/skeletons";
+import { SignOutConfirm } from "@/components/cuenta/sign-out-confirm";
 import { PartnerSignIn } from "@/components/proveedores/account/partner-sign-in";
-import { PrivateFlowHead } from "@/components/proveedores/account/private-flow";
-import { Button, ButtonLink, buttonVariants } from "@/components/ui/button";
-import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { PRIVATE_FLOW_TITLE_ID } from "@/components/proveedores/account/private-flow";
+import { Section } from "@/components/ui/section";
+import type { AccountSection } from "@/lib/account/sections";
+import { clearRoleHint, readAccountHint, type AccountHint } from "@/lib/auth/role-hint";
 import { accountContent } from "@/lib/content/account";
-import { partnerAccountContent } from "@/lib/content/partner-account";
-import { planDisplayName } from "@/lib/content/partner-checkout";
-import { formatDate } from "@/lib/partner-billing/checkout";
-import { fetchOwnerPartners, fetchSubscription } from "@/lib/partner-billing/client";
-import { checkoutHref } from "@/lib/partner-billing/return-path";
-import { canCancelSubscription, classifySubscription, type SubscriptionView } from "@/lib/partner-billing/subscription";
-import type { Membership } from "@/lib/partner-claims/redeem";
-import { PROVEEDORES_CONTRATAR_PATH, PROVEEDORES_CONTRATAR_RESULTADO_PATH } from "@/lib/proveedores/query";
-import { cn } from "@/lib/utils";
-import { whatsappUrl } from "@/lib/whatsapp";
 
-const { page, more } = accountContent;
-
-const linkClass =
-  "inline-flex min-h-11 items-center font-semibold text-brand-hover underline-offset-4 hover:underline";
+const { page } = accountContent;
 
 type AccountPanelProps = {
-  /** `/cuenta`: vuelta del login y de "Usar otra cuenta". */
+  /** `/cuenta` sin query: base de las secciones y vuelta de "No, seguir en mi cuenta". */
   readonly selfPath: string;
+  /** `/cuenta` con la query actual: vuelta del login (no se pierde la sección ni el negocio). */
+  readonly currentPath: string;
+  /**
+   * Nombre de la cookie `__client_uat` de la instancia (calculado en el
+   * server): ata la pista de rol del header a esta sesión.
+   */
+  readonly sessionCookie: string | null;
+  readonly section: AccountSection;
+  readonly requestedPartnerId: string | null;
+  /** `?salir=1`: el "Cerrar sesión" del menú del header público. */
+  readonly signOutRequested: boolean;
+  /**
+   * Pista de sesión y rol leída en el server (cookies `__client_uat` y
+   * `al_role`, ver `lib/auth/role-hint.ts`). Con ella el HTML del server ya
+   * trae el esqueleto correcto mientras carga Clerk. Sin ella se lee en el
+   * browser después de hidratar.
+   */
+  readonly accountHint?: AccountHint;
 };
+
+/** Las cookies no avisan cuando cambian: la pista se lee una vez por render. */
+function subscribeNoop() {
+  return () => {};
+}
 
 /**
  * Isla client de `/cuenta`. Sin sesión, el login compartido de los flujos de
- * talleres; con sesión, la fila de sesión (quién sos, otra cuenta, cerrar
- * sesión) y tus talleres con el estado de su plan. Sin talleres, los mismos
- * caminos que el panel "sin taller" de la contratación.
+ * talleres (`PartnerSignIn`) con "Ingresar" / "Crear cuenta", y "Crear
+ * cuenta" pregunta cliente o taller (`signupIntent="ask"`); con sesión,
+ * `BusinessAccount`: "Mi negocio" si hay membresía, y si no, el onboarding de
+ * proveedor o la cuenta de cliente según el intent.
+ *
+ * `?salir=1` (el header no carga Clerk y no puede cerrar la sesión él mismo):
+ * - Con sesión: una CONFIRMACIÓN ("¿Cerrar sesión?"). La sesión se cierra
+ *   recién con el botón. Antes se cerraba sola al abrir el link, así que
+ *   cualquiera podía mandarlo y desloguearte con un GET.
+ * - Sin sesión: no hay nada que cerrar; se limpia la URL y la pista de rol.
  */
-export function AccountPanel({ selfPath }: AccountPanelProps) {
+export function AccountPanel({
+  selfPath,
+  currentPath,
+  sessionCookie,
+  section,
+  requestedPartnerId,
+  signOutRequested,
+  accountHint,
+}: AccountPanelProps) {
   const { isLoaded, isSignedIn } = useAuth();
-  const head = { eyebrow: page.eyebrow, title: page.title };
+  const browserHint = useSyncExternalStore(
+    subscribeNoop,
+    () => readAccountHint(sessionCookie),
+    () => null,
+  );
+  const hint = accountHint ?? browserHint;
+
+  useEffect(() => {
+    if (!isLoaded || isSignedIn || !signOutRequested) return;
+    clearRoleHint();
+    window.history.replaceState(null, "", selfPath);
+  }, [isLoaded, isSignedIn, signOutRequested, selfPath]);
+
+  // Mientras carga Clerk, quien ya tiene sesión ve el esqueleto de SU pantalla
+  // (tablero o cuenta de cliente) en vez del login: nada salta cuando entra.
+  if (!isLoaded && !signOutRequested && hint === "proveedor") {
+    return <BusinessDashboardSkeleton section={section} />;
+  }
+  if (!isLoaded && !signOutRequested && hint === "cliente") {
+    return (
+      <Section tone="canvas" spacing="sm" className={ACCOUNT_SECTION_CLASS} aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
+        <p role="status" className="sr-only">
+          {page.partners.loading}
+        </p>
+        <CustomerAccountSkeleton firstName={null} />
+      </Section>
+    );
+  }
 
   if (!isLoaded || !isSignedIn) {
     return (
-      <PartnerSignIn head={{ ...head, intro: page.signInIntro }} redirectUrl={selfPath} loading={!isLoaded} />
+      <Section tone="canvas" spacing="md" aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
+        <PartnerSignIn
+          head={{ eyebrow: page.eyebrow, title: page.title, intro: page.signInIntro }}
+          redirectUrl={signOutRequested ? selfPath : currentPath}
+          loading={!isLoaded}
+          signupIntent="ask"
+        />
+      </Section>
+    );
+  }
+
+  if (signOutRequested) {
+    return (
+      <Section tone="canvas" spacing="md" aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
+        <SignOutConfirm selfPath={selfPath} />
+      </Section>
     );
   }
 
   return (
-    <div className="flex max-w-180 flex-col gap-8">
-      <PrivateFlowHead head={{ ...head, intro: page.intro }} />
-      <SignedInAccount selfPath={selfPath} />
-    </div>
-  );
-}
-
-type PartnersState =
-  | { readonly kind: "loading" }
-  | { readonly kind: "error"; readonly reason: "unauthenticated" | "unknown" }
-  | { readonly kind: "ready"; readonly owners: readonly Membership[] };
-
-function SignedInAccount({ selfPath }: AccountPanelProps) {
-  const { getToken } = useAuth();
-  const { signOut } = useClerk();
-  const [partners, setPartners] = useState<PartnersState>({ kind: "loading" });
-  const [attempt, setAttempt] = useState(0);
-  const headingRef = useRef<HTMLHeadingElement>(null);
-
-  useEffect(() => {
-    let active = true;
-    void fetchOwnerPartners(getToken).then((result) => {
-      if (!active) return;
-      setPartners(result.kind === "ok" ? { kind: "ready", owners: result.owners } : { kind: "error", reason: result.kind });
-    });
-    return () => {
-      active = false;
-    };
-  }, [getToken, attempt]);
-
-  function retry() {
-    setPartners({ kind: "loading" });
-    setAttempt((value) => value + 1);
-  }
-
-  return (
-    <div className="flex flex-col gap-8">
-      <AccountBar selfPath={selfPath} />
-
-      <div aria-live="polite" aria-atomic="true">
-        {partners.kind === "loading" ? (
-          <p className="text-ink/65">{page.partners.loading}</p>
-        ) : partners.kind === "error" ? (
-          <div className="flex flex-col items-start gap-3">
-            <p className="font-medium text-danger">
-              {partners.reason === "unauthenticated" ? page.partners.unauthenticated : page.partners.error}
-            </p>
-            {partners.reason === "unauthenticated" ? (
-              <Button type="button" variant="outline" onClick={() => void signOut({ redirectUrl: selfPath })}>
-                {partnerAccountContent.reauth}
-              </Button>
-            ) : (
-              <Button type="button" variant="outline" onClick={retry}>
-                {page.partners.retry}
-              </Button>
-            )}
-          </div>
-        ) : null}
-      </div>
-
-      {partners.kind === "ready" && partners.owners.length === 0 ? (
-        <NoPartnerOptions headingRef={headingRef} checkout={null} />
-      ) : null}
-
-      {partners.kind === "ready" && partners.owners.length > 0 ? (
-        <section aria-labelledby="cuenta-talleres-titulo" className="flex flex-col gap-4">
-          <h2 id="cuenta-talleres-titulo" className="font-display text-xl font-bold text-ink">
-            {page.partners.title}
-          </h2>
-          <ul className="flex flex-col divide-y divide-line rounded-card border border-line bg-surface">
-            {partners.owners.map((owner) => (
-              <PartnerRow key={owner.partnerId} partner={owner} selfPath={selfPath} />
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      {/* Sin talleres, `NoPartnerOptions` ofrece canjear un código de reclamo. */}
-      {partners.kind === "ready" && partners.owners.length > 0 ? <MorePartners /> : null}
-    </div>
-  );
-}
-
-/**
- * Links de "¿Tenés otro taller?", medidos con el listener delegado
- * (`data-analytics-event` + `data-analytics-placement`). Sólo PostHog.
- */
-const MORE_ACTIONS = [
-  { ...more.register, event: ANALYTICS_EVENTS.partnerRegisterStarted, placement: "cuenta_otro_taller_cargar" },
-  { ...more.claim, event: ANALYTICS_EVENTS.partnerClaimStarted, placement: "cuenta_otro_taller_reclamar" },
-] as const;
-
-/** Sumar otro taller: el alta (directo al formulario: ya hay sesión) o el reclamo. */
-function MorePartners() {
-  return (
-    <section aria-labelledby="cuenta-otro-taller-titulo" className="flex flex-col gap-3">
-      <div>
-        <h2 id="cuenta-otro-taller-titulo" className="font-display text-xl font-bold text-ink">
-          {more.title}
-        </h2>
-        <p className="mt-1 text-ink/70">{more.body}</p>
-      </div>
-      <ul className="flex flex-col gap-3 sm:flex-row sm:gap-10">
-        {MORE_ACTIONS.map((action) => (
-          <li key={action.href} className="flex flex-col">
-            {/* Sin prefetch: las dos pantallas cargan su propio Clerk. */}
-            <Link
-              href={action.href}
-              prefetch={false}
-              data-analytics-event={action.event}
-              data-analytics-placement={action.placement}
-              className={cn(linkClass, "self-start")}
-            >
-              {action.label}
-            </Link>
-            <span className="text-sm text-ink/65">{action.description}</span>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-type SubscriptionState =
-  | { readonly kind: "loading" }
-  | { readonly kind: "error" }
-  | { readonly kind: "ready"; readonly view: SubscriptionView };
-
-/** Qué se muestra del plan: el rótulo, su estado y el tono del estado. */
-function describePlan(view: SubscriptionView): {
-  readonly plan: string;
-  readonly status: string | null;
-  readonly tone: "ok" | "neutral";
-  readonly kind: ReturnType<typeof classifySubscription>;
-} {
-  const kind = classifySubscription(view);
-  const name = planDisplayName(view.planCode);
-  const planLabel = name ? page.plan.named(name) : page.plan.unnamed;
-  const { status } = page.plan;
-
-  if (kind === "free") return { plan: page.plan.free, status: null, tone: "neutral", kind };
-  if (kind === "pending") return { plan: planLabel, status: status.pending, tone: "neutral", kind };
-  if (kind === "confirmed") {
-    if (view.cancelAtPeriodEnd) {
-      return { plan: planLabel, status: status.canceled(formatDate(view.accessUntil)), tone: "neutral", kind };
-    }
-    if (view.status === "trialing") {
-      return { plan: planLabel, status: status.trialing(formatDate(view.trialEndsAt)), tone: "ok", kind };
-    }
-    return { plan: planLabel, status: status.active, tone: "ok", kind };
-  }
-  return { plan: planLabel, status: status.other, tone: "neutral", kind };
-}
-
-/** Un taller de la cuenta con el estado de su plan y la acción que corresponde. */
-function PartnerRow({ partner, selfPath }: { readonly partner: Membership; readonly selfPath: string }) {
-  const { getToken } = useAuth();
-  const [subscription, setSubscription] = useState<SubscriptionState>({ kind: "loading" });
-  /** Sube después de una baja: se vuelve a consultar el estado (sin pasar por "cargando"). */
-  const [reload, setReload] = useState(0);
-  const [notice, setNotice] = useState<string | null>(null);
-  const noticeRef = useRef<HTMLParagraphElement>(null);
-
-  // La confirmación de la baja desaparece: el foco pasa al aviso de éxito.
-  useEffect(() => {
-    if (notice) noticeRef.current?.focus();
-  }, [notice]);
-
-  function handleCanceled(accessUntil: string | null) {
-    setNotice(accessUntil ? page.cancel.success(formatDate(accessUntil)) : page.cancel.successPending);
-    setReload((value) => value + 1);
-  }
-
-  useEffect(() => {
-    let active = true;
-    void fetchSubscription(partner.partnerId, getToken).then((result) => {
-      if (!active) return;
-      setSubscription(result.kind === "ok" ? { kind: "ready", view: result.view } : { kind: "error" });
-    });
-    return () => {
-      active = false;
-    };
-  }, [partner.partnerId, getToken, reload]);
-
-  const described = subscription.kind === "ready" ? describePlan(subscription.view) : null;
-  const currentPlanName = subscription.kind === "ready" ? planDisplayName(subscription.view.planCode) : null;
-
-  return (
-    <li className="flex flex-col gap-4 p-5 sm:p-6">
-      <div className="flex flex-col gap-2">
-        <h3 className="font-display text-lg leading-snug font-bold text-ink">{partner.name}</h3>
-        {subscription.kind === "loading" ? (
-          <p className="text-sm text-ink/65">{page.plan.loading}</p>
-        ) : subscription.kind === "error" || !described ? (
-          <p className="text-sm text-ink/70">{page.plan.error}</p>
-        ) : (
-          <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
-            <span className="font-semibold text-ink">{described.plan}</span>
-            {described.status ? (
-              <span
-                className={cn(
-                  "rounded-full px-2.5 py-0.5 text-label font-semibold",
-                  described.tone === "ok" ? "bg-brand/10 text-brand-hover" : "bg-surface-muted text-ink/75",
-                )}
-              >
-                {described.status}
-              </span>
-            ) : null}
-          </p>
-        )}
-      </div>
-
-      <div aria-live="polite" aria-atomic="true">
-        {notice ? (
-          <p ref={noticeRef} tabIndex={-1} className="font-medium text-brand-hover">
-            {notice}
-          </p>
-        ) : null}
-      </div>
-
-      {described ? (
-        <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6">
-          {described.kind === "free" ? (
-            <>
-              {/* Sin prefetch: la contratación es otra pantalla privada. */}
-              <ButtonLink
-                href={checkoutHref(PROVEEDORES_CONTRATAR_PATH, "plus")}
-                prefetch={false}
-                size="sm"
-                className="min-h-11 self-start"
-              >
-                {page.actions.choose}
-              </ButtonLink>
-              <Link href={page.actions.allPlans.href} className={cn(linkClass, "self-start")}>
-                {page.actions.allPlans.label}
-              </Link>
-            </>
-          ) : described.kind === "pending" ? (
-            <ButtonLink
-              href={`${PROVEEDORES_CONTRATAR_RESULTADO_PATH}?${new URLSearchParams({ partnerId: partner.partnerId }).toString()}`}
-              prefetch={false}
-              variant="outline"
-              size="sm"
-              className="min-h-11 self-start"
-            >
-              {page.actions.pending}
-            </ButtonLink>
-          ) : (
-            <>
-              <a
-                href={whatsappUrl(page.actions.changePlanWhatsapp(partner.name, currentPlanName))}
-                target="_blank"
-                rel="noopener noreferrer"
-                data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
-                data-analytics-placement="cuenta_cambiar_plan"
-                className={cn(buttonVariants({ variant: "outline", size: "sm" }), "min-h-11 self-start")}
-              >
-                {page.actions.changePlan}
-              </a>
-              {/* Solo con el plan vivo y sin baja pedida: con la baja pedida no
-                  se ofrece volver a contratar (409 hasta `accessUntil`). */}
-              {subscription.kind === "ready" && canCancelSubscription(subscription.view) && !notice ? (
-                <CancelSubscription
-                  partnerId={partner.partnerId}
-                  partnerName={partner.name}
-                  planLabel={described.plan}
-                  view={subscription.view}
-                  selfPath={selfPath}
-                  onCanceled={handleCanceled}
-                />
-              ) : null}
-            </>
-          )}
-        </div>
-      ) : null}
-    </li>
+    <BusinessAccount
+      basePath={selfPath}
+      selfPath={currentPath}
+      sessionCookie={sessionCookie}
+      section={section}
+      requestedPartnerId={requestedPartnerId}
+    />
   );
 }

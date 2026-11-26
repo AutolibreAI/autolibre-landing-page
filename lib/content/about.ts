@@ -13,10 +13,8 @@
  * `{ src: "/images/about/equipo-<id>.webp", alt: "...", width, height }` (las
  * dimensiones reales del archivo: `next/image` las usa para reservar el
  * espacio y que no haya salto de layout). Mientras una foto sea `undefined`,
- * la ficha muestra un recuadro "Foto pendiente" del mismo tamaño.
+ * la ficha muestra las iniciales en un marco del mismo tamaño.
  */
-
-import type { IconName } from "@/lib/content/types";
 
 /** Retrato de una persona del equipo. `width`/`height` son los del archivo real. */
 export type AboutPhoto = {
@@ -62,12 +60,10 @@ export type AboutMember = {
 
 /**
  * Un dato del hero (`<dt>` + `<dd>`). `dateTime` convierte el valor en un
- * `<time>` legible por máquina. `icon` es el ícono de línea que acompaña al
- * rótulo: decorativo, el dato ya lo dice el texto.
+ * `<time>` legible por máquina.
  */
 export type AboutFact = {
   readonly id: string;
-  readonly icon: IconName;
   readonly label: string;
   readonly value: string;
   readonly dateTime?: string;
@@ -77,15 +73,23 @@ export type AboutFact = {
 const FOUNDING_DATE = "2026-02";
 
 /**
+ * Cifra de proveedores en textos de marketing (decisión de producto del
+ * 2026-11-24): "+150". El directorio muestra el conteo real. La usan el Home
+ * (re-exportada desde `home.ts`) y esta página.
+ */
+export const MARKETING_PROVIDERS_COUNT = "+150";
+
+/**
  * Cifras de tracción: la ÚNICA fuente para el hero y el hito "Tracción" (y
- * para la ficha de `/proveedores`, que la importa).
- * Actualizarlas acá y en `PRODUCT.md` cuando cambien (`asOf` es la fecha de
- * corte que se lee en pantalla).
+ * para las cifras del Home). Actualizarlas acá y en `PRODUCT.md` cuando
+ * cambien (`asOf` es la fecha de corte que se lee en pantalla; `asOfIso`, la
+ * misma para `<time>`). Proveedores: `MARKETING_PROVIDERS_COUNT`.
  */
 export const traction = {
   vehicles: "700+",
-  providers: "100+",
+  providers: MARKETING_PROVIDERS_COUNT,
   asOf: "Oct 2026",
+  asOfIso: "2026-10",
 } as const;
 
 /**
@@ -182,12 +186,16 @@ export const aboutContent = {
     about: "Sobre nosotros",
   },
 
-  /** Recuadro que ocupa el lugar de una foto que todavía no está. */
-  photoPlaceholder: "Foto pendiente",
-
   hero: {
-    /** Eyebrow: un `<p>`, no un heading. */
-    eyebrow: "Sobre nosotros",
+    /**
+     * Renglón de arriba del `h1` (un `<p>`, no un heading): fecha de
+     * fundación a un lado y ciudad al otro, unidas por una línea.
+     */
+    topline: {
+      date: monthLabel(FOUNDING_DATE),
+      dateTime: FOUNDING_DATE,
+      place: "Buenos Aires",
+    },
     /** El `h1` de la página. */
     title: "Todo tu auto en un solo lugar",
     /** Definición canónica de 25 palabras: va textual, no se reescribe. */
@@ -199,21 +207,14 @@ export const aboutContent = {
     facts: [
       {
         id: "fundada",
-        icon: "calendar",
         label: "Fundada",
         value: monthLabel(FOUNDING_DATE),
         dateTime: FOUNDING_DATE,
       },
-      { id: "desde", icon: "pin", label: "Desde", value: "Buenos Aires" },
-      { id: "cofundadores", icon: "users", label: "Cofundadores", value: String(founderCount) },
-      {
-        id: "disponible-en",
-        icon: "smartphone",
-        label: "Disponible en",
-        value: "App Store, Google Play y web",
-      },
-      { id: "vehiculos", icon: "car", label: "Vehículos", value: traction.vehicles },
-      { id: "proveedores", icon: "wrench", label: "Proveedores", value: traction.providers },
+      { id: "cofundadores", label: "Cofundadores", value: String(founderCount) },
+      { id: "disponible-en", label: "Disponible en", value: "App Store, Google Play y web" },
+      { id: "vehiculos", label: "Vehículos", value: traction.vehicles },
+      { id: "proveedores", label: "Proveedores", value: traction.providers },
     ] satisfies readonly AboutFact[] as readonly AboutFact[],
   },
 
@@ -252,6 +253,9 @@ export const aboutContent = {
       label: "Lo que aprendimos",
       statement:
         "La tecnología no reemplaza al mecánico: le da al dueño el contexto para entenderlo.",
+      /** La misma frase entre comillas, como se muestra destacada. */
+      quoted:
+        "“La tecnología no reemplaza al mecánico: le da al dueño el contexto para entenderlo.”",
     },
   },
 
@@ -347,7 +351,7 @@ export const aboutContent = {
       },
       {
         id: "traccion",
-        date: "2026-09",
+        date: traction.asOfIso,
         dateLabel: traction.asOf,
         title: "Tracción",
         // Cifras de `traction`: actualizarlas ahí y en `PRODUCT.md` cuando cambien.
@@ -359,11 +363,24 @@ export const aboutContent = {
 
   team: {
     title: "Equipo",
+    /**
+     * Sin retrato todavía (Matías Vidal): la ficha muestra sus iniciales en
+     * el mismo marco 4:5, sin un "Foto pendiente" visible.
+     */
     intro: "Somos cinco cofundadores.",
     /** Nombre accesible del link a LinkedIn de cada persona. */
     linkedinLabel: (name: string) => `LinkedIn de ${name}`,
     /** Definidas arriba (`members`): ahí van también sus retratos. */
     members,
+  },
+
+  /** Cierre de la página: la frase del Home, la app y las dos acciones. */
+  closing: {
+    title: "Tu auto siempre supo qué tenía. Ahora vos también.",
+    /** Antes de los links a las tiendas ("App Store · Google Play"). */
+    appText: "La app es gratis, para iPhone y Android:",
+    quoteCta: "Hacé tu pedido",
+    partnerCta: "Sumá tu negocio",
   },
 
   /** Fecha de fundación para el `Organization` del JSON-LD (ISO). */

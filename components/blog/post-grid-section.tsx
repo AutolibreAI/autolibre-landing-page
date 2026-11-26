@@ -36,23 +36,23 @@ export function PostGridSection({
   const headingId = id ? `${id}-titulo` : "notas-titulo";
 
   return (
-    <Section id={id} tone="subtle" spacing="md" aria-labelledby={headingId}>
+    <Section id={id} tone="canvas" spacing="md" aria-labelledby={headingId}>
       <div className="flex flex-col gap-12">
         <div className="flex flex-col gap-3">
-          <h2 id={headingId} className="text-3xl leading-tight text-ink md:text-4xl">
+          <h2 id={headingId} className="text-3xl leading-tight text-fg md:text-4xl">
             {heading}
           </h2>
           {subtitle ? (
-            <p className="max-w-140 text-lead leading-relaxed text-ink/70">{subtitle}</p>
+            <p className="max-w-140 text-lead leading-relaxed text-fg-muted">{subtitle}</p>
           ) : null}
         </div>
 
         {emptyFiltered ? (
-          <div className="rounded-card bg-surface p-10 text-center">
-            <p className="text-ink/70">{blogContent.grid.emptyFiltered}</p>
+          <div className="rounded-card bg-card p-10 text-center">
+            <p className="text-fg-muted">{blogContent.grid.emptyFiltered}</p>
             <Link
               href={blogHref({ category: filters.category })}
-              className="mt-4 inline-flex min-h-11 items-center text-sm font-semibold text-brand-hover hover:text-brand"
+              className="mt-4 inline-flex min-h-11 items-center text-sm font-semibold text-brand-hover hover:text-fg"
             >
               {blogContent.grid.clearFilters}
             </Link>

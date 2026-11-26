@@ -1,40 +1,41 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { PageShell } from "@/components/layout/page-shell";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { SiteHeader } from "@/components/layout/site-header";
+import { RegistroFlowLoading, REGISTRO_FLOW_SCRIPT } from "@/components/proveedores/registro/registro-flow-loading";
+import { RegistroFlowMount } from "@/components/proveedores/registro/registro-flow-mount";
 import {
-  PRIVATE_FLOW_TITLE_ID,
-  PrivateFlowHead,
-  SignInLayout,
-  SignInLoading,
-} from "@/components/proveedores/account/private-flow";
-import { FlowSteps } from "@/components/proveedores/flow/flow-steps";
-import { RegisterFormGate } from "@/components/proveedores/registro/register-form-gate";
+  SumateBenefits,
+  SumateFaq,
+  SumateHero,
+  SumateListed,
+  SumateMobileBar,
+  SumatePlans,
+  SumateSteps,
+} from "@/components/proveedores/registro/sumate-sections";
 import { JsonLd } from "@/components/seo/json-ld";
-import { Icon } from "@/components/ui/icon";
-import { Section } from "@/components/ui/section";
-import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { fetchServiceCatalog } from "@/lib/autolibre-api";
 import { providersContent } from "@/lib/content/providers";
 import { PROVEEDORES_PATH, PROVEEDORES_REGISTRO_PATH } from "@/lib/proveedores/query";
 import { createMetadata } from "@/lib/seo/metadata";
 import {
   breadcrumbSchema,
+  faqPageSchema,
   graph,
   organizationSchema,
   webPageSchema,
 } from "@/lib/seo/schema";
-import { whatsappUrl } from "@/lib/whatsapp";
 
 const { title: TITLE, description: DESCRIPTION } = providersContent.meta;
 const PATH = PROVEEDORES_REGISTRO_PATH;
-const content = providersContent.registerPage;
+const { sumate } = providersContent;
 
 /**
  * Indexable, como siempre lo fue `/proveedores/registro` (sitemap y
- * `llms.txt`). Desde el 2026-11-05 la página ES el formulario del alta (antes
- * vivía en `/proveedores/registro/formulario`, que hoy redirige acá con un
- * 301 en `next.config.ts`).
+ * `llms.txt`). Mismo title y description que antes del rediseño. Con
+ * `?alta=1` o `?next=` es la misma URL canónica (sin query): el flujo no se
+ * indexa aparte.
  */
 export const metadata: Metadata = createMetadata({
   title: TITLE,
@@ -42,117 +43,85 @@ export const metadata: Metadata = createMetadata({
   path: PATH,
 });
 
+/** La MISMA lista alimenta las migas visibles y el `BreadcrumbList`. */
+const breadcrumbs = [
+  { name: "Inicio", path: "/" },
+  { name: "Proveedores", path: PROVEEDORES_PATH },
+  { name: sumate.breadcrumb, path: PATH },
+];
+
 const schema = graph(
   organizationSchema(),
   webPageSchema({ name: TITLE, description: DESCRIPTION, path: PATH }),
-  breadcrumbSchema([
-    { name: "Inicio", path: "/" },
-    { name: "Proveedores", path: PROVEEDORES_PATH },
-    { name: content.breadcrumb, path: PATH },
-  ]),
+  breadcrumbSchema(breadcrumbs),
+  faqPageSchema(sumate.faq.items),
 );
 
-const linkClass =
-  "inline-flex min-h-11 items-center gap-1.5 font-semibold text-brand-hover underline-offset-4 hover:underline";
+/** Lo que se esconde mientras el flujo del alta está abierto (`<html data-registro-alta>`). */
+const landingClass = "in-data-[registro-alta]:hidden";
 
 /**
- * `/proveedores/registro`: el alta de talleres. Sin sesión, el login de la
- * cuenta de AutoLibre (con los pasos del registro al costado); con sesión, el
- * formulario.
+ * `/proveedores/registro` (rediseño 2026-11, fase 5). Dos cosas en la misma
+ * ruta pública:
  *
- * Lo citable se arma acá, en el server: el `<h1>`, la bajada y el aviso para
- * los talleres que ya aparecen (`head`). Un crawler no ve un muro de login
- * vacío. Ese nodo se pasa al layout del login (columna izquierda, arriba de
- * los pasos, alineado con la tarjeta) tanto en el fallback del `<Suspense>`
- * como en la isla; con sesión, la isla lo pinta arriba del formulario. Un nodo
- * server pasado como prop a un client component sigue en el HTML inicial, así
- * que el `<h1>` sale en el HTML en todos los estados. Página pública: el
- * código de reclamo no se nombra.
+ * 1. **La landing "Sumá tu negocio"** (lienzo `Sumate`): Server Component,
+ *    estática (ISR al ritmo del catálogo) y SIN Clerk. Es lo que está en el
+ *    HTML del server y lo que se indexa: un `<h1>`, migas, JSON-LD con
+ *    `FAQPage`.
+ * 2. **El flujo del alta** (lienzos `IngresarNegocio` y `Alta`), con
+ *    `?alta=1` (los CTA de la landing) o `?next=` (viene de la contratación).
+ *    Lo monta la isla `RegistroFlowMount`, que importa Clerk con
+ *    `React.lazy` recién al abrirse. Mientras está abierto, `<html>` lleva
+ *    `data-registro-alta` y el CSS esconde la landing entera (header y pie
+ *    incluidos): el flujo trae su pantalla de foco. El script inline pone esa
+ *    marca antes del primer paint si la URL ya trae el parámetro.
  *
- * El catálogo se lee acá, en el servidor, y no dentro del formulario: la URL
- * del backend es server-side (sin `NEXT_PUBLIC_`), así que un fetch desde el
- * cliente obligaría a abrir una ruta proxy nueva solo para leer una lista
- * pública. Resolviéndolo en el render la página sigue siendo estática (ISR, al
- * ritmo del `revalidate` del catálogo), el formulario nace con sus opciones
- * puestas y no hay un estado de carga que mantener. La sesión la resuelve el
- * browser (la isla), así que esto no depende de quién mira.
+ * Antes la página ERA el formulario y cargaba Clerk (~395 KB) en la ruta
+ * indexable: Performance móvil 44 y TBT de 4 s en la línea base.
+ *
+ * El catálogo se lee acá, en el servidor, y viaja a la isla como prop: la URL
+ * del backend es server-side. Sin catálogo, el render degradado no puede
+ * quedar en el cache ISR: `connection()` vuelve dinámica la regeneración (y
+ * Next sigue sirviendo la última versión buena; ver
+ * `incremental-static-regeneration.md`), y en un build con el backend caído
+ * la ruta queda dinámica para ese deploy. El formulario degradado igual deja
+ * escribir los servicios a mano.
  */
 export default async function ProveedoresRegistroPage() {
-  // El catálogo cruza ENTERO al cliente, familias y rubros: el formulario
-  // agrupa por familia pero lo que se marca (y lo que se manda) son rubros.
-  // Ver `ServiceFamilyOption`.
   const catalog = await fetchServiceCatalog();
-
-  // Sin catálogo, el render degradado NO puede quedar en el cache ISR un día
-  // entero. `connection()` le pide a Next un render por request, y eso se
-  // resuelve distinto según cuándo pase:
-  // - al regenerar en segundo plano, una página que era estática no puede
-  //   volverse dinámica ("static to dynamic at runtime"): la regeneración falla
-  //   y Next sigue sirviendo la última versión buena (ver
-  //   `incremental-static-regeneration.md` › Handling uncaught exceptions), y
-  //   reintenta en el request siguiente;
-  // - en el build con el backend caído, la ruta queda dinámica para ese deploy
-  //   (el build no falla) y cada visita ve el formulario completo apenas el
-  //   backend vuelve.
-  // Un `throw` no sirve acá: rompe el build, y perder un negocio que se anota
-  // es peor que mostrarle el formulario degradado.
   if (catalog === null) await connection();
   const serviceFamilies = catalog ?? [];
 
-  const { listed } = content;
-  // Encabezado de la página. Uno solo, compartido por el fallback y la isla:
-  // exactamente un `<h1>` en cada estado.
-  const head = (
-    <div className="flex flex-col gap-4">
-      <PrivateFlowHead head={{ eyebrow: content.eyebrow, title: content.title, intro: content.intro }} />
-      {/* Un taller que ya figura no se registra dos veces. */}
-      <p className="max-w-150 text-[0.9375rem] leading-relaxed text-ink/72">
-        {listed.body}{" "}
-        <a
-          href={whatsappUrl(listed.whatsappMessage)}
-          target="_blank"
-          rel="noopener noreferrer"
-          data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
-          data-analytics-placement="registro_ya_aparece"
-          className={linkClass}
-        >
-          <Icon name="whatsapp" size={18} strokeWidth={1.8} />
-          {listed.cta}
-        </a>
-      </p>
-    </div>
-  );
-  // Contexto del login: qué viene después de entrar (paso 1 = el actual).
-  const context = (
-    <FlowSteps
-      orientation="vertical"
-      label={content.steps.label}
-      steps={content.steps.items}
-      current={0}
-    />
-  );
-
   return (
     <>
-      <PageShell cta={false} currentPath={PATH}>
-        {/* `id="form"`: los links viejos a `/proveedores/registro#form`. */}
-        <Section id="form" tone="muted" spacing="md" aria-labelledby={PRIVATE_FLOW_TITLE_ID}>
-          {/* La isla lee `?next` (la contratación de la que vino) con
-              `useSearchParams`: en una página estática eso exige un
-              `<Suspense>` (si no, falla el build). El fallback es el mismo
-              login en "cargando" que muestra la isla mientras carga Clerk:
-              mismo layout y mismo encabezado, sin salto. */}
-          <Suspense
-            fallback={
-              <SignInLayout headSlot={head} context={context}>
-                <SignInLoading />
-              </SignInLayout>
-            }
-          >
-            <RegisterFormGate serviceFamilies={serviceFamilies} selfPath={PATH} head={head} context={context} />
-          </Suspense>
-        </Section>
-      </PageShell>
+      {/* Antes del primer paint: con `?alta`/`?next` esconde la landing. */}
+      <script dangerouslySetInnerHTML={{ __html: REGISTRO_FLOW_SCRIPT }} />
+
+      <div className={landingClass}>
+        <SiteHeader cta={false} currentPath={PATH} />
+        <main>
+          <SumateHero breadcrumbs={breadcrumbs} />
+          <SumateListed />
+          <SumateBenefits />
+          <SumateSteps />
+          <SumatePlans />
+          <SumateFaq />
+        </main>
+        <SiteFooter />
+        <SumateMobileBar />
+      </div>
+
+      {/* El flujo: fuera del HTML del server. El fallback (el "cargando" del
+          flujo) solo se ve con la marca puesta, antes de hidratar. */}
+      <Suspense
+        fallback={
+          <div className="hidden in-data-[registro-alta]:block">
+            <RegistroFlowLoading landmarks={false} />
+          </div>
+        }
+      >
+        <RegistroFlowMount serviceFamilies={serviceFamilies} loading={<RegistroFlowLoading />} />
+      </Suspense>
 
       <JsonLd schema={schema} />
     </>

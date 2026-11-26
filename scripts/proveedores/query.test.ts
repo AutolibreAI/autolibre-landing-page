@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   hasActiveFilters,
+  paginationItems,
   PROVEEDORES_Q_MAX_LENGTH,
   parseProveedoresFilters,
   proveedoresHref,
@@ -161,5 +162,28 @@ describe("combinación de rubro, zona y texto", () => {
     const filters = parseProveedoresFilters({ rubro: "frenos", zona: "ya-no-existe", q: "perez" }, RUBROS, ZONAS);
 
     assert.deepEqual(filters, { rubro: "frenos", zona: "", q: "perez", pagina: 1 });
+  });
+});
+
+describe("paginationItems", () => {
+  it("con 7 páginas o menos van todas", () => {
+    assert.deepEqual(paginationItems(1, 1), [1]);
+    assert.deepEqual(paginationItems(3, 7), [1, 2, 3, 4, 5, 6, 7]);
+  });
+
+  it("en la primera: 1 2 3 … última (como el diseño)", () => {
+    assert.deepEqual(paginationItems(1, 18), [1, 2, 3, "gap", 18]);
+  });
+
+  it("en el medio: primera … vecinas … última", () => {
+    assert.deepEqual(paginationItems(9, 18), [1, "gap", 8, 9, 10, "gap", 18]);
+  });
+
+  it("un hueco de una sola página se muestra como número", () => {
+    assert.deepEqual(paginationItems(4, 18), [1, 2, 3, 4, 5, "gap", 18]);
+  });
+
+  it("en la última", () => {
+    assert.deepEqual(paginationItems(18, 18), [1, "gap", 17, 18]);
   });
 });

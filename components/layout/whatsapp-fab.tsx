@@ -1,3 +1,4 @@
+import { ANALYTICS_EVENTS, LAYOUT_PLACEMENTS } from "@/lib/analytics/events";
 import { siteContent } from "@/lib/content/site";
 import { cn } from "@/lib/utils";
 
@@ -12,10 +13,20 @@ import { cn } from "@/lib/utils";
  *   borde blanco que lo recorta sobre secciones verdes u oscuras.
  * - `z-30`: arriba del contenido, debajo del panel del menú mobile (`z-40`),
  *   del header (`z-50`) y de los modales/vistas de pantalla completa. Igual
- *   se oculta mientras el menú mobile está abierto, como la barra del pedido.
+ *   se oculta mientras el menú del header está abierto, como la barra del pedido.
  * - Debajo de `lg` se oculta en las páginas con barra fija al pie
- *   (`data-bottom-bar`: artículo del blog, `/pedido`): la barra la taparía y
- *   ya trae el CTA de la página. El WhatsApp sigue en el footer.
+ *   (`data-bottom-bar`: home y directorio con `MobileActionBar`, que ya trae
+ *   WhatsApp; artículo del blog, `/pedido` y perfil de proveedor): la barra
+ *   lo taparía y no se duplica el WhatsApp. Sigue en el footer.
+ * - Desde `lg` (y en celular en las páginas sin barra) queda: el diseño del
+ *   rediseño 2026-11 no lo dibuja, pero WhatsApp es la segunda vía de
+ *   contacto y en desktop no hay otro acceso fijo a él.
+ * - No está en las pantallas de foco de los flujos de negocios (`FlowShell`:
+ *   alta, contratar, reclamar, marcadas con `data-flow-shell`, y el alta
+ *   abierta sobre la landing con `<html data-registro-alta>`): su encabezado
+ *   ya trae "¿Dudas? Escribinos" y el flotante tapaba el "Continuar" de la
+ *   barra fija del formulario en celular.
+ * - Se mide como `whatsapp_clicked` con `placement: "fab"`.
  * - El foco visible es el global (`:focus-visible` en `globals.css`).
  */
 export function WhatsappFab() {
@@ -26,6 +37,8 @@ export function WhatsappFab() {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
+      data-analytics-placement={LAYOUT_PLACEMENTS.fab}
       className={cn(
         // `calc` con `env()`: no hay utility canónica para sumar el área
         // segura del iPhone (mismo patrón que las barras fijas al pie).
@@ -33,8 +46,9 @@ export function WhatsappFab() {
         "flex size-14 items-center justify-center rounded-full border-2 border-surface bg-whatsapp text-surface shadow-fab md:size-16",
         "hover:bg-whatsapp-hover hover:shadow-fab-hover motion-safe:transition motion-safe:duration-200 motion-safe:hover:-translate-y-0.5",
         // Variantes arbitrarias: no hay utility para "un ancestro tiene tal
-        // descendiente" (mismo recurso que `PedidoStickyBar`).
-        "[html:has(#mobile-nav-panel)_&]:invisible max-lg:[html:has([data-bottom-bar])_&]:hidden",
+        // descendiente" (recurso que usaba la vieja barra fija de `/pedido`).
+        "[html:has(#menu-del-encabezado)_&]:invisible max-lg:[html:has([data-bottom-bar])_&]:hidden",
+        "in-data-[registro-alta]:hidden [html:has([data-flow-shell])_&]:hidden",
       )}
     >
       <WhatsappLogo className="size-7 md:size-8" />

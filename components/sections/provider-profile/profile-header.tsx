@@ -28,7 +28,7 @@ const primaryAction = cn(
   buttonVariants({ size: "md" }),
   "min-h-11 bg-ink hover:bg-ink/90",
 );
-const secondaryAction = cn(buttonVariants({ variant: "outline", size: "md" }), "min-h-11");
+const secondaryAction = cn(buttonVariants({ variant: "brandOutline", size: "md" }), "min-h-11");
 
 /**
  * Encabezado del perfil: portada, logo, nombre (el ÚNICO `<h1>`), sello,

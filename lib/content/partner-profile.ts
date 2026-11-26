@@ -39,6 +39,8 @@ const linkLabels: Record<PartnerLinkKind, string> = {
   mercado_libre: "Mercado Libre",
   x: "X",
   tiktok: "TikTok",
+  linkedin: "LinkedIn",
+  youtube: "YouTube",
   other: "Otro enlace",
 };
 
@@ -48,7 +50,7 @@ function joinList(items: readonly string[]): string {
 }
 
 export const partnerProfileContent = {
-  breadcrumb: { home: "Inicio", proveedores: "Proveedores" },
+  breadcrumb: { label: "Migas de pan", home: "Inicio", proveedores: "Proveedores" },
 
   /** Meta description: solo con campos reales, distinta en cada negocio. */
   metaDescription: ({
@@ -62,12 +64,14 @@ export const partnerProfileContent = {
   }) => {
     const what = families.length > 0 ? `: ${joinList(families)}` : "";
     const where = coverageZone ? ` en ${coverageZone}` : "";
-    return `${name}${what}${where}. Pedí presupuesto por AutoLibre.`;
+    return `${name}${what}${where}. Pedí propuestas gratis por AutoLibre.`;
   },
 
   head: {
     familiesLabel: "Rubros",
     zoneLabel: "Zona de cobertura:",
+    /** Acción principal: el pedido por AutoLibre (`/pedido`). */
+    quote: "Pedile una propuesta",
     whatsapp: "WhatsApp",
     externalHint: "(se abre en otra pestaña)",
     share: {
@@ -107,7 +111,7 @@ export const partnerProfileContent = {
       answer: (name: string) => `Sí. ${name} atiende autos a GNC.`,
     },
     quote: {
-      question: (name: string) => `¿Cómo le pido un presupuesto a ${name}?`,
+      question: (name: string) => `¿Cómo le pido una propuesta a ${name}?`,
       answer: (name: string) =>
         `Por AutoLibre: contás qué le pasa a tu auto desde la app, por WhatsApp o en autolibre.ai/pedido, y te llegan propuestas de los negocios de la red que pueden ayudarte, ${name} incluido. Es gratis y sin compromiso.`,
     },
@@ -121,6 +125,14 @@ export const partnerProfileContent = {
     contact: "Contacto y redes",
     email: "Email",
     mapAlt: (name: string) => `Mapa de ubicación de ${name}`,
+    /** Tarjeta "Pedile una propuesta" del costado: lleva a `/pedido`. */
+    quote: {
+      title: "Pedile una propuesta",
+      body: "Gratis y sin compromiso. Tu pedido también les llega a otros proveedores de tu zona, para que compares.",
+      inputLabel: "¿Qué necesita tu auto?",
+      placeholder: "¿Qué necesita tu auto?",
+      submit: "Pedir propuesta",
+    },
   },
 
   related: {
@@ -128,14 +140,15 @@ export const partnerProfileContent = {
     seeAll: "Ver toda la red",
   },
 
-  stickyBar: { label: "Acciones del perfil" },
+  /** Barra fija en celular (`MobileActionBar`). */
+  stickyBar: { label: "Acciones del perfil", quote: "Pedir propuesta" },
 
   notFound: {
     eyebrow: "Proveedores",
     title: "Este negocio ya no está en la red",
     body: "Puede que el link sea viejo o que el negocio haya dejado AutoLibre. En la red hay otros que pueden ayudarte.",
     primaryCta: { label: "Ver todos los proveedores", href: PROVEEDORES_PATH },
-    secondaryCta: { label: "Pedir presupuesto", href: "/pedido" },
+    secondaryCta: { label: "Pedir propuestas", href: "/pedido" },
     meta: { title: "Negocio no encontrado" },
   },
 
