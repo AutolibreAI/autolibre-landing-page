@@ -72,7 +72,7 @@ const routes = [
   },
   {
     path: "/sobre-nosotros",
-    lastModified: "2026-11-24",
+    lastModified: "2026-11-26",
     changeFrequency: "monthly",
     priority: 0.6,
   },

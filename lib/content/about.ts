@@ -153,6 +153,12 @@ const members = [
     name: "Matías Vidal",
     role: "Cofundador · Legal e inversores",
     founder: true,
+    photo: {
+      src: "/images/about/equipo-matias-vidal.webp",
+      alt: "Matías Vidal, cofundador de AutoLibre a cargo de legal e inversores, sonríe con una remera negra de AutoLibre.AI.",
+      width: 800,
+      height: 1000,
+    },
   },
 ] satisfies readonly AboutMember[] as readonly AboutMember[];
 
@@ -364,8 +370,8 @@ export const aboutContent = {
   team: {
     title: "Equipo",
     /**
-     * Sin retrato todavía (Matías Vidal): la ficha muestra sus iniciales en
-     * el mismo marco 4:5, sin un "Foto pendiente" visible.
+     * Quien no tenga retrato muestra sus iniciales en el mismo marco 4:5,
+     * sin un "Foto pendiente" visible.
      */
     intro: "Somos cinco cofundadores.",
     /** Nombre accesible del link a LinkedIn de cada persona. */
