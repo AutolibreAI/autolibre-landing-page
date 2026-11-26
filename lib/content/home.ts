@@ -43,13 +43,21 @@ export const homeContent = {
   },
 
   /**
-   * Hero. El `<h1>` es el eslogan actual del sitio (opción conservadora; el
-   * lienzo propone también "¿Qué necesita tu auto?", que queda anotada en el
-   * INFORME como alternativa). Sin palabras rotativas: el diseño nuevo no
-   * las trae.
+   * Hero. El `<h1>` es el eslogan del sitio, "Todo tu auto, en un solo
+   * lugar.", armado con las partes de `title`. El texto indexable y accesible
+   * es SIEMPRE el eslogan completo (`lead vehicle` + `comma` + `rest`); a la
+   * vista, la palabra del vehículo va cayendo por `rotatingWords`
+   * (`HeroRotatingWord`, 2026-11-26). La primera es la del HTML del server.
    */
   hero: {
-    title: "Todo tu auto, en un solo lugar.",
+    title: {
+      lead: "Todo tu",
+      vehicle: "auto",
+      comma: ",",
+      rest: "en un solo lugar.",
+      /** En minúscula: las mayúsculas son de CSS (`uppercase`), no del copy. */
+      rotatingWords: ["auto", "moto"],
+    },
     subtitle:
       "Hacé tu pedido y recibí propuestas de talleres y proveedores cerca tuyo. Gratis y sin compromiso.",
     /**

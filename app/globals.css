@@ -433,3 +433,49 @@
   transform: none;
   grid-template-rows: 1fr;
 }
+
+/* ── Palabra rotativa del `<h1>` del Home (2026-11-26) ──
+   `HeroRotatingWord`: "Todo tu AUTO / MOTO, en un solo lugar.". Las
+   palabras se dibujan con `content: attr(data-word)` y NO como texto del
+   DOM: así el `textContent` del `<h1>` (lo que indexan buscadores y LLMs)
+   es exactamente "Todo tu auto, en un solo lugar.", sin palabras repetidas.
+   El texto accesible es el `sr-only` del hero; la isla va `aria-hidden`.
+   Caída SECUENCIAL, nunca dos palabras a la vez: la saliente acelera hacia
+   abajo y se apaga (0,3 s ease-in, como un objeto que cae); recién en su
+   `animationend` se monta la entrante, que espera 80 ms con la ranura vacía
+   y baja desde arriba frenando suave (0,4 s ease-out quint). Solo transform y
+   opacity, dentro de una ranura con `overflow-hidden`: no mueve nada fuera
+   de ella. Con `prefers-reduced-motion` la isla está oculta (se ve el
+   texto estático) y la regla global apaga cualquier animación. */
+@utility word-from-data {
+  &::before {
+    content: attr(data-word);
+  }
+}
+
+@theme {
+  --animate-hero-word-in: hero-word-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+  --animate-hero-word-out: hero-word-out 0.3s cubic-bezier(0.55, 0, 1, 0.45) both;
+
+  @keyframes hero-word-in {
+    from {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes hero-word-out {
+    from {
+      opacity: 1;
+      transform: none;
+    }
+    to {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+  }
+}

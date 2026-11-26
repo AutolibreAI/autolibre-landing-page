@@ -2,6 +2,7 @@ import { ModuloPedido } from "@/components/modulo-pedido/modulo-pedido";
 import { Section } from "@/components/ui/section";
 import { QUOTE_MODULE_PLACEMENTS } from "@/lib/analytics/events";
 import { homeContent } from "@/lib/content/home";
+import { HeroRotatingWord } from "./hero-rotating-word";
 
 /** Ancla del hero: la usan la barra fija del celular y el "Hacé tu pedido" del Home. */
 export const HOME_PEDIDO_ID = "pedido";
@@ -11,8 +12,10 @@ export const HOME_PEDIDO_ID = "pedido";
  * de pedido con Taller elegido. Debajo, tres cifras publicables.
  *
  * Server Component. El LCP es texto (el `<h1>`): sale en el HTML del server,
- * con `next/font` (`display: swap` y fallback métrico), sin animación ni
- * `reveal`. Los íconos de las pestañas son chicos y no compiten.
+ * con `next/font` (`display: swap` y fallback métrico), sin `reveal`. Única
+ * isla del titular: `HeroRotatingWord` (la palabra del vehículo, que arranca
+ * quieta en "auto" y recién cambia a los 2,8 s). Los íconos de las pestañas
+ * son chicos y no compiten.
  *
  * Outline: h1 → h2 de los paneles del módulo (Auxilio, Multas, paso 2).
  */
@@ -37,7 +40,30 @@ export function HomeHero() {
           id="hero-title"
           className="max-w-180 font-display text-display-xs font-bold tracking-tight text-balance text-fg xs:text-display-sm sm:text-display-md lg:text-display-lg"
         >
-          {title}
+          {/* Dos líneas siempre ("Todo tu AUTO," / "en un solo lugar."),
+              la primera sin cortes: si el wrap dependiera del ancho de la
+              palabra, pasar de AUTO a MOTO podría partir el titular distinto
+              y saltar (CLS). "Todo tu MOTO," entra en una línea en 360
+              (display-xs) y 390 (display-sm). El texto del DOM es el
+              eslogan exacto, "Todo tu auto, en un solo lugar.": el
+              `sr-only` da "auto" a lectores de pantalla y a quien indexa, y
+              la palabra que cae es `aria-hidden` y sin texto propio. Con
+              `prefers-reduced-motion` no hay isla: se ve el eslogan quieto,
+              con "AUTO" igual que la palabra animada. Mayúsculas por CSS
+              (`uppercase`, el copy sigue en minúscula) y `text-brand`:
+              4.24:1 sobre `card`, alcanza el 3:1 de texto grande. */}
+          <span className="block whitespace-nowrap">
+            {title.lead}{" "}
+            <span className="sr-only motion-reduce:not-sr-only motion-reduce:text-brand motion-reduce:uppercase">
+              {title.vehicle}
+            </span>
+            <HeroRotatingWord
+              words={title.rotatingWords}
+              className="text-brand uppercase motion-reduce:hidden"
+            />
+            {title.comma}
+          </span>{" "}
+          <span className="block">{title.rest}</span>
         </h1>
         <p className="mt-3.5 max-w-140 text-lead text-pretty text-fg-muted md:text-lead-lg">
           {subtitle}
