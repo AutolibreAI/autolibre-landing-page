@@ -118,8 +118,8 @@ Material real disponible, nada que inventar:
 
 - URLs de tienda reales en `lib/seo/config.ts` — App Store id `6777068403`,
   Play `com.autolibreai`.
-- Capturas reales de la app: `/mockup/mockup-garage.webp` (1472×2886, **ya trae
-  el marco del teléfono**, no envolver en `PhoneFrame`) y
+- Capturas reales de la app: `/screenshots/app-inicio.webp` (1170×2532, inicio
+  de la versión actual, **sin marco**: el bisel lo pone el componente) y
   `/mockup/mockup-chatai.webp` (1408×3014).
 - Foto real del conector OBD2: ya no se usa en el sitio (se eliminó la sección de compatibilidad el 2026-10-07).
 - Copy de producto ya escrito y en producción en `lib/content/`.

@@ -178,18 +178,21 @@ export function IngresarPanel({
           ) : null}
           {below}
         </div>
-        {/* La captura real de la app, cortada por el borde inferior del panel.
-            Solo desde `xl` (en `lg` la columna es angosta) y fuera del camino
-            crítico: no es la imagen LCP (el `<h1>` lo es). */}
+        {/* La captura real de la app en el mismo bisel que el panel de la
+            home, cortada por el borde inferior del panel. Solo desde `xl` (en
+            `lg` la columna es angosta) y fuera del camino crítico: no es la
+            imagen LCP (el `<h1>` lo es). */}
         <div className="hidden w-60 shrink-0 self-end pr-10 xl:block">
-          <Image
-            src={ingresar.oneAccount.appShot.src}
-            width={ingresar.oneAccount.appShot.width}
-            height={ingresar.oneAccount.appShot.height}
-            alt={ingresar.oneAccount.appShot.alt}
-            sizes="200px"
-            className="-mb-16 h-auto w-full"
-          />
+          <div className="-mb-16 overflow-clip rounded-t-4xl border-8 border-b-0 border-ink bg-card">
+            <Image
+              src={ingresar.oneAccount.appShot.src}
+              width={ingresar.oneAccount.appShot.width}
+              height={ingresar.oneAccount.appShot.height}
+              alt={ingresar.oneAccount.appShot.alt}
+              sizes="184px"
+              className="h-auto w-full"
+            />
+          </div>
         </div>
       </section>
     </div>

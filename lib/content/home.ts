@@ -220,7 +220,7 @@ export const homeContent = {
     ],
     downloadNote: "Gratis, para iPhone y Android.",
     screenshot: {
-      src: "/screenshots/IMG_0577.PNG",
+      src: "/screenshots/app-inicio.webp",
       width: 1170,
       height: 2532,
       alt: "Pantalla de inicio de la app AutoLibre",
@@ -232,11 +232,11 @@ export const homeContent = {
    * bloque de descarga de las notas del blog (`ArticleAppCta`).
    */
   appScreens: [
-    "IMG_0577", // Inicio: tu garage y talleres
-    "IMG_0578", // Garage
-    "IMG_0579", // Ficha del auto: alertas y documentos
-  ].map((name) => ({
-    src: `/screenshots/${name}.PNG`,
+    "app-inicio.webp", // Inicio: qué necesitás y beneficios
+    "IMG_0578.PNG", // Garage
+    "IMG_0579.PNG", // Ficha del auto: alertas y documentos
+  ].map((file) => ({
+    src: `/screenshots/${file}`,
     width: 1170,
     height: 2532,
   })),
