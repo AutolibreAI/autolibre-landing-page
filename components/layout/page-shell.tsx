@@ -43,10 +43,16 @@ export function PageShell({
   actionBarOptions,
   bottomBar,
 }: PageShellProps) {
+  // El footer arranca SIEMPRE después del primer `100dvh`: header + `<main>`
+  // ocupan como mínimo la pantalla entera y el `<main>` crece para llenarla.
+  // En páginas cortas (p. ej. "¿Cerrar sesión?" en `/cuenta?salir=1`) el
+  // footer no aparece en la primera pantalla; con más contenido, baja solo.
   return (
     <>
-      <SiteHeader cta={cta} currentPath={currentPath} />
-      <main>{children}</main>
+      <div className="flex min-h-dvh flex-col">
+        <SiteHeader cta={cta} currentPath={currentPath} />
+        <main className="flex-1">{children}</main>
+      </div>
       <SiteFooter />
       {actionBar ? (
         <MobileActionBar
