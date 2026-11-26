@@ -154,6 +154,8 @@ const paths: Record<IconName, React.ReactNode> = {
     </>
   ),
   "chevron-down": <path d="M6 9l6 6 6-6" />,
+  "chevron-left": <path d="M15 6l-6 6 6 6" />,
+  "chevron-right": <path d="M9 6l6 6-6 6" />,
   /** Tres rayas que se acortan: filtros del buscador del directorio. */
   filter: <path d="M4 7h16M7 12h10M10 17h4" />,
   bolt: <path d="M13 3L5 13.5h6L10 21l8-10.5h-6z" />,

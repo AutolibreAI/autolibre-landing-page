@@ -1,53 +1,45 @@
 import Image from "next/image";
+import { sectionTitle } from "@/components/marketing/styles";
 import { AlliesCarousel } from "@/components/sections/home/allies-carousel";
-import { Container } from "@/components/ui/container";
 import { Icon } from "@/components/ui/icon";
 import { Section } from "@/components/ui/section";
 import { homeContent } from "@/lib/content/home";
 import { siteContent } from "@/lib/content/site";
 
 /**
- * Carrusel de banners de aliados: cada uno es una pieza publicitaria propia
- * (no un simple logo), fiel a la pieza original de cada aliado — color de
- * marca exacto, logo de AutoLibre a la par del logo del aliado. Sin el rótulo
- * "Publicidad" de la pieza original (pedido explícito, 2026-11-17). Esos
- * colores son del partner, no del design system de AutoLibre: van inline, a
- * propósito (regla de los tokens de `@theme` en AGENTS.md, punto 7 — último
- * recurso justificado).
+ * Carrusel de banners de aliados ("Beneficios"): cada uno es una pieza
+ * publicitaria propia (no un simple logo), fiel a la pieza original de cada
+ * aliado — color de marca exacto, logo de AutoLibre a la par del logo del
+ * aliado. Esos colores son del partner, no del design system de AutoLibre:
+ * van inline, a propósito (regla de los tokens de `@theme` en AGENTS.md,
+ * punto 7 — último recurso justificado).
  *
- * Full-bleed a propósito (pedido de producto, 2026-11-17): la `Section` no
- * tiene `Container` propio ni fondo propio, así el ancho y el color de cada
- * banner son los del banner mismo, borde a borde. Los FONDOS bleedean; el
- * CONTENIDO vive alineado con el `Container` wide del header (en Asistir24,
- * el texto del panel rosa se alinea recién desde `lg`). Sin título
- * visible tampoco; el `<h2>` sigue existiendo (outline y lectores de
- * pantalla) pero queda `sr-only`.
+ * Layout (referencia de producto, 2026-11-26; reemplaza el full-bleed del
+ * 2026-11-17): sección `canvas` con el `Container` wide de siempre. Arriba,
+ * el `<h2>` visible a la izquierda y las flechas a la derecha; el banner es
+ * una tarjeta redondeada de ese ancho, con el rótulo "Publicidad" (vuelve:
+ * la referencia lo muestra); abajo, los puntos.
  *
- * El control (índice, autoplay, botones) es la isla cliente
- * `AlliesCarousel`; cada banner se arma acá, en el server, y viaja como
- * children ya resuelto.
+ * El control (índice, autoplay, flechas, puntos) es la isla cliente
+ * `AlliesCarousel`; el heading y cada banner se arman acá, en el server, y
+ * viajan como props ya resueltos.
  */
 export function AlliesSection() {
-  const { title, prevLabel, nextLabel, goToLabel, slides } = homeContent.allies;
+  const { title, carouselLabel, adLabel, prevLabel, nextLabel, goToLabel, slides } = homeContent.allies;
   const [asistir24, sinfotomultas, integrity, esquina] = slides;
 
   return (
-    <Section
-      id="aliados"
-      // Sin padding propio: el padding lo pone cada banner (su propio fondo
-      // de marca), si no queda una franja blanca entre esta sección y la de
-      // arriba (pedido de producto, 2026-11-17).
-      spacing="sm"
-      className="py-0 md:py-0"
-      aria-labelledby="allies-title"
-      container={false}
-    >
-      <h2 id="allies-title" className="sr-only">
-        {title}
-      </h2>
-
+    // `canvas` como el panel de la app de abajo, que arranca con `pt-0`:
+    // el `pb` de esta sección es el aire entre los dos.
+    <Section id="aliados" tone="canvas" spacing="md" aria-labelledby="allies-title">
       <AlliesCarousel
-        label={title}
+        heading={
+          <h2 key="allies-title" id="allies-title" className={sectionTitle}>
+            {title}
+          </h2>
+        }
+        label={carouselLabel}
+        adLabel={adLabel}
         prevLabel={prevLabel}
         nextLabel={nextLabel}
         goToLabels={slides.map((_, position) => goToLabel(position + 1))}
@@ -65,13 +57,18 @@ export function AlliesSection() {
 
 /**
  * Alto del carrusel desde 1440px (pedido 2026-11-25): el de la pieza de La
- * Esquina del Neumático (4:1, `25vw`), así esa imagen ocupa el banner entero
- * sin franjas. Piso de 360px (25vw a 1440) para que entre el contenido de los banners
- * armados con código (el más alto, Sin Fotomultas, mide ~300px) y techo de
- * 480px (el alto que tenían). Valor arbitrario a propósito: la escala de
- * Tailwind no tiene un `clamp`. Abajo de 1440px sigue `min-h-150 sm:min-h-120`.
+ * Esquina del Neumático (4:1), así esa imagen ocupa el banner entero sin
+ * franjas. Ahora el banner es una tarjeta del ancho del `Container` wide
+ * (88vw con tope de 1440px), no de la ventana: 4:1 de eso es
+ * `min(22vw, 360px)`. Si un banner armado con código necesita más alto, la
+ * tarjeta crece y la pieza recorta unos px arriba y abajo (`object-cover`).
+ * Valor arbitrario a propósito: la escala de Tailwind no tiene un `min()`.
+ * Abajo de 1440px sigue `min-h-150 sm:min-h-120`.
  */
-const DESKTOP_HEIGHT = "banner:min-h-[clamp(360px,25vw,480px)]";
+const DESKTOP_HEIGHT = "banner:min-h-[min(22vw,360px)]";
+
+/** Padding de los banners armados con código (antes lo daba un `Container`). */
+const SLIDE_PADDING = "px-6 sm:px-10 md:px-12 lg:px-16";
 
 type Asistir24SlideData = (typeof homeContent.allies.slides)[0];
 type SinFotomultasSlideData = (typeof homeContent.allies.slides)[1];
@@ -98,39 +95,29 @@ function Asistir24Slide({ slide }: { readonly slide: Asistir24SlideData }) {
   return (
     <article
       aria-labelledby="allies-asistir24-title"
-      style={
-        {
-          /* #005EBA: azul de marca de Asistir24. */
-          background: "#005EBA",
-          /* Borde izquierdo del contenido del `Container` wide (padding del 6%
-             o lo que sobra a cada lado de los 1440px, lo que sea mayor). Desde
-             `lg` alinea el panel rosa y el texto con el header. Si cambia el
-             ancho de `Container size="wide"`, cambia acá también. */
-          "--asistir24-edge": "max(6%, (100% - 1440px) / 2)",
-        } as React.CSSProperties
-      }
-      // `min-h-150 sm:min-h-120`: la misma en los tres banners (ver nota en
-      // `IntegritySlide`), para que el carrusel no salte de alto al pasar de
-      // uno a otro (pedido de producto, 2026-11-17).
+      /* #005EBA: azul de marca de Asistir24. */
+      style={{ background: "#005EBA" }}
+      // `min-h-150 sm:min-h-120`: la misma en todos los banners, para que el
+      // carrusel no salte de alto al pasar de uno a otro (pedido de producto,
+      // 2026-11-17).
       className={`relative flex w-full min-h-150 flex-col text-white sm:min-h-120 sm:flex-row sm:items-stretch ${DESKTOP_HEIGHT}`}
     >
-      {/* Panel de la izquierda: su FONDO bleedea hasta el borde (como la pieza
-          original). Abajo de `lg`, tal cual la pieza original. Desde `lg`, su
-          contenido arranca en el borde del `Container` wide, alineado con el
-          header: ancho = borde + 24rem, padding izquierdo = borde. */}
+      {/* Panel de la izquierda: ~2/7 del ancho desde `lg`, como la pieza
+          original. Entre `sm` y `lg` la tarjeta es angosta y 2/7 no alcanza
+          para el "24" y el botón: ahí va 2/5. */}
       <div
         /* #F45C9D / #14102B: rosa y tinta de marca de Asistir24. */
         style={{ background: "#F45C9D", color: "#14102B" }}
-        className="flex flex-col items-start justify-center gap-4 px-6 py-7 sm:w-[30%] sm:gap-5 sm:px-10 sm:py-0 md:px-12 lg:w-[calc(var(--asistir24-edge)+24rem)] lg:shrink-0 lg:gap-6 lg:pr-12 lg:pl-(--asistir24-edge)"
+        className="flex flex-col items-start justify-center gap-4 px-6 py-7 sm:w-2/5 sm:shrink-0 sm:gap-5 sm:py-6 md:px-8 lg:w-2/7 lg:gap-6 lg:px-10"
       >
-        <p className="font-display text-6xl leading-none font-extrabold sm:text-8xl md:text-9xl">{slide.bigNumber}</p>
-        <p className="font-display text-xl leading-tight font-bold sm:text-2xl md:text-3xl">{slide.bigNumberLabel}</p>
+        <p className="font-display text-6xl leading-none font-extrabold sm:text-7xl md:text-8xl lg:text-9xl">{slide.bigNumber}</p>
+        <p className="font-display text-xl leading-tight font-bold sm:text-2xl lg:text-3xl">{slide.bigNumberLabel}</p>
         <a
           href={slide.badgeCta.href}
           target="_blank"
           rel="noopener noreferrer"
           style={{ background: "#14102B" }}
-          className="mt-1 inline-flex h-11 items-center gap-2.5 rounded-field px-5 font-display text-base font-bold text-white transition hover:opacity-90 sm:h-12 sm:px-6 sm:text-lg md:h-14 md:px-7 md:text-xl"
+          className="mt-1 inline-flex h-11 items-center gap-2.5 rounded-field px-5 font-display text-base font-bold whitespace-nowrap text-white transition hover:opacity-90 xl:h-12 xl:px-6 xl:text-lg"
         >
           <Icon name="phone" size={20} />
           {slide.badgeCta.label}
@@ -138,12 +125,8 @@ function Asistir24Slide({ slide }: { readonly slide: Asistir24SlideData }) {
         </a>
       </div>
 
-      {/* Abajo de `lg` es el mismo marcado que arma `Container size="wide"`
-          (padding 6% afuera, max-width adentro). No usa `Container` porque
-          desde `lg` el borde derecho tiene que coincidir con el del header
-          (`--asistir24-edge`) y `Container` no deja cambiar su padding. */}
-      <div className="w-full px-[6%] lg:flex lg:flex-1 lg:flex-col lg:justify-center lg:pr-(--asistir24-edge) lg:pl-16">
-        <div className="mx-auto flex w-full max-w-[1440px] flex-col justify-center gap-4 py-8 sm:gap-5 sm:py-12 md:py-16 lg:mx-0 banner:py-4">
+      <div className={`flex flex-1 flex-col justify-center ${SLIDE_PADDING}`}>
+        <div className="flex w-full flex-col justify-center gap-4 py-8 sm:gap-5 sm:py-12 md:py-14 banner:py-6">
           <div className="flex items-center gap-3">
             <AutoLibreMark />
             <span aria-hidden="true" className="font-display text-lg font-semibold text-white/50">
@@ -197,7 +180,7 @@ function SinFotomultasSlide({ slide }: { readonly slide: SinFotomultasSlideData 
       style={{ background: "#14171F" }}
       className={`relative flex w-full min-h-150 flex-col justify-center text-white sm:min-h-120 ${DESKTOP_HEIGHT}`}
     >
-      <Container size="wide" className="flex flex-col gap-10 py-14 sm:flex-row sm:items-center sm:py-16 md:py-20 banner:py-4">
+      <div className={`flex w-full flex-col gap-10 py-14 lg:flex-row lg:items-center sm:py-16 md:py-20 banner:py-6 ${SLIDE_PADDING}`}>
         <div className="flex flex-1 flex-col gap-5">
           <div className="flex items-center gap-3">
             <Image
@@ -243,9 +226,10 @@ function SinFotomultasSlide({ slide }: { readonly slide: SinFotomultasSlideData 
           </div>
         </div>
 
-        {/* Tarjeta decorativa (pieza original): solo desde `sm`, no hay
-            lugar para girarla en una columna angosta. */}
-        <div aria-hidden="true" className="relative hidden w-72 shrink-0 self-center sm:block">
+        {/* Tarjeta decorativa (pieza original): solo desde `lg`. Ahora el
+            banner es una tarjeta del ancho del contenido, y más angosto el
+            texto quedaba en una columna de ~150px. */}
+        <div aria-hidden="true" className="relative hidden w-72 shrink-0 self-center lg:block">
           <div className="-rotate-3 rounded-card bg-white p-6 text-[#14171F] shadow-xl">
             <p className="font-display text-xs font-bold tracking-widest uppercase">Acta de infracción</p>
             <div className="mt-4 flex flex-col gap-2.5">
@@ -264,7 +248,7 @@ function SinFotomultasSlide({ slide }: { readonly slide: SinFotomultasSlideData 
             <span className="font-display text-sm leading-tight font-semibold">{slide.note.unit}</span>
           </div>
         </div>
-      </Container>
+      </div>
     </article>
   );
 }
@@ -282,7 +266,7 @@ function IntegritySlide({ slide }: { readonly slide: IntegritySlideData }) {
       // de uno a otro.
       className={`relative flex w-full min-h-150 flex-col justify-center text-white sm:min-h-120 ${DESKTOP_HEIGHT}`}
     >
-      <Container size="wide" className="flex flex-col gap-8 py-14 sm:flex-row sm:items-center sm:py-16 md:py-20 banner:py-4">
+      <div className={`flex w-full flex-col gap-8 py-14 md:flex-row md:items-center sm:py-16 md:py-20 banner:py-6 ${SLIDE_PADDING}`}>
         <div className="flex flex-1 flex-col gap-5">
           <p className="inline-flex w-fit items-center rounded-full border-2 border-white/60 px-4 py-2 font-display text-xs font-semibold tracking-wide uppercase sm:text-sm">
             {slide.eyebrow}
@@ -311,7 +295,7 @@ function IntegritySlide({ slide }: { readonly slide: IntegritySlideData }) {
           <p className="max-w-125 text-base text-white/85 md:text-lg">{slide.description}</p>
         </div>
 
-        <div className="flex shrink-0 flex-col items-start gap-4 sm:w-70">
+        <div className="flex shrink-0 flex-col items-start gap-4 md:w-60">
           <Image
             src={slide.partnerLogo.src}
             alt={slide.partnerLogo.alt}
@@ -351,7 +335,7 @@ function IntegritySlide({ slide }: { readonly slide: IntegritySlideData }) {
             <AutoLibreMark className="h-5 w-auto" />
           </span>
         </div>
-      </Container>
+      </div>
     </article>
   );
 }
@@ -367,7 +351,7 @@ function IntegritySlide({ slide }: { readonly slide: IntegritySlideData }) {
  * La de celular va hasta 1440px: más angosto, el alto de la de escritorio
  * (4:1) no alcanza para el contenido de los otros banners.
  *
- * Desde 1440px todo el carrusel toma el alto de esta pieza (`DESKTOP_HEIGHT`).
+ * Desde 1440px todo el carrusel toma el alto 4:1 de esta pieza (`DESKTOP_HEIGHT`).
  * Abajo, la de celular va centrada sobre negro. Todo el banner es el link.
  */
 function EsquinaNeumaticoSlide({ slide }: { readonly slide: EsquinaNeumaticoSlideData }) {

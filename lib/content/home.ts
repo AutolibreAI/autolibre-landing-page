@@ -131,9 +131,11 @@ export const homeContent = {
   /**
    * Carrusel de beneficios de aliados: negocios y servicios con una alianza
    * real con AutoLibre (no son proveedores cualquiera del marketplace), cada
-   * uno con su propio banner. `href` sale del link "website" de su perfil en
-   * `/proveedores/<slug>` cuando lo tiene ahí; si no, se confirma a mano con
-   * producto antes de cargarlo (nunca una URL inventada).
+   * uno con su propio banner. `href` es el mismo `cta_url` del banner de la
+   * app (tabla `promotions` del backend) cuando el aliado tiene uno; si no,
+   * el link "website" de su perfil en `/proveedores/<slug>` o uno confirmado
+   * a mano con producto (nunca una URL inventada). El módulo de pedido
+   * (pestañas Auxilio y Multas) reusa estos mismos links.
    *
    * La Esquina del Neumático (2026-11-25) es distinto: el aliado manda la
    * pieza YA armada como imagen (una de escritorio y otra de celular), cada
@@ -142,7 +144,12 @@ export const homeContent = {
    * se baja a mano cuando venza.
    */
   allies: {
-    title: "Beneficios de nuestros aliados",
+    /** Título visible de la sección (referencia de producto, 2026-11-26). */
+    title: "Beneficios",
+    /** `aria-label` del carrusel: más descriptivo que el título corto. */
+    carouselLabel: "Beneficios de nuestros aliados",
+    /** Rótulo de pieza publicitaria, arriba a la derecha de cada banner. */
+    adLabel: "Publicidad",
     prevLabel: "Aliado anterior",
     nextLabel: "Aliado siguiente",
     goToLabel: (position: number) => `Ir al banner ${position}`,
@@ -153,7 +160,14 @@ export const homeContent = {
         partnerLogo: { src: "/brand/aliados/asistir24-white.png", alt: "Asistir24", width: 520, height: 370 },
         bigNumber: "24",
         bigNumberLabel: "horas de asistencia",
-        badgeCta: { label: "Pedí auxilio", href: "https://asistir24.com.ar/" },
+        /*
+         * WhatsApp de Asistir24 con el mensaje precargado: el mismo link que el
+         * banner de la app (tabla `promotions` de producción, 2026-11-26).
+         */
+        badgeCta: {
+          label: "Pedí auxilio",
+          href: "https://wa.me/541126433243?text=Hola!%20Vengo%20de%20AutoLibre%20y%20necesito%20ayuda",
+        },
         headline: "Del auxilio al taller, sin vueltas.",
         description:
           "Si te quedás en el camino, la grúa te lleva directo a un taller de la red AutoLibre.",
@@ -167,7 +181,11 @@ export const homeContent = {
         headlineHighlight: "multas de tránsito.",
         description:
           "Antes de pagar, mirá cuánto se pueden reducir. Gestión legal en CABA y Provincia de Buenos Aires.",
-        cta: { label: "Consultá tu caso", href: "https://sinfotomultas.com.ar/" },
+        /*
+         * Landing de Sin Fotomultas creada para AutoLibre: el mismo link que el
+         * banner de la app (tabla `promotions` de producción, 2026-11-26).
+         */
+        cta: { label: "Consultá tu caso", href: "https://multas.sinfotomultas.com.ar/s/auto-libre-ai" },
         note: { label: "libre deuda", value: "7 a 10", unit: "días" },
       },
       {

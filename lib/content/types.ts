@@ -84,6 +84,8 @@ export type IconName =
   | "shield-check"
   | "calendar"
   | "chevron-down"
+  | "chevron-left"
+  | "chevron-right"
   | "filter"
   | "bolt"
   | "camera"

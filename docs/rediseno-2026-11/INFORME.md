@@ -487,8 +487,8 @@ En una **vista previa**: `/pedido/modulo` (`index: false`, fuera del sitemap y d
 | Pestaña | Qué hace | Backend |
 |---|---|---|
 | Taller | Form de 2 pasos | `POST /api/presupuesto` → `POST /api/v1/quote-requests`, con el mismo body que el form de `/pedido`: `description` = "¿Qué le pasa?", `address` = "¿Dónde estás?" + geocode de Places, `contactPhone`, `plate` y `vehicleLookup` opcionales, `consent: true`. |
-| Auxilio | Panel con "Pedí auxilio" → asistir24.com.ar | No hay vertical de auxilio en el backend. Mismo aliado y misma URL que el banner del Home (`homeContent.allies`). |
-| Multas | Panel con "Consultá tu caso" → sinfotomultas.com.ar | Ídem: aliado del Home. |
+| Auxilio | Panel con "Pedí auxilio" → WhatsApp de Asistir24 con "Hola! Vengo de AutoLibre y necesito ayuda" precargado | No hay vertical de auxilio en el backend. Mismo aliado y misma URL que el banner del Home (`homeContent.allies`) y que el banner de la app (`promotions.cta_url`, 2026-11-26). |
+| Multas | Panel con "Consultá tu caso" → `multas.sinfotomultas.com.ar/s/auto-libre-ai` | Ídem: landing de Sin Fotomultas para AutoLibre, la misma del banner de la app. |
 | Seguro | Panel con "Cotizá por WhatsApp" (chat de AutoLibre con "¡Hola! Quiero cotizar el seguro de mi auto.") | **No existe endpoint de cotización de seguros.** El prototipo trae un form (patente, WhatsApp, tipo de cobertura); no se simuló: se reemplazó por WhatsApp, lo más conservador. |
 
 El backend no recibe categoría ni pestaña: el DTO de `quote-requests` usa `forbidNonWhitelisted`. La pestaña viaja solo a PostHog (`quoteTab` y `quotePlacement` en el body de la route, que los valida contra valores cerrados y no los reenvía).
