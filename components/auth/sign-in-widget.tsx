@@ -11,14 +11,14 @@ import { partnerAccountContent } from "@/lib/content/partner-account";
 import { cn } from "@/lib/utils";
 
 /**
- * Qué cuenta se crea desde este login:
+ * Qué cuenta se crea desde este login. Siempre hay "Ingresar" / "Crear
+ * cuenta" (el `<SignIn withSignUp>` solo no deja ver que se puede crear una):
  * - `partner` (por defecto): los flujos de proveedor (alta, reclamo,
- *   contratar). No se pregunta: el `<SignIn withSignUp>` de siempre, y el
+ *   contratar). "Crear cuenta" va directo al `<SignUp>`, sin preguntar, y el
  *   intent queda pendiente hasta que haya sesión.
  * - `customer`: idem, como cliente.
- * - `ask`: `/cuenta`. "Ingresar" / "Crear cuenta"; "Crear cuenta" pregunta
- *   primero "Soy cliente / Tengo un taller" y recién después muestra el
- *   `<SignUp>`.
+ * - `ask`: `/cuenta`. "Crear cuenta" pregunta primero "Soy cliente / Tengo un
+ *   taller" y recién después muestra el `<SignUp>`.
  */
 export type SignupIntentMode = SignupIntent | "ask";
 
@@ -55,13 +55,7 @@ export function SignInWidget({ redirectUrl, signupIntent = SIGNUP_INTENTS.partne
     if (!loading && !ask) setPendingSignupIntent(signupIntent);
   }, [loading, ask, signupIntent]);
 
-  return ask ? (
-    <AccountEntry redirectUrl={redirectUrl} loading={loading} />
-  ) : (
-    <ClerkSlot kind="signIn" loading={loading}>
-      <SignIn routing="hash" withSignUp forceRedirectUrl={redirectUrl} signUpForceRedirectUrl={redirectUrl} />
-    </ClerkSlot>
-  );
+  return <AccountEntry redirectUrl={redirectUrl} loading={loading} fixedIntent={ask ? null : signupIntent} />;
 }
 
 const { entry, intentChoice, signIn } = partnerAccountContent;
@@ -75,20 +69,30 @@ const ENTRY_STORAGE_KEY = "al_signup_entry";
 const withoutFooterAction = { elements: { footerAction: "hidden" } } as const;
 
 /**
- * "Ingresar" / "Crear cuenta" de `/cuenta`. Dos botones con `aria-pressed`
- * (no pestañas ARIA: cada uno cambia lo que hay debajo, sin paneles a la
- * vez). "Crear cuenta" pide primero cliente o taller.
+ * "Ingresar" / "Crear cuenta". Dos botones con `aria-pressed` (no pestañas
+ * ARIA: cada uno cambia lo que hay debajo, sin paneles a la vez). Sin
+ * `fixedIntent` (`/cuenta`), "Crear cuenta" pide primero cliente o taller;
+ * con `fixedIntent` (flujos de proveedor) va directo al `<SignUp>`.
  *
  * Las pestañas se pintan desde el primer render, aunque Clerk no haya
  * cargado (`loading`): el widget va en un `ClerkSlot` que le reserva el alto,
  * así nada salta cuando monta.
  */
-function AccountEntry({ redirectUrl, loading }: { readonly redirectUrl: string; readonly loading: boolean }) {
+function AccountEntry({
+  redirectUrl,
+  loading,
+  fixedIntent,
+}: {
+  readonly redirectUrl: string;
+  readonly loading: boolean;
+  /** Intent que define el destino (flujos de proveedor): no se pregunta. `null` en `/cuenta`. */
+  readonly fixedIntent: SignupIntent | null;
+}) {
   const pending = usePendingSignupIntent();
   const [mode, setMode] = useState<EntryMode>("signIn");
   /** Lo elegido en esta pantalla (si no hay storage, `pending` queda en `null`). */
   const [chosen, setChosen] = useState<SignupIntent | null>(null);
-  const current = chosen ?? pending;
+  const current = fixedIntent ?? chosen ?? pending;
   const chosenRef = useRef<HTMLParagraphElement>(null);
   const focusChosen = useRef(false);
 
@@ -130,7 +134,7 @@ function AccountEntry({ redirectUrl, loading }: { readonly redirectUrl: string; 
         <EntryToggle pressed={!creating} onClick={() => change("signIn")}>
           {entry.signIn}
         </EntryToggle>
-        <EntryToggle pressed={creating} onClick={() => change(mode === "signUp" ? "signUp" : "choose")}>
+        <EntryToggle pressed={creating} onClick={() => change(fixedIntent || mode === "signUp" ? "signUp" : "choose")}>
           {entry.signUp}
         </EntryToggle>
       </div>
@@ -161,7 +165,7 @@ function AccountEntry({ redirectUrl, loading }: { readonly redirectUrl: string; 
         />
       ) : (
         <div className="flex flex-col gap-4">
-          {current ? (
+          {current && !fixedIntent ? (
             <p
               ref={chosenRef}
               tabIndex={-1}
@@ -217,13 +221,11 @@ function EntryToggle({
 
 /**
  * Qué componente de Clerk ocupa el lugar, para reservarle el alto:
- * - `signIn`: `<SignIn withSignUp>` de los flujos de proveedor (con el
- *   "¿No tenés cuenta? Registrate" de Clerk al pie).
- * - `signInBare`: el `<SignIn>` de `/cuenta`, sin ese pie (lo reemplazan
- *   las pestañas "Ingresar" / "Crear cuenta").
- * - `signUp`: el `<SignUp>` de `/cuenta`, sin pie.
+ * - `signInBare`: el `<SignIn>`, sin el pie "¿No tenés cuenta? Registrate"
+ *   de Clerk (lo reemplazan las pestañas "Ingresar" / "Crear cuenta").
+ * - `signUp`: el `<SignUp>`, sin pie.
  */
-type ClerkSlotKind = "signIn" | "signInBare" | "signUp";
+type ClerkSlotKind = "signInBare" | "signUp";
 
 /**
  * Alto mínimo de cada widget de Clerk YA montado (primer paso: email,
@@ -233,9 +235,7 @@ type ClerkSlotKind = "signIn" | "signInBare" | "signUp";
  * y el footer saltan cuando Clerk monta.
  */
 const slotHeights: Record<ClerkSlotKind, string> = {
-  // 280px medidos (2026-11-25) en los dos: el "¿No tenés cuenta?" del pie
-  // de Clerk no cambia el alto del primer paso.
-  signIn: "min-h-70",
+  // 280px medidos (2026-11-25).
   signInBare: "min-h-70",
   // 379px medidos: email, contraseña, "Continuar" y los botones sociales.
   signUp: "min-h-95",
