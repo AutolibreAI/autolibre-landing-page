@@ -62,7 +62,7 @@ export const homeContent = {
       "Hacé tu pedido y recibí propuestas de talleres y proveedores cerca tuyo. Gratis y sin compromiso.",
     /**
      * Cifras de la fila de abajo. Solo publicables: "+150" (decisión del
-     * 24-11) y "700+" vehículos (`traction` de `about.ts`, ver PRODUCT.md).
+     * 24-11) y "1.100+" vehículos (`traction` de `about.ts`, ver PRODUCT.md).
      */
     facts: [
       { id: "proveedores", value: MARKETING_PROVIDERS_COUNT, label: "proveedores en la red" },

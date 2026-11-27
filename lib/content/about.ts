@@ -86,10 +86,11 @@ export const MARKETING_PROVIDERS_COUNT = "+150";
  * misma para `<time>`). Proveedores: `MARKETING_PROVIDERS_COUNT`.
  */
 export const traction = {
-  vehicles: "700+",
+  // 2026-11-26, producción: 1.164 vehículos activos (1.101 autos y 63 motos).
+  vehicles: "1.100+",
   providers: MARKETING_PROVIDERS_COUNT,
-  asOf: "Oct 2026",
-  asOfIso: "2026-10",
+  asOf: "Nov 2026",
+  asOfIso: "2026-11",
 } as const;
 
 /**

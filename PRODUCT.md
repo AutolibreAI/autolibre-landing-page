@@ -125,7 +125,9 @@ Material real disponible, nada que inventar:
 - Copy de producto ya escrito y en producción en `lib/content/`.
 - WhatsApp y email de contacto reales en `siteConfig.contact`.
 
-Cifras de tracción publicadas (a oct 2026): 700+ vehículos únicos y 100+
+Cifras de tracción publicadas (a nov 2026): 1.100+ vehículos (dato de
+producción del 2026-11-26: 1.164 vehículos activos, 1.101 autos y 63 motos;
+antes, 700+ a oct 2026) y +150
 proveedores en el marketplace (fuente: la constante `traction` de
 `lib/content/about.ts`, que alimenta la ficha del hero y el hito "Tracción" de
 `/sobre-nosotros`). Son las únicas cifras publicables: no se redondean para
@@ -135,7 +137,7 @@ este archivo) cuando cambien.
 Rediseño 2026-11 (decisiones del 2026-11-24): en textos de marketing la cifra
 de proveedores es "+150" (`MARKETING_PROVIDERS_COUNT`, en `lib/content/about.ts`
 junto a `traction` y re-exportada desde `home.ts`; reemplaza al "100+" en el
-hero y el hito "Tracción" de `/sobre-nosotros`, ahora con corte Oct 2026);
+hero y el hito "Tracción" de `/sobre-nosotros`, con corte Nov 2026 desde el 2026-11-26);
 el directorio muestra el conteo real. Seguros no se ofrecen por ahora como
 pedido desde la web (el módulo de pedido no tiene pestaña Seguro); el beneficio
 del aliado Intēgrity sigue en el Home.
