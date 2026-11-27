@@ -109,7 +109,8 @@ function fieldError(field: ConsultaField, raw: string): string | undefined {
  * la opción elegida, el CUIT con guiones, del código postal sus 4 dígitos
  * (aunque hayan pegado un CPA), el WhatsApp canónico (`+549XXXXXXXXXX`), el
  * email en minúsculas y el monto con su símbolo (`$ 1.500.000`). Un valor
- * vacío (o un monto inválido) devuelve `""`: ese renglón no se arma.
+ * vacío (o un monto inválido) devuelve `""`: ese renglón no se arma (el monto
+ * es requerido, pero la salida por WhatsApp también aparece tras un 400).
  */
 function messageValue(field: ConsultaField, raw: string): string {
   if (field.kind === "whatsapp") {

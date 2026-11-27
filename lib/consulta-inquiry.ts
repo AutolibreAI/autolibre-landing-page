@@ -22,9 +22,10 @@ import { canonicalPlate } from "@/lib/plate";
  * body se arma acá campo por campo, a partir de los valores crudos del form,
  * y nunca se reenvía lo que mandó el navegador.
  *
- * La única excepción a "todos requeridos" es `amount` de Financiación (el
- * monto, en pesos enteros de 1 a 999.999.999): es opcional y, si la persona
- * lo dejó vacío, la clave NO viaja (nunca `null`, `""` ni `0`).
+ * `amount` de Financiación (el monto, en pesos enteros de 1 a 999.999.999)
+ * es opcional en el DTO del backend, pero la landing lo exige (decisión de
+ * producto, 2026-11-27): sin monto la consulta se rechaza acá y no llega al
+ * backend, así que la clave viaja siempre.
  */
 
 export const INQUIRY_KINDS = {
@@ -107,8 +108,8 @@ export type FinancingInquiryBody = InquiryContact & {
   readonly cuit: string;
   readonly sex: string;
   readonly reason: string;
-  /** Pesos enteros. Opcional: sin monto, la clave no está. */
-  readonly amount?: number;
+  /** Pesos enteros. La landing lo manda siempre (el backend lo acepta opcional). */
+  readonly amount: number;
 };
 
 /**
@@ -259,22 +260,16 @@ export function parseInquiry(raw: unknown): InquiryParseResult {
   const reason = mapped(REASON, value("motivo"));
   if (!reason) return missing("motivo");
 
-  // Monto: opcional. Vacío, la clave no viaja; con valor, tiene que ser válido.
-  const rawAmount = value("monto");
-  const amount = rawAmount ? parseAmount(rawAmount) : undefined;
+  // Monto: requerido. Vacío se rechaza; con valor, tiene que ser válido.
+  if (!value("monto")) return missing("monto");
+  const amount = parseAmount(value("monto"));
   if (amount === null) return invalid("monto");
 
   return {
     ok: true,
     tab,
     kind: "financing",
-    body: {
-      ...contact,
-      cuit: cuitDigits(value("cuit")),
-      sex,
-      reason,
-      ...(amount === undefined ? {} : { amount }),
-    },
+    body: { ...contact, cuit: cuitDigits(value("cuit")), sex, reason, amount },
   };
 }
 

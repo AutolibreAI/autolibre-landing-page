@@ -623,20 +623,21 @@ export const moduloPedidoContent = {
         ],
         error: "Elegí para qué necesitás el financiamiento.",
       },
-      // Monto: opcional y aproximado (decisión de producto, 2026-11-27). Es
-      // una pregunta sobre lo que la persona necesita, no el monto de una
-      // solicitud: nada de "monto del crédito" ni "a solicitar".
+      // Monto: requerido y aproximado (decisión de producto, 2026-11-27; nació
+      // opcional ese mismo día). Es una pregunta sobre lo que la persona
+      // necesita, no el monto de una solicitud: nada de "monto del crédito"
+      // ni "a solicitar".
       {
         kind: "text",
         name: "monto",
         label: "¿Cuánto necesitás financiar?",
-        required: false,
-        optional: "(opcional)",
+        required: true,
         placeholder: "Ej.: 1.500.000",
-        hint: "Un número aproximado, en pesos. Si todavía no lo sabés, dejalo vacío.",
+        hint: "Un número aproximado, en pesos.",
         autoComplete: "off",
         inputMode: "numeric",
         format: "amount",
+        error: "Ingresá cuánto necesitás financiar.",
         invalid: "Revisá el monto: tiene que ser un número entero, en pesos y sin centavos.",
         messageLabel: "Monto aproximado",
         messagePrefix: "$ ",
