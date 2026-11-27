@@ -114,18 +114,6 @@ const members = [
     },
   },
   {
-    id: "matias-garcia-guevara",
-    name: "Matías García Guevara",
-    role: "Cofundador y CFO: finanzas, estrategia, seguros y financiación",
-    founder: true,
-    photo: {
-      src: "/images/about/equipo-matias-garcia-guevara.webp",
-      alt: "Matías García Guevara, cofundador y CFO de AutoLibre, sonríe con una remera negra de AutoLibre.AI.",
-      width: 800,
-      height: 1000,
-    },
-  },
-  {
     id: "ramiro-sarasola",
     name: "Ramiro Sarasola",
     role: "Cofundador · Líder de desarrollo",
@@ -157,6 +145,18 @@ const members = [
     photo: {
       src: "/images/about/equipo-matias-vidal-2.webp",
       alt: "Matías Vidal, cofundador e inversor de AutoLibre, sonríe con una remera negra de AutoLibre.AI.",
+      width: 800,
+      height: 1000,
+    },
+  },
+  {
+    id: "matias-garcia-guevara",
+    name: "Matías García Guevara",
+    role: "Cofundador y CFO: finanzas, estrategia, seguros y financiación",
+    founder: true,
+    photo: {
+      src: "/images/about/equipo-matias-garcia-guevara.webp",
+      alt: "Matías García Guevara, cofundador y CFO de AutoLibre, sonríe con una remera negra de AutoLibre.AI.",
       width: 800,
       height: 1000,
     },
