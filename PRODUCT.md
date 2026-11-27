@@ -26,7 +26,7 @@ AutoLibre es una app gratuita (iOS y Android) que junta en un solo lugar todo lo
 que hoy vive disperso sobre un auto: documentación, vencimientos, historial de
 mantenimiento, diagnóstico y contacto con talleres.
 
-Frase de marca vigente en el sitio: *"Todo tu auto, en un solo lugar."*
+Frase de marca vigente en el sitio: *"Todo para tu auto, en un solo lugar."*
 Cierre del home: *"Tu auto siempre supo qué tenía. Ahora vos también."*
 
 Además resuelve servicios por vertical (estado al 2026-10-03):

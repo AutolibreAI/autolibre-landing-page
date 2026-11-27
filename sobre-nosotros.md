@@ -4,7 +4,7 @@ Borrador del texto para autolibre.ai/sobre-nosotros (Frente 2, tarea "Publicar /
 
 # Encabezado
 
-**Título:** Todo tu auto en un solo lugar
+**Título:** Todo para tu auto en un solo lugar
 
 **Subtítulo** (definición canónica de 25 palabras, textual):
 
@@ -24,7 +24,7 @@ AutoLibre nació en febrero de 2026 como una idea entre dos amigos de Buenos Air
 
 La primera pregunta difícil la hizo Ramiro: lo complicado no es guardar datos, es lograr que la gente los cargue. Con eso en mente empezamos a probar. Primero usamos visión artificial para detectar daños de chapa y pintura. Después conectamos un escáner OBD2 barato con inteligencia artificial: en su primera prueba, en el auto de Nicolás, marcó lo mismo que su mecánico ya le había dicho.
 
-**Lo que aprendimos** (destacado junto al título): La tecnología no reemplaza al mecánico: le da al dueño el contexto para entenderlo.
+**Lo que aprendimos** (destacado junto al título): Cuidar tu auto no debería depender de saber de autos ni de tener la plata junta.
 
 Con research y muchas charlas vimos que el diagnóstico con escáner le interesaba a pocos. El dolor real estaba en comparar talleres, recibir propuestas y no perder tiempo ni plata con los papeles y los vencimientos. Así llegamos a la app que hoy está en App Store, Google Play y web. El escáner quedó como opcional, y el centro pasó a ser la gestión completa del vehículo y el marketplace de servicios.
 
@@ -48,10 +48,10 @@ Con research y muchas charlas vimos que el diagnóstico con escáner le interesa
 | Foto | Nombre | Rol |
 | --- | --- | --- |
 | 📷 | Nicolás Leunda | Cofundador y CEO |
-| 📷 | Matías García Guevara | Cofundador y CFO: finanzas, estrategia, seguros y financiación |
 | 📷 | Ramiro Sarasola | Cofundador · [[Líder de desarrollo]] |
 | 📷 | Mateo Ghidini | Cofundador · Desarrollo |
 | 📷 | Matías Vidal | Cofundador · [[Legal e inversores]] |
+| 📷 | Matías García Guevara | Cofundador y CFO: finanzas, estrategia, seguros y financiación |
 
 # Criterios y pendientes
 
