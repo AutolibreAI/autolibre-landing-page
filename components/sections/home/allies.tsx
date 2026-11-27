@@ -63,7 +63,12 @@ export function AlliesSection() {
  * `min(22vw, 360px)`. Si un banner armado con código necesita más alto, la
  * tarjeta crece y la pieza recorta unos px arriba y abajo (`object-cover`).
  * Valor arbitrario a propósito: la escala de Tailwind no tiene un `min()`.
- * Abajo de 1440px sigue `min-h-150 sm:min-h-120`.
+ * Abajo de 1440px, `min-h-120` en todos los anchos. En celular era
+ * `min-h-150` (600px) y, con la barra del navegador y el header sticky, el
+ * banner no entraba entero en pantalla (feedback de producto, 2026-11-27):
+ * ahí el alto lo pone el banner más alto (el carril del carrusel estira a
+ * todos al mismo alto, así no salta), y los banners armados con código
+ * llevan menos padding y tipografía un paso más chica debajo de `sm`.
  */
 const DESKTOP_HEIGHT = "banner:min-h-[min(22vw,360px)]";
 
@@ -97,10 +102,8 @@ function Asistir24Slide({ slide }: { readonly slide: Asistir24SlideData }) {
       aria-labelledby="allies-asistir24-title"
       /* #005EBA: azul de marca de Asistir24. */
       style={{ background: "#005EBA" }}
-      // `min-h-150 sm:min-h-120`: la misma en todos los banners, para que el
-      // carrusel no salte de alto al pasar de uno a otro (pedido de producto,
-      // 2026-11-17).
-      className={`relative flex w-full min-h-150 flex-col text-white sm:min-h-120 sm:flex-row sm:items-stretch ${DESKTOP_HEIGHT}`}
+      // `min-h-120`: la misma en todos los banners (ver `DESKTOP_HEIGHT`).
+      className={`relative flex w-full min-h-120 flex-col text-white sm:flex-row sm:items-stretch ${DESKTOP_HEIGHT}`}
     >
       {/* Panel de la izquierda: ~2/7 del ancho desde `lg`, como la pieza
           original. Entre `sm` y `lg` la tarjeta es angosta y 2/7 no alcanza
@@ -108,9 +111,9 @@ function Asistir24Slide({ slide }: { readonly slide: Asistir24SlideData }) {
       <div
         /* #F45C9D / #14102B: rosa y tinta de marca de Asistir24. */
         style={{ background: "#F45C9D", color: "#14102B" }}
-        className="flex flex-col items-start justify-center gap-4 px-6 py-7 sm:w-2/5 sm:shrink-0 sm:gap-5 sm:py-6 md:px-8 lg:w-2/7 lg:gap-6 lg:px-10"
+        className="flex flex-col items-start justify-center gap-2 px-6 py-5 sm:w-2/5 sm:shrink-0 sm:gap-5 sm:py-6 md:px-8 lg:w-2/7 lg:gap-6 lg:px-10"
       >
-        <p className="font-display text-6xl leading-none font-extrabold sm:text-7xl md:text-8xl lg:text-9xl">{slide.bigNumber}</p>
+        <p className="font-display text-5xl leading-none font-extrabold sm:text-7xl md:text-8xl lg:text-9xl">{slide.bigNumber}</p>
         <p className="font-display text-xl leading-tight font-bold sm:text-2xl lg:text-3xl">{slide.bigNumberLabel}</p>
         <a
           href={slide.badgeCta.href}
@@ -126,7 +129,7 @@ function Asistir24Slide({ slide }: { readonly slide: Asistir24SlideData }) {
       </div>
 
       <div className={`flex flex-1 flex-col justify-center ${SLIDE_PADDING}`}>
-        <div className="flex w-full flex-col justify-center gap-4 py-8 sm:gap-5 sm:py-12 md:py-14 banner:py-6">
+        <div className="flex w-full flex-col justify-center gap-3 py-6 sm:gap-5 sm:py-12 md:py-14 banner:py-6">
           <div className="flex items-center gap-3">
             <AutoLibreMark />
             <span aria-hidden="true" className="font-display text-lg font-semibold text-white/50">
@@ -141,7 +144,7 @@ function Asistir24Slide({ slide }: { readonly slide: Asistir24SlideData }) {
               className="h-10 w-auto object-contain"
             />
           </div>
-          <h3 id="allies-asistir24-title" className="font-display text-3xl leading-tight font-bold md:text-4xl lg:text-5xl">
+          <h3 id="allies-asistir24-title" className="font-display text-2xl leading-tight font-bold sm:text-3xl md:text-4xl lg:text-5xl">
             {slide.headline}
           </h3>
           <p className="max-w-150 text-base text-white/90 md:text-lg">{slide.description}</p>
@@ -178,9 +181,9 @@ function SinFotomultasSlide({ slide }: { readonly slide: SinFotomultasSlideData 
       aria-labelledby="allies-sinfotomultas-title"
       /* #14171F: fondo de marca de Sin Fotomultas. */
       style={{ background: "#14171F" }}
-      className={`relative flex w-full min-h-150 flex-col justify-center text-white sm:min-h-120 ${DESKTOP_HEIGHT}`}
+      className={`relative flex w-full min-h-120 flex-col justify-center text-white ${DESKTOP_HEIGHT}`}
     >
-      <div className={`flex w-full flex-col gap-10 py-14 lg:flex-row lg:items-center sm:py-16 md:py-20 banner:py-6 ${SLIDE_PADDING}`}>
+      <div className={`flex w-full flex-col gap-10 py-8 lg:flex-row lg:items-center sm:py-16 md:py-20 banner:py-6 ${SLIDE_PADDING}`}>
         <div className="flex flex-1 flex-col gap-5">
           <div className="flex items-center gap-3">
             <Image
@@ -261,21 +264,19 @@ function IntegritySlide({ slide }: { readonly slide: IntegritySlideData }) {
       style={{
         background: "radial-gradient(ellipse 70% 90% at 55% 35%, #3F8EF2 0%, #1C60D2 45%, #0A3A96 100%)",
       }}
-      // `min-h-150 sm:min-h-120`: la misma en los tres banners (pedido de
-      // producto, 2026-11-17), para que el carrusel no salte de alto al pasar
-      // de uno a otro.
-      className={`relative flex w-full min-h-150 flex-col justify-center text-white sm:min-h-120 ${DESKTOP_HEIGHT}`}
+      // `min-h-120`: la misma en todos los banners (ver `DESKTOP_HEIGHT`).
+      className={`relative flex w-full min-h-120 flex-col justify-center text-white ${DESKTOP_HEIGHT}`}
     >
-      <div className={`flex w-full flex-col gap-8 py-14 md:flex-row md:items-center sm:py-16 md:py-20 banner:py-6 ${SLIDE_PADDING}`}>
+      <div className={`flex w-full flex-col gap-6 py-8 sm:gap-8 md:flex-row md:items-center sm:py-16 md:py-20 banner:py-6 ${SLIDE_PADDING}`}>
         <div className="flex flex-1 flex-col gap-5">
           <p className="inline-flex w-fit items-center rounded-full border-2 border-white/60 px-4 py-2 font-display text-xs font-semibold tracking-wide uppercase sm:text-sm">
             {slide.eyebrow}
           </p>
 
           <div className="flex flex-wrap items-end gap-6">
-            <p className="font-display text-7xl leading-none font-extrabold tracking-tight md:text-8xl">
+            <p className="font-display text-6xl leading-none font-extrabold tracking-tight sm:text-7xl md:text-8xl">
               {slide.discount}
-              <span className="ml-1.5 text-4xl md:text-5xl">{slide.discountUnit}</span>
+              <span className="ml-1.5 text-3xl sm:text-4xl md:text-5xl">{slide.discountUnit}</span>
             </p>
             <div className="flex flex-col items-start gap-2">
               <span className="font-display text-base font-semibold tracking-wide uppercase">{slide.planLabel}</span>
@@ -376,7 +377,7 @@ function EsquinaNeumaticoSlide({ slide }: { readonly slide: EsquinaNeumaticoSlid
   return (
     <article
       aria-labelledby="allies-esquina-title"
-      className={`relative flex h-full w-full min-h-150 flex-col bg-black sm:min-h-120 ${DESKTOP_HEIGHT}`}
+      className={`relative flex h-full w-full min-h-120 flex-col bg-black ${DESKTOP_HEIGHT}`}
     >
       <h3 id="allies-esquina-title" className="sr-only">
         {slide.title}
