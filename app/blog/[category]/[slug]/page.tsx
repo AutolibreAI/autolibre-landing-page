@@ -174,7 +174,7 @@ export default async function PostPage({ params }: PageProps) {
 
   return (
     <>
-      <PageShell currentPath="/blog" bottomBar={<MobileDownloadBar />}>
+      <PageShell currentPath={path} bottomBar={<MobileDownloadBar />}>
         <article className="bg-card">
           {/* Encabezado a todo el ancho del contenedor, cerrado por una
               línea: el título manda y el índice arranca recién con el cuerpo. */}

@@ -175,8 +175,9 @@ export default async function PartnerProfilePage({ params }: PageProps) {
 
   return (
     <>
-      {/* `currentPath` es el perfil y no `/proveedores`: el link "Proveedores" del
-          header no es esta página, así que no lleva `aria-current="page"`. */}
+      {/* `currentPath` es el perfil y no `/proveedores`: el header deja marcado
+          "Proveedores" como sección (`aria-current="true"`), no como la página
+          actual (`"page"`), porque ese link lleva al directorio. */}
       <PageShell
         currentPath={path}
         actionBar

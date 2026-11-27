@@ -129,7 +129,8 @@ export const ANALYTICS_EVENTS = {
   /**
    * Click en un link al alta de talleres desde otra pantalla (clickable, con
    * `data-analytics-placement`, ej. `cuenta_otro_taller_cargar`, o los
-   * "Sumá tu negocio" del layout: `header`, `account_menu`, `footer`). Sólo
+   * "Sumá tu negocio" del layout: `header`, `nav_submenu`, `account_menu`,
+   * `footer`). Sólo
    * PostHog. Hasta el 2026-11-05 lo mandaba también el botón "Registrar mi
    * taller" de `/proveedores/registro` (sin `placement`), que ya no existe:
    * la página es el formulario.
@@ -255,6 +256,11 @@ export const LAYOUT_PLACEMENTS = {
   header: "header",
   /** "Sumá tu negocio" dentro del menú de cuenta (o del menú mobile). */
   accountMenu: "account_menu",
+  /**
+   * "Sumá tu negocio" del submenú de "Proveedores" (2026-11-27): el panel
+   * del header desde `lg` y la lista indentada del menú mobile.
+   */
+  navSubmenu: "nav_submenu",
   /** Barra fija inferior en celular. */
   mobileBar: "mobile_bar",
   /** Links del footer. */

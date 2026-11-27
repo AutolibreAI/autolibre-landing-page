@@ -65,6 +65,7 @@ Desde la fase 2 del rediseño (2026-11-24) el header ya no tiene "Descargar la a
 | WhatsApp del footer                                              | `whatsapp_clicked`         | `placement: "footer"`           | `Contact {placement}` | Click  |
 | Botón flotante de WhatsApp                                       | `whatsapp_clicked`         | `placement: "fab"`              | `Contact {placement}` | Click  |
 | "Sumá tu negocio" del header (desde `lg`, sin sesión o cliente)  | `partner_register_started` | `placement: "header"`           | —                     | Click  |
+| "Sumá tu negocio" del submenú de "Proveedores" (desde 2026-11-27: panel del header desde `lg`, lista del menú mobile debajo) | `partner_register_started` | `placement: "nav_submenu"`      | —                     | Click  |
 | "Sumá tu negocio" del menú de cuenta (o del menú mobile)         | `partner_register_started` | `placement: "account_menu"`     | —                     | Click  |
 | "Sumate como proveedor" del footer                               | `partner_register_started` | `placement: "footer"`           | —                     | Click  |
 

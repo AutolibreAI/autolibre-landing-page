@@ -8,7 +8,12 @@ import {
 import { siteConfig } from "@/lib/seo/config";
 import { FAQ_PATH } from "@/lib/content/faq";
 import { providersContent } from "@/lib/content/providers";
-import type { AccountMenuEntry, NavLink, StoreLink } from "@/lib/content/types";
+import type {
+  AccountMenuEntry,
+  NavLink,
+  NavSectionLink,
+  StoreLink,
+} from "@/lib/content/types";
 
 /**
  * Link a `/pedido`: ES la etiqueta única de todos los puntos de entrada de
@@ -20,13 +25,43 @@ const quoteLink = { label: "Hacé tu pedido", href: "/pedido" } as const;
 const blogLink = { label: "Blog", href: "/blog" } as const;
 /** Link a `/sobre-nosotros`: en el header, el menú mobile y el footer. */
 const aboutLink = { label: "Sobre nosotros", href: "/sobre-nosotros" } as const;
-/** Directorio de los negocios de la red: le habla al dueño de auto. */
-const directoryLink = { label: "Proveedores", href: PROVEEDORES_PATH } as const;
+/** El directorio con su nombre largo: submenú de "Proveedores" y footer. */
+const networkLink = { label: "Proveedores de la red", href: PROVEEDORES_PATH } as const;
 
 /** Alta de negocios: la misma etiqueta en el header, el menú de cuenta y el footer. */
 const joinBusinessLink = { label: "Sumá tu negocio", href: PROVEEDORES_REGISTRO_PATH } as const;
-/** Planes para proveedores: menú de cuenta y footer. */
+/** Bajada de "Sumá tu negocio": la misma en el menú de cuenta y en el submenú. */
+const joinBusinessSub = "Recibí pedidos de gente de tu zona";
+/** Precios para proveedores (`/proveedores/planes`): menú de cuenta, submenú y footer. */
 const plansLink = { label: "Precios para proveedores", href: PROVEEDORES_PLANES_PATH } as const;
+/**
+ * Directorio de los negocios de la red: le habla al dueño de auto. Es el
+ * único link de sección con submenú: junta las tres páginas de
+ * `/proveedores` (el directorio para quien busca, el alta y los precios para
+ * el negocio). Las bajadas repiten lo que ya dicen esas páginas (rubros del
+ * directorio, hero de precios): nada nuevo que verificar contra `PRODUCT.md`.
+ * El primero apunta a la misma página que "Proveedores": en el menú mobile no
+ * se repite (ver `HeaderAccountMenu`).
+ */
+const directoryLink = {
+  label: "Proveedores",
+  href: PROVEEDORES_PATH,
+  submenu: {
+    /**
+     * Nombre del botón de la flecha. No dice "Abrir" ni "Cerrar": el estado
+     * lo anuncia `aria-expanded`, y un nombre que cambia se lee dos veces.
+     */
+    toggleLabel: "Submenú de Proveedores",
+    links: [
+      {
+        ...networkLink,
+        description: "Talleres, aseguradoras, estudios para multas y casas de repuestos.",
+      },
+      { ...joinBusinessLink, description: `${joinBusinessSub}.` },
+      { ...plansLink, description: "Un precio fijo por cada trabajo confirmado." },
+    ],
+  },
+} as const satisfies NavSectionLink;
 /** Ayuda: menú de cuenta. Hoy es la página de soporte. */
 const helpLink = { label: "Ayuda", href: "/support" } as const;
 /**
@@ -47,12 +82,15 @@ const rule = { kind: "rule" } as const;
  */
 export const siteContent = {
   nav: {
-    /** Links de página del header (desde `lg`; debajo, en el menú). */
+    /**
+     * Links de página del header (desde `lg`; debajo, en el menú). Solo
+     * "Proveedores" trae submenú; Blog no lo lleva a propósito.
+     */
     links: [
       directoryLink,
       ...(BLOG_PUBLIC ? [blogLink] : []),
       aboutLink,
-    ] satisfies readonly NavLink[],
+    ] satisfies readonly NavSectionLink[],
     /** "Hacé tu pedido": la acción principal del header y del menú mobile. */
     quoteLink,
     /**
@@ -87,7 +125,7 @@ export const siteContent = {
             strong: true,
           },
           rule,
-          { kind: "link", ...joinBusinessLink, sub: "Recibí pedidos de gente de tu zona" },
+          { kind: "link", ...joinBusinessLink, sub: joinBusinessSub },
           { kind: "link", ...plansLink },
           rule,
           { kind: "link", ...helpLink },
@@ -199,7 +237,7 @@ export const siteContent = {
         title: "Servicios",
         links: [
           quoteLink,
-          { label: "Proveedores de la red", href: PROVEEDORES_PATH },
+          networkLink,
           { label: providersContent.form.title, href: PROVEEDORES_REGISTRO_PATH },
           plansLink,
         ],

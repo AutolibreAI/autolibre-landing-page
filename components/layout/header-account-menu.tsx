@@ -7,6 +7,11 @@ import { Icon } from "@/components/ui/icon";
 import { useAccountHint } from "@/lib/auth/use-session-hint";
 import type { AccountHint } from "@/lib/auth/role-hint";
 import type { NavLink } from "@/lib/content/types";
+import {
+  announceHeaderDisclosure,
+  onOtherHeaderDisclosure,
+} from "@/lib/navigation/header-disclosure";
+import { navCurrent, navCurrentPage } from "@/lib/navigation/nav-current";
 import { cn } from "@/lib/utils";
 
 /** `data-analytics-*` que arma el header (Server Component) para el listener delegado. */
@@ -27,6 +32,18 @@ export type HeaderMenuItem =
   | { readonly kind: "rule" }
   | { readonly kind: "group"; readonly label: string };
 
+/**
+ * Link de sección para el menú mobile, ya resuelto por el header. `sub`: los
+ * links de su submenú que NO repiten el destino de la sección (el header saca
+ * el del directorio: la fila "Proveedores" ya lleva ahí).
+ */
+export type HeaderSectionLink = NavLink & {
+  readonly sub?: readonly (NavLink & {
+    readonly noPrefetch?: boolean;
+    readonly analytics?: AnalyticsAttrs;
+  })[];
+};
+
 type HeaderAccountMenuProps = {
   /** Nombre de la cookie `__client_uat` de la instancia (calculado en el server). */
   readonly sessionCookie: string | null;
@@ -36,8 +53,8 @@ type HeaderAccountMenuProps = {
   readonly sectionsLabel: string;
   /** Landmark de las opciones de cuenta. */
   readonly accountLabel: string;
-  /** Links de página del header: debajo de `lg` viven acá. */
-  readonly links: readonly NavLink[];
+  /** Links de página del header (con sus sublinks): debajo de `lg` viven acá. */
+  readonly links: readonly HeaderSectionLink[];
   /** Opciones de cuenta por estado. */
   readonly items: Readonly<Record<AccountHint, readonly HeaderMenuItem[]>>;
   /**
@@ -45,6 +62,7 @@ type HeaderAccountMenuProps = {
    * el header sin acción principal (`SiteHeader cta={false}`).
    */
   readonly cta: (NavLink & { readonly analytics?: AnalyticsAttrs }) | null;
+  /** Ruta real de la página (ver `SiteHeader`). */
   readonly currentPath?: string;
 };
 
@@ -63,7 +81,12 @@ const MOBILE_QUERY = "(width < 64rem)";
  *   opciones de cuenta, alineado al borde derecho del contenido.
  * - Debajo de `lg`: el mismo botón es "Menú y cuenta" y abre un panel de
  *   pantalla completa con los links de página, las opciones de cuenta y
- *   "Hacé tu pedido".
+ *   "Hacé tu pedido". Los sublinks de una sección ("Proveedores": alta y
+ *   precios) van debajo de su fila, indentados y siempre a la vista: sin
+ *   acordeón, porque son dos links y esconderlos suma un toque. La fila
+ *   "Proveedores" sigue siendo el link al directorio (y la que queda marcada
+ *   en toda la sección); por eso el sublink del directorio no se repite acá.
+ *   En desktop esos links están en `HeaderNavSubmenu`.
  *
  * Patrón ARIA: DISCLOSURE (botón con `aria-expanded` + `aria-controls` que
  * muestra un panel con links), no `role="menu"`. Son links de navegación,
@@ -77,6 +100,8 @@ const MOBILE_QUERY = "(width < 64rem)";
  * - Si el foco sale del botón y del panel (Tab después del último link),
  *   se cierra: el panel no queda abierto tapando lo que ahora tiene foco.
  * - Elegir un link cierra.
+ * - Abrir el submenú de "Proveedores" cierra este panel, y al revés: un solo
+ *   panel del header a la vez (`lib/navigation/header-disclosure.ts`).
  *
  * Sesión SIN Clerk: el estado (sin sesión, cliente, proveedor) sale de las
  * pistas de `useAccountHint`. El server y la hidratación pintan "sin
@@ -114,6 +139,8 @@ export function HeaderAccountMenu({
     }
     document.addEventListener("keydown", onKeyDown);
     document.addEventListener("pointerdown", onPointerDown);
+    announceHeaderDisclosure(PANEL_ID);
+    const stopListening = onOtherHeaderDisclosure(PANEL_ID, () => close(false));
 
     // Bloquear el scroll del fondo solo en celular (el panel ocupa la
     // pantalla). Va en `<html>` y NO en `<body>`: el `overflow` del elemento
@@ -127,6 +154,7 @@ export function HeaderAccountMenu({
     return () => {
       document.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("pointerdown", onPointerDown);
+      stopListening();
       root.style.overflow = previous;
     };
   }, [open, close]);
@@ -139,6 +167,8 @@ export function HeaderAccountMenu({
   }
 
   const signedIn = hint !== "anon";
+  // Opciones de cuenta: coincidencia exacta (no son secciones con páginas
+  // adentro). Los links de sección usan `navCurrent`.
   const isCurrent = (href: string) => (href === currentPath ? "page" : undefined);
 
   return (
@@ -200,12 +230,34 @@ export function HeaderAccountMenu({
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    aria-current={isCurrent(link.href)}
+                    aria-current={navCurrent(link.href, currentPath)}
                     onClick={() => close(false)}
-                    className="flex min-h-12 items-center font-medium text-fg aria-[current=page]:font-semibold aria-[current=page]:underline aria-[current=page]:decoration-action aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8"
+                    // `aria-[current]`: igual para `page` y para `true` (una
+                    // página de adentro de la sección), como en desktop.
+                    className="flex min-h-12 items-center font-medium text-fg aria-[current]:font-semibold aria-[current]:underline aria-[current]:decoration-action aria-[current]:decoration-2 aria-[current]:underline-offset-8"
                   >
                     {link.label}
                   </Link>
+                  {link.sub?.length ? (
+                    // Indentados con una línea guía: se leen como parte de
+                    // la sección. Página actual: solo coincidencia exacta.
+                    <ul className="mb-1.5 ml-0.5 border-l border-card-line pl-4">
+                      {link.sub.map((sub) => (
+                        <li key={sub.href}>
+                          <Link
+                            href={sub.href}
+                            prefetch={sub.noPrefetch ? false : undefined}
+                            aria-current={navCurrentPage(sub.href, currentPath)}
+                            onClick={() => close(false)}
+                            {...sub.analytics}
+                            className="flex min-h-11 items-center text-control text-fg-muted aria-[current=page]:font-semibold aria-[current=page]:text-fg aria-[current=page]:underline aria-[current=page]:decoration-action aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8"
+                          >
+                            {sub.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </li>
               ))}
             </ul>

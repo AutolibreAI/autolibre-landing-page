@@ -130,7 +130,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
   return (
     <>
-      <PageShell currentPath="/blog" bottomBar={<MobileDownloadBar />}>
+      <PageShell currentPath={path} bottomBar={<MobileDownloadBar />}>
         <BlogListingHeader
           heading={heading}
           description={description}

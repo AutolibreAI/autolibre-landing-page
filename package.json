@@ -23,7 +23,9 @@
     "test:signup-intent": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"scripts/signup-intent/**/*.test.ts\"",
     "typecheck:signup-intent": "tsc -p scripts/signup-intent/tsconfig.json",
     "test:sign-in-redirect": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"scripts/sign-in-redirect/**/*.test.ts\"",
-    "typecheck:sign-in-redirect": "tsc -p scripts/sign-in-redirect/tsconfig.json"
+    "typecheck:sign-in-redirect": "tsc -p scripts/sign-in-redirect/tsconfig.json",
+    "test:navigation": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"scripts/navigation/**/*.test.ts\"",
+    "typecheck:navigation": "tsc -p scripts/navigation/tsconfig.json"
   },
   "dependencies": {
     "@clerk/localizations": "^4.24.5",

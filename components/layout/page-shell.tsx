@@ -9,7 +9,10 @@ type PageShellProps = {
    * `SiteHeader`).
    */
   readonly cta?: false;
-  /** Ruta de la página: marca su link del header con `aria-current`. */
+  /**
+   * Ruta REAL de la página (no la de su sección): el header marca con
+   * `aria-current` su link o el de la sección que la contiene (ver `SiteHeader`).
+   */
   readonly currentPath?: string;
   /**
    * Barra fija inferior en celular con "Hacé tu pedido" y WhatsApp

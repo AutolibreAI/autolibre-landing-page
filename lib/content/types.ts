@@ -5,6 +5,24 @@ export type NavLink = {
   readonly href: string;
 };
 
+/** Link de un submenú del header: suma una bajada de una línea. */
+export type NavSubLink = NavLink & {
+  readonly description: string;
+};
+
+/**
+ * Link de sección del header (Proveedores, Blog, Sobre nosotros). Con
+ * `submenu`, en desktop lleva al lado un botón que abre un panel con esos
+ * links y en el menú mobile se listan debajo, indentados.
+ */
+export type NavSectionLink = NavLink & {
+  readonly submenu?: {
+    /** Nombre accesible del botón que abre y cierra el panel (desktop). */
+    readonly toggleLabel: string;
+    readonly links: readonly NavSubLink[];
+  };
+};
+
 /**
  * Opción del menú de cuenta del header: un link (con bajada opcional), un
  * separador o el título de un grupo (no es un heading: es un rótulo).
