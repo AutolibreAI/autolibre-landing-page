@@ -28,8 +28,8 @@ export const partnerAccountContent = {
     /**
      * Panel de marca, al costado del formulario (solo desde `lg`; en celular no se muestra).
      *
-     * El titular NO vive acá: es el eslogan del sitio ("Todo tu auto, en un
-     * solo lugar.") y `SignInScreen` lo arma con las partes de
+     * El titular NO vive acá: es el eslogan del sitio ("Todo para tu auto,
+     * en un solo lugar.") y `SignInScreen` lo arma con las partes de
      * `homeContent.hero.title` (`lib/content/home.ts`), las mismas del `<h1>`
      * del Home, para que las dos pantallas no se desincronicen.
      */

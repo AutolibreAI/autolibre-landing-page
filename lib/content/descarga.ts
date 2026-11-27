@@ -18,7 +18,7 @@ export const descargaContent = {
   },
 
   /** Se parte en dos líneas a propósito, igual que el h1 del home. */
-  titleLines: ["Todo tu auto,", "en un solo lugar."],
+  titleLines: ["Todo para tu auto,", "en un solo lugar."],
   subtitle:
     "Documentación, vencimientos, historial, diagnóstico con IA y talleres cerca tuyo. Todo en una sola app.",
   downloadNote: "Gratis, para iPhone y Android.",

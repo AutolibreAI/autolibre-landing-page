@@ -30,7 +30,7 @@ const routes = [
   },
   {
     path: "/descarga",
-    lastModified: "2026-09-17",
+    lastModified: "2026-11-27",
     changeFrequency: "monthly",
     priority: 0.9,
   },
@@ -72,7 +72,7 @@ const routes = [
   },
   {
     path: "/sobre-nosotros",
-    lastModified: "2026-11-26",
+    lastModified: "2026-11-27",
     changeFrequency: "monthly",
     priority: 0.6,
   },

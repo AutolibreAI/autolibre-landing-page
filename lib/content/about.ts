@@ -80,8 +80,8 @@ const FOUNDING_DATE = "2026-02";
 export const MARKETING_PROVIDERS_COUNT = "+150";
 
 /**
- * Cifras de tracción: la ÚNICA fuente para el hero y el hito "Tracción" (y
- * para las cifras del Home). Actualizarlas acá y en `PRODUCT.md` cuando
+ * Cifras de tracción: la ÚNICA fuente para el hero y el hito "Tracción" de
+ * `/sobre-nosotros`. Actualizarlas acá y en `PRODUCT.md` cuando
  * cambien (`asOf` es la fecha de corte que se lee en pantalla; `asOfIso`, la
  * misma para `<time>`). Proveedores: `MARKETING_PROVIDERS_COUNT`.
  */
@@ -204,7 +204,7 @@ export const aboutContent = {
       place: "Buenos Aires",
     },
     /** El `h1` de la página. */
-    title: "Todo tu auto en un solo lugar",
+    title: "Todo para tu auto en un solo lugar",
     /** Definición canónica de 25 palabras: va textual, no se reescribe. */
     lead: "AutoLibre es una app argentina de gestión de autos y motos: papeles, vencimientos, diagnóstico con IA, historial clínico y un marketplace de servicios automotores.",
     /**
@@ -259,10 +259,10 @@ export const aboutContent = {
     principle: {
       label: "Lo que aprendimos",
       statement:
-        "La tecnología no reemplaza al mecánico: le da al dueño el contexto para entenderlo.",
+        "Cuidar tu auto no debería depender de saber de autos ni de tener la plata junta.",
       /** La misma frase entre comillas, como se muestra destacada. */
       quoted:
-        "“La tecnología no reemplaza al mecánico: le da al dueño el contexto para entenderlo.”",
+        "“Cuidar tu auto no debería depender de saber de autos ni de tener la plata junta.”",
     },
   },
 

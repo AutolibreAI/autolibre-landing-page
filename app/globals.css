@@ -134,6 +134,13 @@
   --text-display-md--line-height: 1.05;
   --text-display-lg: 4rem; /* 64px */
   --text-display-lg--line-height: 1.05;
+  /* `<h1>` del Home en celular (2026-11-27): la primera línea, "Todo para tu
+     MOTO,", va sin cortes y mide ~8,84 veces el tamaño de letra. Fluido para
+     que entre siempre en el ancho del contenedor (~88% de la pantalla): 31px
+     en 320, 35px en 360, 38px en 390 y el tope de 44px (`display-sm`) desde
+     452. Medido: 336px de 343 disponibles en 390; 310 de 317 en 360. */
+  --text-display-hero: clamp(1.75rem, 9.75vw, 2.75rem);
+  --text-display-hero--line-height: 1.05;
 
   /* Texto corrido y etiquetas (DESIGN.md: Body y Label). Sin line-height
      propio: el `leading-*` lo decide cada call site.
@@ -454,10 +461,10 @@
 }
 
 /* ── Palabra rotativa del `<h1>` del Home (2026-11-26) ──
-   `HeroRotatingWord`: "Todo tu AUTO / MOTO, en un solo lugar.". Las
+   `HeroRotatingWord`: "Todo para tu AUTO / MOTO, en un solo lugar.". Las
    palabras se dibujan con `content: attr(data-word)` y NO como texto del
    DOM: así el `textContent` del `<h1>` (lo que indexan buscadores y LLMs)
-   es exactamente "Todo tu auto, en un solo lugar.", sin palabras repetidas.
+   es exactamente "Todo para tu auto, en un solo lugar.", sin palabras repetidas.
    El texto accesible es el `sr-only` del hero; la isla va `aria-hidden`.
    Caída SECUENCIAL, nunca dos palabras a la vez: la saliente acelera hacia
    abajo y se apaga (0,3 s ease-in, como un objeto que cae); recién en su

@@ -13,7 +13,7 @@ export const siteConfig = {
   url: "https://autolibre.ai",
   locale: "es_AR",
   lang: "es-AR",
-  title: "AutoLibre · Todo tu auto, en un solo lugar",
+  title: "AutoLibre · Todo para tu auto, en un solo lugar",
   description:
     "Documentación, vencimientos, historial, diagnóstico con IA y talleres cerca tuyo. Toda la información de tu auto ordenada en una sola app. Descargala gratis para iPhone y Android.",
   keywords: [
@@ -29,7 +29,7 @@ export const siteConfig = {
     url: "/brand/og-image.png",
     width: 1200,
     height: 630,
-    alt: "AutoLibre — Todo tu auto, en un solo lugar",
+    alt: "AutoLibre — Todo para tu auto, en un solo lugar",
   },
   /**
    * Logo para el `Organization` de schema.org — el que Google usa en el

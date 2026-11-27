@@ -183,7 +183,7 @@ export const providerProfileContent = {
   /** Banda de AutoLibre al pie de la página de perfil. */
   footerBand: {
     title: "Descargá AutoLibre",
-    subtitle: "Todo tu auto en un solo lugar. Gratis, para iPhone y Android.",
+    subtitle: "Todo para tu auto en un solo lugar. Gratis, para iPhone y Android.",
     downloadCta: "Descargá AutoLibre",
     providerCta: "Sumá tu negocio",
     urlLabel: "Perfil público",

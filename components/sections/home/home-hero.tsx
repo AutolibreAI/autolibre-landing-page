@@ -9,7 +9,7 @@ export const HOME_PEDIDO_ID = "pedido";
 
 /**
  * Hero del Home (rediseño 2026-11): el `<h1>` centrado, la bajada y el módulo
- * de pedido con Taller elegido. Debajo, tres cifras publicables.
+ * de pedido con Taller elegido.
  *
  * Server Component. El LCP es texto (el `<h1>`): sale en el HTML del server,
  * con `next/font` (`display: swap` y fallback métrico), sin `reveal`. Única
@@ -20,7 +20,7 @@ export const HOME_PEDIDO_ID = "pedido";
  * Outline: h1 → h2 de los paneles del módulo (Auxilio, Multas, paso 2).
  */
 export function HomeHero() {
-  const { title, subtitle, facts } = homeContent.hero;
+  const { title, subtitle } = homeContent.hero;
 
   return (
     <Section
@@ -38,14 +38,15 @@ export function HomeHero() {
       <div className="flex flex-col items-center text-center">
         <h1
           id="hero-title"
-          className="max-w-180 font-display text-display-xs font-bold tracking-tight text-balance text-fg xs:text-display-sm sm:text-display-md lg:text-display-lg"
+          className="max-w-180 font-display text-display-hero font-bold tracking-tight text-balance text-fg sm:text-display-md lg:text-display-lg"
         >
-          {/* Dos líneas siempre ("Todo tu AUTO," / "en un solo lugar."),
+          {/* Dos líneas siempre ("Todo para tu AUTO," / "en un solo lugar."),
               la primera sin cortes: si el wrap dependiera del ancho de la
               palabra, pasar de AUTO a MOTO podría partir el titular distinto
-              y saltar (CLS). "Todo tu MOTO," entra en una línea en 360
-              (display-xs) y 390 (display-sm). El texto del DOM es el
-              eslogan exacto, "Todo tu auto, en un solo lugar.": el
+              y saltar (CLS). "Todo para tu MOTO," entra en una línea en
+              celular porque `display-hero` es fluido (ver el token en
+              `globals.css`). El texto del DOM es el
+              eslogan exacto, "Todo para tu auto, en un solo lugar.": el
               `sr-only` da "auto" a lectores de pantalla y a quien indexa, y
               la palabra que cae es `aria-hidden` y sin texto propio. Con
               `prefers-reduced-motion` no hay isla: se ve el eslogan quieto,
@@ -71,15 +72,6 @@ export function HomeHero() {
       </div>
 
       <ModuloPedido placement={QUOTE_MODULE_PLACEMENTS.home} idPrefix="home-pedido" className="mt-6" />
-
-      <ul className="mx-auto mt-8 flex max-w-230 flex-wrap justify-center gap-x-10 gap-y-2.5 border-t border-card-line pt-5 text-control text-fg-muted">
-        {facts.map((fact) => (
-          <li key={fact.id} className="flex items-baseline gap-2">
-            <strong className="font-display text-xl font-bold text-fg">{fact.value}</strong>
-            {fact.label}
-          </li>
-        ))}
-      </ul>
     </Section>
   );
 }

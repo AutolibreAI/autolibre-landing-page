@@ -1,4 +1,4 @@
-import { MARKETING_PROVIDERS_COUNT, traction } from "@/lib/content/about";
+import { MARKETING_PROVIDERS_COUNT } from "@/lib/content/about";
 import {
   PROVEEDORES_PATH,
   PROVEEDORES_PLANES_PATH,
@@ -43,15 +43,15 @@ export const homeContent = {
   },
 
   /**
-   * Hero. El `<h1>` es el eslogan del sitio, "Todo tu auto, en un solo
-   * lugar.", armado con las partes de `title`. El texto indexable y accesible
+   * Hero. El `<h1>` es el eslogan del sitio, "Todo para tu auto, en un
+   * solo lugar.", armado con las partes de `title`. El texto indexable y accesible
    * es SIEMPRE el eslogan completo (`lead vehicle` + `comma` + `rest`); a la
    * vista, la palabra del vehículo va cayendo por `rotatingWords`
    * (`HeroRotatingWord`, 2026-11-26). La primera es la del HTML del server.
    */
   hero: {
     title: {
-      lead: "Todo tu",
+      lead: "Todo para tu",
       vehicle: "auto",
       comma: ",",
       rest: "en un solo lugar.",
@@ -60,15 +60,6 @@ export const homeContent = {
     },
     subtitle:
       "Hacé tu pedido y recibí propuestas de talleres y proveedores cerca tuyo. Gratis y sin compromiso.",
-    /**
-     * Cifras de la fila de abajo. Solo publicables: "+150" (decisión del
-     * 24-11) y "1.100+" vehículos (`traction` de `about.ts`, ver PRODUCT.md).
-     */
-    facts: [
-      { id: "proveedores", value: MARKETING_PROVIDERS_COUNT, label: "proveedores en la red" },
-      { id: "vehiculos", value: traction.vehicles, label: "vehículos cargados" },
-      { id: "respuesta", value: "En el día", label: "te respondemos" },
-    ],
   },
 
   /** "Todo lo que podés pedir": cada servicio lleva a `/pedido`. */

@@ -110,8 +110,11 @@ export function SignInScreen({ intro, showJoin, exitHref, children }: SignInScre
                 excepción de WCAG 2.2.2 aprobada para el Home (AGENTS.md §3).
                 Con `prefers-reduced-motion` no hay isla: se ve el eslogan
                 quieto. `text-brand-200` sobre `brand-hover` alcanza el 3:1
-                de texto grande. */}
-            <p className="font-display text-3xl leading-none font-bold tracking-tight sm:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl">
+                de texto grande. Tamaños (2026-11-27): un escalón menos
+                que antes, porque con "Todo para tu MOTO," la primera
+                línea (sin cortes) no entraba en la columna y el
+                `overflow-clip` del panel la cortaba. */}
+            <p className="font-display text-3xl leading-none font-bold tracking-tight sm:text-4xl xl:text-5xl 2xl:text-6xl">
               <span className="block whitespace-nowrap">
                 {title.lead}{" "}
                 <span className="sr-only motion-reduce:not-sr-only motion-reduce:text-brand-200 motion-reduce:uppercase">

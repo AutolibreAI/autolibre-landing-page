@@ -36,7 +36,7 @@ La estructura del HTML es lo primero que leen buscadores y LLMs. Es una regla pr
 - WCAG 2.1 AA como piso, no como extra.
 - `alt` significativo en toda imagen con contenido; `alt=""` y `aria-hidden` en las decorativas.
 - Focus visible siempre. No se quita el outline sin reemplazo.
-- Respetá `prefers-reduced-motion`: ninguna animación es obligatoria para entender o usar la página. Hoy no hay excepciones aprobadas a esa preferencia: con ella no corre ninguna animación ni transición (la palabra que cae en el `<h1>` del Home, `HeroRotatingWord`, no rota y se ve el eslogan estático "Todo tu AUTO, en un solo lugar."). Excepción aprobada por producto (2026-11-26): esa palabra rota en loop infinito sin control de pausa, así que WCAG 2.2.2 no se cumple ahí a propósito; `prefers-reduced-motion` sí se respeta y se frena con la pestaña oculta. Cualquier animación nueva que no respete `prefers-reduced-motion` necesita una decisión explícita de producto.
+- Respetá `prefers-reduced-motion`: ninguna animación es obligatoria para entender o usar la página. Hoy no hay excepciones aprobadas a esa preferencia: con ella no corre ninguna animación ni transición (la palabra que cae en el `<h1>` del Home, `HeroRotatingWord`, no rota y se ve el eslogan estático "Todo para tu AUTO, en un solo lugar."). Excepción aprobada por producto (2026-11-26): esa palabra rota en loop infinito sin control de pausa, así que WCAG 2.2.2 no se cumple ahí a propósito; `prefers-reduced-motion` sí se respeta y se frena con la pestaña oculta. Cualquier animación nueva que no respete `prefers-reduced-motion` necesita una decisión explícita de producto.
 - Contraste, objetivos táctiles de 44px en mobile e inputs de 16px para evitar el zoom de iOS.
 
 ### 4. Performance

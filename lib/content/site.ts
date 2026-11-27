@@ -229,7 +229,7 @@ export const siteContent = {
 
   footer: {
     /** Bajada del logo. Es el eslogan de la marca (`siteConfig.title`). */
-    tagline: "Todo tu auto, en un solo lugar.",
+    tagline: "Todo para tu auto, en un solo lugar.",
     groups: [
       {
         id: "servicios",

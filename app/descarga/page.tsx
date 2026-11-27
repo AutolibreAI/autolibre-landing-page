@@ -115,7 +115,10 @@ export default function DescargaPage() {
 
       <main className="flex flex-1 items-center px-[6%] py-14">
         <div className="mx-auto w-full max-w-176 text-center">
-          <h1 className="font-display text-[2.75rem] leading-[1.05] font-bold text-white sm:text-[3.5rem] lg:text-[4rem]">
+          {/* `display-hero` (fluido) en celular: con "Todo para tu auto," la
+              primera línea a 44px no entraba en 390 y el titular se partía
+              en tres (2026-11-27). */}
+          <h1 className="font-display text-display-hero leading-[1.05] font-bold text-white sm:text-[3.5rem] lg:text-[4rem]">
             {titleLines[0]}
             <br />
             {titleLines[1]}
