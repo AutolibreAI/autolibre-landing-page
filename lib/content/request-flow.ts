@@ -1,9 +1,9 @@
 import {
   PARTS_SUPPLY,
-  QUOTE_TIMINGS,
+  TIMING_CHOICES,
   type PartsSupply,
   type QuoteDetailsError,
-  type QuoteTiming,
+  type TimingChoice,
 } from "@/lib/quote-details";
 
 /**
@@ -11,7 +11,8 @@ import {
  * pantalla limpia que se abre al tocar "Pedir propuestas". Las opciones y sus
  * textos son los mismos que el pedido de la app (autolibre-mobile,
  * `PedidoScreen.helpers.ts` y `pedido-taller-form.tsx`): no se cambian acá
- * sin cambiarlos allá.
+ * sin cambiarlos allá. Excepción: "¿Para cuándo?" ya no ofrece "Tengo una
+ * fecha" sino "Sin apuro" (no manda `timing`, ver `TIMING_CHOICES`).
  *
  * Lo comparten la isla (llega por props desde el server, ver `ModuloPedido`)
  * y `app/api/presupuesto/route.ts` (los errores).
@@ -28,15 +29,10 @@ export const requestFlowContent = {
   timing: {
     legend: "¿Para cuándo?",
     options: [
-      { id: QUOTE_TIMINGS.asap, label: "Lo antes posible" },
-      { id: QUOTE_TIMINGS.thisWeek, label: "Esta semana" },
-      { id: QUOTE_TIMINGS.date, label: "Tengo una fecha" },
-    ] as const satisfies readonly { readonly id: QuoteTiming; readonly label: string }[],
-    date: {
-      label: "¿Qué día?",
-      missing: "Elegí qué día lo necesitás.",
-      past: "Elegí hoy o un día que todavía no pasó.",
-    },
+      { id: TIMING_CHOICES.asap, label: "Lo antes posible" },
+      { id: TIMING_CHOICES.thisWeek, label: "Esta semana" },
+      { id: TIMING_CHOICES.noRush, label: "Sin apuro" },
+    ] as const satisfies readonly { readonly id: TimingChoice; readonly label: string }[],
   },
 
   parts: {
@@ -92,7 +88,7 @@ export const requestFlowContent = {
     preferred_date_missing: "Elegí qué día lo necesitás.",
     preferred_date_invalid: "Revisá la fecha.",
     preferred_date_past: "Elegí hoy o un día que todavía no pasó.",
-    preferred_date_forbidden: "La fecha solo va si elegiste \"Tengo una fecha\".",
+    preferred_date_forbidden: "La fecha solo va si pediste un día puntual.",
     parts_supply: "Elegí quién pone los repuestos.",
     mileage: "Revisá el kilometraje: tiene que ser un número entre 0 y 2.000.000.",
   } satisfies Record<QuoteDetailsError, string>,

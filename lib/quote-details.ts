@@ -13,6 +13,25 @@ export const QUOTE_TIMINGS = {
 } as const;
 export type QuoteTiming = (typeof QUOTE_TIMINGS)[keyof typeof QUOTE_TIMINGS];
 
+/**
+ * Opciones de "¿Para cuándo?" del form del Home. No son 1:1 con el backend:
+ * "Sin apuro" (`noRush`) no tiene valor en el enum `quote_request_timing`
+ * (`asap | this_week | date`), así que no manda `timing` (ausente = "no lo
+ * dijo", que el backend acepta). Si el backend suma un valor para "sin
+ * apuro", se mapea en `quoteTimingFor`.
+ */
+export const TIMING_CHOICES = {
+  asap: QUOTE_TIMINGS.asap,
+  thisWeek: QUOTE_TIMINGS.thisWeek,
+  noRush: "no_rush",
+} as const;
+export type TimingChoice = (typeof TIMING_CHOICES)[keyof typeof TIMING_CHOICES];
+
+/** El `timing` que viaja para cada opción del form (`undefined`: no viaja). */
+export function quoteTimingFor(choice: TimingChoice): QuoteTiming | undefined {
+  return choice === TIMING_CHOICES.noRush ? undefined : choice;
+}
+
 export const PARTS_SUPPLY = {
   workshop: "workshop",
   customer: "customer",

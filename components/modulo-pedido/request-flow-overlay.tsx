@@ -18,11 +18,11 @@ import { normalizePlateInput } from "@/lib/plate";
 import {
   MILEAGE_MAX_KM,
   PARTS_SUPPLY,
-  QUOTE_TIMINGS,
-  todayInBuenosAires,
+  TIMING_CHOICES,
+  quoteTimingFor,
   type PartsSupply,
   type QuoteDetails,
-  type QuoteTiming,
+  type TimingChoice,
 } from "@/lib/quote-details";
 import { cn } from "@/lib/utils";
 
@@ -110,8 +110,8 @@ function prefersReducedMotion() {
  * `role="dialog"`; es la página transformándose. Mientras está abierta, el
  * resto del `<body>` queda `inert` y el scroll bloqueado.
  *
- * Campos (los del pedido de la app): para cuándo (con fecha si elige "Tengo
- * una fecha"), quién pone los repuestos, kilometraje, patente, WhatsApp y el
+ * Campos (los del pedido de la app): para cuándo ("Sin apuro" no manda
+ * `timing`, ver `TIMING_CHOICES`), quién pone los repuestos, kilometraje, patente, WhatsApp y el
  * consentimiento. El envío lo hace `ModuloForm` (`onSubmit`); al registrarse,
  * los campos salen escalonados y la confirmación aparece en la misma capa
  * (código del pedido, qué pasa después y el bloque de la app). "Volver al
@@ -152,7 +152,6 @@ function RequestFlowSurface({
     heading: `${idPrefix}-final-titulo`,
     success: `${idPrefix}-final-enviado`,
     timing: `${idPrefix}-final-cuando`,
-    date: `${idPrefix}-final-fecha`,
     parts: `${idPrefix}-final-repuestos`,
     mileage: `${idPrefix}-final-km`,
     patente: `${idPrefix}-final-patente`,
@@ -165,7 +164,6 @@ function RequestFlowSurface({
   const closeRef = useRef<HTMLButtonElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const dateRef = useRef<HTMLInputElement>(null);
   const fieldRefs = {
     whatsapp: useRef<HTMLInputElement>(null),
     patente: useRef<HTMLInputElement>(null),
@@ -179,27 +177,13 @@ function RequestFlowSurface({
   const succeededRef = useRef(false);
   const [phase, setPhase] = useState<"form" | "sent">("form");
 
-  // Mismos defaults que la app: lo antes posible y que los ponga el taller.
-  const [timing, setTiming] = useState<QuoteTiming>(QUOTE_TIMINGS.asap);
-  const [preferredDate, setPreferredDate] = useState("");
+  // Defaults: esta semana y que los ponga el taller.
+  const [timing, setTiming] = useState<TimingChoice>(TIMING_CHOICES.thisWeek);
   const [partsSupply, setPartsSupply] = useState<PartsSupply>(PARTS_SUPPLY.workshop);
   const [mileage, setMileage] = useState("");
-  const [dateAttempted, setDateAttempted] = useState(false);
   // Ancho de la barra del hero: la barra sube sin cambiar de tamaño y la
   // columna de campos usa el mismo. Se recalcula con el resize.
   const [width, setWidth] = useState(from.width);
-  // Fecha de hoy en Buenos Aires (no la del navegador ni la de UTC).
-  const [today] = useState(todayInBuenosAires);
-
-  const dateError =
-    timing !== QUOTE_TIMINGS.date
-      ? null
-      : !preferredDate
-        ? copy.timing.date.missing
-        : preferredDate < today
-          ? copy.timing.date.past
-          : null;
-  const visibleDateError = dateAttempted ? dateError : null;
 
   // ── Montaje: bloqueo de scroll, `inert` del resto y animación de entrada ──
   useLayoutEffect(() => {
@@ -425,14 +409,9 @@ function RequestFlowSurface({
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submitting || closingRef.current || succeededRef.current) return;
-    setDateAttempted(true);
-    if (dateError) {
-      dateRef.current?.focus();
-      return;
-    }
+    const quoteTiming = quoteTimingFor(timing);
     const details: QuoteDetails = {
-      timing,
-      ...(timing === QUOTE_TIMINGS.date ? { preferredDate } : {}),
+      ...(quoteTiming ? { timing: quoteTiming } : {}),
       partsSupply,
       ...(mileage ? { mileageKm: Number(mileage) } : {}),
     };
@@ -465,8 +444,11 @@ function RequestFlowSurface({
 
   return (
     <div ref={rootRef} className="fixed inset-0 z-60 overflow-y-auto overscroll-contain text-left">
-      {/* La "página limpia": solo fondo, sin tarjeta ni backdrop. */}
-      <div ref={bgRef} aria-hidden="true" className="fixed inset-0 bg-card" />
+      {/* La "página limpia": solo fondo, sin tarjeta ni backdrop.
+          `pointer-events-none` es obligatorio: un hijo `fixed` encadena el
+          scroll (rueda/trackpad/touch) al viewport, que está bloqueado, y no a
+          esta capa. Sin él, scrollear sobre los costados no hacía nada. */}
+      <div ref={bgRef} aria-hidden="true" className="pointer-events-none fixed inset-0 bg-card" />
 
       <button
         ref={closeRef}
@@ -626,30 +608,6 @@ function RequestFlowSurface({
                   );
                 })}
               </div>
-              {timing === QUOTE_TIMINGS.date ? (
-                <div className="mt-4 flex max-w-80 flex-col gap-1.5">
-                  <label htmlFor={ids.date} className={label}>
-                    {copy.timing.date.label}
-                  </label>
-                  <input
-                    id={ids.date}
-                    ref={dateRef}
-                    type="date"
-                    required
-                    min={today}
-                    value={preferredDate}
-                    onChange={(event) => setPreferredDate(event.target.value)}
-                    aria-invalid={visibleDateError ? true : undefined}
-                    aria-describedby={visibleDateError ? `${ids.date}-error` : undefined}
-                    className={pillInputVariants({ size: "56" })}
-                  />
-                  {visibleDateError ? (
-                    <p id={`${ids.date}-error`} className="px-5 text-label font-medium text-status-alert">
-                      {visibleDateError}
-                    </p>
-                  ) : null}
-                </div>
-              ) : null}
             </fieldset>
 
             {/* ¿Y los repuestos? */}
