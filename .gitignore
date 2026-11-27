@@ -65,3 +65,6 @@ next-env.d.ts
 # content-pipeline del blog: binarios de covers y payloads generados
 /content-pipeline/images/
 /content-pipeline/out/
+
+# rediseno 2026-11: material de trabajo local (capturas, canvas, lighthouse)
+/docs/rediseno-2026-11/
