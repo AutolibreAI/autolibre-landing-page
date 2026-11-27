@@ -62,11 +62,6 @@ export const providersDirectoryContent = {
     marker: (name: string) => `Ver ${name} en el mapa`,
     viewProfile: "Ver perfil",
     viewProfileOf: (name: string) => `Ver el perfil de ${name}`,
-    /** Cuántos de la página tienen ubicación cargada (los demás no se dibujan). */
-    note: (shown: number, total: number) =>
-      shown === total
-        ? "Ubicación de los negocios de esta página."
-        : `Ubicación de ${shown} de los ${total} negocios de esta página (el resto no tiene dirección cargada).`,
   },
 
   directory: {

@@ -181,12 +181,10 @@ function ErrorState({ retryHref }: { readonly retryHref: string }) {
  */
 function DirectoryMap({
   points,
-  pageCount,
   categoryNames,
   className,
 }: {
   readonly points: readonly DirectoryMapPoint[];
-  readonly pageCount: number;
   readonly categoryNames: ReadonlyMap<string, string>;
   readonly className?: string;
 }) {
@@ -221,7 +219,6 @@ function DirectoryMap({
         <p className="absolute top-3 right-3 z-30 rounded-lg bg-card px-2 py-1 text-xs text-fg-muted">{map.badge}</p>
         <DirectoryMapMarkers markers={markers} viewProfile={map.viewProfile} />
       </div>
-      <p className="mt-2 text-sm text-fg-muted">{map.note(points.length, pageCount)}</p>
     </aside>
   );
 }
@@ -310,7 +307,6 @@ export function ProveedoresDirectory({
           {hasMap ? (
             <DirectoryMap
               points={mapPoints}
-              pageCount={partners.length}
               categoryNames={categoryNames}
               className="min-w-0 flex-[1_1_21.25rem] max-lg:order-first max-lg:mx-auto max-lg:max-w-120 max-lg:basis-full lg:sticky lg:top-21"
             />

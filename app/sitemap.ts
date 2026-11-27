@@ -66,7 +66,7 @@ const routes = [
   },
   {
     path: PROVEEDORES_PATH,
-    lastModified: "2026-11-24",
+    lastModified: "2026-11-26",
     changeFrequency: "weekly",
     priority: 0.7,
   },
