@@ -4,9 +4,10 @@ import { sectionLead, sectionTitle } from "@/components/marketing/styles";
 import { Section } from "@/components/ui/section";
 import { ANALYTICS_EVENTS, QUOTE_CTA_PLACEMENTS } from "@/lib/analytics/events";
 import { homeContent } from "@/lib/content/home";
+import { cn } from "@/lib/utils";
 
 /**
- * "Todo lo que podés pedir": seis servicios con su ícono 3D y una línea con
+ * "Todo lo que podés pedir": siete servicios con su ícono 3D y una línea con
  * el resto. Todos llevan a `/pedido` (no hay páginas por servicio): es el
  * enlazado interno del Home al pedido, con el nombre del servicio como texto
  * del link. Server Component, sin JS.
@@ -27,9 +28,19 @@ export function ServicesSection() {
         <p className={sectionLead}>{subtitle}</p>
       </div>
 
-      <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        {items.map((item) => (
-          <li key={item.id}>
+      {/* Siete tarjetas: 2 columnas en celular (la última, sola, ocupa las
+          dos), 4 + 3 desde `sm` (grilla de 8 con tarjetas de 2: la segunda
+          fila arranca en la columna 2 y queda centrada) y 7 en fila desde `lg`. */}
+      <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-8 lg:grid-cols-7">
+        {items.map((item, index) => (
+          <li
+            key={item.id}
+            className={cn(
+              "sm:col-span-2 lg:col-span-1",
+              items.length % 2 === 1 && index === items.length - 1 && "max-sm:col-span-2",
+              items.length % 4 === 3 && index === items.length - 3 && "sm:max-lg:col-start-2",
+            )}
+          >
             <Link
               href={href}
               {...trackProps}

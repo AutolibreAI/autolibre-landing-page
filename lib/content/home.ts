@@ -82,6 +82,14 @@ export const homeContent = {
       { id: "alineacion", label: "Alineación y balanceo", icon: serviceIcon("alineacion") },
       { id: "luz-tablero", label: "Luz en el tablero", icon: serviceIcon("luz-tablero") },
       { id: "aire", label: "Aire acondicionado", icon: serviceIcon("aire") },
+      // Pedido del dueño del producto (2026-11-26, tarjeta desde el 27). Sin
+      // 3D propio en `public/images/servicios/`: usa el de la pestaña Seguros
+      // del módulo de pedido (104px para un uso de 64px).
+      {
+        id: "seguros",
+        label: "Seguros",
+        icon: { src: "/images/pedido/seguro.webp", width: 104, height: 104 },
+      },
     ],
     alsoLabel: "También:",
     also: [
