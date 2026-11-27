@@ -120,7 +120,6 @@ export const siteContent = {
           {
             kind: "link",
             label: "Ingresar o crear cuenta",
-            sub: "Es la misma cuenta de la app",
             href: ACCOUNT_PATH,
             strong: true,
           },

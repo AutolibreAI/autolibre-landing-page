@@ -36,7 +36,7 @@ export const partnerClaimContent = {
   intro:
     "Si el equipo de AutoLibre te mandó un código, canjealo acá para administrar el perfil de tu negocio.",
   /** Bajada del panel de login. */
-  signInIntro: "Para reclamar tu negocio necesitás una cuenta de AutoLibre. Es la misma de la app.",
+  signInIntro: "Para reclamar tu negocio necesitás una cuenta de AutoLibre.",
   /** Con qué cuenta queda vinculado (fila debajo del formulario). */
   linkedTo: "Lo vas a vincular a la cuenta de",
   switchAccount: "Usar otra cuenta",
@@ -111,14 +111,6 @@ export const partnerClaimContent = {
       body: "El primer trabajo que te acercamos es gratis. A partir del segundo, pagás un precio fijo por cada trabajo nuevo confirmado.",
       cta: "Ver los precios",
       href: PROVEEDORES_PLANES_PATH,
-    },
-    /**
-     * Hoy el taller se administra desde la app (2026-11-04). Cuando exista el
-     * panel para talleres, este bloque apunta ahí.
-     */
-    app: {
-      title: "Administrá tu perfil desde la app",
-      body: "Entrá a la app de AutoLibre con esta misma cuenta para completar el perfil de tu taller.",
     },
     /**
      * Cuando el reclamo vino de la contratación de un plan (spec 212): el

@@ -224,7 +224,7 @@ export const providersPlansContent = {
   /** Banda oscura de cierre. */
   closing: {
     title: "¿Todavía no registraste tu negocio?",
-    body: "El registro es gratis y lo hacés con tu cuenta de AutoLibre, la misma de la app.",
+    body: "El registro es gratis y lo hacés con tu cuenta de AutoLibre.",
     cta: { label: "Sumá tu negocio", href: PROVEEDORES_REGISTRO_PATH },
   },
 } as const;

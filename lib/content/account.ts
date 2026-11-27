@@ -29,7 +29,7 @@ export const accountContent = {
    */
   signOutConfirm: {
     title: "¿Cerrar sesión?",
-    body: "Vas a salir de tu cuenta de AutoLibre en este navegador. Para volver a entrar, usás el mismo email o la misma cuenta de la app.",
+    body: "Vas a salir de tu cuenta de AutoLibre en este navegador.",
     confirm: "Sí, cerrar sesión",
     leaving: "Cerrando sesión…",
     cancel: "No, seguir en mi cuenta",

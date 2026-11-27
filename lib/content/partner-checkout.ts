@@ -265,10 +265,6 @@ export const partnerCheckoutContent = {
       trialUntil: (date: string) => `Tu período de prueba sin cargo termina el ${date}.`,
       nextTitle: "Próximos pasos",
       next: {
-        app: {
-          title: "Administrá tu taller desde la app",
-          body: "Entrá a la app de AutoLibre con esta misma cuenta para completar tu perfil y responder pedidos.",
-        },
         /** Supuesto de DECISIONES: el próximo paso lleva a "Mi negocio" (`/cuenta`). */
         profile: {
           title: "Completá tu perfil",
