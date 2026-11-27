@@ -244,7 +244,7 @@ posts:
     priority: P3
     batch: 3
     sourceIds: [EST-01] # ✅ mixto: posible cambio de sistema en 2026 🔍
-    status: hygraph-draft
+    status: published
     blockedBy: null
     hygraphId: cmwz27nyxlggj07my3b23boq9
 
