@@ -103,3 +103,92 @@ export function signInDestinationKind(destination: string): SignInDestinationKin
   if (isUnder(pathname, "/proveedores/reclamar")) return "reclamar";
   return "other";
 }
+
+/**
+ * Rutas que piden sesión (rebotan a `/ingresar` sin ella): el `matcher` de
+ * `proxy.ts`, sin `/ingresar`. Si se suma una pantalla privada allá, se suma
+ * acá. `isUnder` cubre `/proveedores/contratar/resultado`.
+ */
+const SESSION_PATHS = ["/cuenta", "/proveedores/contratar", "/proveedores/reclamar"] as const;
+
+/** La landing pública del alta y los parámetros que abren su flujo privado (`lib/proveedores/query.ts`). */
+const REGISTRO_PATH = "/proveedores/registro";
+const REGISTRO_FLOW_PARAMS = ["alta", "next"] as const;
+
+/**
+ * ¿Esta ruta (con su query) pide sesión? Sin sesión rebota a `/ingresar`, así
+ * que la cruz del login nunca puede mandar ahí. Además del `matcher` de
+ * `proxy.ts` cuenta el flujo del alta (`/proveedores/registro?alta=1` o
+ * `?next=`), que se protege del lado del cliente.
+ */
+export function requiresSession(pathWithQuery: string): boolean {
+  const { pathname, searchParams } = new URL(pathWithQuery, PLACEHOLDER_ORIGIN);
+  if (SESSION_PATHS.some((base) => isUnder(pathname, base))) return true;
+  return pathname === REGISTRO_PATH && REGISTRO_FLOW_PARAMS.some((param) => searchParams.has(param));
+}
+
+/**
+ * Adónde lleva la cruz de `/ingresar`: el `href` real del link, calculado en
+ * el server (2026-11-27). El `?redirect=` es el destino DESPUÉS de entrar y
+ * casi siempre pide sesión, así que no sirve como salida: se mapea a la
+ * página PÚBLICA desde la que se llega a ese flujo.
+ * - alta (`/proveedores/registro?alta=1`, `?next=`) → `/proveedores/registro`
+ *   sin query (la landing "Sumá tu negocio", sin reabrir el flujo).
+ * - contratar y su resultado → `/proveedores/planes`.
+ * - reclamar → `/proveedores/registro` ("¿Tu negocio ya aparece?").
+ * - `/cuenta` y cualquier otro destino → `/` (el Home).
+ *
+ * Recibe un destino YA validado por `parseSafeRedirect`. Nunca devuelve una
+ * ruta que pida sesión (ver `requiresSession`).
+ */
+export function signInExitPath(destination: string): string {
+  switch (signInDestinationKind(destination)) {
+    case "alta":
+    case "reclamar":
+      return REGISTRO_PATH;
+    case "contratar":
+    case "resultado":
+      return "/proveedores/planes";
+    default:
+      return "/";
+  }
+}
+
+/** Lo que se lee de cada entrada de `navigation.entries()` (Navigation API). */
+export type HistoryEntryLike = { readonly url: string | null };
+
+/**
+ * Mejora progresiva de la cruz: a qué entrada del historial se puede volver
+ * ("atrás" de verdad, con el scroll donde estaba). Devuelve su índice, o `-1`
+ * si hay que seguir el `href` de `signInExitPath`.
+ *
+ * `entries` es `navigation.entries()`: SOLO las entradas contiguas del mismo
+ * origen de esta pestaña. Por eso alcanza para descartar los casos en los que
+ * `history.back()` saldría mal: entrada directa o pestaña nueva (no hay
+ * entrada anterior) y la vuelta de Google (lo anterior es de otro origen y
+ * corta la lista). Desde la entrada actual hacia atrás:
+ * - se saltean las entradas de `/ingresar` (los pasos `#/...` de Clerk o un
+ *   login anterior);
+ * - la primera que no es `/ingresar` es el destino, salvo que pida sesión
+ *   (rebotaría de vuelta al login), no tenga URL o sea de otro origen.
+ */
+export function signInExitHistoryIndex(
+  entries: readonly HistoryEntryLike[],
+  currentIndex: number,
+  origin: string,
+): number {
+  for (let index = Math.min(currentIndex, entries.length) - 1; index >= 0; index--) {
+    const raw = entries[index]?.url;
+    if (!raw) return -1;
+    let url: URL;
+    try {
+      url = new URL(raw);
+    } catch {
+      return -1;
+    }
+    if (url.origin !== origin) return -1;
+    if (isSignInPath(url.pathname)) continue;
+    return requiresSession(`${url.pathname}${url.search}`) ? -1 : index;
+  }
+  return -1;
+}

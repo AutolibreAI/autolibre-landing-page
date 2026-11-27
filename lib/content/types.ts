@@ -95,7 +95,8 @@ export type IconName =
   | "user"
   | "chart"
   | "lock"
-  | "plus";
+  | "plus"
+  | "x";
 
 /** Tiendas donde está publicada la app. */
 export type StoreId = "appStore" | "playStore";

@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+import { SignInExitLink } from "@/components/auth/sign-in-exit-link";
 import { Icon } from "@/components/ui/icon";
 import { partnerAccountContent } from "@/lib/content/partner-account";
+import { signInContent } from "@/lib/content/sign-in";
 import { PROVEEDORES_REGISTRO_PATH } from "@/lib/proveedores/query";
 
 const { ingresar } = partnerAccountContent;
@@ -16,6 +18,8 @@ type SignInScreenProps = {
   readonly intro: string;
   /** "¿Tenés un taller o un servicio? Sumá tu negocio" (solo si vuelve a `/cuenta`). */
   readonly showJoin: boolean;
+  /** Adónde lleva la cruz: una página pública del sitio (`signInExitPath`). */
+  readonly exitHref: string;
   /** La isla con el widget de Clerk (`SignInWidget`). */
   readonly children: React.ReactNode;
 };
@@ -39,9 +43,9 @@ type SignInScreenProps = {
  * `data-flow-shell`: el botón flotante de WhatsApp se esconde, igual que en
  * las pantallas de foco de los flujos (tapaba el "Continuar" en celular).
  */
-export function SignInScreen({ intro, showJoin, children }: SignInScreenProps) {
+export function SignInScreen({ intro, showJoin, exitHref, children }: SignInScreenProps) {
   return (
-    <div data-flow-shell="" className="grid min-h-dvh bg-card lg:grid-cols-12">
+    <div data-flow-shell="" className="relative grid min-h-dvh bg-card lg:grid-cols-12">
       <header className="bg-brand-panel text-white max-lg:clip-diagonal-b lg:col-span-5 lg:clip-diagonal-r">
         <div className="flex h-full flex-col gap-5 px-4 pt-6 pb-14 sm:px-8 lg:gap-10 lg:py-12 lg:pr-32 lg:pl-12 xl:pb-0 xl:pl-16">
           <Link href="/" aria-label={brand.home} className="flex w-fit">
@@ -103,6 +107,16 @@ export function SignInScreen({ intro, showJoin, children }: SignInScreenProps) {
       </header>
 
       <main className="flex items-center justify-center px-4 pt-6 pb-12 sm:px-8 lg:col-span-7 lg:px-12 lg:py-16">
+        {/* `absolute` contra la raíz (el `<main>` no está posicionado): no
+            scrollea con la columna ni la recorta su `overflow`. En celular
+            está sobre el verde del panel: ícono y anillo de foco en blanco. */}
+        <SignInExitLink
+          href={exitHref}
+          label={signInContent.close}
+          className="absolute top-4 right-1.5 z-10 flex size-11 items-center justify-center rounded-full text-white transition-colors hover:bg-white/15 motion-reduce:transition-none max-lg:focus-visible:outline-white sm:right-5 lg:top-5 lg:right-9 lg:text-fg-muted lg:hover:bg-card-muted lg:hover:text-fg"
+        >
+          <Icon name="x" size={22} strokeWidth={2} />
+        </SignInExitLink>
         <div className="flex w-full max-w-105 flex-col gap-5">
           <div className="flex flex-col gap-2">
             <h1 className="font-display text-3xl font-bold tracking-tight text-balance text-fg lg:text-4xl"

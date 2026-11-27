@@ -6,6 +6,12 @@ import { providersContent } from "@/lib/content/providers";
 import { parsePlanParam } from "@/lib/partner-billing/checkout";
 import { signInDestinationKind } from "@/lib/auth/sign-in-redirect";
 
+/** Copy propio de la pantalla `/ingresar` (el resto vive en `partnerAccountContent.ingresar`). */
+export const signInContent = {
+  /** `aria-label` de la cruz de arriba a la derecha: sale del login y vuelve a la página anterior. */
+  close: "Cerrar y volver",
+} as const;
+
 /** Origen ficticio para leer la query de una ruta relativa ya validada. */
 const PLACEHOLDER_ORIGIN = "https://autolibre.invalid";
 

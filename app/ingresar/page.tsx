@@ -6,6 +6,7 @@ import {
   SIGN_IN_PATH,
   SIGN_IN_REDIRECT_PARAM,
   signInDestinationKind,
+  signInExitPath,
   signupIntentForDestination,
 } from "@/lib/auth/sign-in-redirect";
 import { partnerAccountContent } from "@/lib/content/partner-account";
@@ -41,7 +42,11 @@ export default async function IngresarPage({ searchParams }: IngresarPageProps) 
   const destination = parseSafeRedirect((await searchParams)[SIGN_IN_REDIRECT_PARAM]);
 
   return (
-    <SignInScreen intro={signInIntroFor(destination)} showJoin={signInDestinationKind(destination) === "account"}>
+    <SignInScreen
+      intro={signInIntroFor(destination)}
+      showJoin={signInDestinationKind(destination) === "account"}
+      exitHref={signInExitPath(destination)}
+    >
       <SignInWidget redirectUrl={destination} signupIntent={signupIntentForDestination(destination)} />
     </SignInScreen>
   );

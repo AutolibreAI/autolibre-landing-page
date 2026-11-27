@@ -193,6 +193,8 @@ const paths: Record<IconName, React.ReactNode> = {
   chart: <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />,
   /** Más: abrir una pregunta frecuente (gira 45° al abrir). */
   plus: <path d="M12 5v14M5 12h14" />,
+  /** Cruz: cerrar y volver (el login, sin el menú del sitio). */
+  x: <path d="M6 6l12 12M18 6L6 18" />,
   /** Candado: el pago se termina en Mercado Pago. */
   lock: (
     <>
