@@ -24,7 +24,7 @@ import { siteConfig } from "@/lib/seo/config";
 const routes = [
   {
     path: "/",
-    lastModified: "2026-11-26",
+    lastModified: "2026-11-27",
     changeFrequency: "weekly",
     priority: 1,
   },
@@ -36,7 +36,7 @@ const routes = [
   },
   {
     path: "/pedido",
-    lastModified: "2026-11-24",
+    lastModified: "2026-11-27",
     changeFrequency: "monthly",
     priority: 0.9,
   },

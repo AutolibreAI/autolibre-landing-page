@@ -52,7 +52,7 @@ export const ANALYTICS_EVENTS = {
   quoteStepViewed: "quote_step_viewed",
   /**
    * Eligió una pestaña del módulo de pedido (Taller, Auxilio, Multas,
-   * Seguro). Solo la elección de la persona: la pestaña inicial no cuenta.
+   * Seguros, Financiación). Solo la elección de la persona: la pestaña inicial no cuenta.
    * Sólo PostHog.
    */
   quoteTabSelected: "quote_tab_selected",
@@ -273,14 +273,18 @@ export const LAYOUT_PLACEMENTS = {
  * Pestañas del módulo de pedido (`components/modulo-pedido`). Viaja como
  * `tab`; el listener de `data-analytics-tab` y la route de
  * `/api/presupuesto` descartan cualquier otro valor. Solo `taller` manda un
- * pedido al backend; Auxilio y Multas llevan a un aliado. Sin `seguro`
- * desde el 2026-11-24 (decisión de producto: no se ofrecen seguros por
- * ahora); los eventos viejos con `tab: "seguro"` quedan en el histórico.
+ * pedido al backend; Auxilio y Multas llevan a un aliado. `seguros` y
+ * `financiacion` (2026-11-27) son consultas (`ModuloConsultaForm`) que se
+ * registran en el backend por `/api/consulta`. El
+ * `tab: "seguro"` (singular) es de la pestaña vieja, sacada el 2026-11-24:
+ * queda en el histórico y no se reusa.
  */
 export const QUOTE_TABS = {
   taller: "taller",
   auxilio: "auxilio",
   multas: "multas",
+  seguros: "seguros",
+  financiacion: "financiacion",
 } as const;
 
 export type QuoteTab = (typeof QUOTE_TABS)[keyof typeof QUOTE_TABS];
@@ -389,6 +393,11 @@ export type AnalyticsEventProps = {
     provider?: string;
     /** Pestaña del módulo de pedido desde la que se abrió el chat. */
     tab?: QuoteTab;
+    /**
+     * Salida por WhatsApp del form de Seguros o Financiación después de un
+     * error de envío.
+     */
+    fallback?: true;
   };
   provider_action_clicked: {
     action: ProviderAction;
@@ -569,7 +578,15 @@ export const ANALYTICS_CATALOG: Record<AnalyticsEventName, CatalogEntry> = {
     posthog: "server",
     // `lead_source` sólo lo manda `/pedido` (`form`); el modal manda el `Lead`
     // sin params, como siempre.
-    meta: () => ({ name: META_EVENTS.lead, params: ["lead_source"] }),
+    // Consultas de Seguros y Financiación (2026-11-27): heredan la semántica
+    // del WhatsApp que reemplazan. En `/pedido` son `Lead`; en el Home,
+    // `Contact`. Taller no cambia: siempre `Lead`. La route de `/api/consulta`
+    // usa esta misma función para el nombre del evento de la Conversions API.
+    meta: (props) =>
+      (props.tab === QUOTE_TABS.seguros || props.tab === QUOTE_TABS.financiacion) &&
+      props.placement === QUOTE_MODULE_PLACEMENTS.home
+        ? { name: META_EVENTS.contact, params: ["placement"] }
+        : { name: META_EVENTS.lead, params: ["lead_source"] },
     clickable: false,
   },
   quote_failed: {

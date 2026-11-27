@@ -142,6 +142,32 @@ el directorio muestra el conteo real. Seguros no se ofrecen por ahora como
 pedido desde la web (el módulo de pedido no tiene pestaña Seguro); el beneficio
 del aliado Intēgrity sigue en el Home.
 
+Ajustes de copy del 2026-11-26 (pedido del dueño del producto): "Seguros" se
+suma a las listas de lo que se puede pedir (`homeContent.services.also` y
+`public/llms.txt`); el módulo de pedido de la web sigue sin pestaña Seguro
+(esto último cambió el 2026-11-27, ver abajo). En
+`/proveedores/registro` el mensaje "sin comisión" se reemplaza por "el primer
+trabajo que te acercamos es gratis" y "todo por WhatsApp".
+
+Pestañas Seguros y Financiación del módulo de pedido (2026-11-27, pedido del
+dueño del producto; estado final del día): el módulo vuelve a tener Seguros
+y suma Financiación, las dos como **consultas por formulario**. El form pide
+los datos de la consulta, WhatsApp, email y consentimiento, y la registra en
+el backend (`/api/consulta` → `POST /api/v1/inquiries/insurance` y
+`/financing`); la confirmación muestra el número de consulta (`SG-…` /
+`FN-…`) y dice que AutoLibre contacta a la persona por los datos que dejó.
+WhatsApp queda únicamente como salida si el envío falla. No hay flag: si la
+landing se despliega antes que el backend, las dos pestañas muestran ese
+error con la salida por WhatsApp; el orden de despliegue es la protección.
+El copy no puede prometer cotización automática, aprobación de crédito,
+tasas, plazos ni aseguradoras o financieras con nombre hasta que producto
+las confirme. Financiamiento sigue sin ser un producto que AutoLibre otorgue
+(sin página propia ni schema `Service`); lo de "no se puede elegir en
+`/pedido`" de más arriba ya no vale: se puede dejar una consulta.
+"Seguros" pasa a ser una tarjeta más de "Todo lo que podés pedir" del Home.
+Pendiente: la política de privacidad todavía no menciona CUIT, sexo, edad,
+código postal ni email de estas consultas (decisión legal).
+
 Modelo de precios para proveedores (decisión del dueño, 2026-11-26): AutoLibre
 deja de vender planes de suscripción (Gratis / Plus / Plus Max, con topes de
 pedidos y prueba gratis) y cobra por **trabajo confirmado**: el usuario eligió

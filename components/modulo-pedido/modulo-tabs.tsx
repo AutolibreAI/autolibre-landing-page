@@ -35,9 +35,15 @@ type ModuloTabsProps = {
  *   `aria-labelledby` cruzados.
  * - Roving tabindex: solo la pestaña elegida entra al orden de Tab; ←/→ se
  *   mueven (y eligen) en círculo, Inicio/Fin van a la primera/última.
- * - Todos los paneles (Taller, Auxilio, Multas) salen en el HTML del server; los no elegidos con
+ * - Todos los paneles (Taller, Auxilio, Multas, Seguros, Financiación) salen
+ *   en el HTML del server; los no elegidos con
  *   `hidden`. Nada aparece recién al hidratar, y el estado inicial (Taller)
  *   es el mismo en el server y en el cliente: sin CLS.
+ *
+ * Con cinco pestañas la fila no entra en un celular: cada pestaña mide lo que
+ * su texto (nunca se corta "Financiación") y la fila scrollea de costado, con
+ * la última asomando para que se note. Si entra, queda centrada
+ * (`mx-auto w-fit max-w-full`). El foco con flechas trae la pestaña a la vista.
  *
  * Isla chica a propósito: los íconos, los textos y los paneles llegan como
  * props ya renderizados. Acá vive solo qué pestaña está elegida.
@@ -83,7 +89,8 @@ export function ModuloTabs({ idPrefix, label, placement, tabs }: ModuloTabsProps
       <div
         role="tablist"
         aria-label={label}
-        className="flex justify-center gap-1 sm:gap-4 lg:gap-7"
+        // `p-1`: lugar para el anillo de foco, que el scroll recortaría.
+        className="mx-auto flex w-fit max-w-full gap-1 overflow-x-auto p-1 sm:gap-4 lg:gap-7"
       >
         {tabs.map((tab, index) => {
           const isSelected = tab.id === selected;
@@ -103,7 +110,7 @@ export function ModuloTabs({ idPrefix, label, placement, tabs }: ModuloTabsProps
               onKeyDown={(event) => onKeyDown(event, index)}
               className={cn(
                 // Objetivo táctil: todo el botón (ícono + texto), mínimo 44px.
-                "flex min-h-11 max-w-28 min-w-0 flex-1 flex-col items-center gap-1.5 border-b-3 px-1 pt-2 pb-2.5 transition-colors motion-reduce:transition-none",
+                "flex min-h-11 min-w-18 flex-none flex-col items-center gap-1.5 border-b-3 px-2 pt-2 pb-2.5 whitespace-nowrap transition-colors motion-reduce:transition-none sm:min-w-24",
                 isSelected
                   ? "border-action text-fg"
                   : "border-transparent text-fg-muted hover:border-control-line",

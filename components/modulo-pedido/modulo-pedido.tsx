@@ -10,12 +10,18 @@ import {
   type QuoteModulePlacement,
   type QuoteTab,
 } from "@/lib/analytics/events";
-import { APP_VINCULADA, moduloPedidoContent } from "@/lib/content/modulo-pedido";
+import {
+  APP_VINCULADA,
+  moduloPedidoContent,
+  type ConsultaContent,
+} from "@/lib/content/modulo-pedido";
+import { INQUIRY_KINDS, type InquiryTab } from "@/lib/consulta-inquiry";
 import { requestFlowContent } from "@/lib/content/request-flow";
 import { siteContent } from "@/lib/content/site";
 import { cn } from "@/lib/utils";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { ModuloAppPromo } from "./modulo-app-promo";
+import { ModuloConsultaForm } from "./modulo-consulta-form";
 import { ModuloForm } from "./modulo-form";
 import { ModuloTabs } from "./modulo-tabs";
 
@@ -25,7 +31,8 @@ type ModuloPedidoProps = {
   /** Dónde está montado: viaja como `placement` en todos sus eventos. */
   readonly placement: QuoteModulePlacement;
   /**
-   * Nivel de los títulos de los paneles de Auxilio y Multas. Lo decide la
+   * Nivel de los títulos de los paneles de Auxilio, Multas, Seguros y
+   * Financiación. Lo decide la
    * página según su outline: `h2` si el módulo cuelga del `h1`. (El resto
    * del pedido pasa en la pantalla limpia, con su propio `h2`.)
    */
@@ -37,23 +44,28 @@ type ModuloPedidoProps = {
 
 /**
  * Módulo de pedido (rediseño 2026-11, fase 3): pestañas Taller / Auxilio /
- * Multas (sin Seguro desde el 2026-11-24, decisión de producto), la barra "¿Qué le pasa?" + "¿Dónde estás?" + "Pedir
+ * Multas / Seguros / Financiación (las dos últimas desde el 2026-11-27), la
+ * barra "¿Qué le pasa?" + "¿Dónde estás?" + "Pedir
  * propuestas", los chips de "Lo más pedido" y, al pedir, la pantalla limpia
  * con el resto del pedido (`RequestFlowOverlay`). Lo montan el Home y `/pedido`.
  *
  * Server Component. Todo lo que se lee (pestañas, labels, chips, paneles de
  * los aliados, WhatsApp) sale en el HTML del server; los íconos son
- * `next/image` renderizados acá. Islas de cliente, dos y hoja:
+ * `next/image` renderizados acá. Islas de cliente, tres y hoja:
  *
  * - `ModuloTabs`: qué pestaña está elegida (recibe íconos y paneles hechos).
  * - `ModuloForm`: el form de Taller (estado, validación, Places, envío). El
  *   paso final es la pantalla limpia `RequestFlowOverlay`.
  *   El bloque de la app de la confirmación (`ModuloAppPromo`: capturas, QR,
  *   tiendas) se arma acá y la isla solo lo monta al enviar.
+ * - `ModuloConsultaForm`: el form de Seguros y el de Financiación (una
+ *   instancia por pestaña; el título y la bajada del panel salen de acá).
  *
  * Mapeo con el backend: solo Taller registra un pedido (`/api/presupuesto`).
  * Auxilio y Multas llevan a los aliados del Home (Asistir24 y Sin
- * Fotomultas).
+ * Fotomultas). Seguros y Financiación se envían por formulario y se
+ * registran en el backend por `/api/consulta` (ver
+ * `modulo-consulta-form.tsx` y `lib/consulta-inquiry.ts`).
  */
 export function ModuloPedido({
   placement,
@@ -119,6 +131,49 @@ export function ModuloPedido({
     "data-analytics-placement": placement,
     "data-analytics-tab": tab,
   });
+
+  /**
+   * Panel de una pestaña de consulta (Seguros, Financiación): título y bajada
+   * en el server, y el form como isla hoja. A la isla le llegan datos y un
+   * solo elemento como prop: el link a `/privacidad` del consentimiento.
+   */
+  function consultaPanel(tab: InquiryTab, panel: ConsultaContent) {
+    // El título y la bajada se quedan en el server; a la isla va el resto.
+    const { title, body, ...formCopy } = panel;
+    return (
+      <div className="flex flex-col gap-5 rounded-panel border border-control-line bg-card p-5 text-left md:p-7">
+        <div>
+          <Heading className="font-display text-xl font-bold text-fg md:text-2xl">
+            {title}
+          </Heading>
+          <p className="mt-1 text-base text-fg-muted">{body}</p>
+        </div>
+        <ModuloConsultaForm
+          idPrefix={idPrefix}
+          tab={tab}
+          placement={placement}
+          kind={INQUIRY_KINDS[tab]}
+          copy={formCopy}
+          // `key`: slot que la isla monta entre hermanos (ver AGENTS.md, "Slots").
+          // En otra pestaña: salir de acá perdería lo que la persona cargó.
+          privacyLink={
+            <Link
+              key="privacy"
+              href="/privacidad"
+              target="_blank"
+              className="font-semibold text-fg underline underline-offset-4 hover:text-brand-hover"
+            >
+              {panel.consent.privacyLink}
+              {externalHint}
+            </Link>
+          }
+          whatsappBase={whatsappUrl("")}
+          externalHint={siteContent.nav.externalHint}
+          leadSource={leadSource}
+        />
+      </div>
+    );
+  }
 
   // Todo elemento que viaja como prop a `ModuloForm` lleva `key`: la isla los
   // monta entre hermanos y RSC los valida como hijos de una lista (ver
@@ -217,6 +272,8 @@ export function ModuloPedido({
     taller: tallerPanel,
     auxilio: partnerPanel(copy.auxilio, partnerCtaProps(QUOTE_TABS.auxilio), { whatsapp: true }),
     multas: partnerPanel(copy.multas, partnerCtaProps(QUOTE_TABS.multas)),
+    seguros: consultaPanel(QUOTE_TABS.seguros, copy.seguros),
+    financiacion: consultaPanel(QUOTE_TABS.financiacion, copy.financiacion),
   };
 
   return (
@@ -228,6 +285,7 @@ export function ModuloPedido({
         tabs={copy.tabs.map((tab) => ({
           id: tab.id,
           label: tab.label,
+          // `key`: slot que la isla monta entre hermanos (ver AGENTS.md, "Slots").
           icon: (
             <Image
               key={tab.id}
