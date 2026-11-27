@@ -26,7 +26,7 @@ export const partnerAccountContent = {
         "Ingresá o creá tu cuenta de AutoLibre para seguir los pedidos de tu auto o administrar tu negocio en la red.",
     },
     /**
-     * Panel de marca, al costado del formulario (arriba en celular).
+     * Panel de marca, al costado del formulario (solo desde `lg`; en celular no se muestra).
      *
      * El titular NO vive acá: es el eslogan del sitio ("Todo tu auto, en un
      * solo lugar.") y `SignInScreen` lo arma con las partes de

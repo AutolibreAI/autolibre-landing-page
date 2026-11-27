@@ -40,8 +40,9 @@ type SignInScreenProps = {
  *   exactamente `100dvh` y la página no scrollea: el escenario del teléfono
  *   absorbe el alto que sobra y, si el formulario no entra, scrollea por
  *   dentro solo su columna.
- * - En celular: el panel es una banda corta arriba (logo y titular) y el
- *   formulario debajo. Sin bajada, sin nota y sin teléfono.
+ * - En celular: el panel de marca NO se muestra (2026-11-27, pedido de
+ *   producto): queda solo el formulario, centrado en la pantalla, con la
+ *   cruz arriba a la derecha. El panel sigue en el HTML (`hidden lg:flex`).
  *
  * El panel es liso, en el verde de marca AA (`brand-hover`, blanco encima
  * 5.74:1). Arriba, el logo y el titular grande: el eslogan del sitio con la
@@ -58,9 +59,9 @@ type SignInScreenProps = {
  *
  * La cruz (2026-11-27): la pantalla no tiene el menú del sitio, así que
  * arriba a la derecha hay una salida. Es el primer elemento del `<main>`,
- * posicionada contra la pantalla entera (el `relative` de la raíz): en
- * celular cae sobre la banda verde, en la fila del logo (blanca, 5.74:1);
- * desde `lg`, sobre la columna del formulario (`fg-muted`). Su borde derecho
+ * posicionada contra la pantalla entera (el `relative` de la raíz): cae
+ * siempre sobre `card` (`fg-muted`), en celular arriba del formulario y
+ * desde `lg` sobre su columna. Su borde derecho
  * visible (el ícono de 22px dentro del área de 44px) se alinea con el gutter
  * del contenido: 16 / 32 / 48px.
  *
@@ -72,18 +73,18 @@ type SignInScreenProps = {
  */
 export function SignInScreen({ intro, showJoin, exitHref, children }: SignInScreenProps) {
   return (
-    // `max-lg:grid-rows-[auto_1fr]` (sin clase canónica): en celular la banda
-    // mide lo que su contenido, así que el alto que sobra de `min-h-dvh` va entero a la
-    // fila del formulario y no queda un hueco debajo de la banda. En celular
-    // la página crece con su contenido; desde `lg`, `lg:h-dvh` la fija en
-    // `100dvh` y no scrollea (las dos columnas llevan `lg:min-h-0`).
+    // En celular el panel de marca no se muestra: la grilla tiene una sola
+    // fila (el formulario), que ocupa todo `min-h-dvh`, y la página crece con
+    // su contenido; desde `lg`, `lg:h-dvh` la fija en `100dvh` y no scrollea
+    // (las dos columnas llevan `lg:min-h-0`).
     <div
       data-flow-shell=""
-      className="relative grid min-h-dvh bg-card max-lg:grid-rows-[auto_1fr] lg:h-dvh lg:grid-cols-12"
+      className="relative grid min-h-dvh bg-card lg:h-dvh lg:grid-cols-12"
     >
-      {/* El anillo de foco global es `brand`, que no se distingue sobre el
-          verde de marca del panel: acá va en blanco. */}
-      <header className="relative flex flex-col overflow-clip bg-brand-hover text-white lg:col-span-5 lg:min-h-0 [&_a:focus-visible]:outline-white">
+      {/* Solo desde `lg` (`hidden lg:flex`). El anillo de foco global es
+          `brand`, que no se distingue sobre el verde de marca del panel: acá
+          va en blanco. */}
+      <header className="relative hidden flex-col overflow-clip bg-brand-hover text-white lg:col-span-5 lg:flex lg:min-h-0 [&_a:focus-visible]:outline-white">
         <div className="flex flex-col gap-6 px-4 pt-6 pb-7 sm:px-8 lg:gap-14 lg:px-10 lg:pt-12 xl:px-12">
           <Link href="/" aria-label={brand.home} className="flex w-fit">
             {/* No es la LCP (mide 26px de alto): `eager` sin `preload`, como
@@ -160,15 +161,16 @@ export function SignInScreen({ intro, showJoin, exitHref, children }: SignInScre
           entra (errores de Clerk, alta con más campos, ventana muy baja): la
           página nunca scrollea. El `m-auto` del hijo lo centra cuando entra
           y, a diferencia de `items-center`, no le recorta la parte de arriba
-          cuando desborda. */}
-      <main className="flex px-4 pt-6 pb-12 sm:px-8 lg:col-span-7 lg:min-h-0 lg:overflow-y-auto lg:px-12 lg:py-8">
+          cuando desborda. En celular, `pt-16` deja libre la fila de la cruz
+          (44px desde `top-4`) para que nunca pise el `<h1>`. */}
+      <main className="flex px-4 pt-16 pb-12 sm:px-8 lg:col-span-7 lg:min-h-0 lg:overflow-y-auto lg:px-12 lg:py-8">
         {/* `absolute` contra la raíz (el `<main>` no está posicionado): no
-            scrollea con la columna ni la recorta su `overflow`. En celular
-            está sobre el verde del panel: ícono y anillo de foco en blanco. */}
+            scrollea con la columna ni la recorta su `overflow`. Siempre
+            está sobre `card`, en celular y desde `lg`. */}
         <SignInExitLink
           href={exitHref}
           label={signInContent.close}
-          className="absolute top-4 right-1.5 z-10 flex size-11 items-center justify-center rounded-full text-white transition-colors hover:bg-white/15 motion-reduce:transition-none max-lg:focus-visible:outline-white sm:right-5 lg:top-5 lg:right-9 lg:text-fg-muted lg:hover:bg-card-muted lg:hover:text-fg"
+          className="absolute top-4 right-1.5 z-10 flex size-11 items-center justify-center rounded-full text-fg-muted transition-colors hover:bg-card-muted hover:text-fg motion-reduce:transition-none sm:right-5 lg:top-5 lg:right-9"
         >
           <Icon name="x" size={22} strokeWidth={2} />
         </SignInExitLink>
