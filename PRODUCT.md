@@ -142,6 +142,67 @@ el directorio muestra el conteo real. Seguros no se ofrecen por ahora como
 pedido desde la web (el módulo de pedido no tiene pestaña Seguro); el beneficio
 del aliado Intēgrity sigue en el Home.
 
+Modelo de precios para proveedores (decisión del dueño, 2026-11-26): AutoLibre
+deja de vender planes de suscripción (Gratis / Plus / Plus Max, con topes de
+pedidos y prueba gratis) y cobra por **trabajo confirmado**: el usuario eligió
+al negocio y llevó el auto. Esto resuelve la contradicción que quedaba
+pendiente entre `/proveedores/registro` y `/proveedores/planes`. Lo único
+publicable es esto:
+
+- El primer trabajo que AutoLibre le acerca al negocio es gratis.
+- Trabajo suelto: a partir del segundo trabajo, ARS 20.000 por trabajo nuevo
+  confirmado en mecánica. Se paga
+  después de que el auto fue, en una liquidación mensual. En rubros de ticket
+  más bajo (lavaderos, gomerías) el precio es menor y se informa al
+  registrarse: no se publica ese monto.
+- Pack de 3 trabajos: ARS 50.000 (unos ARS 16.700 cada uno), prepago; cada
+  trabajo confirmado descuenta uno. Existe para que salga más barato: se puede
+  afirmar que con el pack cada trabajo sale menos que los ARS 20.000 del
+  trabajo suelto (solo esa comparación). Lo puede comprar cualquier negocio
+  desde el primer día y se compra por WhatsApp (mensaje por defecto: "Hola,
+  quiero comprar un pack"); el backend no soporta packs por ahora.
+- Es un precio fijo por trabajo, no un porcentaje. El pago del trabajo lo
+  arreglan usuario y taller, sin pasar por AutoLibre, y el costo no se le suma
+  al usuario arriba del precio.
+- Se cobra por trabajo acercado, no por cliente: si el cliente vuelve directo
+  al taller, no se paga nada; si vuelve a pedir por AutoLibre, es un trabajo
+  nuevo.
+- Los precios se actualizan cada tres meses. No hay topes de pedidos ni de
+  propuestas por mes: todo negocio registrado recibe pedidos y responde.
+- Pagar no influye en la recomendación de la IA.
+
+No se publica nada más: ni IVA o facturación, ni cómo se paga el pack (medio
+de pago, transferencia, comprobante), ni el vencimiento del pack (decisión del
+dueño, 2026-11-26: no se habla de vigencia, tampoco para decir que no vence),
+ni reglas sobre revisiones (muchas veces no se cobran: depende del taller), ni
+períodos de prueba, ni
+métricas de conversión o de clics, ni reseñas o "verificado" (no existen), ni
+cómo se confirma el trabajo más allá de "te consultamos a vos y al usuario por
+WhatsApp". Vocabulario: "trabajo", "trabajo confirmado", "pack de 3 trabajos",
+"precios"; se evitan "plan", "suscripción", "fee" y "comisión" (salvo para
+decir que no es un porcentaje).
+
+Decisiones de esa misma fecha:
+
+1. Precios publicados: solo el de mecánica y el del pack.
+2. El pack es visible y comprable para todos los negocios.
+3. Los CTA públicos van al registro o a WhatsApp. La contratación online
+   (`/proveedores/contratar`) queda sin enlazar desde páginas públicas, pero
+   no se borra.
+4. La URL `/proveedores/planes` se mantiene (ahora es "Precios para
+   proveedores"); el copy vive en `lib/content/providers-plans.ts`.
+
+Estado de `/cuenta` y de la contratación (segunda vuelta, 2026-11-26): la
+cuenta ya no vende suscripciones nuevas. Un negocio sin suscripción ve el
+precio por trabajo y la oferta del pack con botón a WhatsApp (los montos salen
+de `providers-plans.ts`); ya no ve "Contratar el plan Plus". Un negocio con una
+suscripción vigente (en prueba, activa, con baja pedida o con pago pendiente)
+sigue viendo su plan, su pago y la baja como antes; su copy de planes vive en
+`lib/content/partner-legacy-plans.ts` y no se usa en páginas públicas. La
+contratación online (`/proveedores/contratar`) queda huérfana a propósito
+hasta nuevo aviso: no se borra ni se cambia su lógica, pero ningún enlace
+lleva a ella salvo los `?next=` de flujos ya iniciados.
+
 Actualización de producto para `/proveedores` (2026-10-27): la ficha publica
 100+ negocios en la red y cobertura en todo el país. Estos datos viven en
 `lib/content/providers-directory.ts`; las cifras de septiembre de

@@ -11,7 +11,7 @@ const { rules, compare, faq, closing } = providersPlansContent;
 /** `h2` de sección del sistema AutoLibre AI. */
 const sectionTitle = "font-display text-3xl font-bold tracking-tight text-balance text-fg md:text-4xl";
 
-/** "Lo mismo en todos los planes": las tres reglas, en columnas con filete. */
+/** "Lo mismo para todos los negocios": las tres reglas, en columnas con filete. */
 export function PlansRulesSection() {
   return (
     <Section tone="canvas" spacing="md" aria-labelledby="planes-reglas">
@@ -33,7 +33,7 @@ export function PlansRulesSection() {
 /**
  * Tabla comparativa (desde `md`; en celular las tarjetas ya lo dicen todo).
  * `<table>` real con `<th scope>`: un lector la recorre por fila y columna.
- * La columna de Plus va resaltada como su tarjeta. Los tildes y las rayas
+ * La columna de "Trabajo suelto" va resaltada como su tarjeta. Los tildes y las rayas
  * llevan su texto (`sr-only`): el ícono nunca es la única señal.
  */
 export function PlansCompareSection() {
@@ -103,7 +103,7 @@ export function PlansCompareSection() {
   );
 }
 
-/** "Preguntas sobre los planes" y la banda de cierre. */
+/** "Preguntas sobre los precios" y la banda de cierre. */
 export function PlansFaqSection() {
   return (
     <Section tone="canvas" spacing="md" aria-labelledby="planes-faq">

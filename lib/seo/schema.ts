@@ -379,27 +379,34 @@ export function partnerLocalBusinessSchema({
 }
 
 /**
- * Catálogo de planes pagos para proveedores (`/proveedores/planes`), como
- * `OfferCatalog` de la organización. Sólo planes con precio en pesos; el plan
- * gratuito no es una `Offer` (no hay transacción que describir).
+ * Catálogo de precios para proveedores (`/proveedores/planes`), como
+ * `OfferCatalog` de la organización. Desde el 2026-11-26 se cobra por trabajo
+ * confirmado, no por mes: cada `Offer` dice su precio en pesos y para cuántos
+ * trabajos vale (`referenceQuantity`: 1 en el trabajo suelto, 3 en el pack).
+ * El primer trabajo, que es gratis, no es una `Offer` (no hay transacción que
+ * describir).
  */
-export function providerPlansOfferCatalogSchema(
-  plans: readonly { name: string; description: string; priceArs: number }[],
+export function providerPricingOfferCatalogSchema(
+  offers: readonly { name: string; description: string; priceArs: number; jobs: number }[],
 ) {
   return {
     "@type": "OfferCatalog",
-    name: "Planes para proveedores de AutoLibre",
-    itemListElement: plans.map((plan) => ({
+    name: "Precios para proveedores de AutoLibre",
+    itemListElement: offers.map((offer) => ({
       "@type": "Offer",
-      name: plan.name,
-      description: plan.description,
-      price: plan.priceArs,
+      name: offer.name,
+      description: offer.description,
+      price: offer.priceArs,
       priceCurrency: "ARS",
       priceSpecification: {
         "@type": "UnitPriceSpecification",
-        price: plan.priceArs,
+        price: offer.priceArs,
         priceCurrency: "ARS",
-        unitText: "MON",
+        referenceQuantity: {
+          "@type": "QuantitativeValue",
+          value: offer.jobs,
+          unitText: "trabajo confirmado",
+        },
       },
       seller: { "@id": ORGANIZATION_ID },
     })),

@@ -107,9 +107,9 @@ export const partnerClaimContent = {
     },
     nextTitle: "Próximos pasos",
     plans: {
-      title: "Elegí tu plan",
-      body: "Con el plan Gratis ya aparecés en la red. Con un plan pago recibís más pedidos por WhatsApp.",
-      cta: "Ver los planes",
+      title: "Conocé los precios",
+      body: "El primer trabajo que te acercamos es gratis. A partir del segundo, pagás un precio fijo por cada trabajo nuevo confirmado.",
+      cta: "Ver los precios",
       href: PROVEEDORES_PLANES_PATH,
     },
     /**

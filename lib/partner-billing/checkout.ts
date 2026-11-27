@@ -13,7 +13,7 @@
 export const PAID_PLAN_CODES = ["plus", "plus_max"] as const;
 export type PaidPlanCode = (typeof PAID_PLAN_CODES)[number];
 
-/** Ids de los planes en la landing (`providers-plans.ts`) ⇒ `code` del backend. */
+/** Ids de los planes de suscripción (`lib/content/partner-legacy-plans.ts`) ⇒ `code` del backend. */
 export const LANDING_PLAN_ID_TO_CODE = {
   "plan-plus": "plus",
   "plan-plus-max": "plus_max",

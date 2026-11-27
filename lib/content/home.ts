@@ -344,7 +344,7 @@ export const homeContent = {
     subtitle:
       "Recibí pedidos de servicio de gente que ya sabe qué necesita, con los datos del vehículo incluidos.",
     register: { label: "Sumate a AutoLibre", href: PROVEEDORES_REGISTRO_PATH },
-    plans: { label: "Ver planes", href: PROVEEDORES_PLANES_PATH },
+    plans: { label: "Ver precios", href: PROVEEDORES_PLANES_PATH },
     network: { label: "Ver la red", href: PROVEEDORES_PATH },
   },
 

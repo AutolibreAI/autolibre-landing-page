@@ -15,7 +15,7 @@ import {
   faqPageSchema,
   graph,
   organizationSchema,
-  providerPlansOfferCatalogSchema,
+  providerPricingOfferCatalogSchema,
   webPageSchema,
 } from "@/lib/seo/schema";
 
@@ -28,14 +28,23 @@ export const metadata: Metadata = createMetadata({
   path: PATH,
 });
 
-/** Sólo los planes pagos: el plan gratuito no es una `Offer`. */
-const paidPlans = providersPlansContent.plans
-  .filter((plan) => plan.priceNote !== null)
-  .map((plan) => ({
-    name: plan.name,
-    description: plan.description,
-    priceArs: Number(plan.price.replace(/[^\d]/g, "")),
-  }));
+/**
+ * Sólo lo que se paga (trabajo suelto y pack): el primer trabajo, gratis, no
+ * es una `Offer`. El precio sale del número del contenido (`priceArs`), no de
+ * parsear el texto de la tarjeta.
+ */
+const paidOffers = providersPlansContent.plans.flatMap((plan) =>
+  plan.priceArs === null
+    ? []
+    : [
+        {
+          name: plan.name,
+          description: plan.offerDescription,
+          priceArs: plan.priceArs,
+          jobs: plan.jobs,
+        },
+      ],
+);
 
 /** La MISMA lista alimenta las migas visibles y el `BreadcrumbList`. */
 const breadcrumbs = [
@@ -48,16 +57,18 @@ const schema = graph(
   organizationSchema(),
   webPageSchema({ name: TITLE, description: DESCRIPTION, path: PATH }),
   breadcrumbSchema(breadcrumbs),
-  providerPlansOfferCatalogSchema(paidPlans),
+  providerPricingOfferCatalogSchema(paidOffers),
   faqPageSchema(providersPlansContent.faq.items),
 );
 
 /**
- * `/proveedores/planes` (rediseño 2026-11, lienzo `Planes`). Server
- * Component entero, sin islas ni Clerk: los links a la contratación van sin
- * prefetch. Outline: h1 → h2 "Planes disponibles" (h3 por plan y ventas) →
- * h2 "Lo mismo en todos los planes" (h3 por regla) → h2 "Compará los planes"
- * (desde `md`) → h2 "Preguntas sobre los planes" → h2 del cierre.
+ * `/proveedores/planes` (rediseño 2026-11, lienzo `Planes`): los precios
+ * para proveedores. Desde el 2026-11-26 se cobra por trabajo confirmado y la
+ * URL conserva `/planes`. Server Component entero, sin islas ni Clerk; nada
+ * enlaza a la contratación. Outline: h1 → h2 "Precios por trabajo" (h3 por
+ * tarjeta y ventas) → h2 "Lo mismo para todos los negocios" (h3 por regla) →
+ * h2 "Compará las opciones" (desde `md`) → h2 "Preguntas sobre los precios"
+ * → h2 del cierre.
  */
 export default function ProveedoresPlanesPage() {
   return (

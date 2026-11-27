@@ -226,8 +226,25 @@ export const accountContent = {
 
     plan: {
       title: "Plan",
-      free: "Plan Gratis",
-      freePrice: "Gratis",
+      /**
+       * Negocio SIN suscripción (2026-11-26): ya no se venden planes desde la
+       * cuenta. Se muestra el precio por trabajo y el pack, que se compra por
+       * WhatsApp. Los montos llegan de `providers-plans.ts` por parámetro.
+       */
+      jobs: {
+        title: "Precio por trabajo",
+        firstFree: "El primer trabajo que te acercamos es gratis",
+        fromSecond: (price: string) => `Desde el segundo, ${price} por trabajo nuevo en mecánica`,
+        summary: (price: string) =>
+          `El primer trabajo que te acercamos es gratis. Desde el segundo, ${price} por trabajo nuevo en mecánica.`,
+      },
+      pack: {
+        title: "Con el pack, cada trabajo te sale más barato",
+        summary: (packPrice: string, jobPrice: string) =>
+          `Con el pack de 3 trabajos por ${packPrice}, cada trabajo te sale más barato que los ${jobPrice} del trabajo suelto.`,
+        note: "Pagar no cambia la recomendación de la IA.",
+      },
+      seePrices: "Ver los precios",
       named: (planName: string) => `Plan ${planName}`,
       unnamed: "Plan pago",
       perMonth: (vat: boolean) => (vat ? "por mes, IVA incluido" : "por mes + IVA"),
@@ -239,19 +256,7 @@ export const accountContent = {
         other: "Sin confirmar",
       },
       limit: (limit: number) => `Hasta ${limit} pedidos por WhatsApp por mes.`,
-      freeLimit: "1 propuesta por WhatsApp por mes.",
       seePlan: "Ver mi plan",
-      contractPlus: "Contratar el plan Plus",
-      allPlans: "Ver todos los planes",
-      trial: {
-        days: (days: number) => `Los primeros ${days} días son sin cargo.`,
-        conditional: "Si es la primera vez que tu taller contrata un plan pago, arrancás con un período de prueba sin cargo.",
-      },
-      upsell: {
-        title: (limit: number | null) =>
-          limit ? `Recibí hasta ${limit} pedidos por mes, sin usar la app` : "Recibí pedidos por WhatsApp, sin usar la app",
-        note: "El plan no cambia la recomendación de la IA.",
-      },
       usage: {
         title: "Uso de este mes",
         paidLabel: "Pedidos por WhatsApp este mes",
@@ -288,7 +293,7 @@ export const accountContent = {
         review: { title: "En revisión", body: "El equipo revisa los datos y te contacta por WhatsApp para activar tu perfil." },
         published: {
           title: "Taller publicado",
-          body: "Tu taller aparece en la red y lo administrás desde acá. Desde acá también contratás un plan.",
+          body: "Tu taller aparece en la red y lo administrás desde acá.",
         },
       },
       dataTitle: "Los datos que nos mandaste",
@@ -298,8 +303,8 @@ export const accountContent = {
       fixMessage: "¡Hola! Mandé el alta de mi negocio a AutoLibre y quiero corregir un dato.",
       meanwhile: {
         title: "Mientras tanto",
-        body: "Con el plan Gratis tu taller ya aparece en la red. Si querés recibir más pedidos por WhatsApp, mirá los planes pagos.",
-        cta: "Conocé los planes",
+        body: "Registrarte es gratis y el primer trabajo que te acercamos también. A partir del segundo, pagás un precio fijo por cada trabajo nuevo confirmado.",
+        cta: "Ver los precios",
       },
     },
   },
@@ -342,17 +347,18 @@ export const accountContent = {
     },
 
     actions: {
-      /** Sin plan pago: contratar (el plan se cambia en la tarjeta del checkout). */
-      choose: "Contratar el plan Plus",
-      allPlans: { label: "Ver todos los planes", href: PROVEEDORES_PLANES_PATH },
+      allPlans: { label: "Ver los precios", href: PROVEEDORES_PLANES_PATH },
       /** `pending`: la pantalla de resultado consulta el estado y ofrece reintentar. */
       pending: "Ver el estado del pago",
-      /** Plan activo: no hay cambio de plan online. */
-      changePlan: "Cambiar de plan con ventas",
+      /**
+       * Plan activo: contacto genérico con ventas. Hasta el 2026-11-26 era
+       * "Cambiar de plan con ventas"; ya no se venden planes a los que cambiar.
+       */
+      changePlan: "Hablar con ventas",
       changePlanWhatsapp: (partnerName: string, planName: string | null) =>
         planName
-          ? `Hola! Mi taller ${partnerName} tiene el plan ${planName} de AutoLibre y quiero cambiar de plan.`
-          : `Hola! Mi taller ${partnerName} tiene un plan de AutoLibre y quiero cambiar de plan.`,
+          ? `Hola! Mi taller ${partnerName} tiene el plan ${planName} de AutoLibre y tengo una consulta.`
+          : `Hola! Mi taller ${partnerName} tiene un plan de AutoLibre y tengo una consulta.`,
     },
 
     /**

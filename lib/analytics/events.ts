@@ -103,8 +103,10 @@ export const ANALYTICS_EVENTS = {
    * quiere optimizar campañas sobre la suscripción, el que va a Meta es
    * `plan_checkout_confirmed` (decisión pendiente).
    *
-   * Click en "Quiero el plan …" de `/proveedores/planes` (clickable, con
-   * `data-analytics-plan`).
+   * Click en un botón de contratar un plan (clickable, con
+   * `data-analytics-plan`). Hasta el 2026-11-26 lo mandaban las tarjetas de
+   * `/proveedores/planes` y "Contratar el plan Plus" de `/cuenta`; desde el
+   * modelo por trabajo confirmado ningún botón lo dispara.
    */
   planCheckoutStarted: "plan_checkout_started",
   /** El backend creó el checkout y se manda a Mercado Pago. */

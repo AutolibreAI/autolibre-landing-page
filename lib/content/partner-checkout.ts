@@ -1,5 +1,5 @@
 import { partnerAccountContent } from "@/lib/content/partner-account";
-import { providersPlansContent } from "@/lib/content/providers-plans";
+import { partnerLegacyPlansContent } from "@/lib/content/partner-legacy-plans";
 import { LANDING_PLAN_ID_TO_CODE, type CheckoutFailureKind } from "@/lib/partner-billing/checkout";
 import { PROVEEDORES_PLANES_PATH } from "@/lib/proveedores/query";
 
@@ -16,16 +16,20 @@ import { PROVEEDORES_PLANES_PATH } from "@/lib/proveedores/query";
  * El login es el compartido de `lib/content/partner-account.ts`.
  */
 
-export type LandingPlan = (typeof providersPlansContent.plans)[number];
+export type LandingPlan = (typeof partnerLegacyPlansContent.plans)[number];
 
-/** El plan de la página de planes (nombre, bajada, beneficios) por `code` del backend. */
+/**
+ * El plan de suscripción (nombre, bajada, beneficios) por `code` del backend.
+ * Sale de `partner-legacy-plans.ts`: `/proveedores/planes` ya no muestra
+ * planes (2026-11-26), pero la contratación y `/cuenta` sí.
+ */
 export function planContent(code: string): LandingPlan | null {
   const entry = Object.entries(LANDING_PLAN_ID_TO_CODE).find(([, planCode]) => planCode === code);
   if (!entry) return null;
-  return providersPlansContent.plans.find((plan) => plan.id === entry[0]) ?? null;
+  return partnerLegacyPlansContent.plans.find((plan) => plan.id === entry[0]) ?? null;
 }
 
-/** Nombre del plan como en la página de planes (FR-013), por `code` del backend. */
+/** Nombre del plan de suscripción (FR-013), por `code` del backend. */
 export function planDisplayName(code: string): string | null {
   return planContent(code)?.name ?? null;
 }
@@ -74,7 +78,7 @@ export const partnerCheckoutContent = {
   invalidPlan: {
     title: "Elegí un plan para contratar",
     body: "Ese plan no existe o no se contrata online. Mirá los planes disponibles y elegí el que te sirva.",
-    cta: { label: "Ver los planes", href: PROVEEDORES_PLANES_PATH },
+    cta: { label: "Ver los precios", href: PROVEEDORES_PLANES_PATH },
   },
 
   /** Indicador de progreso de la contratación (`FlowSteps`). */
@@ -96,7 +100,7 @@ export const partnerCheckoutContent = {
     title: (planName: string) => `Plan ${planName}`,
     featuresLabel: (planName: string) => `Qué incluye el plan ${planName}`,
     note: "El precio final y si te corresponde el período de prueba los ves antes de pagar.",
-    change: { label: "Cambiar de plan", href: PROVEEDORES_PLANES_PATH },
+    change: { label: "Ver los precios", href: PROVEEDORES_PLANES_PATH },
   },
 
   loading: "Buscando tus talleres…",
@@ -213,7 +217,7 @@ export const partnerCheckoutContent = {
 
   disabled: {
     salesCta: "Hablar con ventas",
-    whatsappMessage: providersPlansContent.sales.whatsappMessage,
+    whatsappMessage: partnerLegacyPlansContent.sales.whatsappMessage,
   },
 
   /**
@@ -239,7 +243,7 @@ export const partnerCheckoutContent = {
       currentPlan
         ? `Hola! Mi taller tiene el plan ${currentPlan} de AutoLibre y quiero pasarme al plan ${wantedPlan}.`
         : `Hola! Mi taller ya tiene un plan de AutoLibre y quiero pasarme al plan ${wantedPlan}.`,
-    plansLink: { label: "Ver los planes", href: PROVEEDORES_PLANES_PATH },
+    plansLink: { label: "Ver los precios", href: PROVEEDORES_PLANES_PATH },
   },
 
   /** `/proveedores/contratar/resultado`: la vuelta de Mercado Pago. */
@@ -315,13 +319,13 @@ export const partnerCheckoutContent = {
     noCheckout: {
       title: "No encontramos una contratación en curso",
       body: "Si ya pagaste, volvé a esta página desde el mismo navegador. Si no, elegí un plan para empezar.",
-      cta: { label: "Ver los planes", href: PROVEEDORES_PLANES_PATH },
+      cta: { label: "Ver los precios", href: PROVEEDORES_PLANES_PATH },
     },
     unauthenticated: "Tu sesión venció. Iniciá sesión de nuevo para ver el estado de tu plan.",
     help: {
       label: "Escribinos por WhatsApp",
       whatsappMessage: "Hola! Contraté un plan para mi taller en AutoLibre y quiero consultar el estado del pago.",
     },
-    plansLink: { label: "Ver los planes", href: PROVEEDORES_PLANES_PATH },
+    plansLink: { label: "Ver los precios", href: PROVEEDORES_PLANES_PATH },
   },
 } as const;

@@ -25,7 +25,10 @@ export const PROVEEDORES_REGISTRO_PATH = `${PROVEEDORES_PATH}/registro`;
 export const PROVEEDORES_REGISTRO_FLOW_PARAM = "alta";
 /** Link al flujo del alta (los CTA de la landing, `/cuenta`, la contratación sin taller). */
 export const PROVEEDORES_REGISTRO_ALTA_PATH = `${PROVEEDORES_REGISTRO_PATH}?${PROVEEDORES_REGISTRO_FLOW_PARAM}=1`;
-/** Precios y planes pagos para proveedores: vive bajo el directorio. */
+/**
+ * Precios para proveedores: vive bajo el directorio. Desde el 2026-11-26 se
+ * cobra por trabajo confirmado (ya no hay planes), pero la URL se conserva.
+ */
 export const PROVEEDORES_PLANES_PATH = `${PROVEEDORES_PATH}/planes`;
 /**
  * Canje del código de reclamo de un taller (spec 211). Privada (`noindex`) y
@@ -34,7 +37,9 @@ export const PROVEEDORES_PLANES_PATH = `${PROVEEDORES_PATH}/planes`;
 export const PROVEEDORES_RECLAMAR_PATH = `${PROVEEDORES_PATH}/reclamar`;
 /**
  * Contratación de un plan pago (spec 212). Privada (`noindex`) y fuera del
- * sitemap. Backend tiene que reservar este slug (AGENTS.md).
+ * sitemap. Backend tiene que reservar este slug (AGENTS.md). Desde el
+ * 2026-11-26 ninguna página pública la enlaza (modelo por trabajo
+ * confirmado); sigue viva para `/cuenta` y los flujos ya iniciados.
  */
 export const PROVEEDORES_CONTRATAR_PATH = `${PROVEEDORES_PATH}/contratar`;
 /**

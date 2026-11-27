@@ -30,11 +30,11 @@ export const providersContent = {
       lead: "Recibí consultas con la información del vehículo y el servicio que te piden. El registro es gratis.",
       checks: [
         "Aparecés en el directorio y en las recomendaciones de la IA",
-        "No cobramos comisión por trabajo",
-        "Usás la misma cuenta de la app de AutoLibre",
+        "El primer trabajo que te acercamos es gratis",
+        "Todo por WhatsApp: recibís y respondés los pedidos desde tu chat",
       ],
       primary: "Registrar mi negocio",
-      secondary: "Ver los planes",
+      secondary: "Ver los precios",
       /**
        * Vista previa con MARCADORES, no un negocio inventado: así se ve tu
        * perfil y así llega un pedido.
@@ -78,13 +78,15 @@ export const providersContent = {
         },
         {
           icon: "shield-check" as const,
-          title: "Sin comisión",
-          body: "Registrarte es gratis y no cobramos comisión por los trabajos que hacés.",
+          title: "Tu primer trabajo, gratis",
+          body: "Registrarte es gratis y el primer trabajo que te acercamos también.",
         },
         {
-          icon: "chart" as const,
-          title: "Métricas de tu perfil",
-          body: "Ves cuántos clics recibe tu perfil desde AutoLibre.",
+          // Todos los perfiles son indexables y van al sitemap (decisión del
+          // 2026-11-24, ver `app/proveedores/[slug]/page.tsx`).
+          icon: "search" as const,
+          title: "Te encuentran en Google",
+          body: "Tu perfil tiene su propio link en autolibre.ai y puede aparecer en las búsquedas de Google.",
         },
       ],
     },
@@ -99,9 +101,9 @@ export const providersContent = {
       timelineTitle: "Después de enviar, seguís el estado desde tu cuenta",
     },
     plans: {
-      title: "Empezás gratis. Si querés más pedidos, hay planes.",
-      lead: "Precio fijo mensual. El plan no influye en la recomendación de la IA.",
-      cta: "Comparar los planes",
+      title: "El primer trabajo es gratis. Desde el segundo, pagás por trabajo.",
+      lead: "Precio fijo por trabajo, no un porcentaje. Pagar no influye en la recomendación de la IA.",
+      cta: "Ver los precios",
     },
     faq: {
       title: "Antes de registrarte",
@@ -112,7 +114,7 @@ export const providersContent = {
         {
           question: "¿Cuánto cuesta registrarme?",
           answer:
-            "Nada. El registro de talleres y servicios en AutoLibre es gratis. Los planes pagos son opcionales y suman pedidos por WhatsApp.",
+            "Nada. El registro de talleres y servicios en AutoLibre es gratis y el primer trabajo que te acercamos también. A partir del segundo, pagás un precio fijo por cada trabajo nuevo confirmado.",
         },
         {
           question: "¿Necesito crear otra cuenta si ya uso la app?",
@@ -130,13 +132,13 @@ export const providersContent = {
             "Cuando aprobamos la solicitud. El equipo revisa los datos y te contacta por WhatsApp para activar tu perfil.",
         },
         {
-          question: "¿Pagar un plan me hace aparecer primero?",
-          answer: "No. El plan no influye en la recomendación de la IA: el usuario siempre elige libremente.",
+          question: "¿Pagar me hace aparecer primero?",
+          answer: "No. Lo que pagás no influye en la recomendación de la IA: el usuario siempre elige libremente.",
         },
       ],
     },
     /** Barra fija inferior en celular. */
-    mobileBar: { label: "Registrar mi negocio", primary: "Registrar mi negocio", secondary: "Planes" },
+    mobileBar: { label: "Registrar mi negocio", primary: "Registrar mi negocio", secondary: "Precios" },
   },
 
   /**
@@ -156,7 +158,7 @@ export const providersContent = {
      */
     existing: {
       title: "Tu negocio ya está en AutoLibre",
-      body: "Tu cuenta ya administra estos negocios. Desde Mi negocio ves tu perfil y tu plan.",
+      body: "Tu cuenta ya administra estos negocios. Desde Mi negocio ves y administrás tu perfil.",
       listLabel: "Tus negocios",
       goToAccount: "Ir a mi negocio",
       continueCheckout: (plan: string) => `Seguir con el plan ${plan}`,
@@ -253,14 +255,14 @@ export const providersContent = {
             id: "publicada",
             label: "Taller publicado",
             description:
-              "Tu taller aparece en la red y lo administrás con tu cuenta de AutoLibre. Desde ahí también contratás un plan.",
+              "Tu taller aparece en la red y lo administrás con tu cuenta de AutoLibre.",
           },
         ],
       },
       nextTitle: "Mientras tanto",
       plans: {
-        body: "Con el plan Gratis tu taller ya aparece en la red. Si querés recibir más pedidos por WhatsApp, mirá los planes pagos.",
-        cta: "Conocé los planes",
+        body: "Registrarte es gratis y el primer trabajo que te acercamos también. A partir del segundo, pagás un precio fijo por cada trabajo nuevo confirmado.",
+        cta: "Ver los precios",
       },
       /** Vino de contratar un plan (`?next`): se lo recuerda y se ofrece volver. */
       checkout: {

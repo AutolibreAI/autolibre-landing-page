@@ -280,8 +280,9 @@ export function SumateSteps() {
 }
 
 /**
- * "Empezás gratis…": los planes en corto sobre la banda oscura. Precios de
- * `providers-plans.ts` (los de la página de planes: no se escriben dos veces).
+ * "Empezás gratis…": los precios en corto sobre la banda oscura (primer
+ * trabajo, trabajo suelto y pack). Salen de `providers-plans.ts` (los de la
+ * página de precios: no se escriben dos veces).
  */
 export function SumatePlans() {
   const { plans } = sumate;
@@ -349,7 +350,7 @@ export function SumateFaq() {
 }
 
 /**
- * Barra fija inferior en celular: "Registrar mi negocio" + "Planes". Sin JS
+ * Barra fija inferior en celular: "Registrar mi negocio" + "Precios". Sin JS
  * (Server Component), debajo de `lg`, después del pie (no lo tapa nunca).
  */
 export function SumateMobileBar() {

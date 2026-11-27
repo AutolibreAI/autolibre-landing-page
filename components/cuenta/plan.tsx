@@ -7,24 +7,55 @@ import { CancelSubscription } from "@/components/proveedores/account/cancel-subs
 import { ButtonAnchor, ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { StatusPill } from "@/components/ui/status-pill";
-import { livePlanCode, trialOfferFor, type PlanState } from "@/lib/account/plan-state";
+import { livePlanCode, type PlanState } from "@/lib/account/plan-state";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { accountContent } from "@/lib/content/account";
 import { planContent, planDisplayName } from "@/lib/content/partner-checkout";
 import { providersPlansContent } from "@/lib/content/providers-plans";
+import { siteContent } from "@/lib/content/site";
 import { formatDate, formatPlanPrice, type BillingPlan } from "@/lib/partner-billing/checkout";
-import { checkoutHref } from "@/lib/partner-billing/return-path";
 import { canCancelSubscription, type SubscriptionView } from "@/lib/partner-billing/subscription";
-import {
-  PROVEEDORES_CONTRATAR_PATH,
-  PROVEEDORES_CONTRATAR_RESULTADO_PATH,
-  PROVEEDORES_PLANES_PATH,
-} from "@/lib/proveedores/query";
+import { PROVEEDORES_CONTRATAR_RESULTADO_PATH, PROVEEDORES_PLANES_PATH } from "@/lib/proveedores/query";
 import { cn } from "@/lib/utils";
 import { whatsappUrl } from "@/lib/whatsapp";
 
 const { plan: copy } = accountContent.business;
 const { page } = accountContent;
+
+/**
+ * Precios vigentes (modelo por trabajo confirmado, 2026-11-26): salen de la
+ * página de precios para no escribir los números dos veces. Un negocio sin
+ * suscripción ve esto en lugar del viejo "Contratar el plan Plus": no hay
+ * checkout de packs, el pack se compra por WhatsApp.
+ */
+const [, jobOffer, packOffer] = providersPlansContent.plans;
+
+/** "Comprar el pack": WhatsApp con el mensaje del pack de la página de precios. */
+function PackWhatsappButton({
+  placement,
+  variant,
+  block,
+}: {
+  readonly placement: string;
+  readonly variant: "primary" | "light";
+  readonly block?: boolean;
+}) {
+  return (
+    <ButtonAnchor
+      href={whatsappUrl(packOffer.cta.whatsappMessage)}
+      target="_blank"
+      rel="noopener noreferrer"
+      variant={variant}
+      size="44"
+      block={block}
+      data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
+      data-analytics-placement={placement}
+    >
+      {packOffer.cta.label}
+      <span className="sr-only"> {siteContent.nav.externalHint}</span>
+    </ButtonAnchor>
+  );
+}
 
 /** Datos del plan que comparten el Resumen y la pestaña Plan. */
 export type PlanData = {
@@ -64,18 +95,6 @@ function PlanStatus({ state }: { readonly state: PlanState }) {
   }
 }
 
-/** Texto de la prueba debajo de "Contratar el plan Plus": solo lo que el backend confirma. */
-function TrialNote({ data, className }: { readonly data: PlanData; readonly className?: string }) {
-  const plus = findPlan(data.plans, "plus");
-  const offer = trialOfferFor(plus?.trialDays ?? null, data.view.trialEligible);
-  if (offer.kind === "none") return null;
-  return (
-    <p className={cn("text-label text-fg-muted", className)}>
-      {offer.kind === "days" ? copy.trial.days(offer.days) : copy.trial.conditional}
-    </p>
-  );
-}
-
 /** Aviso del pago pendiente (arriba de todo en el Resumen y en Plan). */
 export function PendingPaymentBanner({ partnerId, requestedPlan }: { readonly partnerId: string; readonly requestedPlan: string }) {
   const name = planDisplayName(requestedPlan) ?? copy.unnamed;
@@ -112,7 +131,8 @@ export const planSummaryClasses = {
 /**
  * Tarjeta del plan en el Resumen: plan, estado, tope y la acción que
  * corresponde. Con plan pago, "Ver mi plan" es una acción chica en la misma
- * línea del nombre; con Gratis, contratar el Plus es LA acción de la tarjeta.
+ * línea del nombre; sin suscripción, la tarjeta cuenta el precio por trabajo y
+ * ofrece el pack por WhatsApp (ya no se venden planes desde la cuenta).
  */
 export function PlanSummaryCard({
   data,
@@ -127,14 +147,13 @@ export function PlanSummaryCard({
   const titleId = useId();
   const live = livePlanCode(data.state);
   const limit = live ? (data.limits[live] ?? null) : null;
-  const plusLimit = data.limits.plus ?? null;
-  const offerPlus = data.state.kind === "free" || data.state.kind === "other";
+  const offerPack = data.state.kind === "free" || data.state.kind === "other";
 
   return (
     <section aria-labelledby={titleId} className={planSummaryClasses.card}>
       <div className={planSummaryClasses.head}>
         <h3 id={titleId} className={planSummaryClasses.title}>
-          {live ? planLabel(live) : copy.free}
+          {live ? planLabel(live) : copy.jobs.title}
         </h3>
         {live ? (
           <Link href={planHref} scroll={false} className={rowActionClass}>
@@ -150,27 +169,22 @@ export function PlanSummaryCard({
       ) : null}
 
       {usage ? (
-        <UsageMeter used={usage.used} limit={live ? limit : 1} paid={live !== null} />
+        <UsageMeter used={usage.used} limit={live ? limit : null} paid={live !== null} />
+      ) : live ? (
+        limit ? (
+          <p className={planSummaryClasses.text}>{copy.limit(limit)}</p>
+        ) : null
       ) : (
-        <p className={planSummaryClasses.text}>{live && limit ? copy.limit(limit) : copy.freeLimit}</p>
+        <p className={planSummaryClasses.text}>{copy.jobs.summary(jobOffer.price)}</p>
       )}
 
-      {!live && offerPlus ? (
+      {!live && offerPack ? (
         <div className="flex flex-col gap-2 pb-1">
-          {plusLimit ? <p className={planSummaryClasses.text}>{copy.upsell.title(plusLimit)}.</p> : null}
-          <ButtonLink
-            href={checkoutHref(PROVEEDORES_CONTRATAR_PATH, "plus")}
-            prefetch={false}
-            variant="primary"
-            size="44"
-            block
-            data-analytics-event={ANALYTICS_EVENTS.planCheckoutStarted}
-            data-analytics-placement="cuenta_resumen"
-            data-analytics-plan="plus"
-          >
-            {copy.contractPlus}
+          <p className={planSummaryClasses.text}>{copy.pack.summary(packOffer.price, jobOffer.price)}</p>
+          <PackWhatsappButton placement="cuenta_resumen_pack" variant="primary" block />
+          <ButtonLink href={PROVEEDORES_PLANES_PATH} variant="outline" size="44" block>
+            {copy.seePrices}
           </ButtonLink>
-          <TrialNote data={data} className="text-center" />
         </div>
       ) : null}
     </section>
@@ -265,9 +279,6 @@ export function PlanSection({
     onCanceled();
   }
 
-  const freeContent = planContent("free") ?? providersPlansContent.plans[0];
-  const plusPlan = findPlan(data.plans, "plus");
-  const plusContent = planContent("plus");
   const limit = live ? (data.limits[live] ?? null) : null;
 
   const cancelCard =
@@ -293,7 +304,7 @@ export function PlanSection({
       <h3 id={`${titleId}-uso`} className="font-display text-lg font-bold text-fg">
         {copy.usage.title}
       </h3>
-      <UsageMeter used={usage.used} limit={live ? limit : 1} paid={live !== null} />
+      <UsageMeter used={usage.used} limit={live ? limit : null} paid={live !== null} />
     </section>
   ) : null;
 
@@ -327,56 +338,44 @@ export function PlanSection({
           </aside>
         </div>
       ) : (
-        // Gratis: el plan de hoy y el Plus lado a lado desde `lg` (se comparan de un vistazo).
+        // Sin suscripción: el precio por trabajo y el pack lado a lado desde `lg`.
         <div className="grid items-stretch gap-5 lg:grid-cols-2">
           <section
-            aria-labelledby={`${titleId}-gratis`}
+            aria-labelledby={`${titleId}-trabajo`}
             className="flex flex-col gap-4 rounded-card border border-card-line bg-card p-5 sm:p-6"
           >
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-              <h3 id={`${titleId}-gratis`} className="font-display text-2xl font-bold text-fg">
-                {copy.free}
+              <h3 id={`${titleId}-trabajo`} className="font-display text-2xl font-bold text-fg">
+                {copy.jobs.title}
               </h3>
-              <p className="font-display text-xl font-bold text-fg">{copy.freePrice}</p>
+              <p className="flex flex-col sm:items-end">
+                <span className="font-display text-xl font-bold text-fg">{jobOffer.price}</span>
+                <span className="text-sm text-fg-muted">{jobOffer.priceNote}</span>
+              </p>
             </div>
             <hr className="border-card-line" />
-            <FeatureList items={freeContent?.features ?? []} />
+            <FeatureList items={[copy.jobs.firstFree, copy.jobs.fromSecond(jobOffer.price), ...jobOffer.features]} />
           </section>
 
           {data.state.kind !== "pending" ? (
-            <section aria-labelledby={`${titleId}-plus`} className="flex flex-col gap-4 rounded-card bg-action p-5 text-white sm:p-6">
+            <section aria-labelledby={`${titleId}-pack`} className="flex flex-col gap-4 rounded-card bg-action p-5 text-white sm:p-6">
               <div className="flex flex-col gap-1.5">
-                <h3 id={`${titleId}-plus`} className="font-display text-xl leading-tight font-bold">
-                  {copy.upsell.title(data.limits.plus ?? null)}
+                <h3 id={`${titleId}-pack`} className="font-display text-xl leading-tight font-bold">
+                  {copy.pack.title}
                 </h3>
-                {plusPlan ? (
-                  <p className="flex flex-wrap items-baseline gap-x-2">
-                    <span className="font-display text-xl font-bold">{formatPlanPrice(plusPlan)}</span>
-                    <span className="text-sm text-on-dark-muted">{copy.perMonth(plusPlan.priceIncludesVat)}</span>
-                  </p>
-                ) : null}
+                <p className="flex flex-wrap items-baseline gap-x-2">
+                  <span className="font-display text-xl font-bold">{packOffer.price}</span>
+                  <span className="text-sm text-on-dark-muted">{packOffer.priceNote}</span>
+                </p>
               </div>
-              <FeatureList items={(plusContent?.features ?? []).filter((item) => !item.startsWith("Todo lo"))} dark />
+              <FeatureList items={[packOffer.description, ...packOffer.features]} dark />
               <div className="mt-auto flex flex-wrap items-center gap-3">
-                <ButtonLink
-                  href={checkoutHref(PROVEEDORES_CONTRATAR_PATH, "plus")}
-                  prefetch={false}
-                  variant="light"
-                  size="44"
-                  data-analytics-event={ANALYTICS_EVENTS.planCheckoutStarted}
-                  data-analytics-placement="cuenta_plan"
-                  data-analytics-plan="plus"
-                >
-                  {copy.contractPlus}
-                </ButtonLink>
+                <PackWhatsappButton placement="cuenta_plan_pack" variant="light" />
                 <ButtonLink href={PROVEEDORES_PLANES_PATH} variant="outlineDark" size="44">
-                  {copy.allPlans}
+                  {copy.seePrices}
                 </ButtonLink>
               </div>
-              <div className="flex flex-col gap-0.5 text-sm text-on-dark-muted">
-                <TrialNoteDark data={data} />
-                <p>{copy.upsell.note}</p>
-              </div>
+              <p className="text-sm text-on-dark-muted">{copy.pack.note}</p>
             </section>
           ) : null}
           {usageCard}
@@ -384,13 +383,6 @@ export function PlanSection({
       )}
     </div>
   );
-}
-
-function TrialNoteDark({ data }: { readonly data: PlanData }) {
-  const plus = findPlan(data.plans, "plus");
-  const offer = trialOfferFor(plus?.trialDays ?? null, data.view.trialEligible);
-  if (offer.kind === "none") return null;
-  return <p>{offer.kind === "days" ? copy.trial.days(offer.days) : copy.trial.conditional}</p>;
 }
 
 function PaidPlanCard({
@@ -446,7 +438,7 @@ function PaidPlanCard({
           {page.actions.changePlan}
         </ButtonAnchor>
         <ButtonLink href={PROVEEDORES_PLANES_PATH} variant="outline" size="44">
-          {copy.allPlans}
+          {copy.seePrices}
         </ButtonLink>
       </div>
     </section>

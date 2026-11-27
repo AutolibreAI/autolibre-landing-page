@@ -26,7 +26,7 @@ const directoryLink = { label: "Proveedores", href: PROVEEDORES_PATH } as const;
 /** Alta de negocios: la misma etiqueta en el header, el menú de cuenta y el footer. */
 const joinBusinessLink = { label: "Sumá tu negocio", href: PROVEEDORES_REGISTRO_PATH } as const;
 /** Planes para proveedores: menú de cuenta y footer. */
-const plansLink = { label: "Planes para proveedores", href: PROVEEDORES_PLANES_PATH } as const;
+const plansLink = { label: "Precios para proveedores", href: PROVEEDORES_PLANES_PATH } as const;
 /** Ayuda: menú de cuenta. Hoy es la página de soporte. */
 const helpLink = { label: "Ayuda", href: "/support" } as const;
 /**

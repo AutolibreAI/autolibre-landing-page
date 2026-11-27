@@ -4,7 +4,7 @@ import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { homeContent } from "@/lib/content/home";
 
 /**
- * Tarjeta para negocios al pie del Home: alta, planes y la red. Enlaza a
+ * Tarjeta para negocios al pie del Home: alta, precios y la red. Enlaza a
  * `/proveedores` (el directorio) desde el Home. El alta carga Clerk: sin
  * prefetch.
  */

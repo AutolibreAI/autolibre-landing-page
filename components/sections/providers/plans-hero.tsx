@@ -5,8 +5,8 @@ import { providersPlansContent } from "@/lib/content/providers-plans";
 
 /**
  * Cabecera de `/proveedores/planes` (lienzo `Planes`): migas, rótulo, el
- * único `<h1>` (el LCP, texto del server) y la bajada, centrados, y los
- * planes enseguida en la misma banda. Clases canónicas: la línea base tenía
+ * único `<h1>` (el LCP, texto del server) y la bajada, centrados, y las
+ * tarjetas de precios enseguida en la misma banda. Clases canónicas: la línea base tenía
  * valores arbitrarios en el `<h1>` y en la bajada.
  */
 export function ProvidersPlansHeroSection({ breadcrumbs }: { readonly breadcrumbs: readonly Crumb[] }) {

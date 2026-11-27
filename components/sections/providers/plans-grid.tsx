@@ -7,13 +7,14 @@ import { cn } from "@/lib/utils";
 import { whatsappUrl } from "@/lib/whatsapp";
 
 /**
- * Tarjetas de los planes de `/proveedores/planes` (lienzo `Planes`): nombre,
- * bajada, precio y botón, y recién después qué incluye (cada pago dice qué
- * suma sobre el anterior). Debajo, "¿Necesitás más volumen…?" con ventas.
+ * Tarjetas de precios de `/proveedores/planes` (lienzo `Planes`): nombre,
+ * bajada, precio y botón, y recién después cómo funciona. Son el primer
+ * trabajo (gratis), el trabajo suelto y el pack de 3 trabajos (modelo por
+ * trabajo confirmado, 2026-11-26). Debajo, la consulta a ventas por WhatsApp.
  *
- * Outline: un `h2` (solo para lectores) para la grilla y un `h3` por plan.
- * Los planes pagos llevan a la contratación, que carga Clerk: sin prefetch
- * (ni en viewport ni en hover), así esta página no baja nada de Clerk.
+ * Outline: un `h2` (solo para lectores) para la grilla y un `h3` por tarjeta.
+ * Ninguna tarjeta lleva a la contratación (`/proveedores/contratar`) ni
+ * dispara `plan_checkout_started`: van al registro o a WhatsApp.
  */
 export function ProvidersPlansGrid() {
   const { plans, sales, gridTitle } = providersPlansContent;
@@ -25,7 +26,7 @@ export function ProvidersPlansGrid() {
       </h2>
       <ul aria-labelledby="planes-grilla" className="grid gap-4 md:grid-cols-3 lg:gap-6">
         {plans.map((plan) => {
-          const paid = "analyticsPlan" in plan.cta;
+          const variant = plan.highlighted ? "primary" : "outline";
           return (
             <li
               key={plan.id}
@@ -42,24 +43,33 @@ export function ProvidersPlansGrid() {
                 <span className="font-display text-4xl font-bold tracking-tight text-fg tabular-nums">{plan.price}</span>
                 {plan.priceNote ? <span className="text-sm text-fg-muted">{plan.priceNote}</span> : null}
               </p>
-              <ButtonLink
-                href={plan.cta.href}
-                prefetch={paid ? false : undefined}
-                variant={plan.highlighted ? "primary" : "outline"}
-                size="48"
-                block
-                {...(paid
-                  ? {
-                      "data-analytics-event": ANALYTICS_EVENTS.planCheckoutStarted,
-                      "data-analytics-plan": plan.cta.analyticsPlan,
-                    }
-                  : {
-                      "data-analytics-event": ANALYTICS_EVENTS.partnerRegisterStarted,
-                      "data-analytics-placement": "planes_gratis",
-                    })}
-              >
-                {plan.cta.label}
-              </ButtonLink>
+              {plan.cta.kind === "whatsapp" ? (
+                <ButtonAnchor
+                  href={whatsappUrl(plan.cta.whatsappMessage)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variant={variant}
+                  size="48"
+                  block
+                  data-analytics-event={ANALYTICS_EVENTS.whatsappClicked}
+                  data-analytics-placement={plan.cta.placement}
+                >
+                  <Icon name="chat" size={18} strokeWidth={1.8} className="text-brand-hover" />
+                  {plan.cta.label}
+                  <span className="sr-only"> {siteContent.nav.externalHint}</span>
+                </ButtonAnchor>
+              ) : (
+                <ButtonLink
+                  href={plan.cta.href}
+                  variant={variant}
+                  size="48"
+                  block
+                  data-analytics-event={ANALYTICS_EVENTS.partnerRegisterStarted}
+                  data-analytics-placement={plan.cta.placement}
+                >
+                  {plan.cta.label}
+                </ButtonLink>
+              )}
               <div className="flex flex-col gap-3 border-t border-card-line pt-5">
                 <p className="text-sm font-semibold text-fg">{plan.includesLabel}</p>
                 <ul className="flex flex-col gap-2.5">

@@ -30,7 +30,7 @@ type RegistrationStatusProps = {
  * Lo que ve el negocio después de enviar el alta (lienzo `Alta`, paso
  * "Enviado"): una pantalla de ESTADO, no un "gracias" con un botón al inicio.
  * Línea de tiempo de tres pasos (enviada ✓ → en revisión, ahora →
- * publicada) y qué puede hacer mientras tanto (planes, o volver a la
+ * publicada) y qué puede hacer mientras tanto (precios, o volver a la
  * contratación si vino de ahí).
  *
  * El 409 "ya te teníamos anotado" usa la misma pantalla: la solicitud existe

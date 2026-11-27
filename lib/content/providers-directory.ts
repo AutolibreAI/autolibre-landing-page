@@ -51,7 +51,7 @@ export const providersDirectoryContent = {
     title: "¿Tenés un taller o prestás un servicio?",
     body: "Registrarte es gratis y aparecés en este directorio. Recibí pedidos de gente que ya sabe qué necesita.",
     register: { label: "Sumar mi negocio", href: PROVEEDORES_REGISTRO_PATH },
-    plans: { label: "Ver planes", href: PROVEEDORES_PLANES_PATH },
+    plans: { label: "Ver precios", href: PROVEEDORES_PLANES_PATH },
   },
 
   /** Mapa de los negocios de la página. */
