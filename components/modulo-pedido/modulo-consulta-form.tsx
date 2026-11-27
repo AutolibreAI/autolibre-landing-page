@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Button, ButtonAnchor } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { PillInput } from "@/components/ui/pill-input";
@@ -19,9 +19,12 @@ import { createMetaEventId } from "@/lib/analytics/meta-pixel";
 import { getPostHogIds } from "@/lib/analytics/posthog";
 import { track } from "@/lib/analytics/track";
 import {
+  formatAmountInput,
   isValidAge,
+  isValidAmount,
   isValidConsultaEmail,
   normalizeAgeInput,
+  normalizeAmountInput,
   normalizeConsultaEmail as normalizeEmail,
   normalizePostalCodeInput,
   postalCodeDigits,
@@ -79,6 +82,7 @@ function normalize(field: ConsultaField, raw: string): string {
   if (field.format === "plate") return normalizePlateInput(raw);
   if (field.format === "postal-code") return normalizePostalCodeInput(raw);
   if (field.format === "age") return normalizeAgeInput(raw);
+  if (field.format === "amount") return normalizeAmountInput(raw);
   return raw;
 }
 
@@ -96,14 +100,16 @@ function fieldError(field: ConsultaField, raw: string): string | undefined {
   if (field.format === "postal-code" && !postalCodeDigits(value)) return field.invalid;
   if (field.format === "age" && !isValidAge(value)) return field.invalid;
   if (field.format === "email" && !isValidConsultaEmail(value)) return field.invalid;
+  if (field.format === "amount" && !isValidAmount(value)) return field.invalid;
   return undefined;
 }
 
 /**
  * Lo que viaja en el mensaje de WhatsApp de la salida de error: el texto de
  * la opción elegida, el CUIT con guiones, del código postal sus 4 dígitos
- * (aunque hayan pegado un CPA), el WhatsApp canónico (`+549XXXXXXXXXX`) y el
- * email en minúsculas.
+ * (aunque hayan pegado un CPA), el WhatsApp canónico (`+549XXXXXXXXXX`), el
+ * email en minúsculas y el monto con su símbolo (`$ 1.500.000`). Un valor
+ * vacío (o un monto inválido) devuelve `""`: ese renglón no se arma.
  */
 function messageValue(field: ConsultaField, raw: string): string {
   if (field.kind === "whatsapp") {
@@ -117,6 +123,9 @@ function messageValue(field: ConsultaField, raw: string): string {
   if (field.format === "cuit") return formatCuit(value);
   if (field.format === "postal-code") return postalCodeDigits(value) ?? value;
   if (field.format === "email") return normalizeEmail(value);
+  if (field.format === "amount") {
+    return isValidAmount(value) ? `${field.messagePrefix ?? ""}${normalizeAmountInput(value)}` : "";
+  }
   return value;
 }
 
@@ -174,6 +183,8 @@ export function ModuloConsultaForm({
   const doneTitleRef = useRef<HTMLParagraphElement>(null);
   // Qué enfocar después del próximo render (el campo puede estar deshabilitado antes).
   const focusAfterRenderRef = useRef<string | null>(null);
+  // Dónde dejar el cursor de un campo que se reformatea mientras se escribe (el monto).
+  const caretAfterRenderRef = useRef<{ readonly id: string; readonly caret: number } | null>(null);
 
   const fieldId = (name: string) => `${idPrefix}-${tab}-${name}`;
   const consentId = fieldId("consentimiento");
@@ -197,6 +208,17 @@ export function ModuloConsultaForm({
     document.getElementById(target)?.focus();
   }, [done, submit, serverErrors]);
 
+  // Después de que React escribió el valor reformateado, antes de pintar
+  // (igual que `WhatsappInput`): sin esto el cursor salta al final.
+  useLayoutEffect(() => {
+    const pending = caretAfterRenderRef.current;
+    caretAfterRenderRef.current = null;
+    if (!pending) return;
+    const input = document.getElementById(pending.id);
+    if (!(input instanceof HTMLInputElement) || document.activeElement !== input) return;
+    input.setSelectionRange(pending.caret, pending.caret);
+  }, [values]);
+
   /** `quote_started`: primera interacción, una vez por montaje. */
   function markStarted() {
     if (startedRef.current) return;
@@ -219,6 +241,35 @@ export function ModuloConsultaForm({
     clearServerError(name);
   }
 
+  /**
+   * El monto se reformatea en cada tecla (`1.500.000`): la regla es
+   * `formatAmountInput` (pura); acá se le pasa el cursor y el sentido del
+   * borrado, y el cursor vuelve a su lugar después del render.
+   */
+  function handleAmountChange(field: ConsultaField, event: React.ChangeEvent<HTMLInputElement>) {
+    const input = event.target;
+    const current = valueOf(field.name);
+    const inputType = (event.nativeEvent as InputEvent).inputType ?? "";
+    const deletion = inputType.startsWith("deleteContentBackward")
+      ? "backward"
+      : inputType.startsWith("deleteContentForward")
+        ? "forward"
+        : undefined;
+    const next = formatAmountInput(input.value, input.selectionStart ?? input.value.length, {
+      previous: current,
+      deletion,
+    });
+    if (next.value === current) {
+      // Mismo valor (tope de dígitos, o una tecla que no es un número): React
+      // no re-renderiza, así que el input se acomoda acá mismo.
+      input.value = next.value;
+      input.setSelectionRange(next.caret, next.caret);
+      return;
+    }
+    caretAfterRenderRef.current = { id: input.id, caret: next.caret };
+    setValue(field.name, next.value);
+  }
+
   function handleBlur(field: ConsultaField) {
     setTouched((current) => (current[field.name] ? current : { ...current, [field.name]: true }));
     // El email se normaliza al salir (trim + minúsculas), no mientras se
@@ -235,7 +286,10 @@ export function ModuloConsultaForm({
    */
   function whatsappHref(): string {
     const lines = allFields
-      .map((field) => ({ label: field.label, value: messageValue(field, valueOf(field.name)) }))
+      .map((field) => ({
+        label: (field.kind === "text" ? field.messageLabel : undefined) ?? field.label,
+        value: messageValue(field, valueOf(field.name)),
+      }))
       .filter((line) => line.value)
       .map((line) => `${line.label}: ${line.value}`);
     return whatsappBase + encodeURIComponent([copy.messageIntro, ...lines].join("\n"));
@@ -535,7 +589,11 @@ export function ModuloConsultaForm({
         hint={field.hint}
         error={error}
         value={value}
-        onChange={(event) => setValue(field.name, normalize(field, event.target.value))}
+        onChange={(event) =>
+          field.format === "amount"
+            ? handleAmountChange(field, event)
+            : setValue(field.name, normalize(field, event.target.value))
+        }
         onBlur={() => handleBlur(field)}
       />
     );

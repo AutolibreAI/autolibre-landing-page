@@ -1,6 +1,7 @@
 /**
  * Formatos de los campos de las pestañas de consulta del módulo de pedido
- * (`ModuloConsultaForm`): código postal argentino y edad.
+ * (`ModuloConsultaForm`): código postal argentino, edad, monto en pesos y
+ * email.
  */
 
 /** CPA completo: letra de provincia + 4 dígitos + 3 letras (`C1425ABC`). */
@@ -40,6 +41,114 @@ export function isValidAge(raw: string): boolean {
   if (!/^\d{1,2}$/.test(raw)) return false;
   const age = Number(raw);
   return age >= AGE_MIN && age <= AGE_MAX;
+}
+
+// ── Monto ────────────────────────────────────────────────────────────────
+
+export const AMOUNT_MIN = 1;
+export const AMOUNT_MAX = 999_999_999;
+/** Dígitos de `AMOUNT_MAX`: el tope de lo que se puede escribir. */
+const AMOUNT_MAX_DIGITS = 9;
+
+/** `1500000` → `1.500.000` (separador de miles de es-AR). */
+function groupThousands(digits: string): string {
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+/**
+ * Saca los centavos de un monto pegado (`1.500,50` → `1.500`): sin esto, sus
+ * dígitos se sumarían al entero y el monto quedaría cien veces más grande.
+ */
+function dropCents(raw: string): string {
+  return raw.replace(/,\d{0,2}\s*$/, "");
+}
+
+/** Solo dígitos, sin ceros a la izquierda (un `0` solo queda vacío). */
+function amountDigits(raw: string): string {
+  return dropCents(raw).replace(/\D/g, "").replace(/^0+/, "");
+}
+
+/** Posición en `formatted` justo después de su dígito número `count`. */
+function caretAfterDigits(formatted: string, count: number): number {
+  if (count <= 0) return 0;
+  let seen = 0;
+  for (let index = 0; index < formatted.length; index += 1) {
+    if (/\d/.test(formatted[index])) seen += 1;
+    if (seen === count) return index + 1;
+  }
+  return formatted.length;
+}
+
+/**
+ * Lo que se ve en el input: pesos enteros con separador de miles
+ * (`1.500.000`), sin ceros a la izquierda y 9 dígitos como máximo.
+ */
+export function normalizeAmountInput(raw: string): string {
+  return groupThousands(amountDigits(raw).slice(0, AMOUNT_MAX_DIGITS));
+}
+
+/**
+ * `normalizeAmountInput` para escribir en el medio del valor: además del
+ * texto devuelve dónde tiene que quedar el cursor (se cuenta en dígitos, así
+ * los puntos que entran o salen no lo mueven). `previous` es el valor antes
+ * de la tecla y `deletion` el sentido del borrado.
+ *
+ * - Borrar un punto borra el dígito de al lado (si no, el punto volvería a
+ *   aparecer y la tecla no haría nada).
+ * - Con los 9 dígitos puestos, un dígito más no entra: no se corre ni se
+ *   pierde el último.
+ */
+export function formatAmountInput(
+  raw: string,
+  caret: number,
+  { previous, deletion }: { readonly previous: string; readonly deletion?: "backward" | "forward" },
+): { readonly value: string; readonly caret: number } {
+  const previousDigits = previous.replace(/\D/g, "");
+  const typed = dropCents(raw);
+  let digits = typed.replace(/\D/g, "");
+  let before = typed.slice(0, caret).replace(/\D/g, "").length;
+
+  if (deletion && digits === previousDigits) {
+    if (deletion === "backward" && before > 0) {
+      digits = digits.slice(0, before - 1) + digits.slice(before);
+      before -= 1;
+    } else if (deletion === "forward") {
+      digits = digits.slice(0, before) + digits.slice(before + 1);
+    }
+  }
+
+  const zeros = digits.length - digits.replace(/^0+/, "").length;
+  digits = digits.slice(zeros);
+  before = Math.max(0, before - zeros);
+
+  if (digits.length > AMOUNT_MAX_DIGITS) {
+    if (previousDigits.length === AMOUNT_MAX_DIGITS) {
+      const extra = digits.length - AMOUNT_MAX_DIGITS;
+      return { value: previous, caret: caretAfterDigits(previous, Math.max(0, before - extra)) };
+    }
+    digits = digits.slice(0, AMOUNT_MAX_DIGITS);
+    before = Math.min(before, AMOUNT_MAX_DIGITS);
+  }
+
+  const value = groupThousands(digits);
+  return { value, caret: caretAfterDigits(value, before) };
+}
+
+/**
+ * El monto como entero de pesos, o `null` si no es válido. Acepta los puntos
+ * de miles del input (`1.500.000`); tiene que ser un entero entre 1 y
+ * 999.999.999, sin ceros a la izquierda, decimales ni signo.
+ */
+export function parseAmount(raw: string): number | null {
+  const value = raw.replace(/[.\s]/g, "");
+  if (!/^[1-9]\d{0,8}$/.test(value)) return null;
+  const amount = Number(value);
+  return amount >= AMOUNT_MIN && amount <= AMOUNT_MAX ? amount : null;
+}
+
+/** `true` si es un monto válido (ver `parseAmount`). */
+export function isValidAmount(raw: string): boolean {
+  return parseAmount(raw) !== null;
 }
 
 // ── Email ────────────────────────────────────────────────────────────────

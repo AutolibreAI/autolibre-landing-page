@@ -33,7 +33,8 @@ type ModuloIcon = {
  *   dígitos con dígito verificador, `lib/cuit.ts`; `plate`: `lib/plate.ts`;
  *   `postal-code`: 4 dígitos, o un CPA del que se toman sus 4 dígitos; `age`:
  *   entero de 18 a 99; `email`: `isValidConsultaEmail` de
- *   `lib/consulta-fields.ts`, con trim y minúsculas).
+ *   `lib/consulta-fields.ts`, con trim y minúsculas; `amount`: pesos enteros
+ *   de 1 a 999.999.999, con separador de miles mientras se escribe).
  * - `error`: campo requerido vacío. `invalid`: formato incorrecto.
  * - `kind: "whatsapp"`: el mismo control de Taller (`WhatsappInput` con el
  *   `+54` fijo, `parseArWhatsapp` de `lib/phone.ts`). Sus errores salen de
@@ -51,9 +52,16 @@ export type ConsultaField =
       readonly hint?: string;
       readonly autoComplete?: string;
       readonly inputMode?: "text" | "numeric" | "email";
-      readonly format?: "cuit" | "plate" | "postal-code" | "age" | "email";
+      readonly format?: "cuit" | "plate" | "postal-code" | "age" | "email" | "amount";
       readonly error?: string;
       readonly invalid?: string;
+      /**
+       * Cómo va el campo en el mensaje de WhatsApp de la salida de error,
+       * cuando el label no sirve como rótulo de un renglón (es una pregunta)
+       * o el valor necesita un símbolo delante (`$ `).
+       */
+      readonly messageLabel?: string;
+      readonly messagePrefix?: string;
     }
   | {
       readonly kind: "select";
@@ -614,6 +622,24 @@ export const moduloPedidoContent = {
           { id: "otro", label: "Otro gasto del vehículo" },
         ],
         error: "Elegí para qué necesitás el financiamiento.",
+      },
+      // Monto: opcional y aproximado (decisión de producto, 2026-11-27). Es
+      // una pregunta sobre lo que la persona necesita, no el monto de una
+      // solicitud: nada de "monto del crédito" ni "a solicitar".
+      {
+        kind: "text",
+        name: "monto",
+        label: "¿Cuánto necesitás financiar?",
+        required: false,
+        optional: "(opcional)",
+        placeholder: "Ej.: 1.500.000",
+        hint: "Un número aproximado, en pesos. Si todavía no lo sabés, dejalo vacío.",
+        autoComplete: "off",
+        inputMode: "numeric",
+        format: "amount",
+        invalid: "Revisá el monto: tiene que ser un número entero, en pesos y sin centavos.",
+        messageLabel: "Monto aproximado",
+        messagePrefix: "$ ",
       },
     ],
     contact: consultaContacto,

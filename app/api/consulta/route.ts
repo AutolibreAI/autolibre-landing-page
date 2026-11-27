@@ -55,7 +55,7 @@ function failure(body: InquiryError, status: number) {
  * - `error` siempre es un texto propio en español: el `message` del backend
  *   (en inglés, y a veces con el valor rechazado) no se reenvía ni se loguea.
  *   `field` es el campo del form al que se le atribuye, si se pudo.
- * - Datos personales (CUIT, sexo, edad, email, WhatsApp): el body NO se
+ * - Datos personales (CUIT, sexo, edad, monto, email, WhatsApp): el body NO se
  *   loguea ni se manda a analytics. A PostHog va `quote_submitted` con
  *   `tab` y `placement`; a Meta, el WhatsApp hasheado, igual que Taller.
  */

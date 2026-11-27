@@ -3,6 +3,7 @@ import {
   isValidAge,
   isValidConsultaEmail,
   normalizeConsultaEmail,
+  parseAmount,
   postalCodeDigits,
 } from "@/lib/consulta-fields";
 import { moduloPedidoContent, type ConsultaField } from "@/lib/content/modulo-pedido";
@@ -20,6 +21,10 @@ import { canonicalPlate } from "@/lib/plate";
  * requeridos y `forbidNonWhitelisted` (un campo de más da 400). Por eso el
  * body se arma acá campo por campo, a partir de los valores crudos del form,
  * y nunca se reenvía lo que mandó el navegador.
+ *
+ * La única excepción a "todos requeridos" es `amount` de Financiación (el
+ * monto, en pesos enteros de 1 a 999.999.999): es opcional y, si la persona
+ * lo dejó vacío, la clave NO viaja (nunca `null`, `""` ni `0`).
  */
 
 export const INQUIRY_KINDS = {
@@ -102,6 +107,8 @@ export type FinancingInquiryBody = InquiryContact & {
   readonly cuit: string;
   readonly sex: string;
   readonly reason: string;
+  /** Pesos enteros. Opcional: sin monto, la clave no está. */
+  readonly amount?: number;
 };
 
 /**
@@ -252,11 +259,22 @@ export function parseInquiry(raw: unknown): InquiryParseResult {
   const reason = mapped(REASON, value("motivo"));
   if (!reason) return missing("motivo");
 
+  // Monto: opcional. Vacío, la clave no viaja; con valor, tiene que ser válido.
+  const rawAmount = value("monto");
+  const amount = rawAmount ? parseAmount(rawAmount) : undefined;
+  if (amount === null) return invalid("monto");
+
   return {
     ok: true,
     tab,
     kind: "financing",
-    body: { ...contact, cuit: cuitDigits(value("cuit")), sex, reason },
+    body: {
+      ...contact,
+      cuit: cuitDigits(value("cuit")),
+      sex,
+      reason,
+      ...(amount === undefined ? {} : { amount }),
+    },
   };
 }
 
@@ -278,6 +296,7 @@ const BACKEND_FIELDS: Record<
   cuit: "cuit",
   sex: "sexo",
   reason: "motivo",
+  amount: "monto",
 };
 
 /**

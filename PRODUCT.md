@@ -166,7 +166,7 @@ las confirme. Financiamiento sigue sin ser un producto que AutoLibre otorgue
 `/pedido`" de más arriba ya no vale: se puede dejar una consulta.
 "Seguros" pasa a ser una tarjeta más de "Todo lo que podés pedir" del Home.
 Pendiente: la política de privacidad todavía no menciona CUIT, sexo, edad,
-código postal ni email de estas consultas (decisión legal).
+código postal, monto a financiar ni email de estas consultas (decisión legal).
 
 Modelo de precios para proveedores (decisión del dueño, 2026-11-26): AutoLibre
 deja de vender planes de suscripción (Gratis / Plus / Plus Max, con topes de
