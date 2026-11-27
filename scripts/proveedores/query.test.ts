@@ -6,7 +6,21 @@ import {
   PROVEEDORES_Q_MAX_LENGTH,
   parseProveedoresFilters,
   proveedoresHref,
+  PROVEEDORES_REGISTRO_ALTA_PATH,
+  PROVEEDORES_REGISTRO_ANOTHER_PARAM,
+  PROVEEDORES_REGISTRO_FLOW_PARAM,
+  PROVEEDORES_REGISTRO_OTRO_PATH,
+  PROVEEDORES_REGISTRO_PATH,
+  resolveAltaEntry,
 } from "../../lib/proveedores/query.ts";
+import {
+  buildSignInHref,
+  parseSafeRedirect,
+  requiresSession,
+  signInDestinationKind,
+  signInExitPath,
+  signupIntentForDestination,
+} from "../../lib/auth/sign-in-redirect.ts";
 
 const RUBROS = new Set(["frenos", "motor"]);
 const ZONAS = new Set(["caba", "zona-norte"]);
@@ -185,5 +199,50 @@ describe("paginationItems", () => {
 
   it("en la última", () => {
     assert.deepEqual(paginationItems(18, 18), [1, "gap", 17, 18]);
+  });
+});
+
+// "Cargar otro taller" de `/cuenta`: `?alta=1&otro=1` abre el formulario
+// directo aunque la cuenta ya tenga negocios o una solicitud en revisión.
+describe("alta de otro negocio (`&otro=1`)", () => {
+  it("el link abre el flujo del alta y lleva la intención", () => {
+    const url = new URL(PROVEEDORES_REGISTRO_OTRO_PATH, "https://autolibre.invalid");
+    assert.equal(url.pathname, PROVEEDORES_REGISTRO_PATH);
+    assert.equal(url.searchParams.has(PROVEEDORES_REGISTRO_FLOW_PARAM), true);
+    assert.equal(url.searchParams.has(PROVEEDORES_REGISTRO_ANOTHER_PARAM), true);
+    assert.equal(new URL(PROVEEDORES_REGISTRO_ALTA_PATH, url).searchParams.has(PROVEEDORES_REGISTRO_ANOTHER_PARAM), false);
+  });
+
+  it("sobrevive a la vuelta por `/ingresar?redirect=` (sesión vencida)", () => {
+    assert.equal(parseSafeRedirect(PROVEEDORES_REGISTRO_OTRO_PATH), PROVEEDORES_REGISTRO_OTRO_PATH);
+    const signIn = new URL(buildSignInHref(PROVEEDORES_REGISTRO_OTRO_PATH), "https://autolibre.invalid");
+    assert.equal(parseSafeRedirect(signIn.searchParams.get("redirect")), PROVEEDORES_REGISTRO_OTRO_PATH);
+  });
+
+  it("se trata como el alta: pide sesión, cuenta de proveedor y la cruz vuelve a la landing", () => {
+    assert.equal(requiresSession(PROVEEDORES_REGISTRO_OTRO_PATH), true);
+    assert.equal(signInDestinationKind(PROVEEDORES_REGISTRO_OTRO_PATH), "alta");
+    assert.equal(signupIntentForDestination(PROVEEDORES_REGISTRO_OTRO_PATH), "partner");
+    assert.equal(signInExitPath(PROVEEDORES_REGISTRO_OTRO_PATH), PROVEEDORES_REGISTRO_PATH);
+  });
+});
+
+describe("resolveAltaEntry", () => {
+  it("con la intención explícita siempre abre el formulario", () => {
+    for (const ownsBusiness of [true, false]) {
+      for (const applicationSent of [true, false]) {
+        assert.equal(resolveAltaEntry({ another: true, ownsBusiness, applicationSent }), "form");
+      }
+    }
+  });
+
+  it("sin la intención, la cuenta con negocio ve sus negocios (la membresía manda sobre la pista local)", () => {
+    assert.equal(resolveAltaEntry({ another: false, ownsBusiness: true, applicationSent: false }), "existing");
+    assert.equal(resolveAltaEntry({ another: false, ownsBusiness: true, applicationSent: true }), "existing");
+  });
+
+  it("sin negocio: en revisión si ya mandó una solicitud, si no el formulario", () => {
+    assert.equal(resolveAltaEntry({ another: false, ownsBusiness: false, applicationSent: true }), "pending");
+    assert.equal(resolveAltaEntry({ another: false, ownsBusiness: false, applicationSent: false }), "form");
   });
 });

@@ -2,6 +2,7 @@ import { ACCOUNT_PATH } from "@/lib/account/paths";
 import {
   PROVEEDORES_PLANES_PATH,
   PROVEEDORES_RECLAMAR_PATH,
+  PROVEEDORES_REGISTRO_OTRO_PATH,
   PROVEEDORES_REGISTRO_PATH,
 } from "@/lib/proveedores/query";
 
@@ -458,7 +459,9 @@ export const accountContent = {
     register: {
       label: "Cargar otro taller",
       description: "Si todavía no aparece en AutoLibre.",
-      href: PROVEEDORES_REGISTRO_PATH,
+      // Directo al formulario (`?alta=1&otro=1`), no a la landing ni a la
+      // vista "Tu negocio ya está en AutoLibre".
+      href: PROVEEDORES_REGISTRO_OTRO_PATH,
     },
     claim: {
       label: "Reclamar un taller",

@@ -26,6 +26,38 @@ export const PROVEEDORES_REGISTRO_FLOW_PARAM = "alta";
 /** Link al flujo del alta (los CTA de la landing, `/cuenta`, la contratación sin taller). */
 export const PROVEEDORES_REGISTRO_ALTA_PATH = `${PROVEEDORES_REGISTRO_PATH}?${PROVEEDORES_REGISTRO_FLOW_PARAM}=1`;
 /**
+ * `&otro=1`: la persona pidió EXPLÍCITAMENTE cargar un negocio más ("Cargar
+ * otro taller" de `/cuenta`). El flujo abre el formulario directo, sin la
+ * vista "Tu negocio ya está en AutoLibre" ni el "en revisión" de una
+ * solicitud anterior (ver `resolveAltaEntry`). Solo vale junto a `?alta=1`.
+ */
+export const PROVEEDORES_REGISTRO_ANOTHER_PARAM = "otro";
+/** Link directo al formulario del alta para una cuenta que ya tiene negocio. */
+export const PROVEEDORES_REGISTRO_OTRO_PATH = `${PROVEEDORES_REGISTRO_ALTA_PATH}&${PROVEEDORES_REGISTRO_ANOTHER_PARAM}=1`;
+
+/** Qué ve una cuenta con sesión al abrir el alta, antes del formulario. */
+export type AltaEntryKind = "existing" | "pending" | "form";
+
+/**
+ * Decide la pantalla de entrada del alta para una cuenta con sesión:
+ * - `another` (`&otro=1`, o "Registrar otro negocio"): siempre el formulario.
+ *   Ni los negocios que ya tiene ni una solicitud anterior en revisión lo
+ *   tapan: cargar OTRO negocio es justamente lo que pidió.
+ * - dueña de al menos un negocio → `existing` (la membresía manda sobre la
+ *   pista local de solicitud enviada).
+ * - mandó una solicitud desde este navegador → `pending` ("en revisión").
+ * - si no → `form`.
+ */
+export function resolveAltaEntry(input: {
+  readonly another: boolean;
+  readonly ownsBusiness: boolean;
+  readonly applicationSent: boolean;
+}): AltaEntryKind {
+  if (input.another) return "form";
+  if (input.ownsBusiness) return "existing";
+  return input.applicationSent ? "pending" : "form";
+}
+/**
  * Precios para proveedores: vive bajo el directorio. Desde el 2026-11-26 se
  * cobra por trabajo confirmado (ya no hay planes), pero la URL se conserva.
  */

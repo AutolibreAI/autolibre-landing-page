@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth, useUser } from "@clerk/nextjs";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSignInRedirect } from "@/components/auth/use-sign-in-redirect";
 import { PROVIDER_FORM_STEPS, ProviderForm } from "@/components/forms/provider-form";
@@ -20,7 +21,9 @@ import { safeContinuePath, withReturnHref } from "@/lib/partner-billing/return-p
 import {
   PROVEEDORES_CONTRATAR_PATH,
   PROVEEDORES_REGISTRO_ALTA_PATH,
+  PROVEEDORES_REGISTRO_ANOTHER_PARAM,
   PROVEEDORES_REGISTRO_PATH,
+  resolveAltaEntry,
 } from "@/lib/proveedores/query";
 
 const { flow } = providersContent;
@@ -48,9 +51,16 @@ function checkoutFromNext(raw: string | null): { readonly href: string; readonly
   return planName ? { href, planName } : null;
 }
 
-/** `/proveedores/registro?alta=1`, con el `?next` de la contratación si lo hay. */
-function flowPath(checkout: { readonly href: string } | null): string {
-  return checkout ? `${withReturnHref(PROVEEDORES_REGISTRO_PATH, checkout.href)}&alta=1` : PROVEEDORES_REGISTRO_ALTA_PATH;
+/**
+ * `/proveedores/registro?alta=1`, con el `?next` de la contratación si lo hay
+ * y `&otro=1` si la persona pidió cargar un negocio más (así la intención
+ * sobrevive a la vuelta por `/ingresar` cuando la sesión venció).
+ */
+function flowPath(checkout: { readonly href: string } | null, another: boolean): string {
+  const base = checkout
+    ? `${withReturnHref(PROVEEDORES_REGISTRO_PATH, checkout.href)}&alta=1`
+    : PROVEEDORES_REGISTRO_ALTA_PATH;
+  return another ? `${base}&${PROVEEDORES_REGISTRO_ANOTHER_PARAM}=1` : base;
 }
 
 /**
@@ -77,6 +87,10 @@ function flowPath(checkout: { readonly href: string } | null): string {
  * - `pending`: mandó una solicitud que todavía no se aprobó (pista local) →
  *   "en revisión", también después de un refresh.
  * - `form`: el formulario. Si la consulta falla, se cae acá: nunca bloquea.
+ *
+ * Con `&otro=1` ("Cargar otro taller" de `/cuenta`) se entra directo en
+ * `form`, sin consultar: la persona ya dijo que quiere cargar un negocio más
+ * (`resolveAltaEntry`).
  */
 type Entry =
   | { readonly kind: "checking" }
@@ -91,9 +105,12 @@ export function RegisterFormGate({ serviceFamilies, next }: RegisterFormGateProp
   const [formShown, setFormShown] = useState(false);
   const [step, setStep] = useState(0);
   const [done, setDone] = useState(false);
-  const [entry, setEntry] = useState<Entry>({ kind: "checking" });
+  // Intención explícita de cargar OTRO negocio: `&otro=1` en la URL o, después,
+  // "Registrar otro negocio" de la vista de negocios existentes.
+  const [another, setAnother] = useState(useSearchParams().has(PROVEEDORES_REGISTRO_ANOTHER_PARAM));
+  const [entry, setEntry] = useState<Entry>(another ? { kind: "form" } : { kind: "checking" });
   const checkout = checkoutFromNext(next);
-  const returnPath = flowPath(checkout);
+  const returnPath = flowPath(checkout, another);
   const userId = user?.id ?? null;
 
   // Estado derivado en el render (patrón de React para "recordar" un valor
@@ -102,21 +119,27 @@ export function RegisterFormGate({ serviceFamilies, next }: RegisterFormGateProp
 
   // Una sola consulta por cuenta: la membresía manda sobre la pista local.
   useEffect(() => {
-    if (!isSignedIn || !userId) return;
+    if (!isSignedIn || !userId || another) return;
     let cancelled = false;
     void fetchOwnerPartners(getToken).then((result) => {
       if (cancelled) return;
-      if (result.kind === "ok" && result.owners.length > 0) {
+      const owners = result.kind === "ok" ? result.owners : [];
+      const kind = resolveAltaEntry({
+        another: false,
+        ownsBusiness: owners.length > 0,
+        applicationSent: hasSentApplication(userId),
+      });
+      if (kind === "existing") {
         clearApplicationSent(userId);
-        setEntry({ kind: "existing", names: result.owners.map((owner) => owner.name) });
+        setEntry({ kind, names: owners.map((owner) => owner.name) });
         return;
       }
-      setEntry(hasSentApplication(userId) ? { kind: "pending" } : { kind: "form" });
+      setEntry({ kind });
     });
     return () => {
       cancelled = true;
     };
-  }, [isSignedIn, userId, getToken]);
+  }, [isSignedIn, userId, getToken, another]);
 
   useSignInRedirect(isLoaded && !isSignedIn && !formShown, returnPath);
 
@@ -145,7 +168,10 @@ export function RegisterFormGate({ serviceFamilies, next }: RegisterFormGateProp
             <ExistingBusiness
               names={entry.names}
               checkout={checkout}
-              onRegisterAnother={() => setEntry({ kind: "form" })}
+              onRegisterAnother={() => {
+                setAnother(true);
+                setEntry({ kind: "form" });
+              }}
             />
           ) : (
             <RegistrationStatus alreadyRegisteredMessage={flow.pendingBody} checkout={checkout} />
@@ -168,7 +194,8 @@ export function RegisterFormGate({ serviceFamilies, next }: RegisterFormGateProp
           totalSteps={PROVIDER_FORM_STEPS}
           done={done}
           accountName={user?.primaryEmailAddress?.emailAddress ?? user?.fullName ?? null}
-          onSwitchAccount={() => void session.leave(buildSignInHref(returnPath))}
+          // Otra cuenta = sin la intención "otro negocio": se vuelve a chequear qué tiene.
+          onSwitchAccount={() => void session.leave(buildSignInHref(flowPath(checkout, false)))}
           switching={session.pending}
         >
           <ProviderForm
