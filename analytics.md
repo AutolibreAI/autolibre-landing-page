@@ -13,6 +13,7 @@ AnalyticsEvents (única isla client, en el layout)
         ▼
 track(evento, props)  ← catálogo único: lib/analytics/events.ts
 ├─► PostHog: evento en snake_case con todas las props + app: "landing"
+├─► Google Tag Manager: dataLayer.push({ event: <nombre en snake_case>, ...props })
 └─► Meta Pixel: evento equivalente (Lead / Contact / custom), solo con los params permitidos
 ```
 
@@ -26,6 +27,7 @@ Cuándo mide cada herramienta:
 
 - **PostHog** mide solo en el deploy de **Production de Vercel** y con `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` cargado. El corte es por código: `NEXT_PUBLIC_VERCEL_ENV === "production"` en el navegador y `VERCEL_ENV === "production"` en el server. En local (aunque el token esté en el `.env`) y en los previews no se manda nada, ni desde el navegador ni el `quote_submitted` del server. Se carga después del load de la página, cuando el navegador está libre, y lo que pase antes queda en cola (hasta 50 eventos) con su hora real.
 - **Meta** mide solo si existe `NEXT_PUBLIC_META_PIXEL_ID`. El stub se carga en el `<head>` y `fbevents.js` se descarga de forma diferida.
+- **Google Tag Manager** mide solo si existe `NEXT_PUBLIC_GTM_ID` con formato `GTM-XXXXXXX` (mismo criterio que Meta, sin corte por entorno). El stub del `<head>` crea el `dataLayer` y `gtm.js` se descarga de forma diferida con el mismo disparador que `fbevents.js` (primera interacción o idle después del load). Recibe todos los eventos del catálogo con sus props, incluido `quote_submitted` (`flow`, `lead_source`, `tab`, `placement`). No hay pageview manual en las navegaciones: lo resuelve el trigger de History Change del contenedor. Qué etiquetas disparan se configura en el contenedor, no en el código. Ojo: el modelo de datos de GTM es persistente, un prop de un evento anterior sigue visible en uno posterior que no lo trae.
 - **Todo es anónimo:** nunca se llama a `identify` y nunca viajan nombre, WhatsApp, correo, patente, zona ni lo que la persona escribe.
 
 ---

@@ -15,7 +15,7 @@ const DESCRIPTION =
   "Política de privacidad de AutoLibre conforme a la Ley 25.326 de Protección de Datos Personales de Argentina.";
 const PATH = "/privacidad";
 
-const { posthog, thirdParty } = privacidadContent;
+const { posthog, thirdParty, gtm, gtmThirdParty } = privacidadContent;
 
 export const metadata: Metadata = createMetadata({
   title: TITLE,
@@ -35,7 +35,7 @@ const schema = graph(
 export default function PrivacidadPage() {
   return (
     <>
-      <LegalPage title={TITLE} updatedAt="septiembre 2026">
+      <LegalPage title={TITLE} updatedAt="noviembre 2026">
         <h2>1. Responsable del tratamiento</h2>
         <p>
           AutoLibre (en adelante &ldquo;la empresa&rdquo;,
@@ -89,7 +89,7 @@ export default function PrivacidadPage() {
           Además, al navegar el sitio se registran datos técnicos para medir
           nuestros anuncios y el uso del sitio y, cuando enviás un pedido de
           presupuesto, tu WhatsApp se comparte con Meta cifrado de forma
-          irreversible (ver los puntos 7 y 8).
+          irreversible (ver los puntos 7, 8 y 9).
         </p>
 
         <h2>3. Finalidad del tratamiento</h2>
@@ -161,8 +161,11 @@ export default function PrivacidadPage() {
           <strong>{thirdParty.name}</strong> {thirdParty.body}
         </p>
         <p>
+          <strong>{gtmThirdParty.name}</strong> {gtmThirdParty.body}
+        </p>
+        <p>
           Algunos de estos proveedores (Vercel, Google, Resend, Meta y PostHog,
-          ver los puntos 7 y 8) pueden tratar datos fuera de Argentina, lo que puede implicar
+          ver los puntos 7, 8 y 9) pueden tratar datos fuera de Argentina, lo que puede implicar
           una transferencia internacional de datos.
         </p>
         <p>No vendemos ni cedemos tus datos a terceros con fines comerciales.</p>
@@ -231,7 +234,19 @@ export default function PrivacidadPage() {
           {posthog.policy.tail}
         </p>
 
-        <h2>9. Contacto</h2>
+        <h2>{gtm.title}</h2>
+        {gtm.paragraphs.map((paragraph) => (
+          <p key={paragraph}>{paragraph}</p>
+        ))}
+        <p>
+          {gtm.policy.lead}
+          <a href={gtm.policy.href} target="_blank" rel="noopener noreferrer">
+            {gtm.policy.label}
+          </a>
+          {gtm.policy.tail}
+        </p>
+
+        <h2>10. Contacto</h2>
         <p>
           Para cualquier consulta sobre esta política escribí a{" "}
           <a href="mailto:contact@autolibre.ai">contact@autolibre.ai</a>.

@@ -5,6 +5,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { AnalyticsEvents } from "@/components/analytics/analytics-events";
 import { WhatsappFab } from "@/components/layout/whatsapp-fab";
 import { REGISTRO_FLOW_SCRIPT } from "@/components/proveedores/registro/registro-flow-loading";
+import { GTM_SCRIPTS } from "@/lib/analytics/gtm";
 import { META_PIXEL_ID } from "@/lib/analytics/meta-pixel";
 import { siteConfig } from "@/lib/seo/config";
 import "./globals.css";
@@ -119,7 +120,7 @@ const revealScript = `(function(){try{if(!("IntersectionObserver"in window)||!El
  *    inyecta `fbevents.js`. Sólo encola llamadas, así que `init` + `PageView`
  *    (y cualquier evento temprano) quedan registrados por unos bytes.
  * 2. `fbevents.js` (~90KB, más su config de ~170KB) lo inyecta
- *    `metaPixelLoader` recién con la primera interacción (toque, tecla o
+ *    `deferredScriptsLoader` recién con la primera interacción (toque, tecla o
  *    scroll) o, si no la hay, unos segundos después del `load` y en idle.
  *    Al cargar vacía la cola del stub: no se pierde ningún evento de los que
  *    se encolaron antes. Antes iba con `next/script` `lazyOnload` (idle
@@ -143,18 +144,54 @@ const metaPixelScript = META_PIXEL_ID
   ? `!function(f){if(f.fbq)return;var n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[]}(window);fbq("set","autoConfig",false,${JSON.stringify(META_PIXEL_ID)});fbq("init",${JSON.stringify(META_PIXEL_ID)});fbq("track","PageView");`
   : null;
 
-/** Segundos después del `load` en que el Pixel baja igual si nadie interactuó. */
-const META_PIXEL_DELAY_MS = 3500;
+/**
+ * Google Tag Manager, con el mismo criterio que el Pixel (ver
+ * `lib/analytics/gtm.ts`): el stub del `<head>` sólo crea el `dataLayer` para
+ * que los eventos tempranos queden en cola, y `gtm.js` baja con el loader
+ * diferido de abajo. Sin `@next/third-parties` ni `next/script`: cargan el
+ * contenedor apenas hidrata, que es justo el bloqueo del hilo principal que
+ * se sacó con el Pixel. Sin `NEXT_PUBLIC_GTM_ID` no se renderiza nada.
+ */
+const gtmStubScript = GTM_SCRIPTS?.stub ?? null;
 
-const metaPixelLoader = META_PIXEL_ID
-  ? `(function(){var done=false,evs=["pointerdown","keydown","scroll","touchstart"];function load(){if(done)return;done=true;var s=document.createElement("script");s.async=true;s.src="https://connect.facebook.net/en_US/fbevents.js";document.head.appendChild(s)}evs.forEach(function(e){addEventListener(e,load,{once:true,passive:true})});function later(){setTimeout(function(){"requestIdleCallback"in window?requestIdleCallback(load,{timeout:2000}):load()},${META_PIXEL_DELAY_MS})}document.readyState==="complete"?later():addEventListener("load",later,{once:true})})()`
-  : null;
+/** Segundos después del `load` en que los scripts de medición bajan igual si nadie interactuó. */
+const DEFERRED_SCRIPTS_DELAY_MS = 3500;
+
+/**
+ * Scripts de terceros que esperan a la primera interacción o al idle
+ * posterior al `load`. `before` es JS que corre justo antes de inyectar el
+ * `src` (el arranque de GTM).
+ */
+const deferredScripts: { before?: string; src: string }[] = [];
+if (META_PIXEL_ID) {
+  deferredScripts.push({ src: "https://connect.facebook.net/en_US/fbevents.js" });
+}
+if (GTM_SCRIPTS) {
+  deferredScripts.push({ before: GTM_SCRIPTS.start, src: GTM_SCRIPTS.src });
+}
+
+/**
+ * UN solo disparador para todos los scripts diferidos: un único juego de
+ * listeners y un único timer, en lugar de uno por herramienta. Cada script va
+ * en su `try` para que si uno falla el otro igual se cargue.
+ */
+const deferredScriptsLoader =
+  deferredScripts.length > 0
+    ? `(function(){var done=false,evs=["pointerdown","keydown","scroll","touchstart"];function inject(u){var s=document.createElement("script");s.async=true;s.src=u;document.head.appendChild(s)}function load(){if(done)return;done=true;${deferredScripts
+        .map(
+          ({ before = "", src }) =>
+            `try{${before}inject(${JSON.stringify(src)})}catch(e){}`,
+        )
+        .join(
+          "",
+        )}}evs.forEach(function(e){addEventListener(e,load,{once:true,passive:true})});function later(){setTimeout(function(){"requestIdleCallback"in window?requestIdleCallback(load,{timeout:2000}):load()},${DEFERRED_SCRIPTS_DELAY_MS})}document.readyState==="complete"?later():addEventListener("load",later,{once:true})})()`
+    : null;
 
 /**
  * PostHog no tiene nada en el `<head>`: lo inicializa
  * `instrumentation-client.ts` con un `import()` diferido (ver
  * `lib/analytics/posthog.ts`). Acá sólo decide si hace falta la isla de
- * medición: sin token ni Pixel no hay nada que escuchar.
+ * medición: sin token, Pixel ni GTM no hay nada que escuchar.
  */
 const POSTHOG_ENABLED = Boolean(process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN);
 
@@ -179,6 +216,7 @@ export default function RootLayout({
         {/* Marca del flujo del alta en `/proveedores/registro` (ver el script). */}
         <script dangerouslySetInnerHTML={{ __html: REGISTRO_FLOW_SCRIPT }} />
         {metaPixelScript && <script dangerouslySetInnerHTML={{ __html: metaPixelScript }} />}
+        {gtmStubScript && <script dangerouslySetInnerHTML={{ __html: gtmStubScript }} />}
       </head>
       {/* Fondo `canvas` (sistema "AutoLibre AI"): el header va sobre `card` y
           cada `Section` pinta su propio fondo, así que el lienzo solo asoma
@@ -188,8 +226,10 @@ export default function RootLayout({
         {/* Una sola vez acá: queda en todas las páginas (home incluida). */}
         <WhatsappFab />
         <script dangerouslySetInnerHTML={{ __html: revealScript }} />
-        {metaPixelLoader && <script dangerouslySetInnerHTML={{ __html: metaPixelLoader }} />}
-        {(metaPixelScript || POSTHOG_ENABLED) && <AnalyticsEvents />}
+        {deferredScriptsLoader && (
+          <script dangerouslySetInnerHTML={{ __html: deferredScriptsLoader }} />
+        )}
+        {(metaPixelScript || gtmStubScript || POSTHOG_ENABLED) && <AnalyticsEvents />}
         <Analytics />
         <SpeedInsights />
       </body>

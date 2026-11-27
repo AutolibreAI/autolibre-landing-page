@@ -90,7 +90,7 @@ const routes = [
   },
   {
     path: "/privacidad",
-    lastModified: "2026-09-28",
+    lastModified: "2026-11-26",
     changeFrequency: "yearly",
     priority: 0.2,
   },

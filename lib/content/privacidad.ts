@@ -1,7 +1,8 @@
 /**
- * Copy de `/privacidad` sobre la analítica con PostHog. Tiene que describir
+ * Copy de `/privacidad` sobre la analítica con PostHog y sobre Google Tag
+ * Manager. Tiene que describir
  * EXACTAMENTE lo que hace el código y la config del proyecto de PostHog:
- * si cambia `lib/analytics/posthog.ts`, el catálogo de
+ * si cambia `lib/analytics/posthog.ts`, `lib/analytics/gtm.ts`, el catálogo de
  * `lib/analytics/events.ts` o lo que el proyecto tiene prendido de forma
  * remota (grabación de sesiones, heatmaps, dead clicks, logs de consola, web
  * vitals, errores), se actualiza esto también. Nada de claims que no podamos
@@ -28,6 +29,33 @@ export const privacidadContent = {
       label: "Política de privacidad",
       href: "https://posthog.com/privacy",
       tail: ", lo que implica una transferencia internacional de datos.",
+    },
+  },
+  /**
+   * Google Tag Manager (`lib/analytics/gtm.ts`). Describe lo que hace el
+   * código: cuándo se carga y qué se le pasa al `dataLayer`. NO enumera las
+   * etiquetas del contenedor: se configuran en la cuenta de GTM, fuera del
+   * repo. Si ahí se activa una etiqueta que trata datos de otra forma (o de
+   * otro proveedor), se actualiza esta copy.
+   */
+  gtmThirdParty: {
+    name: "Google Tag Manager (Google).",
+    body: "Carga las etiquetas de medición de Google que tengamos configuradas. Recibe datos técnicos de tu visita y las acciones que registramos, según se detalla en el punto 9.",
+  },
+  gtm: {
+    title: "9. Etiquetas de medición con Google Tag Manager",
+    paragraphs: [
+      "Este sitio usa Google Tag Manager, de Google, para cargar etiquetas de medición de Google. Tag Manager es un contenedor: las etiquetas que se activan se configuran desde nuestra cuenta de esa herramienta.",
+      "Tag Manager se carga después de tu primera interacción con la página (un toque, una tecla o el scroll) o unos segundos después de que la página termina de cargar.",
+      "A Tag Manager le pasamos las acciones que registramos en el sitio: por ejemplo, el clic en los botones de WhatsApp y de descarga de la app, el inicio, los pasos y el envío de un pedido de presupuesto, y los pasos del registro de un negocio y de la contratación de un plan. Cada acción va con datos de contexto, como la parte del sitio en la que ocurrió. Tu nombre, tu WhatsApp, tu correo electrónico, tu zona, tu patente y lo que escribís en los formularios no se le pasan.",
+      "Tag Manager y las etiquetas que carga reciben datos técnicos de tu visita, como tu dirección IP y la información de tu navegador y dispositivo. Según las etiquetas que estén activas, pueden guardar cookies en tu navegador.",
+      "No vendemos estos datos. Si no querés que se haga esta medición, podés bloquear o borrar las cookies de este sitio desde la configuración de tu navegador.",
+    ],
+    policy: {
+      lead: "Google trata estos datos según su propia ",
+      label: "Política de privacidad",
+      href: "https://policies.google.com/privacy",
+      tail: ", lo que puede implicar una transferencia internacional de datos.",
     },
   },
 } as const;
