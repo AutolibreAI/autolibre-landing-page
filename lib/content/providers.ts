@@ -12,7 +12,7 @@ export const providersContent = {
   meta: {
     title: "Sumá tu taller a AutoLibre",
     description:
-      "Recibí consultas con la información del vehículo y el servicio solicitado. Registrá tu taller o servicio en AutoLibre y armá tu perfil en la app.",
+      "Recibí consultas con la información del vehículo y el servicio solicitado. Registrá gratis tu taller o servicio en AutoLibre y respondé los pedidos por WhatsApp.",
   },
   /**
    * `/proveedores/registro` sin el flujo abierto: la landing "Sumá tu negocio"
@@ -36,19 +36,39 @@ export const providersContent = {
       primary: "Registrar mi negocio",
       secondary: "Ver los precios",
       /**
-       * Vista previa con MARCADORES, no un negocio inventado: así se ve tu
-       * perfil y así llega un pedido.
+       * Vista previa: el chat de WhatsApp de AutoLibre tal como le llega un
+       * pedido al negocio, con datos FICTICIOS y la leyenda que lo dice
+       * (`caption`): no es un pedido real (ver `PRODUCT.md`).
        */
       preview: {
-        monogram: "TN",
-        name: "[Tu negocio]",
-        meta: "[Zona] · [Cómo atendés]",
-        category: "[Rubro]",
-        requestLabel: "Nuevo pedido",
-        requestTitle: "[Servicio que piden]",
-        requestMeta: "[Marca, modelo y año] · [Zona]",
-        requestCta: "Responder con una propuesta",
-        caption: "Ejemplo ilustrativo de tu perfil y de un pedido.",
+        /** Nombre accesible de la lista de mensajes. */
+        label: "Conversación de ejemplo por WhatsApp",
+        /** Nombre del contacto: cabecera del chat y autor de la cita. */
+        contactName: "AutoLibre",
+        /** Quién habla, para lectores de pantalla (el globo no lo dice). */
+        contactPrefix: "AutoLibre:",
+        youPrefix: "Tu negocio:",
+        day: "Hoy",
+        offer: {
+          text: "Hola, te escribimos de AutoLibre. Tenemos un cliente en Zona Norte que busca presupuesto para un trabajo de Service y lubricentro. ¿Te interesa que te pasemos los detalles?",
+          time: "10:30",
+          repliesLabel: "Respuestas rápidas",
+          accept: "Sí, me interesa",
+          decline: "No puedo",
+        },
+        reply: { text: "Sí, me interesa", time: "10:31" },
+        details: {
+          title: "Detalles del pedido de presupuesto de AutoLibre",
+          items: [
+            { label: "Vehículo:", value: "VOLKSWAGEN GOL TREND 1.6 M/T 2018" },
+            { label: "Rubros:", value: "Service y lubricentro" },
+            { label: "Zona:", value: "Zona Norte" },
+            { label: "Descripción:", value: "Service de los 60.000 km: cambio de aceite y filtros" },
+          ],
+          closing: "Si podés pasarnos un presupuesto, respondé a este mensaje.",
+          time: "10:31",
+        },
+        caption: "Ejemplo ilustrativo · datos ficticios",
       },
     },
     /** "¿Ya aparecés?": buscar en el directorio antes de registrarse dos veces. */
@@ -93,7 +113,8 @@ export const providersContent = {
     steps: {
       title: "Cómo es el registro",
       items: [
-        { title: "Entrá o creá tu cuenta", body: "La misma de la app de AutoLibre." },
+        // Sin `body` (2026-11-27): no se comunica la relación entre la cuenta web y la app.
+        { title: "Entrá o creá tu cuenta" },
         { title: "Completá los datos de tu negocio", body: "Servicios, marcas que atendés, dirección y horarios." },
         { title: "Lo revisamos y lo publicamos", body: "Te contactamos por WhatsApp para activar tu perfil." },
       ],
@@ -115,11 +136,6 @@ export const providersContent = {
           question: "¿Cuánto cuesta registrarme?",
           answer:
             "Nada. El registro de talleres y servicios en AutoLibre es gratis y el primer trabajo que te acercamos también. A partir del segundo, pagás un precio fijo por cada trabajo nuevo confirmado.",
-        },
-        {
-          question: "¿Necesito crear otra cuenta si ya uso la app?",
-          answer:
-            "No. El registro se hace con tu cuenta de AutoLibre, la misma de la app. Con esa cuenta seguís haciendo pedidos para tu auto y además administrás tu negocio.",
         },
         {
           question: "¿Qué datos me van a pedir?",
@@ -148,7 +164,7 @@ export const providersContent = {
    */
   flow: {
     /** Bajada del login dedicado (`/ingresar`) cuando vuelve al alta. */
-    signInIntro: "Para registrar tu negocio necesitás una cuenta de AutoLibre. Es la misma de la app.",
+    signInIntro: "Para registrar tu negocio necesitás una cuenta de AutoLibre.",
     loading: "Cargando el registro…",
     /** Con sesión, mientras se consulta si la cuenta ya tiene un negocio. */
     checking: "Buscando tu negocio…",
@@ -171,7 +187,7 @@ export const providersContent = {
       title: "Registrá tu negocio",
       label: "Pasos del registro",
       items: [
-        { id: "cuenta", label: "Tu cuenta", description: "La misma de la app" },
+        { id: "cuenta", label: "Tu cuenta" },
         { id: "negocio", label: "Datos de tu negocio", description: "Nombre, servicios y marcas" },
         { id: "atencion", label: "Atención", description: "Modalidad, dirección y horarios" },
         { id: "contacto", label: "Contacto", description: "WhatsApp, logo y redes" },

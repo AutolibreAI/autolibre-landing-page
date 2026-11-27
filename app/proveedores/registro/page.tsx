@@ -100,11 +100,12 @@ export default async function ProveedoresRegistroPage() {
         <SiteHeader cta={false} currentPath={PATH} />
         <main>
           <SumateHero breadcrumbs={breadcrumbs} />
-          <SumateListed />
           <SumateBenefits />
           <SumateSteps />
           <SumatePlans />
           <SumateFaq />
+          {/* "¿Tu negocio ya aparece?" cierra la página (antes del pie). */}
+          <SumateListed />
         </main>
         <SiteFooter />
         <SumateMobileBar />

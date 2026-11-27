@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Breadcrumbs, type Crumb } from "@/components/marketing/breadcrumbs";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { FlowSteps } from "@/components/proveedores/flow/flow-steps";
+import { SumateChatExample } from "@/components/proveedores/registro/sumate-chat-example";
 import { ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Section } from "@/components/ui/section";
@@ -65,12 +66,11 @@ function RegisterLink({
 /**
  * Hero de la landing "Sumá tu negocio" (lienzo `Sumate`): migas, rótulo, el
  * único `<h1>` (texto del server, el LCP), bajada, tres tildes y los dos
- * botones; a la derecha, un ejemplo ILUSTRATIVO de perfil y de pedido con
- * marcadores (no se inventa un negocio real).
+ * botones; a la derecha, un ejemplo ILUSTRATIVO: cómo llega un pedido por
+ * el chat de WhatsApp de AutoLibre, con datos ficticios (`SumateChatExample`).
  */
 export function SumateHero({ breadcrumbs }: { readonly breadcrumbs: readonly Crumb[] }) {
   const { hero } = sumate;
-  const { preview } = hero;
 
   return (
     <Section tone="card" spacing="sm" aria-labelledby="sumate-titulo" className="border-t-0 pt-5 md:pt-7 md:pb-20">
@@ -102,32 +102,11 @@ export function SumateHero({ breadcrumbs }: { readonly breadcrumbs: readonly Cru
           </div>
         </div>
 
-        <figure className="flex flex-col gap-4 rounded-3xl bg-brand-50 p-5 sm:p-7 lg:col-span-6">
-          {/* Ilustración: los marcadores no se leen (la leyenda dice qué es). */}
-          <div aria-hidden="true" className="flex flex-col gap-4">
-            <div className="flex items-start gap-3.5 rounded-2xl bg-card p-5 sm:mr-12">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-action font-display text-base font-bold text-white">
-                {preview.monogram}
-              </span>
-              <span className="flex min-w-0 flex-col gap-1">
-                <span className="font-display text-base font-semibold text-fg">{preview.name}</span>
-                <span className="text-sm text-fg-muted">{preview.meta}</span>
-                <span className="self-start rounded-full border border-control-line px-2.5 py-0.5 text-label text-fg-muted">
-                  {preview.category}
-                </span>
-              </span>
-            </div>
-            <div className="flex flex-col gap-1 rounded-2xl bg-card p-5 sm:ml-24">
-              <span className="text-label font-semibold text-brand-hover">{preview.requestLabel}</span>
-              <span className="font-display text-base font-semibold text-fg">{preview.requestTitle}</span>
-              <span className="text-sm text-fg-muted">{preview.requestMeta}</span>
-              <span className="mt-2 inline-flex h-9 items-center justify-center self-end rounded-full bg-action px-4 font-display text-sm font-semibold text-white">
-                {preview.requestCta}
-              </span>
-            </div>
-          </div>
-          <figcaption className="text-sm text-fg-muted">{preview.caption}</figcaption>
-        </figure>
+        {/* Marco verde suave: el ejemplo es SOLO el chat (una `<figure>` con
+            su leyenda adentro). */}
+        <div className="rounded-3xl bg-brand-50 p-4 sm:p-7 lg:col-span-6">
+          <SumateChatExample />
+        </div>
       </div>
     </Section>
   );
@@ -137,11 +116,16 @@ export function SumateHero({ breadcrumbs }: { readonly breadcrumbs: readonly Cru
  * "¿Tu negocio ya aparece?": buscar en el directorio antes de registrarse
  * dos veces. Form GET a `/proveedores?q=` (funciona sin JS), WhatsApp para
  * pedir administrarlo y el link al canje si ya tiene un código.
+ *
+ * Es la ÚLTIMA sección de la página (2026-11-27; antes era la segunda): va
+ * después de `SumateFaq`, que también es `canvas`, así que no repite el
+ * padding de arriba (`pt-0`): las dos se leen como una sola banda que cierra
+ * con esta tarjeta, antes del pie oscuro.
  */
 export function SumateListed() {
   const { listed } = sumate;
   return (
-    <Section tone="canvas" spacing="md" aria-labelledby="sumate-ya-aparece">
+    <Section tone="canvas" spacing="md" aria-labelledby="sumate-ya-aparece" className="pt-0 md:pt-0">
       <div className="mx-auto flex max-w-245 flex-col items-center gap-5 rounded-3xl bg-card px-6 py-10 text-center sm:px-10 md:py-12">
         <h2 id="sumate-ya-aparece" className={sectionTitle}>
           {listed.title}
@@ -206,7 +190,7 @@ export function SumateListed() {
 export function SumateBenefits() {
   const { benefits } = sumate;
   return (
-    <Section tone="canvas" spacing="md" aria-labelledby="sumate-beneficios" className="pt-4 md:pt-6">
+    <Section tone="canvas" spacing="md" aria-labelledby="sumate-beneficios">
       <h2 id="sumate-beneficios" className={sectionTitle}>
         {benefits.title}
       </h2>
@@ -254,7 +238,7 @@ export function SumateSteps() {
                   </div>
                   <div className={cn("flex flex-col gap-1 pt-1", last ? "pb-0" : "pb-7")}>
                     <h3 className="font-display text-lg font-semibold text-fg">{item.title}</h3>
-                    <p className="text-base text-fg-muted">{item.body}</p>
+                    {"body" in item ? <p className="text-base text-fg-muted">{item.body}</p> : null}
                   </div>
                 </li>
               );

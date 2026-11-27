@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "components/proveedores/registro/sumate-chat-example.tsx"
+        ],
+        "createdAt": "2026-11-27T12:04:15.874Z",
+        "reason": "agent decided: the bar is the quoted-reply marker of a WhatsApp chat mock, copied from the user's reference image autolibre-bot-ejemplo-ilustrativo.png; not a card accent"
+      }
+    ]
+  }
+}

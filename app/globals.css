@@ -183,6 +183,21 @@
      el globo propio. */
   --color-wa-wallpaper: #efeae2;
   --color-wa-out: #d9fdd3;
+
+  /* Chat del bot de WhatsApp en tema oscuro (ejemplo ilustrativo del hero de
+     `/proveedores/registro`, 2026-11-27). El texto usa los `on-dark` de
+     arriba; contrastes medidos con la fórmula de WCAG 2.1:
+     - `on-dark` (texto): 13.75 fondo · 10.56 globo entrante · 7.18 saliente · 8.96 cita.
+     - `on-dark-muted` (etiquetas y horas): 9.67 · 7.43 · 5.06 · 6.31.
+     - `on-dark-subtle` (respuesta ya tocada y pie): 6.07 fondo · 4.67 entrante.
+       NO usarlo sobre el globo saliente (3.17) ni la cita (3.96).
+     - `whatsapp-brand` (respuesta rápida) sobre el entrante: 7.21.
+     - `wa-dark-accent` (autor de la cita) sobre la cita: 5.43. */
+  --color-wa-dark: #0b141a; /* fondo del chat; también el filete entre respuestas rápidas */
+  --color-wa-dark-in: #202c33; /* globo entrante, cabecera y chip de fecha */
+  --color-wa-dark-out: #144d3e; /* globo saliente */
+  --color-wa-dark-quote: #0f3d31; /* bloque de cita dentro del saliente */
+  --color-wa-dark-accent: #f48fb1; /* barra y autor de la cita */
 }
 
 /* ── Plataforma del visitante ──
