@@ -40,10 +40,14 @@ type ModuloTabsProps = {
  *   `hidden`. Nada aparece recién al hidratar, y el estado inicial (Taller)
  *   es el mismo en el server y en el cliente: sin CLS.
  *
- * Con cinco pestañas la fila no entra en un celular: cada pestaña mide lo que
- * su texto (nunca se corta "Financiación") y la fila scrollea de costado, con
- * la última asomando para que se note. Si entra, queda centrada
- * (`mx-auto w-fit max-w-full`). El foco con flechas trae la pestaña a la vista.
+ * Las cinco pestañas se ven enteras en un celular, sin scrollear (2026-11-27,
+ * feedback de producto: "Financiación" es la última y quedaba fuera de la
+ * fila, que scrolleaba de costado). Debajo de `sm` van más apretadas: texto
+ * `label` (13px), `px-0.5`, sin `gap` y repartidas a lo ancho
+ * (`w-full justify-between`); entran desde 360px. Cada pestaña mide lo que su
+ * texto (nunca se corta "Financiación"). En pantallas más angostas la fila
+ * sigue scrolleando de costado (`overflow-x-auto`). Desde `sm` queda centrada
+ * (`w-fit max-w-full`). El foco con flechas trae la pestaña a la vista.
  *
  * Isla chica a propósito: los íconos, los textos y los paneles llegan como
  * props ya renderizados. Acá vive solo qué pestaña está elegida.
@@ -90,7 +94,7 @@ export function ModuloTabs({ idPrefix, label, placement, tabs }: ModuloTabsProps
         role="tablist"
         aria-label={label}
         // `p-1`: lugar para el anillo de foco, que el scroll recortaría.
-        className="mx-auto flex w-fit max-w-full gap-1 overflow-x-auto p-1 sm:gap-4 lg:gap-7"
+        className="mx-auto flex w-full justify-between overflow-x-auto p-1 sm:w-fit sm:max-w-full sm:justify-start sm:gap-4 lg:gap-7"
       >
         {tabs.map((tab, index) => {
           const isSelected = tab.id === selected;
@@ -110,14 +114,14 @@ export function ModuloTabs({ idPrefix, label, placement, tabs }: ModuloTabsProps
               onKeyDown={(event) => onKeyDown(event, index)}
               className={cn(
                 // Objetivo táctil: todo el botón (ícono + texto), mínimo 44px.
-                "flex min-h-11 min-w-18 flex-none flex-col items-center gap-1.5 border-b-3 px-2 pt-2 pb-2.5 whitespace-nowrap transition-colors motion-reduce:transition-none sm:min-w-24",
+                "flex min-h-11 min-w-14 flex-none flex-col items-center gap-1.5 border-b-3 px-0.5 pt-2 pb-2.5 whitespace-nowrap transition-colors motion-reduce:transition-none sm:min-w-24 sm:px-2",
                 isSelected
                   ? "border-action text-fg"
                   : "border-transparent text-fg-muted hover:border-control-line",
               )}
             >
               {tab.icon}
-              <span className="font-display text-control font-semibold">{tab.label}</span>
+              <span className="font-display text-label font-semibold sm:text-control">{tab.label}</span>
             </button>
           );
         })}
