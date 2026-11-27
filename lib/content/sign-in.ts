@@ -1,5 +1,4 @@
 import { accountContent } from "@/lib/content/account";
-import { partnerAccountContent } from "@/lib/content/partner-account";
 import { partnerCheckoutContent, planDisplayName } from "@/lib/content/partner-checkout";
 import { partnerClaimContent } from "@/lib/content/partner-claim";
 import { providersContent } from "@/lib/content/providers";
@@ -18,9 +17,11 @@ const PLACEHOLDER_ORIGIN = "https://autolibre.invalid";
 /**
  * Bajada del `<h1>` de `/ingresar` según adónde vuelve la persona: la misma
  * que tenía el login de cada flujo antes de que existiera la ruta dedicada.
- * Recibe un destino YA validado por `parseSafeRedirect`.
+ * Recibe un destino YA validado por `parseSafeRedirect`. `null` cuando el
+ * destino no tiene una bajada propia: el `<h1>` va solo (2026-11-27, se quitó
+ * la bajada genérica que relacionaba la cuenta web con la app).
  */
-export function signInIntroFor(destination: string): string {
+export function signInIntroFor(destination: string): string | null {
   switch (signInDestinationKind(destination)) {
     case "account":
       return accountContent.page.signInIntro;
@@ -33,9 +34,9 @@ export function signInIntroFor(destination: string): string {
     case "contratar": {
       const plan = parsePlanParam(new URL(destination, PLACEHOLDER_ORIGIN).searchParams.get("plan") ?? undefined);
       const planName = plan ? planDisplayName(plan) : null;
-      return planName ? partnerCheckoutContent.signInIntro(planName) : partnerAccountContent.ingresar.body;
+      return planName ? partnerCheckoutContent.signInIntro(planName) : null;
     }
     default:
-      return partnerAccountContent.ingresar.body;
+      return null;
   }
 }

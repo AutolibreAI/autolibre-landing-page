@@ -97,11 +97,6 @@
      `fg` encima: 11.70:1. */
   --color-brand-200: #a8dfb0;
 
-  /* Panel de marca de `/ingresar` (2026-11-26): el verde de marca de fondo,
-     en su tono AA (`brand` da 4.27:1 con blanco y no alcanza para texto
-     chico). Blanco encima: 5.74:1. */
-  --color-brand-panel: var(--color-brand-hover);
-
   /* Bordes de controles. Son bordes, no texto (WCAG 1.4.11 pide 3:1 cuando
      el borde es lo único que identifica al control):
      - `control-line` 1.46:1 sobre `card`: chips y tarjetas de opción, que se
@@ -245,20 +240,6 @@
 
 @utility reveal-group {
   @apply reveal-stagger;
-}
-
-/* ── Corte diagonal del panel de marca de `/ingresar` ──
-   Tailwind no trae utilities de `clip-path`. `clip-diagonal-b`: el borde de
-   abajo baja en diagonal (la banda de arriba en celular). `clip-diagonal-r`:
-   el borde derecho se abre en diagonal hacia el formulario (desde `lg`). El
-   panel deja libre ese margen con su padding: nada de su contenido queda
-   cortado. */
-@utility clip-diagonal-b {
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 2rem), 0 100%);
-}
-
-@utility clip-diagonal-r {
-  clip-path: polygon(0 0, 100% 0, calc(100% - 6rem) 100%, 0 100%);
 }
 
 /* ── Alto mínimo = la pantalla menos el header sticky ──

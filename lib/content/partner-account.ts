@@ -10,7 +10,6 @@
 export const partnerAccountContent = {
   signIn: {
     title: "Entrá o creá tu cuenta",
-    body: "Es la misma cuenta de la app de AutoLibre.",
     loading: "Cargando el inicio de sesión…",
   },
 
@@ -26,27 +25,21 @@ export const partnerAccountContent = {
       description:
         "Ingresá o creá tu cuenta de AutoLibre para seguir los pedidos de tu auto o administrar tu negocio en la red.",
     },
-    /** Panel de marca, al costado del formulario (arriba en celular). */
+    /**
+     * Panel de marca, al costado del formulario (arriba en celular).
+     *
+     * El titular NO vive acá: es el eslogan del sitio ("Todo tu auto, en un
+     * solo lugar.") y `SignInScreen` lo arma con las partes de
+     * `homeContent.hero.title` (`lib/content/home.ts`), las mismas del `<h1>`
+     * del Home, para que las dos pantallas no se desincronicen.
+     */
     brand: {
       home: "AutoLibre, ir al inicio",
       logoAlt: "AutoLibre.AI",
-      /** Frase de marca vigente (PRODUCT.md). */
-      headline: "Todo tu auto, en un solo lugar.",
       body: "AutoLibre junta la documentación, los vencimientos y el historial de tu auto, y te conecta con talleres y servicios de tu zona.",
-    },
-    title: "Ingresá o creá tu cuenta",
-    body: "Es la misma cuenta de la app de AutoLibre.",
-    legalPrefix: "Al continuar aceptás los",
-    terms: { label: "Términos", href: "/terminos" },
-    legalJoin: "y la",
-    privacy: { label: "Política de privacidad", href: "/privacidad" },
-    oneAccount: {
-      title: "Con una sola cuenta",
-      items: [
-        { strong: "Seguís tus pedidos", rest: " y las propuestas que te llegan para tu auto." },
-        { strong: "Administrás tu negocio", rest: ", si tenés un taller o servicio en la red." },
-      ],
-      /** Captura real de la app (sin marco: el bisel lo pone el componente). Solo desde `lg`, en el panel de marca. */
+      /** Al lado del teléfono, solo desde `lg`. */
+      note: "Gratis en App Store y Google Play.",
+      /** Captura real de la app, sin marco: el bisel lo pone `PhoneFrame`. */
       appShot: {
         src: "/screenshots/app-inicio.webp",
         width: 1170,
@@ -54,6 +47,11 @@ export const partnerAccountContent = {
         alt: "La app de AutoLibre: inicio con los servicios para tu auto y los beneficios de la red.",
       },
     },
+    title: "Ingresá o creá tu cuenta",
+    legalPrefix: "Al continuar aceptás los",
+    terms: { label: "Términos", href: "/terminos" },
+    legalJoin: "y la",
+    privacy: { label: "Política de privacidad", href: "/privacidad" },
     joinPrefix: "¿Tenés un taller o un servicio?",
     join: "Sumá tu negocio",
     /** La sesión venció con una pantalla privada abierta: se va a `/ingresar`. */
